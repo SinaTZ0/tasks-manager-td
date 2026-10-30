@@ -15,7 +15,7 @@ import {
 } from "#/components/primitive/popover/popover";
 import { toast } from "#/components/primitive/toast/toast";
 import { describeApiFailure } from "#/lib/api-error";
-import { formatDate, formatNumber } from "#/lib/locale";
+import { formatDate, formatNumber, isoToDate } from "#/lib/locale";
 import { orpc } from "#/orpc/client";
 import { NOTIFICATION_POLL_MS } from "#/orpc/notification/constants";
 import type { Notification } from "#/orpc/notification/contract";
@@ -23,18 +23,23 @@ import { m } from "#/paraglide/messages";
 
 /*===== Wording =====*/
 
-/** The notification as a sentence: who did what to which task. */
+/** The notification as a sentence: who did what to which task, or which task's due date came. */
 function sentenceOf(item: Notification): string {
   const code = item.taskCode;
+  const name = item.actorName ?? "";
   switch (item.kind) {
     case "assigned":
-      return m.notification_assigned({ name: item.actorName, code });
+      return m.notification_assigned({ name, code });
     case "delegated":
-      return m.notification_delegated({ name: item.actorName, code });
+      return m.notification_delegated({ name, code });
     case "mentioned":
-      return m.notification_mentioned({ name: item.actorName, code });
+      return m.notification_mentioned({ name, code });
     case "unblocked":
       return m.notification_unblocked({ code, blocker: item.note ?? "" });
+    case "due_soon":
+      return m.notification_due_soon({ code, date: item.dueDate ? formatDate(isoToDate(item.dueDate)) : "" });
+    case "overdue":
+      return m.notification_overdue({ code, date: item.dueDate ? formatDate(isoToDate(item.dueDate)) : "" });
   }
 }
 

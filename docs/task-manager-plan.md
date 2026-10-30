@@ -226,7 +226,7 @@ follows the backend flow, then the frontend flow; desktop first (the phone layou
   this size; archived tasks are included and marked.
 - **Tests**: search never returns a task from a project I'm not on.
 
-### 12. Due Dates
+### 12. Due Dates ✓
 
 - **On the card, drawer and My Tasks**: the due date turns yellow when it is today or tomorrow and red when it is past,
   with words beside the colour ("due today", "2 days late"). Done, cancelled and archived tasks never warn.

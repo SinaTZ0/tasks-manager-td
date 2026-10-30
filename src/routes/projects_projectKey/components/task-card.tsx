@@ -7,7 +7,8 @@ import { Marking } from "#/components/primitive/marking/marking";
 import { PersonAvatar } from "#/components/shared/person-avatar/person-avatar";
 import { useNow } from "#/hooks/use-now";
 import { formatDuration, liveSeconds } from "#/lib/duration";
-import { formatDate, formatList, isoToDate } from "#/lib/locale";
+import { DueMark } from "#/components/shared/due-mark/due-mark";
+import { formatList } from "#/lib/locale";
 import { cn } from "#/lib/utils";
 import type { Person } from "#/orpc/project/contract";
 import { taskCode } from "#/orpc/task/constants";
@@ -69,6 +70,7 @@ export function TaskCard({
   grip,
   menu,
   state = "idle",
+  stopped = false,
 }: {
   task: TaskCardData;
   projectKey: string;
@@ -81,6 +83,8 @@ export function TaskCard({
   grip?: ReactNode;
   menu?: ReactNode;
   state?: "idle" | "placeholder" | "overlay";
+  /** In the cancelled column: like a done card, its due date no longer warns. */
+  stopped?: boolean;
 }) {
   const code = taskCode({ key: projectKey, number: task.number });
   const owner = people.get(task.ownerId);
@@ -164,12 +168,7 @@ export function TaskCard({
           {task.hasDescription && (
             <AlignStartVerticalIcon aria-label={m.task_has_description()} className="size-3.5 text-muted-foreground" />
           )}
-          {task.dueDate && (
-            <Marking>
-              <span className="sr-only">{m.task_due_label()}: </span>
-              {formatDate(isoToDate(task.dueDate), { day: "numeric", month: "short" })}
-            </Marking>
-          )}
+          {task.dueDate && <DueMark dueDate={task.dueDate} finished={stopped || task.completedAt !== null} />}
         </span>
       </footer>
     </article>

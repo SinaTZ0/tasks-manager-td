@@ -5,10 +5,10 @@ import { ListTodoIcon } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "#/components/primitive/card/card";
 import { Led } from "#/components/primitive/led/led";
 import { Marking } from "#/components/primitive/marking/marking";
+import { DueMark } from "#/components/shared/due-mark/due-mark";
 import { useNow } from "#/hooks/use-now";
 import { columnTitle } from "#/lib/column-title";
 import { formatClock, liveSeconds } from "#/lib/duration";
-import { formatDate, isoToDate } from "#/lib/locale";
 import { pageMeta } from "#/lib/seo";
 import { orpc } from "#/orpc/client";
 import { taskCode } from "#/orpc/task/constants";
@@ -103,10 +103,7 @@ function MyTaskRow({ task }: { task: MyTask }) {
       </span>
       <span className="col-span-2 text-body-sm">
         {task.dueDate ? (
-          <>
-            <span className="sr-only">{m.task_due_label()}: </span>
-            {formatDate(isoToDate(task.dueDate))}
-          </>
+          <DueMark dueDate={task.dueDate} format={{ dateStyle: "medium" }} />
         ) : (
           <span className="text-muted-foreground">{m.my_tasks_no_due()}</span>
         )}

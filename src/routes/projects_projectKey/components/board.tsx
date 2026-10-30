@@ -715,6 +715,7 @@ export function Board({
               {cancelledTasks.map((task) => (
                 <li key={task.id}>
                   <TaskCard
+                    stopped
                     task={task}
                     projectKey={project.key}
                     labels={labels}

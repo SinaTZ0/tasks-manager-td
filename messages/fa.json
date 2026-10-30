@@ -1262,5 +1262,32 @@
   "search_archived": "بایگانی‌شده",
   "search_match_title": "عنوان",
   "search_match_description": "توضیح",
-  "search_match_comment": "نظر"
+  "search_match_comment": "نظر",
+  "notification_due_soon": [
+    {
+      "declarations": ["input code", "input date"],
+      "match": {
+        "": "سررسید {code} نزدیک است: {date}"
+      }
+    }
+  ],
+  "notification_overdue": [
+    {
+      "declarations": ["input code", "input date"],
+      "match": {
+        "": "سررسید {code} گذشته است ({date})"
+      }
+    }
+  ],
+  "due_today": "سررسید امروز",
+  "due_tomorrow": "سررسید فردا",
+  "due_late_one": "یک روز دیر",
+  "due_late": [
+    {
+      "declarations": ["input days", "local daysText = days: number"],
+      "match": {
+        "": "{daysText} روز دیر"
+      }
+    }
+  ]
 }

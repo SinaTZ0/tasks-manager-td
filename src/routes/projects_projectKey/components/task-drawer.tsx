@@ -164,7 +164,12 @@ function TaskDetails({
               canEdit={canHandOver}
               explainLock={canEdit}
             />
-            <DueDateField task={task} update={update} readOnly={readOnly} />
+            <DueDateField
+              task={task}
+              update={update}
+              readOnly={readOnly}
+              finished={column?.kind === "done" || column?.kind === "cancelled"}
+            />
             <EstimateField key={task.estimateMinutes} task={task} update={update} readOnly={readOnly} />
             <Separator />
             <TaskDelegation task={task} project={project} code={code} readOnly={readOnly} />

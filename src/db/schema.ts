@@ -365,14 +365,14 @@ export const notification = pgTable(
       .references(() => user.id, { onDelete: "cascade" }),
     /** One of `NOTIFICATION_KINDS` (`src/orpc/notification/constants.ts`). */
     kind: text("kind").notNull(),
-    /** Who caused it. */
-    actorId: text("actor_id")
-      .notNull()
-      .references(() => user.id, { onDelete: "restrict" }),
+    /** Who caused it; null for a due-date reminder, which nobody did. */
+    actorId: text("actor_id").references(() => user.id, { onDelete: "restrict" }),
     projectId: uuid("project_id")
       .notNull()
       .references(() => project.id, { onDelete: "cascade" }),
     taskId: uuid("task_id").references(() => task.id, { onDelete: "cascade" }),
+    /** For a due-date reminder, the due date it was about: a new date may remind again, the same one never. */
+    dueDate: date("due_date", { mode: "string" }),
     data: jsonb("data").notNull().default({}),
     readAt: timestamp("read_at"),
     createdAt: timestamp("created_at").notNull().defaultNow(),
@@ -383,6 +383,10 @@ export const notification = pgTable(
     index("notification_unread_idx")
       .on(table.userId)
       .where(sql`${table.readAt} is null`),
+    // A due-date reminder goes out once per person, task, kind and due date, however often the bell asks.
+    uniqueIndex("notification_due_once_idx")
+      .on(table.userId, table.taskId, table.kind, table.dueDate)
+      .where(sql`${table.dueDate} is not null`),
   ],
 );
 

@@ -4,6 +4,7 @@ import { DatePicker } from "#/components/primitive/date-picker/date-picker";
 import { Field, FieldDescription, FieldError, FieldLabel } from "#/components/primitive/field/field";
 import { Input } from "#/components/primitive/input/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "#/components/primitive/select/select";
+import { DueMark, dueState } from "#/components/shared/due-mark/due-mark";
 import { formatDuration, parseDuration } from "#/lib/duration";
 import { priorityName } from "#/lib/priority-name";
 import type { Person } from "#/orpc/project/contract";
@@ -109,7 +110,20 @@ export function PersonField({
 }
 
 /*===== Due Date =====*/
-export function DueDateField({ task, update, readOnly }: { task: TaskDetail; update: Update; readOnly: boolean }) {
+export function DueDateField({
+  task,
+  update,
+  readOnly,
+  finished,
+}: {
+  task: TaskDetail;
+  update: Update;
+  readOnly: boolean;
+  /** Done or cancelled: the date no longer warns. */
+  finished: boolean;
+}) {
+  const tone = task.dueDate ? dueState({ dueDate: task.dueDate, finished }).tone : null;
+
   return (
     <Field>
       <FieldLabel htmlFor="task-due">{m.task_due_label()}</FieldLabel>
@@ -119,6 +133,12 @@ export function DueDateField({ task, update, readOnly }: { task: TaskDetail; upd
         disabled={readOnly}
         onChange={(dueDate) => dueDate !== task.dueDate && update.save({ dueDate })}
       />
+      {/* Only once it comes close: the picker already prints the date. */}
+      {task.dueDate && tone && (
+        <FieldDescription>
+          <DueMark dueDate={task.dueDate} finished={finished} format={{ dateStyle: "medium" }} />
+        </FieldDescription>
+      )}
     </Field>
   );
 }

@@ -9,13 +9,16 @@ import { NOTIFICATION_KINDS } from "#/orpc/notification/constants";
 export const notificationSchema = z.object({
   id: z.string(),
   kind: z.enum(NOTIFICATION_KINDS),
-  actorName: z.string(),
+  /** Null for a due-date reminder, which nobody caused. */
+  actorName: z.string().nullable(),
   projectKey: z.string(),
   /** The task's code and title as they were when it happened. */
   taskCode: z.string(),
   taskTitle: z.string(),
   /** A delegation's note, or the code of the blocker that was finished. */
   note: z.string().nullable(),
+  /** For a due-date reminder, the due date (ISO) it was about. */
+  dueDate: z.string().nullable(),
   read: z.boolean(),
   createdAt: z.date(),
 });

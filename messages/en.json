@@ -1262,5 +1262,32 @@
   "search_archived": "Archived",
   "search_match_title": "Title",
   "search_match_description": "Description",
-  "search_match_comment": "Comment"
+  "search_match_comment": "Comment",
+  "notification_due_soon": [
+    {
+      "declarations": ["input code", "input date"],
+      "match": {
+        "": "{code} is due on {date}"
+      }
+    }
+  ],
+  "notification_overdue": [
+    {
+      "declarations": ["input code", "input date"],
+      "match": {
+        "": "{code} is past its due date ({date})"
+      }
+    }
+  ],
+  "due_today": "Due today",
+  "due_tomorrow": "Due tomorrow",
+  "due_late_one": "A day late",
+  "due_late": [
+    {
+      "declarations": ["input days", "local daysText = days: number"],
+      "match": {
+        "": "{daysText} days late"
+      }
+    }
+  ]
 }
