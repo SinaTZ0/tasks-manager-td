@@ -5,6 +5,7 @@ import { ArchiveIcon, CalendarDaysIcon, HistoryIcon, SettingsIcon } from "lucide
 import { useMemo } from "react";
 
 import { AvatarGroup } from "#/components/primitive/avatar/avatar";
+import { ButtonGroup } from "#/components/primitive/button-group/button-group";
 import { buttonVariants } from "#/components/primitive/button/button.styles";
 import { Card, CardContent } from "#/components/primitive/card/card";
 import { Marking } from "#/components/primitive/marking/marking";
@@ -151,41 +152,43 @@ function BoardPage() {
             <PersonAvatar key={member.id} name={member.name} src={member.avatarUrl} />
           ))}
         </AvatarGroup>
-        <Link
-          to="/projects/$projectKey/calendar"
-          params={{ projectKey: project.key }}
-          search={{ assignee, label, priority, due, blocked }}
-          className={buttonVariants({ variant: "secondary", size: "sm" })}
-        >
-          <CalendarDaysIcon data-icon="inline-start" />
-          {m.calendar_link()}
-        </Link>
-        <Link
-          to="/projects/$projectKey/activity"
-          params={{ projectKey: project.key }}
-          className={buttonVariants({ variant: "secondary", size: "sm" })}
-        >
-          <HistoryIcon data-icon="inline-start" />
-          {m.activity_link()}
-        </Link>
-        <Link
-          to="/projects/$projectKey/archive"
-          params={{ projectKey: project.key }}
-          className={buttonVariants({ variant: "secondary", size: "sm" })}
-        >
-          <ArchiveIcon data-icon="inline-start" />
-          {m.archive_link()}
-        </Link>
-        {isAdmin && (
+        <ButtonGroup aria-label={m.board_project_pages()}>
           <Link
-            to="/projects/$projectKey/settings"
+            to="/projects/$projectKey/calendar"
+            params={{ projectKey: project.key }}
+            search={{ assignee, label, priority, due, blocked }}
+            className={buttonVariants({ variant: "secondary", size: "sm" })}
+          >
+            <CalendarDaysIcon data-icon="inline-start" />
+            {m.calendar_link()}
+          </Link>
+          <Link
+            to="/projects/$projectKey/activity"
             params={{ projectKey: project.key }}
             className={buttonVariants({ variant: "secondary", size: "sm" })}
           >
-            <SettingsIcon data-icon="inline-start" />
-            {m.project_settings()}
+            <HistoryIcon data-icon="inline-start" />
+            {m.activity_link()}
           </Link>
-        )}
+          <Link
+            to="/projects/$projectKey/archive"
+            params={{ projectKey: project.key }}
+            className={buttonVariants({ variant: "secondary", size: "sm" })}
+          >
+            <ArchiveIcon data-icon="inline-start" />
+            {m.archive_link()}
+          </Link>
+          {isAdmin && (
+            <Link
+              to="/projects/$projectKey/settings"
+              params={{ projectKey: project.key }}
+              className={buttonVariants({ variant: "secondary", size: "sm" })}
+            >
+              <SettingsIcon data-icon="inline-start" />
+              {m.project_settings()}
+            </Link>
+          )}
+        </ButtonGroup>
       </div>
 
       {/*------ New Task, Filters and Columns Shown ------*/}
