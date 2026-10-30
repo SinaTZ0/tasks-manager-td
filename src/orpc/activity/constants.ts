@@ -32,6 +32,12 @@ export const ACTIVITY_ACTIONS = [
   "time.stopped",
   "time.added",
   "time.removed",
+  /*------ Dependencies ------*/
+  "dependency.added",
+  "dependency.removed",
+  "task.unblocked",
+  /*------ Comments ------*/
+  "comment.added",
 ] as const;
 
 export type ActivityAction = (typeof ACTIVITY_ACTIONS)[number];

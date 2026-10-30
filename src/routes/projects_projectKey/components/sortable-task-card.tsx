@@ -41,6 +41,7 @@ export function SortableTaskCard({
   projectKey,
   labels,
   people,
+  blockedBy,
   menu,
 }: {
   task: TaskCardData;
@@ -49,6 +50,8 @@ export function SortableTaskCard({
   projectKey: string;
   labels: Map<string, Label>;
   people: Map<string, Person>;
+  /** The codes of the tasks still holding it up. */
+  blockedBy: string[];
   menu: ReactNode;
 }) {
   const code = taskCode({ key: projectKey, number: task.number });
@@ -74,6 +77,7 @@ export function SortableTaskCard({
         projectKey={projectKey}
         labels={labels}
         people={people}
+        blockedBy={blockedBy}
         onPointerDown={listeners?.onPointerDown as PointerEventHandler<HTMLElement> | undefined}
         state={isDragging ? "placeholder" : "idle"}
         grip={

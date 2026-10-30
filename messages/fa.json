@@ -664,5 +664,61 @@
         "": "{code} متوقف شد و به ستون لغوشده رفت. برای دیدنش «نمایش لغوشده‌ها» را روشن کنید."
       }
     }
-  ]
+  ],
+  "dependency_error_self": "یک کار نمی‌تواند منتظر خودش باشد.",
+  "dependency_error_cycle": "آن کار خودش منتظر این کار است؛ این‌طور هر دو تا ابد منتظر هم می‌مانند.",
+  "dependency_error_comment_required": "بنویسید چرا با وجود مسدود بودن جلو می‌رود.",
+  "comment_error_too_long": [
+    {
+      "declarations": ["input max", "local maxText = max: number"],
+      "match": {
+        "": "نظر باید کمتر از {maxText} نویسه باشد."
+      }
+    }
+  ],
+  "dependency_force_title": [
+    {
+      "declarations": ["input code"],
+      "match": {
+        "": "{code} هنوز مسدود است"
+      }
+    }
+  ],
+  "dependency_force_description": [
+    {
+      "declarations": ["input blockers"],
+      "match": {
+        "": "منتظر {blockers} است. می‌توانید با این حال جابه‌جایش کنید: دلیلش را بنویسید تا به‌عنوان نظر روی کار ثبت شود."
+      }
+    }
+  ],
+  "dependency_force_label": "چرا الان جلو می‌رود؟",
+  "dependency_force_hint": "همه کسانی که روی این کارند این نظر را می‌بینند.",
+  "dependency_force_confirm": "با این حال جابه‌جا کن",
+  "dependency_blocked_refused": "این کار حالا منتظر کار ناتمامی است، پس جابه‌جا نشد. بازش کنید تا ببینید منتظر چیست.",
+  "dependency_waits_for": "منتظر",
+  "dependency_blocked_label": [
+    {
+      "declarations": ["input blockers"],
+      "match": {
+        "": "مسدود: منتظر {blockers}"
+      }
+    }
+  ],
+  "dependency_title": "وابستگی‌ها",
+  "dependency_none": "منتظر کاری نیست.",
+  "dependency_holds_up": "مانع این کارها",
+  "dependency_add_label": "افزودن کاری که منتظرش است",
+  "dependency_add_placeholder": "انتخاب کار",
+  "dependency_remove": [
+    {
+      "declarations": ["input code"],
+      "match": {
+        "": "دیگر منتظر {code} نباشد"
+      }
+    }
+  ],
+  "dependency_save_failed": "وابستگی ذخیره نشد.",
+  "dependency_state_waiting": "مانع",
+  "dependency_state_released": "تمام"
 }

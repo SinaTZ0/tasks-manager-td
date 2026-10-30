@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { AlignStartVerticalIcon } from "lucide-react";
+import { AlignStartVerticalIcon, LockIcon } from "lucide-react";
 import type { PointerEventHandler, ReactNode } from "react";
 
 import { Led } from "#/components/primitive/led/led";
@@ -7,7 +7,7 @@ import { Marking } from "#/components/primitive/marking/marking";
 import { PersonAvatar } from "#/components/shared/person-avatar/person-avatar";
 import { useNow } from "#/hooks/use-now";
 import { formatDuration, liveSeconds } from "#/lib/duration";
-import { formatDate, isoToDate } from "#/lib/locale";
+import { formatDate, formatList, isoToDate } from "#/lib/locale";
 import { cn } from "#/lib/utils";
 import type { Person } from "#/orpc/project/contract";
 import { taskCode } from "#/orpc/task/constants";
@@ -52,7 +52,8 @@ function SpentMarking({ seconds }: { seconds: number }) {
  * code and priority on a printed strip, the title and labels on the face, people and dates on the footer. The title is
  * the link that opens the card's drawer; its hit area covers the whole card. The owner's cap shows beside the
  * assignee's only when they differ, since delegation never changes the owner. The time spent prints on the footer once
- * there is some, beside a blinking LED while someone's timer runs on it.
+ * there is some, beside a blinking LED while someone's timer runs on it. A blocked card gets a yellow strip naming what
+ * it waits for, so the dependency shows without opening it.
  *
  * On the board the card is also something to pick up (`SortableTaskCard` passes the drag props): `grip` and `menu` sit
  * on the header strip, above the stretched link. `state` dims the card left behind while
@@ -63,6 +64,7 @@ export function TaskCard({
   projectKey,
   labels,
   people,
+  blockedBy = [],
   onPointerDown,
   grip,
   menu,
@@ -72,6 +74,8 @@ export function TaskCard({
   projectKey: string;
   labels: Map<string, Label>;
   people: Map<string, Person>;
+  /** The codes of the tasks still holding it up; the card prints them on a warning strip. */
+  blockedBy?: string[];
   /** Starts a pointer drag anywhere on the card; the keyboard drag lives on `grip`. */
   onPointerDown?: PointerEventHandler<HTMLElement>;
   grip?: ReactNode;
@@ -130,6 +134,18 @@ export function TaskCard({
           </ul>
         )}
       </div>
+
+      {/*------ Blocked Strip ------*/}
+      {blockedBy.length > 0 && (
+        <p className="flex items-center gap-2 border-y border-signal-attention/60 bg-signal-attention/15 px-3 py-1.5 text-caption">
+          <LockIcon aria-hidden="true" className="size-3.5 shrink-0" />
+          <span className="sr-only">{m.dependency_blocked_label({ blockers: formatList(blockedBy) })}</span>
+          <span aria-hidden="true">{m.dependency_waits_for()}</span>
+          <Marking variant="code" aria-hidden="true">
+            {blockedBy.join(" ")}
+          </Marking>
+        </p>
+      )}
 
       {/*------ Footer ------*/}
       <footer className="flex min-h-11 items-center justify-between gap-3 px-3 pb-2.5">

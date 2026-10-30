@@ -664,5 +664,61 @@
         "": "{code} is stopped. It's in the cancelled column: switch on \"Show cancelled\" to see it."
       }
     }
-  ]
+  ],
+  "dependency_error_self": "A task can't wait for itself.",
+  "dependency_error_cycle": "That task already waits for this one, so they'd wait for each other forever.",
+  "dependency_error_comment_required": "Write why it goes ahead while it's still blocked.",
+  "comment_error_too_long": [
+    {
+      "declarations": ["input max", "local maxText = max: number"],
+      "match": {
+        "": "Keep the comment under {maxText} characters."
+      }
+    }
+  ],
+  "dependency_force_title": [
+    {
+      "declarations": ["input code"],
+      "match": {
+        "": "{code} is still blocked"
+      }
+    }
+  ],
+  "dependency_force_description": [
+    {
+      "declarations": ["input blockers"],
+      "match": {
+        "": "It waits for {blockers}. You can move it anyway: say why, and it's saved as a comment on the task."
+      }
+    }
+  ],
+  "dependency_force_label": "Why go ahead now?",
+  "dependency_force_hint": "Everyone on the task sees this comment.",
+  "dependency_force_confirm": "Move anyway",
+  "dependency_blocked_refused": "This task now waits for unfinished work, so it wasn't moved. Open it to see what it waits for.",
+  "dependency_waits_for": "Waits for",
+  "dependency_blocked_label": [
+    {
+      "declarations": ["input blockers"],
+      "match": {
+        "": "Blocked: waits for {blockers}"
+      }
+    }
+  ],
+  "dependency_title": "Dependencies",
+  "dependency_none": "Doesn't wait for anything.",
+  "dependency_holds_up": "Holds up",
+  "dependency_add_label": "Add a task it waits for",
+  "dependency_add_placeholder": "Pick a task",
+  "dependency_remove": [
+    {
+      "declarations": ["input code"],
+      "match": {
+        "": "Stop waiting for {code}"
+      }
+    }
+  ],
+  "dependency_save_failed": "The dependency couldn't be saved.",
+  "dependency_state_waiting": "blocking",
+  "dependency_state_released": "done"
 }

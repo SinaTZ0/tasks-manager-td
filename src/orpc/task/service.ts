@@ -7,9 +7,18 @@ import { issuesToErrorData } from "#/lib/schema-issues";
 import type { ActivityAction } from "#/orpc/activity/constants";
 import { findTaskActivities } from "#/orpc/activity/repository";
 import { recordActivity } from "#/orpc/activity/service";
+import { addPlainComment } from "#/orpc/comment/service";
+import { findBlockingTasks, findReleasedDependents, findWaitsFor } from "#/orpc/dependency/repository";
 import type { ColumnKind } from "#/orpc/project/constants";
 import { toPerson } from "#/orpc/project/mapper";
-import { canTakeAction, STATUS_ACTION_RULES, taskCode, type TaskStatusAction } from "#/orpc/task/constants";
+import {
+  BLOCKED_ENTRY_KINDS,
+  canTakeAction,
+  RELEASED_KINDS,
+  STATUS_ACTION_RULES,
+  taskCode,
+  type TaskStatusAction,
+} from "#/orpc/task/constants";
 import type { Board, Label, TaskCard, TaskDetail } from "#/orpc/task/contract";
 import { toLabel, toTaskCard, toTaskDetail } from "#/orpc/task/mapper";
 import {
@@ -35,6 +44,7 @@ import {
   type TaskRecord,
 } from "#/orpc/task/repository";
 import {
+  forceCommentSchema,
   newLabelSchema,
   newTaskSchema,
   statusReasonSchema,
@@ -48,6 +58,8 @@ import { m } from "#/paraglide/messages";
 /*===== Types =====*/
 type Invalid = { kind: "invalid"; fields: Record<string, string>; errors?: string[] };
 type NotFound = { kind: "not-found" };
+/** A move into doing or done refused because the task still waits for these (rule 4). */
+type Blocked = { kind: "blocked"; blockerIds: string[] };
 
 /** Who is acting: an admin may hand over any task, a member only their own. */
 export type TaskActor = { id: string; role?: string | null | undefined };
@@ -62,8 +74,14 @@ async function toCards({ db, records }: { db: Database; records: TaskRecord[] })
   const taskIds = records.map((record) => record.id);
   const labelIds = await findLabelIdsByTask({ db, taskIds });
   const totals = await findTimeTotals({ db, taskIds });
+  const waitsFor = await findWaitsFor({ db, taskIds });
   return records.map((record) =>
-    toTaskCard({ record, labelIds: labelIds.get(record.id) ?? [], time: totals.get(record.id) }),
+    toTaskCard({
+      record,
+      labelIds: labelIds.get(record.id) ?? [],
+      time: totals.get(record.id),
+      waitsFor: waitsFor.get(record.id) ?? [],
+    }),
   );
 }
 
@@ -98,6 +116,7 @@ async function toDetail({
 }): Promise<TaskDetail> {
   const labelIds = await findLabelIdsByTask({ db, taskIds: [record.id] });
   const totals = await findTimeTotals({ db, taskIds: [record.id] });
+  const waitsFor = await findWaitsFor({ db, taskIds: [record.id] });
   const column = await findColumn({ db, projectId, columnId: record.columnId });
   const entries = await findTaskActivities({ db, taskId: record.id, actions: COLUMN_ENTRIES });
   const last = entries.at(-1);
@@ -113,34 +132,112 @@ async function toDetail({
           at: last.createdAt,
         }
       : null;
-  return toTaskDetail({ record, labelIds: labelIds.get(record.id) ?? [], time: totals.get(record.id), statusNote });
+  return toTaskDetail({
+    record,
+    labelIds: labelIds.get(record.id) ?? [],
+    time: totals.get(record.id),
+    waitsFor: waitsFor.get(record.id) ?? [],
+    statusNote,
+  });
 }
 
 /*===== Column Effects =====*/
+const isReleased = (kind: string | undefined) => (RELEASED_KINDS as readonly string[]).includes(kind ?? "");
+
+/**
+ * Records "unblocked" on each task that `blocker` was the last to hold up, as it is done, cancelled or archived: the
+ * history entry the waiting task's owner is told about. Asked before the blocker moves.
+ */
+async function releaseDependents({
+  db,
+  actorId,
+  blocker,
+}: {
+  db: Database;
+  actorId: string;
+  blocker: TaskRecord;
+}): Promise<void> {
+  const released = await findReleasedDependents({ db, blockerId: blocker.id });
+  if (released.length === 0) return;
+  const key = await findProjectKey({ db, projectId: blocker.projectId });
+  await recordActivity({
+    db,
+    actorId,
+    entries: released.map((dependent) => ({
+      action: "task.unblocked",
+      projectId: blocker.projectId,
+      taskId: dependent.id,
+      after: {
+        blockerId: blocker.id,
+        blockerCode: taskCode({ key, number: blocker.number }),
+        ownerId: dependent.ownerId,
+      },
+      snapshot: { code: taskCode({ key, number: dependent.number }), title: dependent.title },
+    })),
+  });
+}
+
 /**
  * What a task's change of column kind does besides moving it: leaving doing stops every timer on it (rule 3), entering
- * done records when it finished, leaving done clears that. Runs in the move's transaction.
+ * done records when it finished and leaving done clears that, and entering done or cancelled releases the tasks it was
+ * the last to hold up. Runs in the move's transaction, before the row changes.
  *
  * @returns The task fields to write with the move.
  */
 async function columnEffects({
   db,
   actorId,
-  taskId,
+  task,
   from,
   to,
 }: {
   db: Database;
   actorId: string;
-  taskId: string;
+  task: TaskRecord;
   from: string | undefined;
   to: ColumnKind;
 }): Promise<Partial<TaskRecord>> {
   if (from === to) return {};
-  if (from === "doing") await closeTimers({ db, actorId, scope: { taskId }, cause: "left-doing" });
+  if (from === "doing") await closeTimers({ db, actorId, scope: { taskId: task.id }, cause: "left-doing" });
+  if (isReleased(to) && !isReleased(from)) await releaseDependents({ db, actorId, blocker: task });
   if (to === "done") return { completedAt: new Date() };
   if (from === "done") return { completedAt: null };
   return {};
+}
+
+/*===== Blocked Gate =====*/
+/**
+ * Rule 4: a task that still waits for others can't enter doing or done, unless the person forces it and says why. The
+ * reason is written as a comment on the task, so the thread shows the rule was bent and by whom.
+ *
+ * @returns `pass` (with the forcing comment's id when one was written), `blocked` with what it waits for, or `invalid`
+ * for an empty or too long comment.
+ */
+async function passBlockedGate({
+  db,
+  actorId,
+  task,
+  from,
+  to,
+  forceComment,
+}: {
+  db: Database;
+  actorId: string;
+  task: TaskRecord;
+  from: string | undefined;
+  to: ColumnKind;
+  forceComment: string | undefined;
+}): Promise<{ kind: "pass"; commentId?: string } | Blocked | Invalid> {
+  if (from === to || !(BLOCKED_ENTRY_KINDS as readonly string[]).includes(to)) return { kind: "pass" };
+  const blockers = await findBlockingTasks({ db, taskId: task.id });
+  if (blockers.length === 0) return { kind: "pass" };
+  if (forceComment === undefined) return { kind: "blocked", blockerIds: blockers.map((blocker) => blocker.id) };
+
+  const parsed = forceCommentSchema.safeParse(forceComment);
+  if (!parsed.success) return { kind: "invalid", fields: { forceComment: parsed.error.issues[0]?.message ?? "" } };
+  const code = taskCode({ key: await findProjectKey({ db, projectId: task.projectId }), number: task.number });
+  const comment = await addPlainComment({ db, actorId, projectId: task.projectId, task, code, text: parsed.data });
+  return { kind: "pass", commentId: comment.id };
 }
 
 /*===== Board =====*/
@@ -393,7 +490,7 @@ export async function updateTask({
 }
 
 /*===== Move =====*/
-type MoveResult = { kind: "success"; task: TaskCard } | NotFound | Invalid;
+type MoveResult = { kind: "success"; task: TaskCard } | NotFound | Invalid | Blocked;
 
 /**
  * Puts a card in a column at a position: dragged on the board or sent with "move to…". The board computes the key
@@ -401,8 +498,10 @@ type MoveResult = { kind: "success"; task: TaskCard } | NotFound | Invalid;
  * fresh one just after it, and the board's refetch shows where it landed. A move between columns is what the history's
  * "time in each column" is summed from, so its entry keeps both columns' kinds and names.
  *
+ * A task that still waits for others enters doing or done only with `forceComment` (rule 4, `passBlockedGate`).
+ *
  * @returns `invalid` for a key the board couldn't have made or a column that isn't on the board; `not-found` for a
- * task the project doesn't have or one that is archived.
+ * task the project doesn't have or one that is archived; `blocked` for a blocked task's move without a comment.
  */
 export async function moveTask({
   db,
@@ -411,6 +510,7 @@ export async function moveTask({
   taskId,
   columnId,
   position,
+  forceComment,
 }: {
   db: Database;
   actorId: string;
@@ -418,6 +518,7 @@ export async function moveTask({
   taskId: string;
   columnId: string;
   position: string;
+  forceComment?: string | undefined;
 }): Promise<MoveResult> {
   if (!isPositionKey(position)) return { kind: "invalid", fields: { position: m.task_error_position_invalid() } };
   if (!isUuid(taskId)) return { kind: "not-found" };
@@ -439,7 +540,10 @@ export async function moveTask({
 
     const from =
       current.columnId === columnId ? column : await findColumn({ db: tx, projectId, columnId: current.columnId });
-    const effects = await columnEffects({ db: tx, actorId, taskId, from: from?.kind, to: column.kind as ColumnKind });
+    const to = column.kind as ColumnKind;
+    const gate = await passBlockedGate({ db: tx, actorId, task: current, from: from?.kind, to, forceComment });
+    if (gate.kind !== "pass") return gate;
+    const effects = await columnEffects({ db: tx, actorId, task: current, from: from?.kind, to });
     const record = await updateTaskRow({
       db: tx,
       id: taskId,
@@ -455,7 +559,12 @@ export async function moveTask({
           projectId,
           taskId,
           before: { columnId: current.columnId, columnKind: from?.kind, columnName: from?.name ?? null },
-          after: { columnId, columnKind: column.kind, columnName: column.name },
+          after: {
+            columnId,
+            columnKind: column.kind,
+            columnName: column.name,
+            ...(gate.commentId ? { forced: true, commentId: gate.commentId } : {}),
+          },
           snapshot: { code, title: current.title },
         },
       ],
@@ -465,7 +574,7 @@ export async function moveTask({
 }
 
 /*===== Status =====*/
-type TransitionResult = { kind: "success"; task: TaskCard } | NotFound | Invalid;
+type TransitionResult = { kind: "success"; task: TaskCard } | NotFound | Invalid | Blocked;
 
 const STATUS_ENTRY = {
   start: "task.started",
@@ -479,10 +588,11 @@ const STATUS_ENTRY = {
  * Takes a status action (docs/app.md → Status / Pause / Stop): moves the task to the bottom of the action's column,
  * with what that move does to its timers and finish time (`columnEffects`), and for start (or resume) starts the
  * actor's timer on it, stopping any other they had running (rule 2). Stopping needs a reason; a pause may have one
- * (rule 5). Starting a task already in doing only starts the actor's timer.
+ * (rule 5). Starting a task already in doing only starts the actor's timer. A task that still waits for others
+ * starts or finishes only with `forceComment` (rule 4).
  *
  * @returns `invalid` for a missing or too long reason, or an action the task's column doesn't allow (someone moved it
- * meanwhile); `not-found` for a task the project doesn't have or one that is archived.
+ * meanwhile); `not-found` for a task the project doesn't have or one that is archived; `blocked` without a comment.
  */
 export async function transitionTask({
   db,
@@ -491,6 +601,7 @@ export async function transitionTask({
   taskId,
   action,
   reason: rawReason,
+  forceComment,
 }: {
   db: Database;
   actorId: string;
@@ -498,6 +609,7 @@ export async function transitionTask({
   taskId: string;
   action: TaskStatusAction;
   reason?: string | undefined;
+  forceComment?: string | undefined;
 }): Promise<TransitionResult> {
   const parsedReason = statusReasonSchema.safeParse(rawReason);
   if (!parsedReason.success) return { kind: "invalid", fields: issuesToErrorData(parsedReason.error.issues).fields };
@@ -517,7 +629,10 @@ export async function transitionTask({
     const to = await findColumnByKind({ db: tx, projectId, kind: STATUS_ACTION_RULES[action].to });
     let record = current;
     if (to.id !== from.id) {
-      const effects = await columnEffects({ db: tx, actorId, taskId, from: from.kind, to: to.kind as ColumnKind });
+      const kind = to.kind as ColumnKind;
+      const gate = await passBlockedGate({ db: tx, actorId, task: current, from: from.kind, to: kind, forceComment });
+      if (gate.kind !== "pass") return gate;
+      const effects = await columnEffects({ db: tx, actorId, task: current, from: from.kind, to: kind });
       const position = generateKeyBetween(await findLastPosition({ db: tx, columnId: to.id }), null);
       record = await updateTaskRow({ db: tx, id: taskId, values: { columnId: to.id, position, ...effects } });
       await recordActivity({
@@ -529,7 +644,13 @@ export async function transitionTask({
             projectId,
             taskId,
             before: { columnId: from.id, columnKind: from.kind, columnName: from.name },
-            after: { columnId: to.id, columnKind: to.kind, columnName: to.name, ...(reason ? { reason } : {}) },
+            after: {
+              columnId: to.id,
+              columnKind: to.kind,
+              columnName: to.name,
+              ...(reason ? { reason } : {}),
+              ...(gate.commentId ? { forced: true, commentId: gate.commentId } : {}),
+            },
             snapshot: {
               code: taskCode({ key: await findProjectKey({ db: tx, projectId }), number: current.number }),
               title: current.title,
@@ -566,6 +687,9 @@ export async function archiveTask({
     if (current.archivedAt) return { kind: "ok" };
 
     await closeTimers({ db: tx, actorId, scope: { taskId }, cause: "archived" });
+    // An archived task holds nothing up any more.
+    const column = await findColumn({ db: tx, projectId, columnId: current.columnId });
+    if (!isReleased(column?.kind)) await releaseDependents({ db: tx, actorId, blocker: current });
     await updateTaskRow({ db: tx, id: taskId, values: { archivedAt: new Date() } });
     const code = taskCode({ key: await findProjectKey({ db: tx, projectId }), number: current.number });
     await recordActivity({

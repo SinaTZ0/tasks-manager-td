@@ -1,3 +1,4 @@
+import { ORPCError } from "@orpc/client";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { toast } from "#/components/primitive/toast/toast";
@@ -18,6 +19,11 @@ const byPosition = (a: { position: string }, b: { position: string }) =>
 
 /** Shows why a move was refused, or the fallback when the server gave no reason. */
 function reportFailure({ error, fallback }: { error: unknown; fallback: string }) {
+  // The board asks before moving a blocked task, so this is a blocker someone else added meanwhile.
+  if (error instanceof ORPCError && error.code === "BLOCKED") {
+    toast.add({ title: m.dependency_blocked_refused(), type: "error" });
+    return;
+  }
   const failure = describeApiFailure({ error, fallback });
   toast.add({ title: failure.message ?? Object.values(failure.fields)[0] ?? fallback, type: "error" });
 }
@@ -47,7 +53,18 @@ export function useTaskMove(projectId: string) {
     }),
   );
 
-  return ({ taskId, columnId, position }: { taskId: string; columnId: string; position: string }) => {
+  /** `forceComment` moves a blocked task into doing or done anyway, saying why (rule 4). */
+  return ({
+    taskId,
+    columnId,
+    position,
+    forceComment,
+  }: {
+    taskId: string;
+    columnId: string;
+    position: string;
+    forceComment?: string;
+  }) => {
     void queryClient.cancelQueries({ queryKey: key });
     const previous = queryClient.getQueryData<Board>(key);
     if (previous) {
@@ -57,7 +74,7 @@ export function useTaskMove(projectId: string) {
       queryClient.setQueryData<Board>(key, { ...previous, tasks });
     }
     mutation.mutate(
-      { projectId, taskId, columnId, position },
+      { projectId, taskId, columnId, position, forceComment },
       {
         onError: (error) => {
           if (previous) queryClient.setQueryData(key, previous);
@@ -91,7 +108,17 @@ export function useTaskTransition(project: Pick<Project, "id" | "columns">) {
     }),
   );
 
-  return ({ taskId, action, reason }: { taskId: string; action: TaskStatusAction; reason?: string }) => {
+  return ({
+    taskId,
+    action,
+    reason,
+    forceComment,
+  }: {
+    taskId: string;
+    action: TaskStatusAction;
+    reason?: string;
+    forceComment?: string;
+  }) => {
     void queryClient.cancelQueries({ queryKey: key });
     const previous = queryClient.getQueryData<Board>(key);
     const target = project.columns.find((column) => column.kind === STATUS_ACTION_RULES[action].to);
@@ -112,7 +139,7 @@ export function useTaskTransition(project: Pick<Project, "id" | "columns">) {
       queryClient.setQueryData<Board>(key, { ...previous, tasks });
     }
     mutation.mutate(
-      { projectId: project.id, taskId, action, reason },
+      { projectId: project.id, taskId, action, reason, forceComment },
       {
         onError: (error) => {
           if (previous) queryClient.setQueryData(key, previous);

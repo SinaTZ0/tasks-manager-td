@@ -43,6 +43,13 @@
       "when": 1793378684049,
       "tag": "0005_time-logs",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1793380078126,
+      "tag": "0006_dependencies-comments",
+      "breakpoints": true
     }
   ]
 }

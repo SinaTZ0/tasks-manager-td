@@ -15,10 +15,11 @@ import { formatDate } from "#/lib/locale";
 import { orpc } from "#/orpc/client";
 import type { ColumnKind } from "#/orpc/project/constants";
 import type { Person, Project } from "#/orpc/project/contract";
-import type { TaskStatusAction } from "#/orpc/task/constants";
+import { STATUS_ACTION_RULES, type TaskStatusAction } from "#/orpc/task/constants";
 import type { TaskDetail } from "#/orpc/task/contract";
 import { m } from "#/paraglide/messages";
-import { StatusReasonDialog } from "#/routes/projects_projectKey/components/status-reason-dialog";
+import { ReasonDialog, type ReasonRequest } from "#/routes/projects_projectKey/components/reason-dialog";
+import { entersGuardedColumn } from "#/routes/projects_projectKey/dependencies";
 import {
   asksReason,
   availableActions,
@@ -51,16 +52,24 @@ export function TaskStatusPanel({
   project,
   code,
   people,
+  blockers,
 }: {
   task: TaskDetail;
   project: Project;
   code: string;
   people: Map<string, Person>;
+  /** The codes of the tasks still holding it up: starting or finishing it asks why first (rule 4). */
+  blockers: string[];
 }) {
   const queryClient = useQueryClient();
   const transition = useTaskTransition(project);
   const { data: myTimer } = useQuery(orpc.time.current.queryOptions());
-  const [asking, setAsking] = useState<{ action: "pause" | "stop"; open: boolean } | null>(null);
+  // Kept after the dialog closes, so it can play its way out showing what it asked.
+  const [asking, setAsking] = useState<{
+    request: ReasonRequest;
+    run: (reason: string) => void;
+    open: boolean;
+  } | null>(null);
   const now = useNow();
 
   const column = project.columns.find((item) => item.id === task.columnId);
@@ -85,8 +94,21 @@ export function TaskStatusPanel({
   );
 
   const take = (action: TaskStatusAction) => {
-    if (asksReason(action)) setAsking({ action, open: true });
-    else transition({ taskId: task.id, action });
+    if (asksReason(action)) {
+      return setAsking({
+        request: { kind: action, code },
+        run: (reason) => transition({ taskId: task.id, action, reason }),
+        open: true,
+      });
+    }
+    if (blockers.length > 0 && entersGuardedColumn({ from: kind, to: STATUS_ACTION_RULES[action].to })) {
+      return setAsking({
+        request: { kind: "force", code, blockers },
+        run: (forceComment) => transition({ taskId: task.id, action, forceComment }),
+        open: true,
+      });
+    }
+    transition({ taskId: task.id, action });
   };
 
   return (
@@ -154,12 +176,11 @@ export function TaskStatusPanel({
       {task.statusNote && <StatusNote note={task.statusNote} people={people} />}
 
       {asking && (
-        <StatusReasonDialog
-          action={asking.action}
-          code={code}
+        <ReasonDialog
+          request={asking.request}
           open={asking.open}
           onOpenChange={(open) => setAsking({ ...asking, open })}
-          onConfirm={(reason) => transition({ taskId: task.id, action: asking.action, reason })}
+          onConfirm={asking.run}
         />
       )}
     </section>

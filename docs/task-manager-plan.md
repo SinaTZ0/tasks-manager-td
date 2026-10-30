@@ -132,10 +132,13 @@ Built once, in the slice that first needs them, and used by every procedure afte
 - A "show cancelled" switch on the board (`?cancelled=true`), so stopped tasks can be found and reopened.
 - **Tests**: rules 2, 3 and 5.
 
-### 5. Dependencies
+### 5. Dependencies ✓
 
-- "Waits for" links between tasks of a project; the 🔒 mark on the card and the blockers in the drawer.
-- Rule 4: moving a blocked task into doing or done is refused unless forced with a comment.
+- "Waits for" links between tasks of a project; the 🔒 mark on the card and the blockers in the drawer. A task is
+  blocked while a task it waits for is live and not done or cancelled; the board works this out from its own data, so
+  a blocker dragged to done unlocks at once.
+- Rule 4: moving a blocked task into doing or done is refused unless forced with a comment. The board, the menu and
+  the drawer ask for it first; the comment goes in the `comment` table (made here, its thread comes in slice 7).
 - Cycles are refused: a recursive query checks the path before a link is saved.
 - When a blocker is done, the blocked task's owner is notified (with slice 6's notifications; until then, Activity).
 - **Tests**: a cycle is refused; a forced move leaves its comment.

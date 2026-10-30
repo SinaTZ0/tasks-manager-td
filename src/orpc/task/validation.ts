@@ -6,6 +6,7 @@ import {
   ESTIMATE_MAX_MINUTES,
   LABEL_COLORS,
   LABEL_NAME_MAX_LENGTH,
+  COMMENT_MAX_LENGTH,
   STATUS_REASON_MAX_LENGTH,
   TASK_DESCRIPTION_MAX_LENGTH,
   TASK_PRIORITIES,
@@ -86,3 +87,9 @@ export const statusReasonSchema = persianText()
   .max(STATUS_REASON_MAX_LENGTH, { error: () => m.task_error_reason_too_long({ max: STATUS_REASON_MAX_LENGTH }) })
   .optional()
   .transform((reason) => reason || null);
+
+/*===== Forced Move =====*/
+/** Why a blocked task is moved into doing or done anyway (rule 4): written as a comment, so it can't be empty. */
+export const forceCommentSchema = persianText()
+  .min(1, { error: () => m.dependency_error_comment_required() })
+  .max(COMMENT_MAX_LENGTH, { error: () => m.comment_error_too_long({ max: COMMENT_MAX_LENGTH }) });

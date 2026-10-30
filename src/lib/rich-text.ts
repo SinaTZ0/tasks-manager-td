@@ -92,3 +92,16 @@ function plainText(node: ProseMirrorNode): string {
 export function isEmptyRichText(doc: RichTextDoc | null | undefined): boolean {
   return !doc || richTextToPlainText(doc).length === 0;
 }
+
+/*===== Writing =====*/
+
+/** A document holding plain text, one paragraph per line: for text typed in a plain field, like a forced move's reason. */
+export function plainTextToRichText(text: string): RichTextDoc {
+  const lines = text.split("\n").map((line) => line.trim());
+  return {
+    type: "doc",
+    content: lines.map((line) =>
+      line ? { type: "paragraph", content: [{ type: "text", text: line }] } : { type: "paragraph" },
+    ),
+  };
+}

@@ -51,6 +51,16 @@ export function canTakeAction({ action, kind }: { action: TaskStatusAction; kind
 /** Of a pause's or a stop's reason. */
 export const STATUS_REASON_MAX_LENGTH = 500;
 
+/*===== Dependencies =====*/
+/** The column kinds a blocked task can't enter unless the move is forced with a comment (rule 4). */
+export const BLOCKED_ENTRY_KINDS = ["doing", "done"] as const satisfies readonly ColumnKind[];
+
+/** The column kinds where a task stops holding up the tasks waiting for it. */
+export const RELEASED_KINDS = ["done", "cancelled"] as const satisfies readonly ColumnKind[];
+
+/** Of a comment's plain text. */
+export const COMMENT_MAX_LENGTH = 10_000;
+
 /*===== Time =====*/
 /** A manual entry is at most a day's work. */
 export const TIME_ENTRY_MAX_MINUTES = 24 * 60;

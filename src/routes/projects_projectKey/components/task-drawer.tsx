@@ -20,9 +20,11 @@ import {
   PriorityField,
 } from "#/routes/projects_projectKey/components/task-meta-fields";
 import { TaskDescriptionField } from "#/routes/projects_projectKey/components/task-description-field";
+import { TaskDependencies } from "#/routes/projects_projectKey/components/task-dependencies";
 import { TaskStatusPanel } from "#/routes/projects_projectKey/components/task-status-panel";
 import { TaskTimeSection } from "#/routes/projects_projectKey/components/task-time-section";
 import { TaskTitleField } from "#/routes/projects_projectKey/components/task-title-field";
+import { blockersOf, kindsOf } from "#/routes/projects_projectKey/dependencies";
 import { taskQuery } from "#/routes/projects_projectKey/queries";
 import { taskNumberOf } from "#/routes/projects_projectKey/search-params";
 import { useTaskUpdate } from "#/routes/projects_projectKey/use-task-update";
@@ -91,6 +93,10 @@ function TaskDetails({
   const creator = people.get(task.createdBy);
   const canHandOver = viewer.role === "admin" || viewer.id === task.ownerId;
   const archived = task.archivedAt !== null;
+  const kinds = kindsOf(project);
+  const blockers = blockersOf({ task, tasks: new Map(board.tasks.map((item) => [item.id, item])), kinds }).map(
+    (blocker) => taskCode({ key: project.key, number: blocker.number }),
+  );
 
   return (
     <>
@@ -112,11 +118,13 @@ function TaskDetails({
         <div className="grid grid-cols-3 gap-8 px-6 pb-6">
           {/*------ Main ------*/}
           <div className="col-span-2 flex min-w-0 flex-col gap-6">
-            <TaskStatusPanel task={task} project={project} code={code} people={people} />
+            <TaskStatusPanel task={task} project={project} code={code} people={people} blockers={blockers} />
             <TaskTitleField key={task.title} task={task} update={update} />
             <TaskDescriptionField task={task} update={update} />
             <Separator />
             <LabelPicker task={task} update={update} projectId={project.id} labels={board.labels} />
+            <Separator />
+            <TaskDependencies task={task} project={project} board={board} kinds={kinds} />
             <Separator />
             <TaskTimeSection task={task} project={project} people={people} viewerId={viewer.id} />
           </div>

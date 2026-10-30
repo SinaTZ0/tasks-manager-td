@@ -10,10 +10,12 @@ export function toTaskCard({
   record,
   labelIds,
   time = { spentSeconds: 0, runningSince: [] },
+  waitsFor = [],
 }: {
   record: TaskRecord;
   labelIds: string[];
   time?: TimeTotals | undefined;
+  waitsFor?: string[];
 }): TaskCard {
   return {
     id: record.id,
@@ -31,6 +33,7 @@ export function toTaskCard({
     completedAt: record.completedAt,
     spentSeconds: time.spentSeconds,
     runningSince: time.runningSince,
+    waitsFor,
   };
 }
 
@@ -38,15 +41,17 @@ export function toTaskDetail({
   record,
   labelIds,
   time,
+  waitsFor,
   statusNote,
 }: {
   record: TaskRecord;
   labelIds: string[];
   time: TimeTotals | undefined;
+  waitsFor: string[];
   statusNote: TaskDetail["statusNote"];
 }): TaskDetail {
   return {
-    ...toTaskCard({ record, labelIds, time }),
+    ...toTaskCard({ record, labelIds, time, waitsFor }),
     description: (record.description as RichTextDoc | null) ?? null,
     createdBy: record.createdBy,
     createdAt: record.createdAt,

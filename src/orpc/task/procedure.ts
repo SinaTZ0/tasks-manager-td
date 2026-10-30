@@ -66,6 +66,7 @@ export const moveTaskProcedure = base.task.move
   .handler(async ({ context, input, errors }) => {
     const result = await moveTask({ db: context.db, actorId: context.user.id, ...input });
     if (result.kind === "not-found") throw errors.NOT_FOUND({ data: noData });
+    if (result.kind === "blocked") throw errors.BLOCKED({ data: { blockerIds: result.blockerIds } });
     if (result.kind === "invalid") throw errors.INVALID_INPUT({ data: { errors: [], fields: result.fields } });
     return result.task;
   });
@@ -78,6 +79,7 @@ export const transitionTaskProcedure = base.task.transition
   .handler(async ({ context, input, errors }) => {
     const result = await transitionTask({ db: context.db, actorId: context.user.id, ...input });
     if (result.kind === "not-found") throw errors.NOT_FOUND({ data: noData });
+    if (result.kind === "blocked") throw errors.BLOCKED({ data: { blockerIds: result.blockerIds } });
     if (result.kind === "invalid") throw errors.INVALID_INPUT({ data: { errors: [], fields: result.fields } });
     return result.task;
   });

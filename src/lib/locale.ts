@@ -118,3 +118,16 @@ export function formatRelativeDays(days: number): string {
   }
   return format.format(days, "day");
 }
+
+const listFormats = new Map<string, Intl.ListFormat>();
+
+/** Joins a few items as the reader's language lists them: «الف، ب و ج» in Persian, "A, B, and C" in English. */
+export function formatList(items: readonly string[]): string {
+  const locale = getLocale();
+  let format = listFormats.get(locale);
+  if (!format) {
+    format = new Intl.ListFormat(locale, { type: "conjunction" });
+    listFormats.set(locale, format);
+  }
+  return format.format(items);
+}

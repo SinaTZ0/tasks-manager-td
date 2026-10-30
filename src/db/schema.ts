@@ -263,6 +263,58 @@ export const task = pgTable(
   ],
 );
 
+/*===== Dependencies =====*/
+// "This task waits for that one" (docs/app.md → Dependency), between tasks of one project. A task is blocked while any
+// task it waits for is still live and not done or cancelled. The service refuses a link that would close a loop.
+
+export const taskDependency = pgTable(
+  "task_dependency",
+  {
+    /** The task that waits. */
+    taskId: uuid("task_id")
+      .notNull()
+      .references(() => task.id, { onDelete: "cascade" }),
+    /** The task it waits for. */
+    blockerId: uuid("blocker_id")
+      .notNull()
+      .references(() => task.id, { onDelete: "cascade" }),
+    createdBy: text("created_by")
+      .notNull()
+      .references(() => user.id, { onDelete: "restrict" }),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+  },
+  // The primary key serves "what does this task wait for"; the index serves "what waits for this task".
+  (table) => [
+    primaryKey({ columns: [table.taskId, table.blockerId] }),
+    index("task_dependency_blocker_id_idx").on(table.blockerId),
+    check("task_dependency_not_self", sql`${table.taskId} <> ${table.blockerId}`),
+  ],
+);
+
+/*===== Comments =====*/
+// Discussion on a task (docs/app.md → Comment), written in the rich-text editor: Tiptap's JSON, so a mention keeps the
+// user's id, plus a plain-text copy for search and the history. Deleting one only marks it (`deletedAt`): the thread
+// shows "comment deleted" and the history keeps its text. A forced move into doing or done writes its reason as one.
+
+export const comment = pgTable(
+  "comment",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    taskId: uuid("task_id")
+      .notNull()
+      .references(() => task.id, { onDelete: "cascade" }),
+    authorId: text("author_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "restrict" }),
+    body: jsonb("body").notNull(),
+    bodyText: text("body_text").notNull(),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+    editedAt: timestamp("edited_at"),
+    deletedAt: timestamp("deleted_at"),
+  },
+  (table) => [index("comment_task_id_created_at_idx").on(table.taskId, table.createdAt)],
+);
+
 /*===== Time Logs =====*/
 // One stretch of work by one person on one task (docs/app.md → TimeLog); the time spent on a task is the sum of its
 // logs. A timer's log is open (`endedAt` null) while it runs. A manual entry ("worked 2h yesterday") is written closed,

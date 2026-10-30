@@ -41,6 +41,8 @@ export const taskCardSchema = z.object({
   spentSeconds: z.number().int(),
   /** When each of its running timers started (one per person working on it); the card adds them to the total live. */
   runningSince: z.array(z.date()),
+  /** The live tasks it waits for (done ones too): it is blocked while any of them is not done or cancelled. */
+  waitsFor: z.array(z.string()),
 });
 
 export type TaskCard = z.infer<typeof taskCardSchema>;
@@ -97,6 +99,18 @@ const updateTaskInputSchema = taskFieldsSchema.partial().extend({ projectId: z.s
 // `projectAccessErrors` carries NOT_FOUND, which also answers a task or label the project doesn't have.
 const errors = { ...commonErrors, ...authErrors, ...projectAccessErrors };
 
+/**
+ * A move into doing or done refused because the task still waits for others (rule 4). The board asks for a comment and
+ * sends the move again with `forceComment`.
+ */
+const blockedErrors = {
+  ...errors,
+  BLOCKED: { message: "Blocked.", data: z.object({ blockerIds: z.array(z.string()) }) },
+};
+
+/** Why a blocked task is moved into doing or done anyway; written as a comment on it. */
+const forceCommentSchema = z.string().optional();
+
 export const taskContract = {
   board: oc
     .errors(errors)
@@ -109,7 +123,7 @@ export const taskContract = {
   create: oc.errors(errors).input(createTaskInputSchema).output(taskCardSchema),
   update: oc.errors(errors).input(updateTaskInputSchema).output(taskDetailSchema),
   move: oc
-    .errors(errors)
+    .errors(blockedErrors)
     .input(
       z.strictObject({
         projectId: z.string(),
@@ -117,12 +131,13 @@ export const taskContract = {
         columnId: z.string(),
         /** The key the board computed between the card's new neighbours (`src/lib/position.ts`). */
         position: z.string(),
+        forceComment: forceCommentSchema,
       }),
     )
     .output(taskCardSchema),
   /** Start (or resume), pause, finish, stop or reopen: moves the task to that action's column (`STATUS_ACTION_RULES`). */
   transition: oc
-    .errors(errors)
+    .errors(blockedErrors)
     .input(
       z.strictObject({
         projectId: z.string(),
@@ -130,6 +145,7 @@ export const taskContract = {
         action: z.enum(TASK_STATUS_ACTIONS),
         /** Required to stop, optional to pause, ignored otherwise. */
         reason: z.string().optional(),
+        forceComment: forceCommentSchema,
       }),
     )
     .output(taskCardSchema),

@@ -45,15 +45,16 @@ import { columnTitle } from "#/lib/column-title";
 import { cn } from "#/lib/utils";
 import { positionBetween } from "#/lib/position";
 import type { Column, Person, Project } from "#/orpc/project/contract";
-import { taskCode, type TaskStatusAction } from "#/orpc/task/constants";
+import { STATUS_ACTION_RULES, taskCode, type TaskStatusAction } from "#/orpc/task/constants";
 import type { Board as BoardData, Label, TaskCard as TaskCardData } from "#/orpc/task/contract";
 import { m } from "#/paraglide/messages";
 import { BoardColumn } from "#/routes/projects_projectKey/components/board-column";
 import { QuickAdd } from "#/routes/projects_projectKey/components/quick-add";
 import { CardGrip, cardGripId, SortableTaskCard } from "#/routes/projects_projectKey/components/sortable-task-card";
-import { StatusReasonDialog } from "#/routes/projects_projectKey/components/status-reason-dialog";
+import { ReasonDialog, type ReasonRequest } from "#/routes/projects_projectKey/components/reason-dialog";
 import { TaskCard } from "#/routes/projects_projectKey/components/task-card";
 import { restoreTaskMenuFocus, TaskMenu, taskMenuKey } from "#/routes/projects_projectKey/components/task-menu";
+import { blockersOf, entersGuardedColumn, kindsOf } from "#/routes/projects_projectKey/dependencies";
 import { asksReason } from "#/routes/projects_projectKey/task-status";
 import { useColumnMove, useTaskMove, useTaskTransition } from "#/routes/projects_projectKey/use-board-moves";
 
@@ -249,7 +250,9 @@ export const SHOW_CANCELLED_ID = "show-cancelled";
  * The board's columns and cards, and every way of moving them (docs/app.md → Board & Drag): drag a card within its
  * column or to another, by pointer or keyboard; send it to the bottom of another column from its menu; and, for an
  * admin, drag a column by its grip. A move shows at once and is saved behind it (`use-board-moves.ts`). Each card's
- * menu also takes its status actions (start, pause, done, stop, reopen), asking for a reason where one is due.
+ * menu also takes its status actions (start, pause, done, stop, reopen), asking for a reason where one is due. A card
+ * that still waits for others enters doing or done only once the person says why (rule 4); its strip names what it
+ * waits for.
  *
  * The cancelled column is shown only on request (`showCancelled`), after the others and outside the dragging: nothing
  * is dropped into it, since stopping a task has its own action with its reason, and its cards leave it by reopening.
@@ -274,8 +277,14 @@ export function Board({
 }) {
   const moveTask = useTaskMove(project.id);
   const transition = useTaskTransition(project);
-  // Kept after the dialog closes, so it can play its way out showing what it asked.
-  const [asking, setAsking] = useState<{ taskId: string; action: "pause" | "stop"; open: boolean } | null>(null);
+  // Kept after the dialog closes, so it can play its way out showing what it asked. `run` takes the action with the
+  // reason given.
+  const [asking, setAsking] = useState<{
+    taskId: string;
+    request: ReasonRequest;
+    run: (reason: string) => void;
+    open: boolean;
+  } | null>(null);
   const moveColumn = useColumnMove({ projectId: project.id, projectKey });
   const [drag, setDrag] = useState<Drag | null>(null);
   const droppedOrder = drag?.type === "dropped-column" && drag.until === project.columns ? drag.order : null;
@@ -288,6 +297,9 @@ export function Board({
 
   /*------ Lookups ------*/
   const tasks = useMemo(() => new Map(board.tasks.map((task) => [task.id, task])), [board.tasks]);
+  const kinds = useMemo(() => kindsOf(project), [project]);
+  const blockerCodes = (task: TaskCardData) =>
+    blockersOf({ task, tasks, kinds }).map((blocker) => taskCode({ key: project.key, number: blocker.number }));
   const settled = useMemo<Lanes>(
     () =>
       Object.fromEntries(
@@ -444,11 +456,21 @@ export function Board({
     const unchanged = (settled[columnId] ?? []).join() === lane.join();
     if (task.columnId === columnId && unchanged) return;
 
-    setDrag({ type: "dropped-task", lanes: { ...current.lanes, [columnId]: lane }, until: board.tasks });
     const index = lane.indexOf(id);
     const positionOf = (neighbour: string | undefined) =>
       neighbour === undefined ? null : (tasks.get(neighbour)?.position ?? null);
-    moveTask({ taskId: id, columnId, position: keyBetween(positionOf(lane[index - 1]), positionOf(lane[index + 1])) });
+    const position = keyBetween(positionOf(lane[index - 1]), positionOf(lane[index + 1]));
+    // A blocked card goes back to its place until the person says why it goes ahead.
+    if (
+      guard({
+        task,
+        toColumnId: columnId,
+        run: (forceComment) => moveTask({ taskId: id, columnId, position, forceComment }),
+      })
+    )
+      return;
+    setDrag({ type: "dropped-task", lanes: { ...current.lanes, [columnId]: lane }, until: board.tasks });
+    moveTask({ taskId: id, columnId, position });
   };
 
   /*------ Menu Focus ------*/
@@ -462,16 +484,73 @@ export function Board({
     requestAnimationFrame(() => restoreTaskMenuFocus(id));
   }, [board.tasks]);
 
+  /*------ Blocked Moves ------*/
+  /**
+   * Rule 4: a card that still waits for others asks why before it enters doing or done, and `run` moves it with that
+   * reason.
+   *
+   * @returns Whether it asked, in which case the caller doesn't move the card itself.
+   */
+  function guard({
+    task,
+    toColumnId,
+    run,
+  }: {
+    task: TaskCardData;
+    toColumnId: string;
+    run: (forceComment: string) => void;
+  }): boolean {
+    const blockers = blockerCodes(task);
+    if (blockers.length === 0 || !entersGuardedColumn({ from: kinds.get(task.columnId), to: kinds.get(toColumnId) })) {
+      return false;
+    }
+    const code = codeOf(task.id);
+    setAsking({ taskId: task.id, request: { kind: "force", code, blockers }, run, open: true });
+    return true;
+  }
+
   /*------ Move To ------*/
   const moveToEnd = ({ task, columnId }: { task: TaskCardData; columnId: string }) => {
     const last = board.tasks.findLast((item) => item.columnId === columnId && item.id !== task.id);
+    const position = positionBetween(last?.position ?? null, null);
+    if (
+      guard({
+        task,
+        toColumnId: columnId,
+        run: (forceComment) => moveTask({ taskId: task.id, columnId, position, forceComment }),
+      })
+    )
+      return;
     menuFocus.current = task.id;
-    moveTask({ taskId: task.id, columnId, position: positionBetween(last?.position ?? null, null) });
+    moveTask({ taskId: task.id, columnId, position });
   };
 
   /*------ Status ------*/
   const takeAction = ({ task, action }: { task: TaskCardData; action: TaskStatusAction }) => {
-    if (asksReason(action)) return setAsking({ taskId: task.id, action, open: true });
+    const code = codeOf(task.id);
+    if (asksReason(action)) {
+      return setAsking({
+        taskId: task.id,
+        request: { kind: action, code },
+        run: (reason) => {
+          transition({ taskId: task.id, action, reason });
+          // A stopped card leaves the board unless the cancelled column is shown: say where it went.
+          if (action === "stop" && !showCancelled)
+            toast.add({ title: m.task_stopped_hidden({ code }), type: "success" });
+        },
+        open: true,
+      });
+    }
+    const target = project.columns.find((column) => column.kind === STATUS_ACTION_RULES[action].to);
+    if (
+      target &&
+      guard({
+        task,
+        toColumnId: target.id,
+        run: (forceComment) => transition({ taskId: task.id, action, forceComment }),
+      })
+    )
+      return;
     menuFocus.current = task.id;
     transition({ taskId: task.id, action });
   };
@@ -573,6 +652,7 @@ export function Board({
                           projectKey={project.key}
                           labels={labels}
                           people={people}
+                          blockedBy={blockerCodes(task)}
                           menu={
                             <TaskMenu
                               taskId={task.id}
@@ -626,18 +706,11 @@ export function Board({
 
       {/*------ Reason ------*/}
       {asking && (
-        <StatusReasonDialog
-          action={asking.action}
-          code={codeOf(asking.taskId)}
+        <ReasonDialog
+          request={asking.request}
           open={asking.open}
           onOpenChange={(open) => setAsking({ ...asking, open })}
-          onConfirm={(reason) => {
-            transition({ taskId: asking.taskId, action: asking.action, reason });
-            // A stopped card leaves the board unless the cancelled column is shown: say where it went.
-            if (asking.action === "stop" && !showCancelled) {
-              toast.add({ title: m.task_stopped_hidden({ code: codeOf(asking.taskId) }), type: "success" });
-            }
-          }}
+          onConfirm={asking.run}
           finalFocus={() => {
             const key = taskMenuKey(asking.taskId)();
             return key === true ? (document.getElementById(SHOW_CANCELLED_ID) ?? true) : key;
@@ -653,6 +726,7 @@ export function Board({
             projectKey={project.key}
             labels={labels}
             people={people}
+            blockedBy={blockerCodes(dragged)}
             state="overlay"
             grip={<CardGrip code={codeOf(dragged.id)} />}
           />
