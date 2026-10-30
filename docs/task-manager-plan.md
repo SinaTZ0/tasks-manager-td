@@ -236,7 +236,7 @@ follows the backend flow, then the frontend flow; desktop first (the phone layou
   (task, kind, due date) keeps it to once; changing the due date allows a new one.
 - **Tests**: an overdue task notifies once, not on every poll; a done task never does.
 
-### 13. Checklists
+### 13. Checklists ✓
 
 - A checklist inside a card: add an item (Enter adds the next), tick, rename, reorder (drag and keyboard), delete.
   The drawer shows progress (`2/5`) above the list. Users and admins can change it; viewers see it.

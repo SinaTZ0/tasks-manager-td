@@ -25,6 +25,7 @@ import {
 } from "#/routes/projects_projectKey/components/task-meta-fields";
 import { TaskDescriptionField } from "#/routes/projects_projectKey/components/task-description-field";
 import { TaskComments } from "#/routes/projects_projectKey/components/task-comments";
+import { TaskChecklist } from "#/routes/projects_projectKey/components/task-checklist";
 import { TaskDelegation } from "#/routes/projects_projectKey/components/task-delegation";
 import { TaskDependencies } from "#/routes/projects_projectKey/components/task-dependencies";
 import { TaskStatusPanel } from "#/routes/projects_projectKey/components/task-status-panel";
@@ -136,6 +137,8 @@ function TaskDetails({
             />
             <TaskTitleField key={task.title} task={task} update={update} readOnly={readOnly} />
             <TaskDescriptionField task={task} update={update} readOnly={readOnly} />
+            <Separator />
+            <TaskChecklist task={task} projectId={project.id} people={people} readOnly={readOnly} />
             <Separator />
             <LabelPicker task={task} update={update} projectId={project.id} labels={board.labels} readOnly={readOnly} />
             <Separator />

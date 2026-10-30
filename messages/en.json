@@ -1289,5 +1289,153 @@
         "": "{daysText} days late"
       }
     }
+  ],
+  "checklist_title": "Checklist",
+  "checklist_progress": [
+    {
+      "declarations": ["input done", "local doneText = done: number", "input total", "local totalText = total: number"],
+      "match": {
+        "": "{doneText} of {totalText} done"
+      }
+    }
+  ],
+  "checklist_empty": "No items yet.",
+  "checklist_add_label": "Add an item",
+  "checklist_add_placeholder": "Write a step and press Enter",
+  "checklist_rename": [
+    {
+      "declarations": ["input item"],
+      "match": {
+        "": "Rename “{item}”"
+      }
+    }
+  ],
+  "checklist_rename_label": [
+    {
+      "declarations": ["input item"],
+      "match": {
+        "": "Text of “{item}”"
+      }
+    }
+  ],
+  "checklist_remove": [
+    {
+      "declarations": ["input item"],
+      "match": {
+        "": "Remove “{item}”"
+      }
+    }
+  ],
+  "checklist_grip": [
+    {
+      "declarations": ["input item"],
+      "match": {
+        "": "Move “{item}”"
+      }
+    }
+  ],
+  "checklist_done_by": [
+    {
+      "declarations": ["input name", "input date"],
+      "match": {
+        "": "Done by {name}, {date}"
+      }
+    }
+  ],
+  "checklist_save_failed": "The checklist couldn't be saved.",
+  "checklist_error_text_required": "Write the step's text.",
+  "checklist_error_text_too_long": [
+    {
+      "declarations": ["input max", "local maxText = max: number"],
+      "match": {
+        "": "A step can be at most {maxText} characters."
+      }
+    }
+  ],
+  "checklist_error_full": [
+    {
+      "declarations": ["input max", "local maxText = max: number"],
+      "match": {
+        "": "A checklist holds at most {maxText} steps. Split the work into tasks."
+      }
+    }
+  ],
+  "checklist_drag_role": "movable step",
+  "checklist_drag_instructions": "To move a step, press the up or down arrow on its grip, or drag it.",
+  "checklist_picked": [
+    {
+      "declarations": ["input item"],
+      "match": {
+        "": "Picked up “{item}”."
+      }
+    }
+  ],
+  "checklist_dropped": [
+    {
+      "declarations": [
+        "input item",
+        "input position",
+        "local positionText = position: number",
+        "input total",
+        "local totalText = total: number"
+      ],
+      "match": {
+        "": "“{item}” dropped, place {positionText} of {totalText}."
+      }
+    }
+  ],
+  "checklist_returned": [
+    {
+      "declarations": ["input item"],
+      "match": {
+        "": "“{item}” went back to its place."
+      }
+    }
+  ],
+  "activity_checklist_added": [
+    {
+      "declarations": ["input item"],
+      "match": {
+        "": "added “{item}” to the checklist"
+      }
+    }
+  ],
+  "activity_checklist_ticked": [
+    {
+      "declarations": ["input item"],
+      "match": {
+        "": "ticked “{item}”"
+      }
+    }
+  ],
+  "activity_checklist_unticked": [
+    {
+      "declarations": ["input item"],
+      "match": {
+        "": "unticked “{item}”"
+      }
+    }
+  ],
+  "activity_checklist_removed": [
+    {
+      "declarations": ["input item"],
+      "match": {
+        "": "removed “{item}” from the checklist"
+      }
+    }
+  ],
+  "checklist_moved": [
+    {
+      "declarations": [
+        "input item",
+        "input position",
+        "local positionText = position: number",
+        "input total",
+        "local totalText = total: number"
+      ],
+      "match": {
+        "": "“{item}” moved to place {positionText} of {totalText}."
+      }
+    }
   ]
 }

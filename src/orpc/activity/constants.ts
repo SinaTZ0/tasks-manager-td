@@ -44,6 +44,11 @@ export const ACTIVITY_ACTIONS = [
   "comment.added",
   "comment.edited",
   "comment.deleted",
+  /*------ Checklist ------*/
+  "checklist.added",
+  "checklist.ticked",
+  "checklist.unticked",
+  "checklist.removed",
 ] as const;
 
 export type ActivityAction = (typeof ACTIVITY_ACTIONS)[number];

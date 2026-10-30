@@ -1,6 +1,12 @@
 import { projectActivityProcedure, taskActivityProcedure } from "#/orpc/activity/procedure";
 import { createCaptchaChallengeProcedure } from "#/orpc/captcha/procedure";
 import {
+  addChecklistItemProcedure,
+  moveChecklistItemProcedure,
+  removeChecklistItemProcedure,
+  updateChecklistItemProcedure,
+} from "#/orpc/checklist/procedure";
+import {
   addCommentProcedure,
   editCommentProcedure,
   listCommentsProcedure,
@@ -62,6 +68,12 @@ export const router = implementer.router({
   },
   captcha: {
     createChallenge: createCaptchaChallengeProcedure,
+  },
+  checklist: {
+    add: addChecklistItemProcedure,
+    update: updateChecklistItemProcedure,
+    move: moveChecklistItemProcedure,
+    remove: removeChecklistItemProcedure,
   },
   comment: {
     list: listCommentsProcedure,

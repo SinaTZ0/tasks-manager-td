@@ -2,6 +2,7 @@ import { oc } from "@orpc/contract";
 import { z } from "zod";
 
 import type { RichTextDoc } from "#/lib/rich-text";
+import { checklistItemSchema } from "#/orpc/checklist/contract";
 import { handoffSchema } from "#/orpc/delegation/contract";
 import { commonErrors } from "#/orpc/errors";
 import { authErrors, roleErrors } from "#/orpc/middleware/auth/auth.errors";
@@ -67,6 +68,8 @@ export const taskDetailSchema = taskCardSchema.extend({
     .nullable(),
   /** Its hand-offs, oldest first: the chain from one assignee to the next (Sina → Ali → Reza). */
   handoffs: z.array(handoffSchema),
+  /** Its checklist, in order. */
+  checklist: z.array(checklistItemSchema),
 });
 
 export type TaskDetail = z.infer<typeof taskDetailSchema>;

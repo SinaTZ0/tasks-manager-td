@@ -1,5 +1,6 @@
 import { activityContract } from "#/orpc/activity/contract";
 import { captchaContract } from "#/orpc/captcha/contract";
+import { checklistContract } from "#/orpc/checklist/contract";
 import { commentContract } from "#/orpc/comment/contract";
 import { delegationContract } from "#/orpc/delegation/contract";
 import { dependencyContract } from "#/orpc/dependency/contract";
@@ -20,6 +21,7 @@ import { timeContract } from "#/orpc/time/contract";
 export const contract = {
   activity: activityContract,
   captcha: captchaContract,
+  checklist: checklistContract,
   comment: commentContract,
   delegation: delegationContract,
   dependency: dependencyContract,

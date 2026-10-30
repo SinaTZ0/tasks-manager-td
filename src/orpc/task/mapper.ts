@@ -55,6 +55,7 @@ export function toTaskDetail({
   waitsFor,
   statusNote,
   handoffs,
+  checklist,
 }: {
   record: TaskRecord;
   labelIds: string[];
@@ -62,6 +63,7 @@ export function toTaskDetail({
   waitsFor: string[];
   statusNote: TaskDetail["statusNote"];
   handoffs: TaskDetail["handoffs"];
+  checklist: TaskDetail["checklist"];
 }): TaskDetail {
   return {
     ...toTaskCard({ record, labelIds, time, waitsFor }),
@@ -72,6 +74,7 @@ export function toTaskDetail({
     archivedAt: record.archivedAt,
     statusNote,
     handoffs,
+    checklist,
   };
 }
 

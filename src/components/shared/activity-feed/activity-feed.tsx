@@ -275,6 +275,16 @@ function describe({ item, people }: { item: ActivityItem; people: Map<string, Pe
       return { clauses: [m.activity_comment_edited()] };
     case "comment.deleted":
       return { clauses: [m.activity_comment_deleted()] };
+
+    /*------ Checklist ------*/
+    case "checklist.added":
+      return { clauses: [m.activity_checklist_added({ item: isolate(textOf(after, "text") ?? "?") })] };
+    case "checklist.ticked":
+      return { clauses: [m.activity_checklist_ticked({ item: isolate(textOf(after, "text") ?? "?") })] };
+    case "checklist.unticked":
+      return { clauses: [m.activity_checklist_unticked({ item: isolate(textOf(after, "text") ?? "?") })] };
+    case "checklist.removed":
+      return { clauses: [m.activity_checklist_removed({ item: isolate(textOf(before, "text") ?? "?") })] };
   }
 }
 

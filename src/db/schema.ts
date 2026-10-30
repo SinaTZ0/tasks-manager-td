@@ -322,6 +322,31 @@ export const comment = pgTable(
   (table) => [index("comment_task_id_created_at_idx").on(table.taskId, table.createdAt)],
 );
 
+/*===== Checklists =====*/
+// The small steps inside a card (docs/task-manager-plan.md → slice 13), ticked off one by one. Sub-tasks are left
+// out: at a five-person team's size a checklist covers them. Goes with its task.
+
+export const checklistItem = pgTable(
+  "checklist_item",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    taskId: uuid("task_id")
+      .notNull()
+      .references(() => task.id, { onDelete: "cascade" }),
+    text: text("text").notNull(),
+    /** Order within the task's list. */
+    position: positionKey("position").notNull(),
+    /** Who ticked it and when; both null while it is open. */
+    doneAt: timestamp("done_at"),
+    doneBy: text("done_by").references(() => user.id, { onDelete: "restrict" }),
+    createdBy: text("created_by")
+      .notNull()
+      .references(() => user.id, { onDelete: "restrict" }),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+  },
+  (table) => [index("checklist_item_task_id_position_idx").on(table.taskId, table.position)],
+);
+
 /*===== Delegations =====*/
 // "You do this now" (docs/app.md → Delegation): a task handed from one person to another, with a note. The assignee
 // changes; the owner never does (rule 6). A task's delegations in order are its hand-off chain (Sina → Ali → Reza).

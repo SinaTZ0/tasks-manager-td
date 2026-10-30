@@ -1289,5 +1289,153 @@
         "": "{daysText} روز دیر"
       }
     }
+  ],
+  "checklist_title": "چک‌لیست",
+  "checklist_progress": [
+    {
+      "declarations": ["input done", "local doneText = done: number", "input total", "local totalText = total: number"],
+      "match": {
+        "": "{doneText} از {totalText} انجام شده"
+      }
+    }
+  ],
+  "checklist_empty": "هنوز موردی ندارد.",
+  "checklist_add_label": "افزودن مورد",
+  "checklist_add_placeholder": "یک قدم بنویسید و Enter بزنید",
+  "checklist_rename": [
+    {
+      "declarations": ["input item"],
+      "match": {
+        "": "تغییر متن «{item}»"
+      }
+    }
+  ],
+  "checklist_rename_label": [
+    {
+      "declarations": ["input item"],
+      "match": {
+        "": "متن «{item}»"
+      }
+    }
+  ],
+  "checklist_remove": [
+    {
+      "declarations": ["input item"],
+      "match": {
+        "": "حذف «{item}»"
+      }
+    }
+  ],
+  "checklist_grip": [
+    {
+      "declarations": ["input item"],
+      "match": {
+        "": "جابه‌جایی «{item}»"
+      }
+    }
+  ],
+  "checklist_done_by": [
+    {
+      "declarations": ["input name", "input date"],
+      "match": {
+        "": "انجام‌شده به دست {name}، {date}"
+      }
+    }
+  ],
+  "checklist_save_failed": "چک‌لیست ذخیره نشد.",
+  "checklist_error_text_required": "متن قدم خالی است. آن را بنویسید.",
+  "checklist_error_text_too_long": [
+    {
+      "declarations": ["input max", "local maxText = max: number"],
+      "match": {
+        "": "هر قدم حداکثر {maxText} حرف است."
+      }
+    }
+  ],
+  "checklist_error_full": [
+    {
+      "declarations": ["input max", "local maxText = max: number"],
+      "match": {
+        "": "چک‌لیست حداکثر {maxText} قدم دارد. کار را به چند کار بشکنید."
+      }
+    }
+  ],
+  "checklist_drag_role": "قدم جابه‌جاشدنی",
+  "checklist_drag_instructions": "برای جابه‌جایی یک قدم، روی دستگیره‌اش کلید جهت بالا یا پایین را بزنید، یا آن را بکشید.",
+  "checklist_picked": [
+    {
+      "declarations": ["input item"],
+      "match": {
+        "": "«{item}» برداشته شد."
+      }
+    }
+  ],
+  "checklist_dropped": [
+    {
+      "declarations": [
+        "input item",
+        "input position",
+        "local positionText = position: number",
+        "input total",
+        "local totalText = total: number"
+      ],
+      "match": {
+        "": "«{item}» رها شد، جایگاه {positionText} از {totalText}."
+      }
+    }
+  ],
+  "checklist_returned": [
+    {
+      "declarations": ["input item"],
+      "match": {
+        "": "«{item}» سر جایش برگشت."
+      }
+    }
+  ],
+  "activity_checklist_added": [
+    {
+      "declarations": ["input item"],
+      "match": {
+        "": "«{item}» را به چک‌لیست افزود"
+      }
+    }
+  ],
+  "activity_checklist_ticked": [
+    {
+      "declarations": ["input item"],
+      "match": {
+        "": "«{item}» را انجام‌شده زد"
+      }
+    }
+  ],
+  "activity_checklist_unticked": [
+    {
+      "declarations": ["input item"],
+      "match": {
+        "": "تیک «{item}» را برداشت"
+      }
+    }
+  ],
+  "activity_checklist_removed": [
+    {
+      "declarations": ["input item"],
+      "match": {
+        "": "«{item}» را از چک‌لیست حذف کرد"
+      }
+    }
+  ],
+  "checklist_moved": [
+    {
+      "declarations": [
+        "input item",
+        "input position",
+        "local positionText = position: number",
+        "input total",
+        "local totalText = total: number"
+      ],
+      "match": {
+        "": "«{item}» به جایگاه {positionText} از {totalText} رفت."
+      }
+    }
   ]
 }

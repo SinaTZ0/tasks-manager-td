@@ -7,6 +7,8 @@ import { issuesToErrorData } from "#/lib/schema-issues";
 import type { ActivityAction } from "#/orpc/activity/constants";
 import { findTaskActivities } from "#/orpc/activity/repository";
 import { recordActivity } from "#/orpc/activity/service";
+import { toChecklistItem } from "#/orpc/checklist/mapper";
+import { findChecklistItems } from "#/orpc/checklist/repository";
 import { addPlainComment } from "#/orpc/comment/service";
 import { getHandoffs } from "#/orpc/delegation/service";
 import { findBlockingTasks, findReleasedDependents, findWaitsFor } from "#/orpc/dependency/repository";
@@ -126,6 +128,7 @@ async function toDetail({
   const column = await findColumn({ db, projectId, columnId: record.columnId });
   const entries = await findTaskActivities({ db, taskId: record.id, actions: COLUMN_ENTRIES });
   const handoffs = await getHandoffs({ db, taskId: record.id });
+  const checklist = await findChecklistItems({ db, taskIds: [record.id] });
   const last = entries.at(-1);
   const noted =
     (column?.kind === "paused" && last?.action === "task.paused") ||
@@ -146,6 +149,7 @@ async function toDetail({
     waitsFor: waitsFor.get(record.id) ?? [],
     statusNote,
     handoffs,
+    checklist: checklist.map(toChecklistItem),
   });
 }
 
