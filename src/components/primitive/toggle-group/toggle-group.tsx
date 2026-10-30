@@ -5,6 +5,7 @@ import { createContext, useContext, type CSSProperties } from "react";
 import { cn } from "#/lib/utils";
 
 import { Led, type LedProps } from "../led/led";
+import { renderWithLed } from "../toggle/toggle";
 import { toggleVariants } from "../toggle/toggle.styles";
 import { toggleGroupClasses, toggleGroupItemClasses } from "./toggle-group.styles";
 
@@ -84,6 +85,7 @@ function ToggleGroupItem({
   variant = "default",
   size = "default",
   signal,
+  render,
   ...props
 }: ToggleGroupItemProps) {
   const context = useContext(ToggleGroupContext);
@@ -100,13 +102,13 @@ function ToggleGroupItem({
       data-spacing={context.spacing}
       {...props}
       className={typeof className === "function" ? (state) => cn(classes, className(state)) : cn(classes, className)}
-      render={(renderProps, state) => (
-        <button type="button" {...renderProps}>
-          <Led signal={signal ?? context.signal} state={state.pressed ? "on" : "off"} size="sm" />
-          {children}
-        </button>
-      )}
-    />
+      render={renderWithLed({
+        render,
+        led: (pressed) => <Led signal={signal ?? context.signal} state={pressed ? "on" : "off"} size="sm" />,
+      })}
+    >
+      {children}
+    </TogglePrimitive>
   );
 }
 
