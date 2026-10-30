@@ -28,8 +28,8 @@ steps below were applied to it. The languages stay Persian and English.
 - [x] 7. Sign-in and notes pages restyled; favicon (`public/favicon.svg`, `.ico` and the touch icon); `site_name` is
       set. No preview image: every page is private, and `pageMeta` gives private pages no link preview, so
       `siteImage()` stays `null` until a public page exists.
-- [ ] 8. The full check (both themes, both directions, phone width, keyboard, reduced motion, lint, typecheck,
-      build).
+- [x] 8. The full check: both themes, both directions, phone width, keyboard focus on every header key and the
+      board, reduced motion, lint, typecheck, build.
 
 ## Input
 

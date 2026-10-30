@@ -32,8 +32,12 @@ const NAV_ITEMS = [
 ] as const;
 
 // Each link is a light key; the keys share one slot, so they drop their own cut. The current page's key stays sunk
-// (`aria-current="page"` latches it) and its LED lights blue, the selection signal.
-const navKeyClasses = cn(buttonVariants({ variant: "secondary", size: "sm" }), "gap-2 before:hidden");
+// (`aria-current="page"` latches it) and its LED lights blue, the selection signal. The focus ring is drawn inside the
+// face, like a tab's: outside it would land on the slot's black gap and vanish.
+const navKeyClasses = cn(
+  buttonVariants({ variant: "secondary", size: "sm" }),
+  "gap-2 before:hidden focus-visible:-outline-offset-4 focus-visible:outline-foreground",
+);
 
 /*===== Account =====*/
 
