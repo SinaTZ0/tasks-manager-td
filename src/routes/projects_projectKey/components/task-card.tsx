@@ -2,8 +2,11 @@ import { Link } from "@tanstack/react-router";
 import { AlignStartVerticalIcon } from "lucide-react";
 import type { PointerEventHandler, ReactNode } from "react";
 
+import { Led } from "#/components/primitive/led/led";
 import { Marking } from "#/components/primitive/marking/marking";
 import { PersonAvatar } from "#/components/shared/person-avatar/person-avatar";
+import { useNow } from "#/hooks/use-now";
+import { formatDuration, liveSeconds } from "#/lib/duration";
 import { formatDate, isoToDate } from "#/lib/locale";
 import { cn } from "#/lib/utils";
 import type { Person } from "#/orpc/project/contract";
@@ -13,13 +16,43 @@ import { m } from "#/paraglide/messages";
 import { LabelTag } from "#/routes/projects_projectKey/components/label-tag";
 import { PriorityMark } from "#/routes/projects_projectKey/components/priority-mark";
 
+/*===== Time Spent =====*/
+
+/** The card's time spent as `h:mm`, the sum of its logs. Nothing until some time is logged. */
+function SpentReadout({ task }: { task: TaskCardData }) {
+  if (task.runningSince.length > 0) return <RunningReadout task={task} />;
+  if (task.spentSeconds < 60) return null;
+  return <SpentMarking seconds={task.spentSeconds} />;
+}
+
+/** While a timer runs: a blinking green LED and the total, ticking. */
+function RunningReadout({ task }: { task: TaskCardData }) {
+  const now = useNow();
+  return (
+    <span className="flex items-center gap-1.5">
+      <Led signal="positive" state="blink" size="sm" label={m.task_run_running()} />
+      <SpentMarking seconds={liveSeconds({ ...task, now })} />
+    </span>
+  );
+}
+
+function SpentMarking({ seconds }: { seconds: number }) {
+  return (
+    <Marking variant="code">
+      <span className="sr-only">{m.time_spent_label()}: </span>
+      {formatDuration(Math.floor(seconds / 60))}
+    </Marking>
+  );
+}
+
 /*===== Task Card =====*/
 
 /**
  * A card on the board, as a small housing module (the approved design, docs/frontend/reference/…/task-card.tsx): the
  * code and priority on a printed strip, the title and labels on the face, people and dates on the footer. The title is
  * the link that opens the card's drawer; its hit area covers the whole card. The owner's cap shows beside the
- * assignee's only when they differ, since delegation never changes the owner.
+ * assignee's only when they differ, since delegation never changes the owner. The time spent prints on the footer once
+ * there is some, beside a blinking LED while someone's timer runs on it.
  *
  * On the board the card is also something to pick up (`SortableTaskCard` passes the drag props): `grip` and `menu` sit
  * on the header strip, above the stretched link. `state` dims the card left behind while
@@ -105,6 +138,7 @@ export function TaskCard({
           {assignee ? <PersonAvatar name={assignee.name} /> : <Marking>{m.task_unassigned()}</Marking>}
         </span>
         <span className="flex items-center gap-3">
+          <SpentReadout task={task} />
           {task.hasDescription && (
             <AlignStartVerticalIcon aria-label={m.task_has_description()} className="size-3.5 text-muted-foreground" />
           )}

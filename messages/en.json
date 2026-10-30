@@ -507,5 +507,162 @@
   "board_layout_scroll": "One row, scrolling",
   "board_layout_fit": "One row, fit to the window",
   "board_layout_wrap": "Several rows",
-  "board_layout_per_row": "Columns per row"
+  "board_layout_per_row": "Columns per row",
+  "task_error_action_unavailable": "This task can't do that from where it is now. Refresh the board and try again.",
+  "task_error_reason_required": "Write why the task is stopped.",
+  "task_error_reason_too_long": [
+    {
+      "declarations": ["input max", "local maxText = max: number"],
+      "match": {
+        "": "Keep the reason under {maxText} characters."
+      }
+    }
+  ],
+  "time_error_date_invalid": "Pick the day you worked.",
+  "time_error_date_future": "The day can't be in the future.",
+  "time_error_minutes_invalid": [
+    {
+      "declarations": ["input max", "local maxText = max: number"],
+      "match": {
+        "": "Enter a time between 1 minute and {maxText} hours, like 1:30 or 45m."
+      }
+    }
+  ],
+  "time_error_note_too_long": [
+    {
+      "declarations": ["input max", "local maxText = max: number"],
+      "match": {
+        "": "Keep the note under {maxText} characters."
+      }
+    }
+  ],
+  "task_status": "Status",
+  "task_action_start": "Start",
+  "task_action_resume": "Resume",
+  "task_action_pause": "Pause",
+  "task_action_done": "Mark done",
+  "task_action_stop": "Stop",
+  "task_action_reopen": "Reopen",
+  "task_status_failed": "The task's status couldn't be changed.",
+  "task_run_running": "Running",
+  "task_run_paused": "Paused",
+  "task_run_done": "Done",
+  "task_run_stopped": "Stopped",
+  "task_run_idle": "Not running",
+  "task_pause_title": [
+    {
+      "declarations": ["input code"],
+      "match": {
+        "": "Pause {code}"
+      }
+    }
+  ],
+  "task_pause_description": "The task moves to the paused column and every timer on it stops.",
+  "task_stop_title": [
+    {
+      "declarations": ["input code"],
+      "match": {
+        "": "Stop {code}"
+      }
+    }
+  ],
+  "task_stop_description": "A stopped task moves to the cancelled column. It can be reopened later.",
+  "task_reason_label": "Why is it stopped?",
+  "task_reason_optional_label": "Why pause? (optional)",
+  "task_reason_hint": "Saved in the task's history.",
+  "task_paused_by": [
+    {
+      "declarations": ["input name", "input date"],
+      "match": {
+        "": "Paused by {name}, {date}"
+      }
+    }
+  ],
+  "task_stopped_by": [
+    {
+      "declarations": ["input name", "input date"],
+      "match": {
+        "": "Stopped by {name}, {date}"
+      }
+    }
+  ],
+  "task_estimate_meter": "Spent against estimate",
+  "task_estimate_meter_value": [
+    {
+      "declarations": [
+        "input spent",
+        "local spentText = spent: number",
+        "input estimate",
+        "local estimateText = estimate: number"
+      ],
+      "match": {
+        "": "{spentText} of {estimateText} minutes"
+      }
+    }
+  ],
+  "board_show_cancelled": "Show cancelled",
+  "time_spent_label": "Time spent",
+  "time_title": "Time",
+  "time_age": "Age",
+  "time_age_done": "Created to done",
+  "time_in_column": [
+    {
+      "declarations": ["input column"],
+      "match": {
+        "": "In {column}"
+      }
+    }
+  ],
+  "time_span_days": [
+    {
+      "declarations": ["input days", "local daysText = days: number", "input hours", "local hoursText = hours: number"],
+      "match": {
+        "": "{daysText}d {hoursText}h"
+      }
+    }
+  ],
+  "time_logs": "Logged time",
+  "time_logs_empty": "No time logged yet.",
+  "time_log_manual": [
+    {
+      "declarations": ["input date"],
+      "match": {
+        "": "{date}, typed in"
+      }
+    }
+  ],
+  "time_remove": [
+    {
+      "declarations": ["input date"],
+      "match": {
+        "": "Remove the entry of {date}"
+      }
+    }
+  ],
+  "time_remove_failed": "The entry couldn't be removed.",
+  "time_add_title": "Log time worked",
+  "time_add_date": "Day",
+  "time_add_duration": "Time worked",
+  "time_add_note": "Note (optional)",
+  "time_add_submit": "Add",
+  "time_add_failed": "The time couldn't be logged.",
+  "timer_running_on": "Your timer is running on",
+  "timer_stop": [
+    {
+      "declarations": ["input code"],
+      "match": {
+        "": "Stop your timer on {code}"
+      }
+    }
+  ],
+  "timer_stop_mine": "Stop my timer",
+  "timer_stop_failed": "The timer couldn't be stopped.",
+  "task_stopped_hidden": [
+    {
+      "declarations": ["input code"],
+      "match": {
+        "": "{code} is stopped. It's in the cancelled column: switch on \"Show cancelled\" to see it."
+      }
+    }
+  ]
 }

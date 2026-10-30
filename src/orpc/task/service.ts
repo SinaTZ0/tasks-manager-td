@@ -4,9 +4,12 @@ import { z } from "zod";
 import type { Database } from "#/db/client.server";
 import { isPositionKey, resolvePosition } from "#/lib/position";
 import { issuesToErrorData } from "#/lib/schema-issues";
+import type { ActivityAction } from "#/orpc/activity/constants";
+import { findTaskActivities } from "#/orpc/activity/repository";
 import { recordActivity } from "#/orpc/activity/service";
+import type { ColumnKind } from "#/orpc/project/constants";
 import { toPerson } from "#/orpc/project/mapper";
-import { taskCode } from "#/orpc/task/constants";
+import { canTakeAction, STATUS_ACTION_RULES, taskCode, type TaskStatusAction } from "#/orpc/task/constants";
 import type { Board, Label, TaskCard, TaskDetail } from "#/orpc/task/contract";
 import { toLabel, toTaskCard, toTaskDetail } from "#/orpc/task/mapper";
 import {
@@ -31,7 +34,15 @@ import {
   type ColumnRow,
   type TaskRecord,
 } from "#/orpc/task/repository";
-import { newLabelSchema, newTaskSchema, taskChangeSchema, type TaskChange } from "#/orpc/task/validation";
+import {
+  newLabelSchema,
+  newTaskSchema,
+  statusReasonSchema,
+  taskChangeSchema,
+  type TaskChange,
+} from "#/orpc/task/validation";
+import { findTimeTotals } from "#/orpc/time/repository";
+import { closeTimers, startTimer } from "#/orpc/time/service";
 import { m } from "#/paraglide/messages";
 
 /*===== Types =====*/
@@ -44,18 +55,105 @@ export type TaskActor = { id: string; role?: string | null | undefined };
 /** A malformed UUID would make Postgres throw; it is treated like any unknown ID. */
 const isUuid = (value: string) => z.guid().safeParse(value).success;
 
+/*===== Cards =====*/
+/** Task rows as cards, with their labels and time. */
+async function toCards({ db, records }: { db: Database; records: TaskRecord[] }): Promise<TaskCard[]> {
+  // One after the other: inside a transaction both would share one connection, which runs one query at a time.
+  const taskIds = records.map((record) => record.id);
+  const labelIds = await findLabelIdsByTask({ db, taskIds });
+  const totals = await findTimeTotals({ db, taskIds });
+  return records.map((record) =>
+    toTaskCard({ record, labelIds: labelIds.get(record.id) ?? [], time: totals.get(record.id) }),
+  );
+}
+
+async function toCard({ db, record }: { db: Database; record: TaskRecord }): Promise<TaskCard> {
+  const [card] = await toCards({ db, records: [record] });
+  if (!card) throw new Error("toCard: no card for the record");
+  return card;
+}
+
+/** The history entries that put a task in a column; the last one says how it got where it is. */
+const COLUMN_ENTRIES: readonly ActivityAction[] = [
+  "task.moved",
+  "task.started",
+  "task.paused",
+  "task.completed",
+  "task.stopped",
+  "task.reopened",
+];
+
+/**
+ * A task row as its drawer shows it. A task paused or stopped by its action carries that action's reason; one dragged
+ * into the paused column has none.
+ */
+async function toDetail({
+  db,
+  projectId,
+  record,
+}: {
+  db: Database;
+  projectId: string;
+  record: TaskRecord;
+}): Promise<TaskDetail> {
+  const labelIds = await findLabelIdsByTask({ db, taskIds: [record.id] });
+  const totals = await findTimeTotals({ db, taskIds: [record.id] });
+  const column = await findColumn({ db, projectId, columnId: record.columnId });
+  const entries = await findTaskActivities({ db, taskId: record.id, actions: COLUMN_ENTRIES });
+  const last = entries.at(-1);
+  const noted =
+    (column?.kind === "paused" && last?.action === "task.paused") ||
+    (column?.kind === "cancelled" && last?.action === "task.stopped");
+  const statusNote =
+    noted && last
+      ? {
+          action: last.action === "task.paused" ? ("pause" as const) : ("stop" as const),
+          reason: ((last.after ?? {}) as { reason?: string | null }).reason ?? null,
+          actorId: last.actorId,
+          at: last.createdAt,
+        }
+      : null;
+  return toTaskDetail({ record, labelIds: labelIds.get(record.id) ?? [], time: totals.get(record.id), statusNote });
+}
+
+/*===== Column Effects =====*/
+/**
+ * What a task's change of column kind does besides moving it: leaving doing stops every timer on it (rule 3), entering
+ * done records when it finished, leaving done clears that. Runs in the move's transaction.
+ *
+ * @returns The task fields to write with the move.
+ */
+async function columnEffects({
+  db,
+  actorId,
+  taskId,
+  from,
+  to,
+}: {
+  db: Database;
+  actorId: string;
+  taskId: string;
+  from: string | undefined;
+  to: ColumnKind;
+}): Promise<Partial<TaskRecord>> {
+  if (from === to) return {};
+  if (from === "doing") await closeTimers({ db, actorId, scope: { taskId }, cause: "left-doing" });
+  if (to === "done") return { completedAt: new Date() };
+  if (from === "done") return { completedAt: null };
+  return {};
+}
+
 /*===== Board =====*/
-/** A project's live tasks with their labels, the project's labels, and everyone the cards name. */
+/** A project's live tasks with their labels and time, the project's labels, and everyone the cards name. */
 export async function getBoard({ db, projectId }: { db: Database; projectId: string }): Promise<Board> {
   const [records, labels] = await Promise.all([findLiveTasks({ db, projectId }), findLabels({ db, projectId })]);
-  const labelIds = await findLabelIdsByTask({ db, taskIds: records.map((record) => record.id) });
   const personIds = new Set(
     records.flatMap((record) => [record.ownerId, record.createdBy, ...(record.assigneeId ? [record.assigneeId] : [])]),
   );
   const people = await findPeople({ db, ids: [...personIds] });
 
   return {
-    tasks: records.map((record) => toTaskCard({ record, labelIds: labelIds.get(record.id) ?? [] })),
+    tasks: await toCards({ db, records }),
     labels: labels.map(toLabel),
     people: people.map(toPerson),
   };
@@ -74,8 +172,7 @@ export async function getTask({
 }): Promise<TaskDetail | null> {
   const record = await findTaskByNumber({ db, projectId, number });
   if (!record) return null;
-  const labelIds = await findLabelIdsByTask({ db, taskIds: [record.id] });
-  return toTaskDetail({ record, labelIds: labelIds.get(record.id) ?? [] });
+  return toDetail({ db, projectId, record });
 }
 
 /*===== References =====*/
@@ -280,7 +377,7 @@ export async function updateTask({
     }
 
     if (Object.keys(after).length === 0) {
-      return { kind: "success", task: toTaskDetail({ record: current, labelIds }) };
+      return { kind: "success", task: await toDetail({ db: tx, projectId, record: current }) };
     }
 
     // Labels live in their own table; the row is still touched so `updatedAt` says when the task last changed.
@@ -291,7 +388,7 @@ export async function updateTask({
       actorId: actor.id,
       entries: [{ action: "task.updated", projectId, taskId, before, after, snapshot: { code, title: record.title } }],
     });
-    return { kind: "success", task: toTaskDetail({ record, labelIds: nextLabelIds }) };
+    return { kind: "success", task: await toDetail({ db: tx, projectId, record }) };
   });
 }
 
@@ -336,15 +433,19 @@ export async function moveTask({
 
     const taken = await findColumnPositions({ db: tx, columnId, exceptId: taskId });
     const finalPosition = resolvePosition({ wanted: position, taken });
-    const labelIds = (await findLabelIdsByTask({ db: tx, taskIds: [taskId] })).get(taskId) ?? [];
     if (current.columnId === columnId && current.position === finalPosition) {
-      return { kind: "success", task: toTaskCard({ record: current, labelIds }) };
+      return { kind: "success", task: await toCard({ db: tx, record: current }) };
     }
 
-    const record = await updateTaskRow({ db: tx, id: taskId, values: { columnId, position: finalPosition } });
-    const code = taskCode({ key: await findProjectKey({ db: tx, projectId }), number: current.number });
     const from =
       current.columnId === columnId ? column : await findColumn({ db: tx, projectId, columnId: current.columnId });
+    const effects = await columnEffects({ db: tx, actorId, taskId, from: from?.kind, to: column.kind as ColumnKind });
+    const record = await updateTaskRow({
+      db: tx,
+      id: taskId,
+      values: { columnId, position: finalPosition, ...effects },
+    });
+    const code = taskCode({ key: await findProjectKey({ db: tx, projectId }), number: current.number });
     await recordActivity({
       db: tx,
       actorId,
@@ -359,7 +460,88 @@ export async function moveTask({
         },
       ],
     });
-    return { kind: "success", task: toTaskCard({ record, labelIds }) };
+    return { kind: "success", task: await toCard({ db: tx, record }) };
+  });
+}
+
+/*===== Status =====*/
+type TransitionResult = { kind: "success"; task: TaskCard } | NotFound | Invalid;
+
+const STATUS_ENTRY = {
+  start: "task.started",
+  pause: "task.paused",
+  done: "task.completed",
+  stop: "task.stopped",
+  reopen: "task.reopened",
+} as const satisfies Record<TaskStatusAction, ActivityAction>;
+
+/**
+ * Takes a status action (docs/app.md → Status / Pause / Stop): moves the task to the bottom of the action's column,
+ * with what that move does to its timers and finish time (`columnEffects`), and for start (or resume) starts the
+ * actor's timer on it, stopping any other they had running (rule 2). Stopping needs a reason; a pause may have one
+ * (rule 5). Starting a task already in doing only starts the actor's timer.
+ *
+ * @returns `invalid` for a missing or too long reason, or an action the task's column doesn't allow (someone moved it
+ * meanwhile); `not-found` for a task the project doesn't have or one that is archived.
+ */
+export async function transitionTask({
+  db,
+  actorId,
+  projectId,
+  taskId,
+  action,
+  reason: rawReason,
+}: {
+  db: Database;
+  actorId: string;
+  projectId: string;
+  taskId: string;
+  action: TaskStatusAction;
+  reason?: string | undefined;
+}): Promise<TransitionResult> {
+  const parsedReason = statusReasonSchema.safeParse(rawReason);
+  if (!parsedReason.success) return { kind: "invalid", fields: issuesToErrorData(parsedReason.error.issues).fields };
+  const reason = action === "pause" || action === "stop" ? parsedReason.data : null;
+  if (action === "stop" && !reason) return { kind: "invalid", fields: { reason: m.task_error_reason_required() } };
+  if (!isUuid(taskId)) return { kind: "not-found" };
+
+  return db.transaction(async (tx): Promise<TransitionResult> => {
+    const current = await lockTask({ db: tx, projectId, id: taskId });
+    if (!current || current.archivedAt) return { kind: "not-found" };
+    const from = await findColumn({ db: tx, projectId, columnId: current.columnId });
+    if (!from || !canTakeAction({ action, kind: from.kind as ColumnKind })) {
+      return { kind: "invalid", fields: { action: m.task_error_action_unavailable() } };
+    }
+
+    /*------ Move ------*/
+    const to = await findColumnByKind({ db: tx, projectId, kind: STATUS_ACTION_RULES[action].to });
+    let record = current;
+    if (to.id !== from.id) {
+      const effects = await columnEffects({ db: tx, actorId, taskId, from: from.kind, to: to.kind as ColumnKind });
+      const position = generateKeyBetween(await findLastPosition({ db: tx, columnId: to.id }), null);
+      record = await updateTaskRow({ db: tx, id: taskId, values: { columnId: to.id, position, ...effects } });
+      await recordActivity({
+        db: tx,
+        actorId,
+        entries: [
+          {
+            action: STATUS_ENTRY[action],
+            projectId,
+            taskId,
+            before: { columnId: from.id, columnKind: from.kind, columnName: from.name },
+            after: { columnId: to.id, columnKind: to.kind, columnName: to.name, ...(reason ? { reason } : {}) },
+            snapshot: {
+              code: taskCode({ key: await findProjectKey({ db: tx, projectId }), number: current.number }),
+              title: current.title,
+            },
+          },
+        ],
+      });
+    }
+
+    /*------ Timer ------*/
+    if (action === "start") await startTimer({ db: tx, actorId, task: record });
+    return { kind: "success", task: await toCard({ db: tx, record }) };
   });
 }
 
@@ -383,6 +565,7 @@ export async function archiveTask({
     if (!current) return { kind: "not-found" };
     if (current.archivedAt) return { kind: "ok" };
 
+    await closeTimers({ db: tx, actorId, scope: { taskId }, cause: "archived" });
     await updateTaskRow({ db: tx, id: taskId, values: { archivedAt: new Date() } });
     const code = taskCode({ key: await findProjectKey({ db: tx, projectId }), number: current.number });
     await recordActivity({

@@ -3,6 +3,7 @@ import { createFileRoute, Outlet } from "@tanstack/react-router";
 import { useEffect } from "react";
 
 import { SiteFooter } from "#/components/shared/site-footer/site-footer";
+import { RunningTimer } from "#/components/shared/running-timer/running-timer";
 import { SiteHeader } from "#/components/shared/site-header/site-header";
 import { setReportedUser } from "#/lib/error-reporting.browser";
 import { orpc } from "#/orpc/client";
@@ -10,8 +11,13 @@ import { m } from "#/paraglide/messages";
 
 /*===== Route =====*/
 export const Route = createFileRoute("/_site-layout")({
-  // The header needs the viewer on every page, so it is loaded before any page renders.
-  beforeLoad: ({ context }) => context.queryClient.ensureQueryData(orpc.session.viewer.queryOptions()),
+  // The header needs the viewer, and a signed-in viewer's running timer, on every page, so both load before any page
+  // renders.
+  beforeLoad: async ({ context }) => {
+    const viewer = await context.queryClient.ensureQueryData(orpc.session.viewer.queryOptions());
+    if (viewer) await context.queryClient.ensureQueryData(orpc.time.current.queryOptions());
+    return viewer;
+  },
   component: SiteLayout,
 });
 
@@ -35,7 +41,7 @@ function SiteLayout() {
       >
         {m.common_skip_to_content()}
       </a>
-      <SiteHeader viewer={viewer} />
+      <SiteHeader viewer={viewer} timer={viewer && <RunningTimer />} />
       <main id="main" className="flex-1">
         <Outlet />
       </main>

@@ -3,9 +3,18 @@ import { oneOf } from "#/orpc/allowed-values";
 import { LABEL_COLORS, TASK_PRIORITIES } from "#/orpc/task/constants";
 import type { Label, TaskCard, TaskDetail } from "#/orpc/task/contract";
 import type { LabelRecord, TaskRecord } from "#/orpc/task/repository";
+import type { TimeTotals } from "#/orpc/time/repository";
 
 /*===== Public Shapes =====*/
-export function toTaskCard({ record, labelIds }: { record: TaskRecord; labelIds: string[] }): TaskCard {
+export function toTaskCard({
+  record,
+  labelIds,
+  time = { spentSeconds: 0, runningSince: [] },
+}: {
+  record: TaskRecord;
+  labelIds: string[];
+  time?: TimeTotals | undefined;
+}): TaskCard {
   return {
     id: record.id,
     number: record.number,
@@ -19,17 +28,31 @@ export function toTaskCard({ record, labelIds }: { record: TaskRecord; labelIds:
     assigneeId: record.assigneeId,
     labelIds,
     hasDescription: record.descriptionText.length > 0,
+    completedAt: record.completedAt,
+    spentSeconds: time.spentSeconds,
+    runningSince: time.runningSince,
   };
 }
 
-export function toTaskDetail({ record, labelIds }: { record: TaskRecord; labelIds: string[] }): TaskDetail {
+export function toTaskDetail({
+  record,
+  labelIds,
+  time,
+  statusNote,
+}: {
+  record: TaskRecord;
+  labelIds: string[];
+  time: TimeTotals | undefined;
+  statusNote: TaskDetail["statusNote"];
+}): TaskDetail {
   return {
-    ...toTaskCard({ record, labelIds }),
+    ...toTaskCard({ record, labelIds, time }),
     description: (record.description as RichTextDoc | null) ?? null,
     createdBy: record.createdBy,
     createdAt: record.createdAt,
     updatedAt: record.updatedAt,
     archivedAt: record.archivedAt,
+    statusNote,
   };
 }
 

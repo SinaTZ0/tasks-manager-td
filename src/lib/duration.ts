@@ -33,3 +33,28 @@ export function formatDuration(minutes: number): string {
   const rest = minutes % 60;
   return `${formatNumber(hours)}:${formatNumber(rest, { minimumIntegerDigits: 2 })}`;
 }
+
+const pad = (value: number) => formatNumber(value, { minimumIntegerDigits: 2 });
+
+/** Seconds as a running clock, `h:mm:ss` (`1:05:09`), in the locale's digits. */
+export function formatClock(seconds: number): string {
+  const whole = Math.max(0, Math.floor(seconds));
+  return `${formatNumber(Math.floor(whole / 3600))}:${pad(Math.floor(whole / 60) % 60)}:${pad(whole % 60)}`;
+}
+
+/**
+ * A task's time spent, in seconds: its finished logs plus its running timers up to `now`. With no `now` (on the server
+ * and while the page hydrates) the running part is left out.
+ */
+export function liveSeconds({
+  spentSeconds,
+  runningSince,
+  now,
+}: {
+  spentSeconds: number;
+  runningSince: readonly Date[];
+  now: number | null;
+}): number {
+  if (now === null) return spentSeconds;
+  return runningSince.reduce((total, since) => total + Math.max(0, (now - since.getTime()) / 1000), spentSeconds);
+}

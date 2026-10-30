@@ -42,7 +42,11 @@ export function ArchiveTaskButton({
         setOpen(false);
         toast.add({ title: m.task_archived({ code }), type: "success" });
         onArchived();
-        await queryClient.invalidateQueries({ queryKey: orpc.task.key() });
+        // Archiving stops the task's timers, which the header shows.
+        await Promise.all([
+          queryClient.invalidateQueries({ queryKey: orpc.task.key() }),
+          queryClient.invalidateQueries({ queryKey: orpc.time.key() }),
+        ]);
       },
       onError: (error) => {
         const failure = describeApiFailure({ error, fallback: m.task_save_failed() });

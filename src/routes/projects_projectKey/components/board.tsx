@@ -40,19 +40,22 @@ import {
 } from "react";
 
 import { Button } from "#/components/primitive/button/button";
+import { toast } from "#/components/primitive/toast/toast";
 import { columnTitle } from "#/lib/column-title";
 import { cn } from "#/lib/utils";
 import { positionBetween } from "#/lib/position";
 import type { Column, Person, Project } from "#/orpc/project/contract";
-import { taskCode } from "#/orpc/task/constants";
+import { taskCode, type TaskStatusAction } from "#/orpc/task/constants";
 import type { Board as BoardData, Label, TaskCard as TaskCardData } from "#/orpc/task/contract";
 import { m } from "#/paraglide/messages";
 import { BoardColumn } from "#/routes/projects_projectKey/components/board-column";
-import { MoveToMenu } from "#/routes/projects_projectKey/components/move-to-menu";
 import { QuickAdd } from "#/routes/projects_projectKey/components/quick-add";
 import { CardGrip, cardGripId, SortableTaskCard } from "#/routes/projects_projectKey/components/sortable-task-card";
+import { StatusReasonDialog } from "#/routes/projects_projectKey/components/status-reason-dialog";
 import { TaskCard } from "#/routes/projects_projectKey/components/task-card";
-import { useColumnMove, useTaskMove } from "#/routes/projects_projectKey/use-board-moves";
+import { restoreTaskMenuFocus, TaskMenu, taskMenuKey } from "#/routes/projects_projectKey/components/task-menu";
+import { asksReason } from "#/routes/projects_projectKey/task-status";
+import { useColumnMove, useTaskMove, useTaskTransition } from "#/routes/projects_projectKey/use-board-moves";
 
 /*===== Drag State =====*/
 
@@ -239,11 +242,17 @@ function SortableColumn({
 
 /*===== Board =====*/
 
+/** The id of the page's "show cancelled" switch: where focus goes when a stopped card leaves the board. */
+export const SHOW_CANCELLED_ID = "show-cancelled";
+
 /**
  * The board's columns and cards, and every way of moving them (docs/app.md → Board & Drag): drag a card within its
  * column or to another, by pointer or keyboard; send it to the bottom of another column from its menu; and, for an
- * admin, drag a column by its grip. A move shows at once and is saved behind it (`use-board-moves.ts`). The cancelled
- * column isn't on the board, so nothing is dropped into it: stopping a task has its own action.
+ * admin, drag a column by its grip. A move shows at once and is saved behind it (`use-board-moves.ts`). Each card's
+ * menu also takes its status actions (start, pause, done, stop, reopen), asking for a reason where one is due.
+ *
+ * The cancelled column is shown only on request (`showCancelled`), after the others and outside the dragging: nothing
+ * is dropped into it, since stopping a task has its own action with its reason, and its cards leave it by reopening.
  */
 export function Board({
   project,
@@ -252,6 +261,7 @@ export function Board({
   labels,
   people,
   canMoveColumns,
+  showCancelled,
 }: {
   project: Project;
   /** The key as the URL has it, which names the project's cached query. */
@@ -260,8 +270,12 @@ export function Board({
   labels: Map<string, Label>;
   people: Map<string, Person>;
   canMoveColumns: boolean;
+  showCancelled: boolean;
 }) {
   const moveTask = useTaskMove(project.id);
+  const transition = useTaskTransition(project);
+  // Kept after the dialog closes, so it can play its way out showing what it asked.
+  const [asking, setAsking] = useState<{ taskId: string; action: "pause" | "stop"; open: boolean } | null>(null);
   const moveColumn = useColumnMove({ projectId: project.id, projectKey });
   const [drag, setDrag] = useState<Drag | null>(null);
   const droppedOrder = drag?.type === "dropped-column" && drag.until === project.columns ? drag.order : null;
@@ -286,6 +300,8 @@ export function Board({
   );
   const lanes =
     drag?.type === "task" || (drag?.type === "dropped-task" && drag.until === board.tasks) ? drag.lanes : settled;
+  const cancelled = project.columns.find((column) => column.kind === "cancelled");
+  const cancelledTasks = board.tasks.filter((task) => task.columnId === cancelled?.id);
   const titles = useMemo(() => new Map(columns.map((column) => [column.id, columnTitle(column)])), [columns]);
   const codeOf = (id: UniqueIdentifier) => {
     const task = tasks.get(String(id));
@@ -435,10 +451,29 @@ export function Board({
     moveTask({ taskId: id, columnId, position: keyBetween(positionOf(lane[index - 1]), positionOf(lane[index + 1])) });
   };
 
+  /*------ Menu Focus ------*/
+  // A card sent elsewhere from its menu re-mounts in its new column; once it is drawn there, its menu key gets focus
+  // back if the closing menu dropped it.
+  const menuFocus = useRef<string | null>(null);
+  useLayoutEffect(() => {
+    const id = menuFocus.current;
+    if (!id || !board.tasks.some((task) => task.id === id)) return;
+    menuFocus.current = null;
+    requestAnimationFrame(() => restoreTaskMenuFocus(id));
+  }, [board.tasks]);
+
   /*------ Move To ------*/
   const moveToEnd = ({ task, columnId }: { task: TaskCardData; columnId: string }) => {
     const last = board.tasks.findLast((item) => item.columnId === columnId && item.id !== task.id);
+    menuFocus.current = task.id;
     moveTask({ taskId: task.id, columnId, position: positionBetween(last?.position ?? null, null) });
+  };
+
+  /*------ Status ------*/
+  const takeAction = ({ task, action }: { task: TaskCardData; action: TaskStatusAction }) => {
+    if (asksReason(action)) return setAsking({ taskId: task.id, action, open: true });
+    menuFocus.current = task.id;
+    transition({ taskId: task.id, action });
   };
 
   /*------ Announcements ------*/
@@ -539,12 +574,14 @@ export function Board({
                           labels={labels}
                           people={people}
                           menu={
-                            <MoveToMenu
+                            <TaskMenu
                               taskId={task.id}
                               code={codeOf(task.id)}
+                              kind={column.kind}
                               columns={columns}
                               currentColumnId={column.id}
                               onMove={(target) => moveToEnd({ task, columnId: target })}
+                              onAction={(action) => takeAction({ task, action })}
                             />
                           }
                         />
@@ -556,7 +593,57 @@ export function Board({
             );
           })}
         </SortableContext>
+
+        {/*------ Cancelled ------*/}
+        {showCancelled && cancelled && (
+          <BoardColumn title={columnTitle(cancelled)} count={cancelledTasks.length} wipLimit={null}>
+            <ol className="flex flex-col gap-3">
+              {cancelledTasks.map((task) => (
+                <li key={task.id}>
+                  <TaskCard
+                    task={task}
+                    projectKey={project.key}
+                    labels={labels}
+                    people={people}
+                    menu={
+                      <TaskMenu
+                        taskId={task.id}
+                        code={codeOf(task.id)}
+                        kind="cancelled"
+                        columns={[]}
+                        currentColumnId={cancelled.id}
+                        onMove={() => {}}
+                        onAction={(action) => takeAction({ task, action })}
+                      />
+                    }
+                  />
+                </li>
+              ))}
+            </ol>
+          </BoardColumn>
+        )}
       </section>
+
+      {/*------ Reason ------*/}
+      {asking && (
+        <StatusReasonDialog
+          action={asking.action}
+          code={codeOf(asking.taskId)}
+          open={asking.open}
+          onOpenChange={(open) => setAsking({ ...asking, open })}
+          onConfirm={(reason) => {
+            transition({ taskId: asking.taskId, action: asking.action, reason });
+            // A stopped card leaves the board unless the cancelled column is shown: say where it went.
+            if (asking.action === "stop" && !showCancelled) {
+              toast.add({ title: m.task_stopped_hidden({ code: codeOf(asking.taskId) }), type: "success" });
+            }
+          }}
+          finalFocus={() => {
+            const key = taskMenuKey(asking.taskId)();
+            return key === true ? (document.getElementById(SHOW_CANCELLED_ID) ?? true) : key;
+          }}
+        />
+      )}
 
       {/*------ Moving Copy ------*/}
       <DragOverlay>

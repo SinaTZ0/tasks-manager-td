@@ -6,16 +6,18 @@ import { composeStyles, defineStyles, joinStyles } from "../styles";
 // Dark glass sunk into the housing: the shading is the same top wall and lit lower lip as a cut, so the window reads
 // as set into the panel rather than stuck on it. The glass is dark in both themes, like a real display.
 const twDisplayStyles = defineStyles({
-  layout: "group/display flex flex-col",
+  layout: "group/display flex",
   geometry: "rounded-chassis",
   appearance: "bg-glass text-glass-foreground shadow-glass",
   typography: "font-mono",
 });
 
+// `inline` is a one-line window the height of a compact key, for a live value in a row of keys (the header's timer).
 const twSize = defineStyles({
-  sm: { layout: "gap-1", geometry: "px-3 py-2" },
-  default: { layout: "gap-2", geometry: "p-4" },
-  lg: { layout: "gap-3", geometry: "p-5" },
+  inline: { layout: "flex-row items-center gap-3", geometry: "h-8 px-3" },
+  sm: { layout: "flex-col gap-1", geometry: "px-3 py-2" },
+  default: { layout: "flex-col gap-2", geometry: "p-4" },
+  lg: { layout: "flex-col gap-3", geometry: "p-5" },
 });
 
 const displayVariants = cva(joinStyles(twDisplayStyles), {
@@ -38,7 +40,7 @@ const displayLabelClasses = joinStyles(
 const displayValueClasses = joinStyles(
   defineStyles({
     typography:
-      "font-mono text-stat tracking-readout tabular-nums group-data-[size=lg]/display:text-display group-data-[size=sm]/display:text-h3",
+      "font-mono text-stat tracking-readout tabular-nums group-data-[size=inline]/display:text-body-sm group-data-[size=lg]/display:text-display group-data-[size=sm]/display:text-h3",
     appearance: "text-glass-foreground",
   }),
 );

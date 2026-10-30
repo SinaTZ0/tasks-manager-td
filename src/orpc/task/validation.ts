@@ -6,6 +6,7 @@ import {
   ESTIMATE_MAX_MINUTES,
   LABEL_COLORS,
   LABEL_NAME_MAX_LENGTH,
+  STATUS_REASON_MAX_LENGTH,
   TASK_DESCRIPTION_MAX_LENGTH,
   TASK_PRIORITIES,
   TASK_TITLE_MAX_LENGTH,
@@ -78,3 +79,10 @@ export const newLabelSchema = z.object({
     .max(LABEL_NAME_MAX_LENGTH, { error: () => m.label_error_name_too_long({ max: LABEL_NAME_MAX_LENGTH }) }),
   color: z.enum(LABEL_COLORS),
 });
+
+/*===== Status Reason =====*/
+/** Why a task is paused or stopped. Stopping needs one (rule 5); an empty pause reason is no reason. */
+export const statusReasonSchema = persianText()
+  .max(STATUS_REASON_MAX_LENGTH, { error: () => m.task_error_reason_too_long({ max: STATUS_REASON_MAX_LENGTH }) })
+  .optional()
+  .transform((reason) => reason || null);

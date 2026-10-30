@@ -4,6 +4,8 @@ import { toast } from "#/components/primitive/toast/toast";
 import { describeApiFailure } from "#/lib/api-error";
 import { orpc } from "#/orpc/client";
 import type { Project } from "#/orpc/project/contract";
+import { positionBetween } from "#/lib/position";
+import { STATUS_ACTION_RULES, type TaskStatusAction } from "#/orpc/task/constants";
 import type { Board } from "#/orpc/task/contract";
 import { m } from "#/paraglide/messages";
 import { boardQuery, projectQuery } from "#/routes/projects_projectKey/queries";
@@ -39,6 +41,8 @@ export function useTaskMove(projectId: string) {
           queryClient.invalidateQueries({ queryKey: orpc.task.board.key() }),
           // An open drawer prints the card's column.
           queryClient.invalidateQueries({ queryKey: orpc.task.get.key() }),
+          // Leaving doing stops the card's timers (rule 3).
+          queryClient.invalidateQueries({ queryKey: orpc.time.key() }),
         ]),
     }),
   );
@@ -58,6 +62,61 @@ export function useTaskMove(projectId: string) {
         onError: (error) => {
           if (previous) queryClient.setQueryData(key, previous);
           reportFailure({ error, fallback: m.task_move_failed() });
+        },
+      },
+    );
+  };
+}
+
+/*===== Status =====*/
+
+/**
+ * Takes a status action on a task (start, pause, done, stop, reopen), from its card menu or its drawer. Like a move,
+ * the board shows it at once: the card goes to the bottom of the action's column, lit as running after a start and
+ * with its timers stopped after anything that leaves doing. A refused action puts the board back and says why. The
+ * drawer, the task's time and the header's timer are refetched afterwards.
+ */
+export function useTaskTransition(project: Pick<Project, "id" | "columns">) {
+  const queryClient = useQueryClient();
+  const key = boardQuery(project.id).queryKey;
+
+  const mutation = useMutation(
+    orpc.task.transition.mutationOptions({
+      onSettled: () =>
+        Promise.all([
+          queryClient.invalidateQueries({ queryKey: orpc.task.board.key() }),
+          queryClient.invalidateQueries({ queryKey: orpc.task.get.key() }),
+          queryClient.invalidateQueries({ queryKey: orpc.time.key() }),
+        ]),
+    }),
+  );
+
+  return ({ taskId, action, reason }: { taskId: string; action: TaskStatusAction; reason?: string }) => {
+    void queryClient.cancelQueries({ queryKey: key });
+    const previous = queryClient.getQueryData<Board>(key);
+    const target = project.columns.find((column) => column.kind === STATUS_ACTION_RULES[action].to);
+    if (previous && target) {
+      const last = previous.tasks.findLast((task) => task.columnId === target.id && task.id !== taskId);
+      const tasks = previous.tasks
+        .map((task) => {
+          if (task.id !== taskId) return task;
+          const moved =
+            task.columnId === target.id
+              ? task
+              : { ...task, columnId: target.id, position: positionBetween(last?.position ?? null, null) };
+          if (action === "start")
+            return { ...moved, runningSince: task.runningSince.length > 0 ? task.runningSince : [new Date()] };
+          return { ...moved, runningSince: [] };
+        })
+        .toSorted(byPosition);
+      queryClient.setQueryData<Board>(key, { ...previous, tasks });
+    }
+    mutation.mutate(
+      { projectId: project.id, taskId, action, reason },
+      {
+        onError: (error) => {
+          if (previous) queryClient.setQueryData(key, previous);
+          reportFailure({ error, fallback: m.task_status_failed() });
         },
       },
     );

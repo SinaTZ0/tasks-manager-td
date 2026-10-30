@@ -6,7 +6,7 @@ import { commonErrors } from "#/orpc/errors";
 import { authErrors } from "#/orpc/middleware/auth/auth.errors";
 import { projectAccessErrors } from "#/orpc/middleware/project-access/project-access.errors";
 import { personSchema } from "#/orpc/project/contract";
-import { LABEL_COLORS, TASK_PRIORITIES } from "#/orpc/task/constants";
+import { LABEL_COLORS, TASK_PRIORITIES, TASK_STATUS_ACTIONS } from "#/orpc/task/constants";
 
 /*===== Schemas =====*/
 export const labelSchema = z.object({
@@ -35,6 +35,12 @@ export const taskCardSchema = z.object({
   assigneeId: z.string().nullable(),
   labelIds: z.array(z.string()),
   hasDescription: z.boolean(),
+  /** When it entered the done column; null anywhere else. */
+  completedAt: z.date().nullable(),
+  /** The time its finished logs add up to. */
+  spentSeconds: z.number().int(),
+  /** When each of its running timers started (one per person working on it); the card adds them to the total live. */
+  runningSince: z.array(z.date()),
 });
 
 export type TaskCard = z.infer<typeof taskCardSchema>;
@@ -46,6 +52,15 @@ export const taskDetailSchema = taskCardSchema.extend({
   createdAt: z.date(),
   updatedAt: z.date(),
   archivedAt: z.date().nullable(),
+  /** Why it is paused or stopped, while it is: the reason given, by whom and when. */
+  statusNote: z
+    .object({
+      action: z.enum(["pause", "stop"]),
+      reason: z.string().nullable(),
+      actorId: z.string(),
+      at: z.date(),
+    })
+    .nullable(),
 });
 
 export type TaskDetail = z.infer<typeof taskDetailSchema>;
@@ -102,6 +117,19 @@ export const taskContract = {
         columnId: z.string(),
         /** The key the board computed between the card's new neighbours (`src/lib/position.ts`). */
         position: z.string(),
+      }),
+    )
+    .output(taskCardSchema),
+  /** Start (or resume), pause, finish, stop or reopen: moves the task to that action's column (`STATUS_ACTION_RULES`). */
+  transition: oc
+    .errors(errors)
+    .input(
+      z.strictObject({
+        projectId: z.string(),
+        taskId: z.string(),
+        action: z.enum(TASK_STATUS_ACTIONS),
+        /** Required to stop, optional to pause, ignored otherwise. */
+        reason: z.string().optional(),
       }),
     )
     .output(taskCardSchema),

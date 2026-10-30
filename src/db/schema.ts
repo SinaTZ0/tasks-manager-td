@@ -1,5 +1,7 @@
+import { sql } from "drizzle-orm";
 import {
   boolean,
+  check,
   customType,
   date,
   index,
@@ -249,6 +251,8 @@ export const task = pgTable(
       .notNull()
       .defaultNow()
       .$onUpdate(() => new Date()),
+    /** When the task entered the done column; cleared when it leaves. Its age runs from `createdAt` to this. */
+    completedAt: timestamp("completed_at"),
     archivedAt: timestamp("archived_at"),
   },
   (table) => [
@@ -256,6 +260,41 @@ export const task = pgTable(
     // The board reads a project's live tasks, column by column, in order.
     index("task_column_id_position_idx").on(table.columnId, table.position),
     index("task_project_id_archived_at_idx").on(table.projectId, table.archivedAt),
+  ],
+);
+
+/*===== Time Logs =====*/
+// One stretch of work by one person on one task (docs/app.md → TimeLog); the time spent on a task is the sum of its
+// logs. A timer's log is open (`endedAt` null) while it runs. A manual entry ("worked 2h yesterday") is written closed,
+// starting at noon UTC of the day it names, so it reads as that day in every time zone.
+
+export const timeLog = pgTable(
+  "time_log",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    /** A hard-deleted task takes its logs with it; the history keeps what they were. */
+    taskId: uuid("task_id")
+      .notNull()
+      .references(() => task.id, { onDelete: "cascade" }),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "restrict" }),
+    startedAt: timestamp("started_at").notNull(),
+    /** Null while the timer runs. */
+    endedAt: timestamp("ended_at"),
+    /** Typed in, not timed. */
+    manual: boolean("manual").notNull().default(false),
+    note: text("note"),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+  },
+  (table) => [
+    // One running timer per person (rule 2): the database refuses a second open log, whatever the code does.
+    uniqueIndex("time_log_one_open_per_user_idx")
+      .on(table.userId)
+      .where(sql`${table.endedAt} is null`),
+    index("time_log_task_id_started_at_idx").on(table.taskId, table.startedAt),
+    check("time_log_ends_after_start", sql`${table.endedAt} is null or ${table.endedAt} >= ${table.startedAt}`),
+    check("time_log_manual_is_closed", sql`not ${table.manual} or ${table.endedAt} is not null`),
   ],
 );
 

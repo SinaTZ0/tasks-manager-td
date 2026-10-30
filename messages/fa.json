@@ -507,5 +507,162 @@
   "board_layout_scroll": "یک ردیف، با اسکرول",
   "board_layout_fit": "یک ردیف، هم‌اندازه پنجره",
   "board_layout_wrap": "چند ردیف",
-  "board_layout_per_row": "ستون در هر ردیف"
+  "board_layout_per_row": "ستون در هر ردیف",
+  "task_error_action_unavailable": "این کار از ستونی که الان در آن است این عمل را نمی‌پذیرد. تخته را تازه کنید و دوباره امتحان کنید.",
+  "task_error_reason_required": "بنویسید چرا این کار متوقف می‌شود.",
+  "task_error_reason_too_long": [
+    {
+      "declarations": ["input max", "local maxText = max: number"],
+      "match": {
+        "": "دلیل باید کمتر از {maxText} نویسه باشد."
+      }
+    }
+  ],
+  "time_error_date_invalid": "روزی را که کار کردید انتخاب کنید.",
+  "time_error_date_future": "این روز نمی‌تواند در آینده باشد.",
+  "time_error_minutes_invalid": [
+    {
+      "declarations": ["input max", "local maxText = max: number"],
+      "match": {
+        "": "زمانی بین ۱ دقیقه و {maxText} ساعت وارد کنید، مثل 1:30 یا 45m."
+      }
+    }
+  ],
+  "time_error_note_too_long": [
+    {
+      "declarations": ["input max", "local maxText = max: number"],
+      "match": {
+        "": "یادداشت باید کمتر از {maxText} نویسه باشد."
+      }
+    }
+  ],
+  "task_status": "وضعیت",
+  "task_action_start": "شروع",
+  "task_action_resume": "ادامه",
+  "task_action_pause": "مکث",
+  "task_action_done": "تمام شد",
+  "task_action_stop": "توقف",
+  "task_action_reopen": "بازگشایی",
+  "task_status_failed": "وضعیت کار تغییر نکرد.",
+  "task_run_running": "در حال اجرا",
+  "task_run_paused": "در مکث",
+  "task_run_done": "تمام‌شده",
+  "task_run_stopped": "متوقف",
+  "task_run_idle": "خاموش",
+  "task_pause_title": [
+    {
+      "declarations": ["input code"],
+      "match": {
+        "": "مکث {code}"
+      }
+    }
+  ],
+  "task_pause_description": "کار به ستون مکث می‌رود و همه زمان‌سنج‌هایش متوقف می‌شوند.",
+  "task_stop_title": [
+    {
+      "declarations": ["input code"],
+      "match": {
+        "": "توقف {code}"
+      }
+    }
+  ],
+  "task_stop_description": "کار متوقف‌شده به ستون لغوشده می‌رود و بعداً دوباره باز می‌شود.",
+  "task_reason_label": "چرا متوقف می‌شود؟",
+  "task_reason_optional_label": "چرا مکث؟ (اختیاری)",
+  "task_reason_hint": "در تاریخچه کار ثبت می‌شود.",
+  "task_paused_by": [
+    {
+      "declarations": ["input name", "input date"],
+      "match": {
+        "": "مکث به دست {name}، {date}"
+      }
+    }
+  ],
+  "task_stopped_by": [
+    {
+      "declarations": ["input name", "input date"],
+      "match": {
+        "": "توقف به دست {name}، {date}"
+      }
+    }
+  ],
+  "task_estimate_meter": "صرف‌شده در برابر تخمین",
+  "task_estimate_meter_value": [
+    {
+      "declarations": [
+        "input spent",
+        "local spentText = spent: number",
+        "input estimate",
+        "local estimateText = estimate: number"
+      ],
+      "match": {
+        "": "{spentText} از {estimateText} دقیقه"
+      }
+    }
+  ],
+  "board_show_cancelled": "نمایش لغوشده‌ها",
+  "time_spent_label": "زمان صرف‌شده",
+  "time_title": "زمان",
+  "time_age": "عمر کار",
+  "time_age_done": "از ساخت تا پایان",
+  "time_in_column": [
+    {
+      "declarations": ["input column"],
+      "match": {
+        "": "در {column}"
+      }
+    }
+  ],
+  "time_span_days": [
+    {
+      "declarations": ["input days", "local daysText = days: number", "input hours", "local hoursText = hours: number"],
+      "match": {
+        "": "{daysText} روز و {hoursText} ساعت"
+      }
+    }
+  ],
+  "time_logs": "زمان‌های ثبت‌شده",
+  "time_logs_empty": "هنوز زمانی ثبت نشده.",
+  "time_log_manual": [
+    {
+      "declarations": ["input date"],
+      "match": {
+        "": "{date}، ثبت دستی"
+      }
+    }
+  ],
+  "time_remove": [
+    {
+      "declarations": ["input date"],
+      "match": {
+        "": "حذف ثبت {date}"
+      }
+    }
+  ],
+  "time_remove_failed": "این ثبت حذف نشد.",
+  "time_add_title": "ثبت زمان کار",
+  "time_add_date": "روز",
+  "time_add_duration": "مدت کار",
+  "time_add_note": "یادداشت (اختیاری)",
+  "time_add_submit": "افزودن",
+  "time_add_failed": "زمان ثبت نشد.",
+  "timer_running_on": "زمان‌سنج شما روشن است روی",
+  "timer_stop": [
+    {
+      "declarations": ["input code"],
+      "match": {
+        "": "توقف زمان‌سنج شما روی {code}"
+      }
+    }
+  ],
+  "timer_stop_mine": "توقف زمان‌سنج من",
+  "timer_stop_failed": "زمان‌سنج متوقف نشد.",
+  "task_stopped_hidden": [
+    {
+      "declarations": ["input code"],
+      "match": {
+        "": "{code} متوقف شد و به ستون لغوشده رفت. برای دیدنش «نمایش لغوشده‌ها» را روشن کنید."
+      }
+    }
+  ]
 }

@@ -21,6 +21,17 @@ export const ACTIVITY_ACTIONS = [
   "task.moved",
   "task.reordered",
   "task.archived",
+  /*------ Status ------*/
+  "task.started",
+  "task.paused",
+  "task.completed",
+  "task.stopped",
+  "task.reopened",
+  /*------ Time ------*/
+  "time.started",
+  "time.stopped",
+  "time.added",
+  "time.removed",
 ] as const;
 
 export type ActivityAction = (typeof ACTIVITY_ACTIONS)[number];

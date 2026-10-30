@@ -118,14 +118,18 @@ Built once, in the slice that first needs them, and used by every procedure afte
   several rows of 2–4 columns.
 - **Tests**: a move records left/entered columns; a stale position key is resolved, not duplicated.
 
-### 4. Status and Time
+### 4. Status and Time ✓
 
-- Start, pause (optional reason), resume, stop (required reason), reopen, done, wired to the column kinds.
+- Start, pause (optional reason), resume, stop (required reason), reopen, done, wired to the column kinds
+  (`STATUS_ACTION_RULES`): start and resume go to doing and start the person's timer, pause goes to paused, done to
+  done, stop to cancelled, reopen (from done or cancelled) to todo. They are on the card's menu and the drawer's keys.
 - One running timer per user, enforced by the database (at most one open time log per user); starting another closes
-  the old one in the same transaction (rule 2). Leaving a doing column closes the task's open logs (rule 3).
+  the old one in the same transaction (rule 2). Leaving a doing column closes the task's open logs (rule 3), by an
+  action or a drag. The header shows the person's running timer on every page, with a key that stops just that timer
+  and leaves the card where it is.
 - Manual time entry ("worked 2h yesterday"); estimate against time spent on the card (the progress meter's threshold);
-  card age and time in each column in the drawer.
-- A "show cancelled" switch on the board, so stopped tasks can be found and reopened.
+  card age and time in each column in the drawer. A person can remove their own typed-in entries; timed ones stay.
+- A "show cancelled" switch on the board (`?cancelled=true`), so stopped tasks can be found and reopened.
 - **Tests**: rules 2, 3 and 5.
 
 ### 5. Dependencies

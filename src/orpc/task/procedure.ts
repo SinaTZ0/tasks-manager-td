@@ -2,7 +2,16 @@ import { base } from "#/orpc/implementer.server";
 import { requireUserMiddleware } from "#/orpc/middleware/auth/auth.middleware";
 import { provideDbMiddleware } from "#/orpc/middleware/db/db.middleware";
 import { requireProjectMemberMiddleware } from "#/orpc/middleware/project-access/project-access.middleware";
-import { archiveTask, createLabel, createTask, getBoard, getTask, moveTask, updateTask } from "#/orpc/task/service";
+import {
+  archiveTask,
+  createLabel,
+  createTask,
+  getBoard,
+  getTask,
+  moveTask,
+  transitionTask,
+  updateTask,
+} from "#/orpc/task/service";
 
 const noData = { errors: [], fields: {} };
 
@@ -56,6 +65,18 @@ export const moveTaskProcedure = base.task.move
   .use(requireProjectMemberMiddleware)
   .handler(async ({ context, input, errors }) => {
     const result = await moveTask({ db: context.db, actorId: context.user.id, ...input });
+    if (result.kind === "not-found") throw errors.NOT_FOUND({ data: noData });
+    if (result.kind === "invalid") throw errors.INVALID_INPUT({ data: { errors: [], fields: result.fields } });
+    return result.task;
+  });
+
+/*===== Status =====*/
+export const transitionTaskProcedure = base.task.transition
+  .use(requireUserMiddleware)
+  .use(provideDbMiddleware)
+  .use(requireProjectMemberMiddleware)
+  .handler(async ({ context, input, errors }) => {
+    const result = await transitionTask({ db: context.db, actorId: context.user.id, ...input });
     if (result.kind === "not-found") throw errors.NOT_FOUND({ data: noData });
     if (result.kind === "invalid") throw errors.INVALID_INPUT({ data: { errors: [], fields: result.fields } });
     return result.task;

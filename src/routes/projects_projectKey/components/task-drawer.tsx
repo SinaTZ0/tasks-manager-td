@@ -20,6 +20,8 @@ import {
   PriorityField,
 } from "#/routes/projects_projectKey/components/task-meta-fields";
 import { TaskDescriptionField } from "#/routes/projects_projectKey/components/task-description-field";
+import { TaskStatusPanel } from "#/routes/projects_projectKey/components/task-status-panel";
+import { TaskTimeSection } from "#/routes/projects_projectKey/components/task-time-section";
 import { TaskTitleField } from "#/routes/projects_projectKey/components/task-title-field";
 import { taskQuery } from "#/routes/projects_projectKey/queries";
 import { taskNumberOf } from "#/routes/projects_projectKey/search-params";
@@ -29,7 +31,7 @@ import { useTaskUpdate } from "#/routes/projects_projectKey/use-task-update";
 
 /**
  * A card's details in a wide side panel over the board, opened by `?task=TD-42` so it has a link. Closing it drops the
- * param. Every field saves on its own, as it changes.
+ * param. Its status and timer keys sit on top, its time at the bottom; every field saves on its own, as it changes.
  */
 export function TaskDrawer({
   code,
@@ -110,10 +112,13 @@ function TaskDetails({
         <div className="grid grid-cols-3 gap-8 px-6 pb-6">
           {/*------ Main ------*/}
           <div className="col-span-2 flex min-w-0 flex-col gap-6">
+            <TaskStatusPanel task={task} project={project} code={code} people={people} />
             <TaskTitleField key={task.title} task={task} update={update} />
             <TaskDescriptionField task={task} update={update} />
             <Separator />
             <LabelPicker task={task} update={update} projectId={project.id} labels={board.labels} />
+            <Separator />
+            <TaskTimeSection task={task} project={project} people={people} viewerId={viewer.id} />
           </div>
 
           {/*------ Side ------*/}

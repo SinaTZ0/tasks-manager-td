@@ -20,6 +20,7 @@ import {
   getTaskProcedure,
   moveTaskProcedure,
   taskBoardProcedure,
+  transitionTaskProcedure,
   updateTaskProcedure,
 } from "#/orpc/task/procedure";
 import {
@@ -28,6 +29,13 @@ import {
   setTeamMemberRoleProcedure,
   setTeamMemberStatusProcedure,
 } from "#/orpc/team/procedure";
+import {
+  addTimeEntryProcedure,
+  currentTimerProcedure,
+  removeTimeEntryProcedure,
+  stopTimerProcedure,
+  taskTimeProcedure,
+} from "#/orpc/time/procedure";
 
 /*===== API Router =====*/
 // Assembled with the undecorated implementer (see `implementer.server.ts`).
@@ -65,6 +73,7 @@ export const router = implementer.router({
     update: updateTaskProcedure,
     move: moveTaskProcedure,
     archive: archiveTaskProcedure,
+    transition: transitionTaskProcedure,
     createLabel: createLabelProcedure,
   },
   team: {
@@ -72,5 +81,12 @@ export const router = implementer.router({
     create: createTeamMemberProcedure,
     setRole: setTeamMemberRoleProcedure,
     setStatus: setTeamMemberStatusProcedure,
+  },
+  time: {
+    current: currentTimerProcedure,
+    stop: stopTimerProcedure,
+    forTask: taskTimeProcedure,
+    add: addTimeEntryProcedure,
+    remove: removeTimeEntryProcedure,
   },
 });

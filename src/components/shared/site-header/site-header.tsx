@@ -1,5 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { LogOutIcon, UserIcon } from "lucide-react";
+import type { ReactNode } from "react";
 
 import { Button } from "#/components/primitive/button/button";
 import { buttonVariants } from "#/components/primitive/button/button.styles";
@@ -77,9 +78,10 @@ function AccountMenu({ viewer }: { viewer: Viewer }) {
 /**
  * The instrument's top panel: a housing strip across the desk with the model name, the main navigation as a row of keys,
  * and the language, theme and account keys. On a phone the navigation drops to its own row. It spans the whole window,
- * not the content width, so its edges line up with the board, which needs every column it can get.
+ * not the content width, so its edges line up with the board, which needs every column it can get. `timer` is the
+ * signed-in viewer's running timer, before the device keys.
  */
-export function SiteHeader({ viewer }: { viewer: Viewer | null }) {
+export function SiteHeader({ viewer, timer }: { viewer: Viewer | null; timer?: ReactNode }) {
   const localeLinks = useLocaleLinks();
 
   return (
@@ -117,6 +119,7 @@ export function SiteHeader({ viewer }: { viewer: Viewer | null }) {
 
         {/*------ Device Keys ------*/}
         <div className="ms-auto flex shrink-0 items-center gap-3">
+          {timer}
           <LocaleSwitcher links={localeLinks} variant="secondary" />
           <ThemeToggle />
           {viewer ? (
