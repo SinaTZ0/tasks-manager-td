@@ -1208,5 +1208,59 @@
   "my_tasks_title": "کارهای من",
   "my_tasks_description": "کارهای باز سپرده‌شده به شما در همه پروژه‌هایتان. اول کارهای در جریان، بعد به ترتیب سررسید.",
   "my_tasks_empty": "فعلاً کاری به شما سپرده نشده.",
-  "my_tasks_no_due": "بدون سررسید"
+  "my_tasks_no_due": "بدون سررسید",
+  "board_filters": "پالایش کارت‌ها",
+  "board_filter_assignee": "پالایش بر اساس مسئول",
+  "board_filter_assignee_any": "همه افراد",
+  "board_filter_assignee_me": "من",
+  "board_filter_label": "پالایش بر اساس برچسب",
+  "board_filter_label_any": "همه برچسب‌ها",
+  "board_filter_priority": "پالایش بر اساس اولویت",
+  "board_filter_priority_any": "همه اولویت‌ها",
+  "board_filter_due": "پالایش بر اساس سررسید",
+  "board_filter_due_any": "همه سررسیدها",
+  "board_filter_due_overdue": "دیرشده",
+  "board_filter_due_week": "سررسید این هفته",
+  "board_filter_due_none": "بدون سررسید",
+  "board_filter_blocked": "فقط مسدودها",
+  "board_filter_clear": "پاک کردن پالایه‌ها",
+  "board_filtered_count": [
+    {
+      "declarations": [
+        "input shown",
+        "local shownText = shown: number",
+        "input total",
+        "local totalText = total: number"
+      ],
+      "match": {
+        "": "{shownText} از {totalText}"
+      }
+    }
+  ],
+  "board_column_none_match": "کارتی جور نیست",
+  "search_title": "جست‌وجو",
+  "search_description": "کارهای همه پروژه‌هایتان: کد، عنوان، توضیح و نظرها. کدی مثل TGQ-12 کارتش را باز می‌کند.",
+  "search_label": "جست‌وجوی کارها",
+  "search_placeholder": "جست‌وجوی کارها…",
+  "search_start": "چند کلمه یا کد یک کار را بنویسید.",
+  "search_empty": [
+    {
+      "declarations": ["input q"],
+      "match": {
+        "": "برای «{q}» چیزی پیدا نشد."
+      }
+    }
+  ],
+  "search_count": [
+    {
+      "declarations": ["input count", "local countText = count: number"],
+      "match": {
+        "": "کارهای پیدا‌شده: {countText}"
+      }
+    }
+  ],
+  "search_archived": "بایگانی‌شده",
+  "search_match_title": "عنوان",
+  "search_match_description": "توضیح",
+  "search_match_comment": "نظر"
 }

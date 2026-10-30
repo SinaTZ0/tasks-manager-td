@@ -13,10 +13,14 @@ import { PersonAvatar } from "#/components/shared/person-avatar/person-avatar";
 import { pageMeta } from "#/lib/seo";
 import type { Person } from "#/orpc/project/contract";
 import { m } from "#/paraglide/messages";
+import { teamToday } from "#/lib/team-day";
+import { cardFilter, isFiltering, type BoardFilter } from "#/routes/projects_projectKey/board-filter";
+import { BoardFilters } from "#/routes/projects_projectKey/components/board-filters";
 import { BoardLayoutPicker } from "#/routes/projects_projectKey/components/board-layout-picker";
 import { Board, SHOW_CANCELLED_ID } from "#/routes/projects_projectKey/components/board";
 import { useBoardAccess } from "#/routes/projects_projectKey/access";
 import { TaskDrawer } from "#/routes/projects_projectKey/components/task-drawer";
+import { blockersOf, kindsOf } from "#/routes/projects_projectKey/dependencies";
 import { boardQuery, ensureProject, projectQuery, taskQuery, timeQuery } from "#/routes/projects_projectKey/queries";
 import { boardSearchSchema, taskNumberOf } from "#/routes/projects_projectKey/search-params";
 
@@ -63,9 +67,10 @@ export const Route = createFileRoute("/_site-layout/_app-layout/projects/$projec
  */
 function BoardPage() {
   const { projectKey } = Route.useParams();
-  const { task: openTask, cancelled: showCancelled = false } = Route.useSearch();
+  const search = Route.useSearch();
+  const { task: openTask, cancelled: showCancelled = false } = search;
   const navigate = useNavigate({ from: Route.fullPath });
-  const { canEdit, isAdmin } = useBoardAccess();
+  const { viewerId, canEdit, isAdmin } = useBoardAccess();
   const { data: project } = useSuspenseQuery(projectQuery(projectKey));
   const { data: board } = useSuspenseQuery(boardQuery(project.id));
 
@@ -76,6 +81,25 @@ function BoardPage() {
     [board.people, project.members],
   );
   const labels = useMemo(() => new Map(board.labels.map((label) => [label.id, label])), [board.labels]);
+
+  /*------ Filters ------*/
+  const { assignee, label, priority, due, blocked } = search;
+  const filter = useMemo(() => {
+    const current: BoardFilter = { assignee, label, priority, due, blocked };
+    if (!isFiltering(current)) return null;
+    const tasks = new Map(board.tasks.map((task) => [task.id, task]));
+    const kinds = kindsOf(project);
+    return cardFilter({
+      filter: current,
+      viewerId,
+      today: teamToday(),
+      isBlocked: (task) => blockersOf({ task, tasks, kinds }).length > 0,
+    });
+  }, [assignee, label, priority, due, blocked, board.tasks, project, viewerId]);
+  const setFilter = (patch: Partial<BoardFilter>) =>
+    void navigate({ search: (previous) => ({ ...previous, ...patch }), replace: true });
+  // Anyone a card can be assigned to; viewers never are.
+  const assignable = project.members.filter((member) => member.role !== "viewer");
 
   return (
     <div className="flex flex-col gap-6 px-6 py-8">
@@ -129,6 +153,14 @@ function BoardPage() {
         )}
       </div>
 
+      {/*------ Filters ------*/}
+      <BoardFilters
+        filter={{ assignee, label, priority, due, blocked }}
+        people={assignable}
+        labels={board.labels}
+        onChange={setFilter}
+      />
+
       {/*------ Columns ------*/}
       <Card>
         <CardContent>
@@ -141,6 +173,7 @@ function BoardPage() {
             canMoveColumns={isAdmin}
             canMoveCards={canEdit}
             canCreate={isAdmin}
+            filter={filter}
             showCancelled={showCancelled}
           />
         </CardContent>

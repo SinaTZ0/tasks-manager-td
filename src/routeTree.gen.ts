@@ -22,6 +22,7 @@ import { Route as delegatedDelegatedRouteImport } from './routes/delegated/deleg
 import { Route as my_tasksMyTasksRouteImport } from './routes/my_tasks/my-tasks'
 import { Route as notesNotesRouteImport } from './routes/notes/notes'
 import { Route as profileProfileRouteImport } from './routes/profile/profile'
+import { Route as searchSearchRouteImport } from './routes/search/search'
 import { Route as api_authApiAuthRouteImport } from './routes/api_auth/api-auth'
 import { Route as teamTeamRouteImport } from './routes/team/team'
 import { Route as projects_projectKeyProjectsProjectKeyRouteImport } from './routes/projects_projectKey/projects-project-key'
@@ -91,6 +92,11 @@ const profileProfileRoute = profileProfileRouteImport.update({
   path: '/profile',
   getParentRoute: () => app_layoutAppLayoutRoute,
 } as any)
+const searchSearchRoute = searchSearchRouteImport.update({
+  id: '/search',
+  path: '/search',
+  getParentRoute: () => app_layoutAppLayoutRoute,
+} as any)
 const api_authApiAuthRoute = api_authApiAuthRouteImport.update({
   id: '/api/auth/$',
   path: '/api/auth/$',
@@ -137,6 +143,7 @@ export interface FileRoutesByFullPath {
   '/my-tasks': typeof my_tasksMyTasksRoute
   '/notes': typeof notesNotesRoute
   '/profile': typeof profileProfileRoute
+  '/search': typeof searchSearchRoute
   '/api/auth/$': typeof api_authApiAuthRoute
   '/team': typeof teamTeamRoute
   '/projects/$projectKey': typeof projects_projectKeyProjectsProjectKeyRoute
@@ -155,6 +162,7 @@ export interface FileRoutesByTo {
   '/my-tasks': typeof my_tasksMyTasksRoute
   '/notes': typeof notesNotesRoute
   '/profile': typeof profileProfileRoute
+  '/search': typeof searchSearchRoute
   '/api/auth/$': typeof api_authApiAuthRoute
   '/team': typeof teamTeamRoute
   '/projects/$projectKey': typeof projects_projectKeyProjectsProjectKeyRoute
@@ -177,6 +185,7 @@ export interface FileRoutesById {
   '/_site-layout/_app-layout/my-tasks': typeof my_tasksMyTasksRoute
   '/_site-layout/_app-layout/notes': typeof notesNotesRoute
   '/_site-layout/_app-layout/profile': typeof profileProfileRoute
+  '/_site-layout/_app-layout/search': typeof searchSearchRoute
   '/api/auth/$': typeof api_authApiAuthRoute
   '/_site-layout/_app-layout/_admin-layout/team': typeof teamTeamRoute
   '/_site-layout/_app-layout/projects/$projectKey': typeof projects_projectKeyProjectsProjectKeyRoute
@@ -197,6 +206,7 @@ export interface FileRouteTypes {
     | '/my-tasks'
     | '/notes'
     | '/profile'
+    | '/search'
     | '/api/auth/$'
     | '/team'
     | '/projects/$projectKey'
@@ -215,6 +225,7 @@ export interface FileRouteTypes {
     | '/my-tasks'
     | '/notes'
     | '/profile'
+    | '/search'
     | '/api/auth/$'
     | '/team'
     | '/projects/$projectKey'
@@ -236,6 +247,7 @@ export interface FileRouteTypes {
     | '/_site-layout/_app-layout/my-tasks'
     | '/_site-layout/_app-layout/notes'
     | '/_site-layout/_app-layout/profile'
+    | '/_site-layout/_app-layout/search'
     | '/api/auth/$'
     | '/_site-layout/_app-layout/_admin-layout/team'
     | '/_site-layout/_app-layout/projects/$projectKey'
@@ -346,6 +358,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof profileProfileRouteImport
       parentRoute: typeof app_layoutAppLayoutRoute
     }
+    '/_site-layout/_app-layout/search': {
+      id: '/_site-layout/_app-layout/search'
+      path: '/search'
+      fullPath: '/search'
+      preLoaderRoute: typeof searchSearchRouteImport
+      parentRoute: typeof app_layoutAppLayoutRoute
+    }
     '/api/auth/$': {
       id: '/api/auth/$'
       path: '/api/auth/$'
@@ -415,6 +434,7 @@ interface app_layoutAppLayoutRouteChildren {
   my_tasksMyTasksRoute: typeof my_tasksMyTasksRoute
   notesNotesRoute: typeof notesNotesRoute
   profileProfileRoute: typeof profileProfileRoute
+  searchSearchRoute: typeof searchSearchRoute
   projects_projectKeyProjectsProjectKeyRoute: typeof projects_projectKeyProjectsProjectKeyRoute
   projects_projectKey_activityProjectsProjectKeyActivityRoute: typeof projects_projectKey_activityProjectsProjectKeyActivityRoute
   projects_projectKey_archiveProjectsProjectKeyArchiveRoute: typeof projects_projectKey_archiveProjectsProjectKeyArchiveRoute
@@ -427,6 +447,7 @@ const app_layoutAppLayoutRouteChildren: app_layoutAppLayoutRouteChildren = {
   my_tasksMyTasksRoute: my_tasksMyTasksRoute,
   notesNotesRoute: notesNotesRoute,
   profileProfileRoute: profileProfileRoute,
+  searchSearchRoute: searchSearchRoute,
   projects_projectKeyProjectsProjectKeyRoute:
     projects_projectKeyProjectsProjectKeyRoute,
   projects_projectKey_activityProjectsProjectKeyActivityRoute:

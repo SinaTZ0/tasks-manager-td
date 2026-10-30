@@ -8,6 +8,7 @@ import { noteContract } from "#/orpc/note/contract";
 import { notificationContract } from "#/orpc/notification/contract";
 import { profileContract } from "#/orpc/profile/contract";
 import { projectContract } from "#/orpc/project/contract";
+import { searchContract } from "#/orpc/search/contract";
 import { sessionContract } from "#/orpc/session/contract";
 import { siteContract } from "#/orpc/site/contract";
 import { taskContract } from "#/orpc/task/contract";
@@ -27,6 +28,7 @@ export const contract = {
   notification: notificationContract,
   profile: profileContract,
   project: projectContract,
+  search: searchContract,
   session: sessionContract,
   site: siteContract,
   task: taskContract,

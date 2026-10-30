@@ -187,12 +187,15 @@ function keyboardTarget({
 function SortableColumn({
   column,
   count,
+  total,
   movable,
   footer,
   children,
 }: {
   column: Column;
   count: number;
+  /** While filtering, how many cards the column holds in all. */
+  total: number | undefined;
   movable: boolean;
   footer: ReactNode;
   children: ReactNode;
@@ -219,6 +222,7 @@ function SortableColumn({
       dragging={isDragging}
       title={title}
       count={count}
+      total={total}
       wipLimit={column.wipLimit}
       footer={footer}
       grip={
@@ -266,6 +270,7 @@ export function Board({
   canMoveColumns,
   canMoveCards,
   canCreate,
+  filter,
   showCancelled,
 }: {
   project: Project;
@@ -279,6 +284,11 @@ export function Board({
   canMoveCards: boolean;
   /** Quick add under each column: admins only. */
   canCreate: boolean;
+  /**
+   * The cards a filter keeps, or null for all. While filtering, cards don't drag (a position between the cards shown
+   * could land between hidden ones); their menus still move them.
+   */
+  filter: ((task: TaskCardData) => boolean) | null;
   showCancelled: boolean;
 }) {
   const moveTask = useTaskMove(project.id);
@@ -311,15 +321,20 @@ export function Board({
       Object.fromEntries(
         columns.map((column) => [
           column.id,
-          board.tasks.filter((task) => task.columnId === column.id).map((task) => task.id),
+          board.tasks.filter((task) => task.columnId === column.id && (!filter || filter(task))).map((task) => task.id),
         ]),
       ),
-    [columns, board.tasks],
+    [columns, board.tasks, filter],
   );
+  const totals = useMemo(() => {
+    const counts = new Map<string, number>();
+    for (const task of board.tasks) counts.set(task.columnId, (counts.get(task.columnId) ?? 0) + 1);
+    return counts;
+  }, [board.tasks]);
   const lanes =
     drag?.type === "task" || (drag?.type === "dropped-task" && drag.until === board.tasks) ? drag.lanes : settled;
   const cancelled = project.columns.find((column) => column.kind === "cancelled");
-  const cancelledTasks = board.tasks.filter((task) => task.columnId === cancelled?.id);
+  const cancelledTasks = board.tasks.filter((task) => task.columnId === cancelled?.id && (!filter || filter(task)));
   const titles = useMemo(() => new Map(columns.map((column) => [column.id, columnTitle(column)])), [columns]);
   const codeOf = (id: UniqueIdentifier) => {
     const task = tasks.get(String(id));
@@ -642,6 +657,7 @@ export function Board({
                 key={column.id}
                 column={column}
                 count={ids.length}
+                total={filter ? (totals.get(column.id) ?? 0) : undefined}
                 movable={canMoveColumns}
                 footer={
                   canCreate && (
@@ -663,7 +679,7 @@ export function Board({
                           labels={labels}
                           people={people}
                           blockedBy={blockerCodes(task)}
-                          movable={canMoveCards}
+                          movable={canMoveCards && !filter}
                           menu={
                             canMoveCards && (
                               <TaskMenu
@@ -689,7 +705,12 @@ export function Board({
 
         {/*------ Cancelled ------*/}
         {showCancelled && cancelled && (
-          <BoardColumn title={columnTitle(cancelled)} count={cancelledTasks.length} wipLimit={null}>
+          <BoardColumn
+            title={columnTitle(cancelled)}
+            count={cancelledTasks.length}
+            total={filter ? (totals.get(cancelled.id) ?? 0) : undefined}
+            wipLimit={null}
+          >
             <ol className="flex flex-col gap-3">
               {cancelledTasks.map((task) => (
                 <li key={task.id}>

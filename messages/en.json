@@ -1208,5 +1208,59 @@
   "my_tasks_title": "My tasks",
   "my_tasks_description": "Open tasks assigned to you, across your projects. Work under way first, then by due date.",
   "my_tasks_empty": "Nothing is assigned to you right now.",
-  "my_tasks_no_due": "No due date"
+  "my_tasks_no_due": "No due date",
+  "board_filters": "Filter cards",
+  "board_filter_assignee": "Filter by assignee",
+  "board_filter_assignee_any": "Anyone",
+  "board_filter_assignee_me": "Me",
+  "board_filter_label": "Filter by label",
+  "board_filter_label_any": "Any label",
+  "board_filter_priority": "Filter by priority",
+  "board_filter_priority_any": "Any priority",
+  "board_filter_due": "Filter by due date",
+  "board_filter_due_any": "Any due date",
+  "board_filter_due_overdue": "Overdue",
+  "board_filter_due_week": "Due this week",
+  "board_filter_due_none": "No due date",
+  "board_filter_blocked": "Blocked only",
+  "board_filter_clear": "Clear filters",
+  "board_filtered_count": [
+    {
+      "declarations": [
+        "input shown",
+        "local shownText = shown: number",
+        "input total",
+        "local totalText = total: number"
+      ],
+      "match": {
+        "": "{shownText} of {totalText}"
+      }
+    }
+  ],
+  "board_column_none_match": "No card matches",
+  "search_title": "Search",
+  "search_description": "Tasks across your projects: codes, titles, descriptions and comments. A task code like TGQ-12 opens its card.",
+  "search_label": "Search tasks",
+  "search_placeholder": "Search tasks…",
+  "search_start": "Type a few words or a task code.",
+  "search_empty": [
+    {
+      "declarations": ["input q"],
+      "match": {
+        "": "Nothing found for “{q}”."
+      }
+    }
+  ],
+  "search_count": [
+    {
+      "declarations": ["input count", "local countText = count: number"],
+      "match": {
+        "": "Tasks found: {countText}"
+      }
+    }
+  ],
+  "search_archived": "Archived",
+  "search_match_title": "Title",
+  "search_match_description": "Description",
+  "search_match_comment": "Comment"
 }

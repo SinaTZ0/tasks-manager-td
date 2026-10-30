@@ -2,6 +2,7 @@ import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, Outlet } from "@tanstack/react-router";
 import { useEffect } from "react";
 
+import { HeaderSearch } from "#/components/shared/header-search/header-search";
 import { NotificationBell, notificationsQuery } from "#/components/shared/notification-bell/notification-bell";
 import { SiteFooter } from "#/components/shared/site-footer/site-footer";
 import { RunningTimer } from "#/components/shared/running-timer/running-timer";
@@ -47,7 +48,12 @@ function SiteLayout() {
       >
         {m.common_skip_to_content()}
       </a>
-      <SiteHeader viewer={viewer} timer={viewer && <RunningTimer />} bell={viewer && <NotificationBell />} />
+      <SiteHeader
+        viewer={viewer}
+        search={viewer && <HeaderSearch />}
+        timer={viewer && <RunningTimer />}
+        bell={viewer && <NotificationBell />}
+      />
       <main id="main" className="flex-1">
         <Outlet />
       </main>

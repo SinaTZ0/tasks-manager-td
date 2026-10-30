@@ -215,7 +215,7 @@ follows the backend flow, then the frontend flow; desktop first (the phone layou
 - One procedure (`task.mine`) that reads only the viewer's projects.
 - **Tests**: tasks from a project I've left don't show.
 
-### 11. Search and Filters
+### 11. Search and Filters ✓
 
 - **Board filters**: a filter bar on the board: assignee (with "me" and "nobody"), label, priority, due (overdue, this
   week, none) and blocked. Kept in typed search params, so a filtered board can be linked; the board's cards are

@@ -57,17 +57,21 @@ export async function createTestProject<const Name extends string>({
 export async function deleteTestProject({
   db,
   projectId,
+  extraProjectIds = [],
   userIds,
 }: {
   db: Database;
   projectId: string;
+  /** Other projects the test made with the same users, removed with it. */
+  extraProjectIds?: string[];
   userIds: string[];
 }): Promise<void> {
+  const projectIds = [projectId, ...extraProjectIds];
   await db.transaction(async (tx) => {
     await tx.execute(sql`set local tofang.test_cleanup = 'on'`);
     await tx.delete(activity).where(inArray(activity.actorId, userIds));
-    await tx.delete(task).where(inArray(task.projectId, [projectId]));
-    await tx.delete(project).where(inArray(project.id, [projectId]));
+    await tx.delete(task).where(inArray(task.projectId, projectIds));
+    await tx.delete(project).where(inArray(project.id, projectIds));
     await tx.delete(user).where(inArray(user.id, userIds));
   });
 }

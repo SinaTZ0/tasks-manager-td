@@ -22,6 +22,7 @@ import {
   setProjectMemberProcedure,
   updateColumnProcedure,
 } from "#/orpc/project/procedure";
+import { searchTasksProcedure } from "#/orpc/search/procedure";
 import { viewerProcedure } from "#/orpc/session/procedure";
 import { siteOriginProcedure } from "#/orpc/site/procedure";
 import {
@@ -100,6 +101,9 @@ export const router = implementer.router({
     setMember: setProjectMemberProcedure,
     updateColumn: updateColumnProcedure,
     moveColumn: moveColumnProcedure,
+  },
+  search: {
+    tasks: searchTasksProcedure,
   },
   session: {
     viewer: viewerProcedure,

@@ -105,10 +105,20 @@ function AccountMenu({ viewer }: { viewer: Viewer }) {
 /**
  * The instrument's top panel: a housing strip across the desk with the model name, the main navigation as a row of keys,
  * and the language, theme and account keys. On a phone the navigation drops to its own row. It spans the whole window,
- * not the content width, so its edges line up with the board, which needs every column it can get. `timer` and `bell`
- * are the signed-in viewer's running timer and notifications, before the device keys.
+ * not the content width, so its edges line up with the board, which needs every column it can get. `search`, `timer`
+ * and `bell` are the signed-in viewer's search field, running timer and notifications, before the device keys.
  */
-export function SiteHeader({ viewer, timer, bell }: { viewer: Viewer | null; timer?: ReactNode; bell?: ReactNode }) {
+export function SiteHeader({
+  viewer,
+  search,
+  timer,
+  bell,
+}: {
+  viewer: Viewer | null;
+  search?: ReactNode;
+  timer?: ReactNode;
+  bell?: ReactNode;
+}) {
   const localeLinks = useLocaleLinks();
 
   return (
@@ -146,6 +156,7 @@ export function SiteHeader({ viewer, timer, bell }: { viewer: Viewer | null; tim
 
         {/*------ Device Keys ------*/}
         <div className="ms-auto flex shrink-0 items-center gap-3">
+          {search}
           {timer}
           {bell}
           <LocaleSwitcher links={localeLinks} variant="secondary" />
