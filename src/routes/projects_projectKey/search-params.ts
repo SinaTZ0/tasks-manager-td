@@ -4,7 +4,8 @@ import { TASK_PRIORITIES } from "#/orpc/task/constants";
 
 /*===== Board Search Params =====*/
 // `task` is the open card, by its code (`?task=TD-42`), so a card has a link someone can paste in chat. `cancelled`
-// shows the cancelled column, so stopped tasks can be found and reopened. The rest filter the cards
+// shows the cancelled column, so stopped tasks can be found and reopened. `hide` lists the ids of the columns the
+// person took off the board; an id no longer on the board is ignored. The rest filter the cards
 // (`board-filter.ts`), so a filtered board can be linked. An invalid value is dropped rather than breaking the page.
 
 /** "Due" filters: past due, due from today through the end of the team's week, or with no due date. */
@@ -23,6 +24,7 @@ export const boardSearchSchema = z.object({
     .optional()
     .catch(undefined),
   cancelled: z.boolean().optional().catch(undefined),
+  hide: z.array(z.string().max(64)).max(50).optional().catch(undefined),
   /** `me`, `none`, or a person's id. */
   assignee: z.string().max(64).optional().catch(undefined),
   /** A label's id. */

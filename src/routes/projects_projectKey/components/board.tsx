@@ -260,7 +260,8 @@ export const SHOW_CANCELLED_ID = "show-cancelled";
  * that still waits for others enters doing or done only once the person says why (rule 4); its strip names what it
  * waits for.
  *
- * The cancelled column is shown only on request (`showCancelled`), after the others and outside the dragging: nothing
+ * Columns the person hid (`hiddenColumns`) are left out, though a card's menu can still send a card to one. The
+ * cancelled column is shown only on request (`showCancelled`), after the others and outside the dragging: nothing
  * is dropped into it, since stopping a task has its own action with its reason, and its cards leave it by reopening.
  */
 export function Board({
@@ -274,6 +275,7 @@ export function Board({
   canCreate,
   filter,
   showCancelled,
+  hiddenColumns,
 }: {
   project: Project;
   /** The key as the URL has it, which names the project's cached query. */
@@ -292,6 +294,8 @@ export function Board({
    */
   filter: ((task: TaskCardData) => boolean) | null;
   showCancelled: boolean;
+  /** The ids of the columns taken off the board. */
+  hiddenColumns: ReadonlySet<string>;
 }) {
   const moveTask = useTaskMove(project.id);
   const transition = useTaskTransition(project);
@@ -325,10 +329,13 @@ export function Board({
   const moveColumn = useColumnMove({ projectId: project.id, projectKey });
   const [drag, setDrag] = useState<Drag | null>(null);
   const droppedOrder = drag?.type === "dropped-column" && drag.until === project.columns ? drag.order : null;
+  // Every column but cancelled, for the cards' menus; `columns` is the ones on the board, which everything else uses.
+  // A dropped column's order names only the columns on the board, so it is applied after the hidden ones are out.
+  const allColumns = useMemo(() => project.columns.filter((column) => column.kind !== "cancelled"), [project.columns]);
   const columns = useMemo(() => {
-    const shown = project.columns.filter((column) => column.kind !== "cancelled");
+    const shown = allColumns.filter((column) => !hiddenColumns.has(column.id));
     return droppedOrder ? shown.toSorted((a, b) => droppedOrder.indexOf(a.id) - droppedOrder.indexOf(b.id)) : shown;
-  }, [project.columns, droppedOrder]);
+  }, [allColumns, hiddenColumns, droppedOrder]);
   // dnd-kit numbers its accessibility ids from a counter of its own, which differs between server and browser.
   const contextId = useId();
 
@@ -477,8 +484,8 @@ export function Board({
       if (from === to || to < 0) return;
       const order = arrayMove(columns, from, to);
       setDrag({ type: "dropped-column", order: order.map((column) => column.id), until: project.columns });
-      // Between its new neighbours on the board. The cancelled column isn't shown, so where the moved column falls
-      // against it doesn't matter.
+      // Between its new neighbours on the board. The cancelled column and any hidden one aren't shown, so where the
+      // moved column falls against them doesn't matter.
       moveColumn({
         columnId: id,
         position: keyBetween(order[to - 1]?.position ?? null, order[to + 1]?.position ?? null),
@@ -713,7 +720,7 @@ export function Board({
                                 taskId={task.id}
                                 code={codeOf(task.id)}
                                 kind={column.kind}
-                                columns={columns}
+                                columns={allColumns}
                                 currentColumnId={column.id}
                                 onMove={(target) => moveToEnd({ task, columnId: target })}
                                 onAction={(action) => takeAction({ task, action })}

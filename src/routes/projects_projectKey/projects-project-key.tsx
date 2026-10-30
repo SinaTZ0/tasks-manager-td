@@ -17,6 +17,7 @@ import { taskCode } from "#/orpc/task/constants";
 import { m } from "#/paraglide/messages";
 import { teamToday } from "#/lib/team-day";
 import { cardFilter, isFiltering, type BoardFilter } from "#/routes/projects_projectKey/board-filter";
+import { BoardColumnToggles } from "#/routes/projects_projectKey/components/board-column-toggles";
 import { BoardFilters } from "#/routes/projects_projectKey/components/board-filters";
 import { BoardLayoutPicker } from "#/routes/projects_projectKey/components/board-layout-picker";
 import { Board, SHOW_CANCELLED_ID } from "#/routes/projects_projectKey/components/board";
@@ -115,6 +116,13 @@ function BoardPage() {
   }, [assignee, label, priority, due, blocked, board.tasks, project, viewerId]);
   const setFilter = (patch: Partial<BoardFilter>) =>
     void navigate({ search: (previous) => ({ ...previous, ...patch }), replace: true });
+
+  /*------ Columns ------*/
+  const columns = project.columns.filter((column) => column.kind !== "cancelled");
+  const hidden = useMemo(() => new Set(search.hide), [search.hide]);
+  const setHidden = (ids: string[]) =>
+    void navigate({ search: (previous) => ({ ...previous, hide: ids.length > 0 ? ids : undefined }), replace: true });
+
   // Anyone a card can be assigned to; viewers never are.
   const assignable = project.members.filter((member) => member.role !== "viewer");
 
@@ -179,13 +187,16 @@ function BoardPage() {
         )}
       </div>
 
-      {/*------ Filters ------*/}
-      <BoardFilters
-        filter={{ assignee, label, priority, due, blocked }}
-        people={assignable}
-        labels={board.labels}
-        onChange={setFilter}
-      />
+      {/*------ Filters and Columns Shown ------*/}
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <BoardFilters
+          filter={{ assignee, label, priority, due, blocked }}
+          people={assignable}
+          labels={board.labels}
+          onChange={setFilter}
+        />
+        <BoardColumnToggles columns={columns} hidden={hidden} onChange={setHidden} />
+      </div>
 
       {/*------ Columns ------*/}
       <Card>
@@ -201,6 +212,7 @@ function BoardPage() {
             canCreate={isAdmin}
             filter={filter}
             showCancelled={showCancelled}
+            hiddenColumns={hidden}
           />
         </CardContent>
       </Card>

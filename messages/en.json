@@ -27,6 +27,7 @@
   "root_not_found_title": "Page not found",
   "root_not_found_details": "The page you're looking for doesn't exist or has moved.",
   "board_columns": "Board columns",
+  "board_columns_shown": "Columns shown on the board",
   "board_column_backlog": "Backlog",
   "board_column_todo": "To do",
   "board_column_doing": "Doing",

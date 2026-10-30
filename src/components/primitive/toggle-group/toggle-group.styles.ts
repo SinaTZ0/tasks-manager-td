@@ -17,10 +17,11 @@ const twGroupStyles = defineStyles({
 /*===== Item =====*/
 
 const twItemStyles = defineStyles({
-  // Keys in a slot are one part of it: they drop their own cut, and a horizontal strip shares its width evenly.
-  // (In a vertical strip `flex-1` would crush each key to a zero basis height.)
+  // Keys in a slot are one part of it: they drop their own cut, and a horizontal strip shares any width beyond what the
+  // keys need. Each starts at its content's width (`flex-auto`, not `flex-1`), so a key with a longer word isn't cut
+  // short to match the others. (In a vertical strip it would crush each key's height.)
   layout:
-    "group-data-[orientation=horizontal]/toggle-group:group-data-[spacing=0]/toggle-group:flex-1 group-data-[spacing=0]/toggle-group:before:hidden",
+    "group-data-[orientation=horizontal]/toggle-group:group-data-[spacing=0]/toggle-group:flex-auto group-data-[spacing=0]/toggle-group:before:hidden",
   // Keyboard focus moves along the strip; keep the ring above the neighbouring key
   focus: "focus-visible:z-10",
 });
