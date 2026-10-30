@@ -13,6 +13,7 @@ import {
   timestamp,
   uniqueIndex,
   uuid,
+  type AnyPgColumn,
 } from "drizzle-orm/pg-core";
 
 /*===== Database Schema =====*/
@@ -42,6 +43,11 @@ export const user = pgTable("user", {
   // (`input: false` in `auth.server.ts`).
   role: text("role").notNull().default("user"),
   status: text("status").notNull().default("active"),
+  /**
+   * Their picture on the profile page (`avatar` kind, docs/backend/media.md); Better-Auth's own `image` stays unused.
+   * Cleared if the media row is ever deleted.
+   */
+  avatarMediaId: uuid("avatar_media_id").references((): AnyPgColumn => media.id, { onDelete: "set null" }),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at")
     .notNull()

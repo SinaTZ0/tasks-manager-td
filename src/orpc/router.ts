@@ -12,6 +12,7 @@ import { implementer } from "#/orpc/implementer.server";
 import { uploadMediaProcedure } from "#/orpc/media/procedure";
 import { createNoteProcedure, deleteNoteProcedure, listNotesProcedure } from "#/orpc/note/procedure";
 import { listNotificationsProcedure, markNotificationsReadProcedure } from "#/orpc/notification/procedure";
+import { getProfileProcedure, updateProfileProcedure } from "#/orpc/profile/procedure";
 import {
   createProjectProcedure,
   getProjectProcedure,
@@ -24,11 +25,14 @@ import {
 import { viewerProcedure } from "#/orpc/session/procedure";
 import { siteOriginProcedure } from "#/orpc/site/procedure";
 import {
+  archivedTasksProcedure,
   archiveTaskProcedure,
   createLabelProcedure,
   createTaskProcedure,
+  deleteTaskProcedure,
   getTaskProcedure,
   moveTaskProcedure,
+  restoreTaskProcedure,
   taskBoardProcedure,
   transitionTaskProcedure,
   updateTaskProcedure,
@@ -83,6 +87,10 @@ export const router = implementer.router({
     list: listNotificationsProcedure,
     markRead: markNotificationsReadProcedure,
   },
+  profile: {
+    get: getProfileProcedure,
+    update: updateProfileProcedure,
+  },
   project: {
     list: listProjectsProcedure,
     get: getProjectProcedure,
@@ -105,6 +113,9 @@ export const router = implementer.router({
     update: updateTaskProcedure,
     move: moveTaskProcedure,
     archive: archiveTaskProcedure,
+    archived: archivedTasksProcedure,
+    restore: restoreTaskProcedure,
+    delete: deleteTaskProcedure,
     transition: transitionTaskProcedure,
     createLabel: createLabelProcedure,
   },

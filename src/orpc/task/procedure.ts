@@ -6,9 +6,12 @@ import {
   archiveTask,
   createLabel,
   createTask,
+  deleteTask,
   getBoard,
   getTask,
+  listArchivedTasks,
   moveTask,
+  restoreTask,
   transitionTask,
   updateTask,
 } from "#/orpc/task/service";
@@ -92,6 +95,36 @@ export const archiveTaskProcedure = base.task.archive
   .handler(async ({ context, input, errors }) => {
     const result = await archiveTask({ db: context.db, actorId: context.user.id, ...input });
     if (result.kind === "not-found") throw errors.NOT_FOUND({ data: noData });
+  });
+
+/*===== Archive List =====*/
+export const archivedTasksProcedure = base.task.archived
+  .use(requireUserMiddleware)
+  .use(provideDbMiddleware)
+  .use(requireProjectMemberMiddleware)
+  .handler(({ context, input }) => listArchivedTasks({ db: context.db, projectId: input.projectId }));
+
+/*===== Restore =====*/
+export const restoreTaskProcedure = base.task.restore
+  .use(requireUserMiddleware)
+  .use(provideDbMiddleware)
+  .use(requireProjectMemberMiddleware)
+  .handler(async ({ context, input, errors }) => {
+    const result = await restoreTask({ db: context.db, actorId: context.user.id, ...input });
+    if (result.kind === "not-found") throw errors.NOT_FOUND({ data: noData });
+  });
+
+/*===== Delete =====*/
+export const deleteTaskProcedure = base.task.delete
+  .use(requireUserMiddleware)
+  .use(provideDbMiddleware)
+  .use(requireProjectMemberMiddleware)
+  .handler(async ({ context, input, errors }) => {
+    const result = await deleteTask({ db: context.db, actor: context.user, ...input });
+    if (result.kind === "not-found") throw errors.NOT_FOUND({ data: noData });
+    if (result.kind === "invalid") {
+      throw errors.INVALID_INPUT({ data: { errors: result.errors ?? [], fields: result.fields } });
+    }
   });
 
 /*===== Labels =====*/

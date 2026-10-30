@@ -79,6 +79,11 @@ export const boardSchema = z.object({
 
 export type Board = z.infer<typeof boardSchema>;
 
+/** A card in the project's archive, with when it was archived. */
+export const archivedTaskSchema = taskCardSchema.extend({ archivedAt: z.date() });
+
+export type ArchivedTask = z.infer<typeof archivedTaskSchema>;
+
 // Structure only. Trimming, limits, and whether a person, column or label belongs to the project, are the service's.
 const taskFieldsSchema = z.strictObject({
   title: z.string(),
@@ -153,6 +158,21 @@ export const taskContract = {
     )
     .output(taskCardSchema),
   archive: oc
+    .errors(errors)
+    .input(z.strictObject({ projectId: z.string(), taskId: z.string() }))
+    .output(z.void()),
+  /** The project's archived tasks, most recently archived first (docs/app.md → Archive & restore). */
+  archived: oc
+    .errors(errors)
+    .input(z.strictObject({ projectId: z.string() }))
+    .output(z.object({ tasks: z.array(archivedTaskSchema), people: z.array(personSchema) })),
+  /** Puts an archived task back on the board, at the bottom of its column. */
+  restore: oc
+    .errors(errors)
+    .input(z.strictObject({ projectId: z.string(), taskId: z.string() }))
+    .output(z.void()),
+  /** Deletes an archived task for good. Admins only (rule 10): anyone else, or a live task, gets `INVALID_INPUT`. */
+  delete: oc
     .errors(errors)
     .input(z.strictObject({ projectId: z.string(), taskId: z.string() }))
     .output(z.void()),

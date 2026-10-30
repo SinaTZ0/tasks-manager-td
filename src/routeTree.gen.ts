@@ -20,10 +20,12 @@ import { Route as homeHomeRouteImport } from './routes/home/home'
 import { Route as admin_layoutAdminLayoutRouteImport } from './routes/admin_layout/admin-layout'
 import { Route as delegatedDelegatedRouteImport } from './routes/delegated/delegated'
 import { Route as notesNotesRouteImport } from './routes/notes/notes'
+import { Route as profileProfileRouteImport } from './routes/profile/profile'
 import { Route as api_authApiAuthRouteImport } from './routes/api_auth/api-auth'
 import { Route as teamTeamRouteImport } from './routes/team/team'
 import { Route as projects_projectKeyProjectsProjectKeyRouteImport } from './routes/projects_projectKey/projects-project-key'
 import { Route as projects_projectKey_activityProjectsProjectKeyActivityRouteImport } from './routes/projects_projectKey_activity/projects-project-key-activity'
+import { Route as projects_projectKey_archiveProjectsProjectKeyArchiveRouteImport } from './routes/projects_projectKey_archive/projects-project-key-archive'
 import { Route as projects_projectKey_settingsProjectsProjectKeySettingsRouteImport } from './routes/projects_projectKey_settings/projects-project-key-settings'
 
 const site_layoutSiteLayoutRoute = site_layoutSiteLayoutRouteImport.update({
@@ -78,6 +80,11 @@ const notesNotesRoute = notesNotesRouteImport.update({
   path: '/notes',
   getParentRoute: () => app_layoutAppLayoutRoute,
 } as any)
+const profileProfileRoute = profileProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
+  getParentRoute: () => app_layoutAppLayoutRoute,
+} as any)
 const api_authApiAuthRoute = api_authApiAuthRouteImport.update({
   id: '/api/auth/$',
   path: '/api/auth/$',
@@ -100,6 +107,12 @@ const projects_projectKey_activityProjectsProjectKeyActivityRoute =
     path: '/projects/$projectKey/activity',
     getParentRoute: () => app_layoutAppLayoutRoute,
   } as any)
+const projects_projectKey_archiveProjectsProjectKeyArchiveRoute =
+  projects_projectKey_archiveProjectsProjectKeyArchiveRouteImport.update({
+    id: '/projects/$projectKey/archive',
+    path: '/projects/$projectKey/archive',
+    getParentRoute: () => app_layoutAppLayoutRoute,
+  } as any)
 const projects_projectKey_settingsProjectsProjectKeySettingsRoute =
   projects_projectKey_settingsProjectsProjectKeySettingsRouteImport.update({
     id: '/projects/$projectKey/settings',
@@ -116,10 +129,12 @@ export interface FileRoutesByFullPath {
   '/rpc/$': typeof rpcRpcRoute
   '/delegated': typeof delegatedDelegatedRoute
   '/notes': typeof notesNotesRoute
+  '/profile': typeof profileProfileRoute
   '/api/auth/$': typeof api_authApiAuthRoute
   '/team': typeof teamTeamRoute
   '/projects/$projectKey': typeof projects_projectKeyProjectsProjectKeyRoute
   '/projects/$projectKey/activity': typeof projects_projectKey_activityProjectsProjectKeyActivityRoute
+  '/projects/$projectKey/archive': typeof projects_projectKey_archiveProjectsProjectKeyArchiveRoute
   '/projects/$projectKey/settings': typeof projects_projectKey_settingsProjectsProjectKeySettingsRoute
 }
 export interface FileRoutesByTo {
@@ -131,10 +146,12 @@ export interface FileRoutesByTo {
   '/rpc/$': typeof rpcRpcRoute
   '/delegated': typeof delegatedDelegatedRoute
   '/notes': typeof notesNotesRoute
+  '/profile': typeof profileProfileRoute
   '/api/auth/$': typeof api_authApiAuthRoute
   '/team': typeof teamTeamRoute
   '/projects/$projectKey': typeof projects_projectKeyProjectsProjectKeyRoute
   '/projects/$projectKey/activity': typeof projects_projectKey_activityProjectsProjectKeyActivityRoute
+  '/projects/$projectKey/archive': typeof projects_projectKey_archiveProjectsProjectKeyArchiveRoute
   '/projects/$projectKey/settings': typeof projects_projectKey_settingsProjectsProjectKeySettingsRoute
 }
 export interface FileRoutesById {
@@ -150,10 +167,12 @@ export interface FileRoutesById {
   '/_site-layout/_app-layout/_admin-layout': typeof admin_layoutAdminLayoutRouteWithChildren
   '/_site-layout/_app-layout/delegated': typeof delegatedDelegatedRoute
   '/_site-layout/_app-layout/notes': typeof notesNotesRoute
+  '/_site-layout/_app-layout/profile': typeof profileProfileRoute
   '/api/auth/$': typeof api_authApiAuthRoute
   '/_site-layout/_app-layout/_admin-layout/team': typeof teamTeamRoute
   '/_site-layout/_app-layout/projects/$projectKey': typeof projects_projectKeyProjectsProjectKeyRoute
   '/_site-layout/_app-layout/projects/$projectKey/activity': typeof projects_projectKey_activityProjectsProjectKeyActivityRoute
+  '/_site-layout/_app-layout/projects/$projectKey/archive': typeof projects_projectKey_archiveProjectsProjectKeyArchiveRoute
   '/_site-layout/_app-layout/_admin-layout/projects/$projectKey/settings': typeof projects_projectKey_settingsProjectsProjectKeySettingsRoute
 }
 export interface FileRouteTypes {
@@ -167,10 +186,12 @@ export interface FileRouteTypes {
     | '/rpc/$'
     | '/delegated'
     | '/notes'
+    | '/profile'
     | '/api/auth/$'
     | '/team'
     | '/projects/$projectKey'
     | '/projects/$projectKey/activity'
+    | '/projects/$projectKey/archive'
     | '/projects/$projectKey/settings'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -182,10 +203,12 @@ export interface FileRouteTypes {
     | '/rpc/$'
     | '/delegated'
     | '/notes'
+    | '/profile'
     | '/api/auth/$'
     | '/team'
     | '/projects/$projectKey'
     | '/projects/$projectKey/activity'
+    | '/projects/$projectKey/archive'
     | '/projects/$projectKey/settings'
   id:
     | '__root__'
@@ -200,10 +223,12 @@ export interface FileRouteTypes {
     | '/_site-layout/_app-layout/_admin-layout'
     | '/_site-layout/_app-layout/delegated'
     | '/_site-layout/_app-layout/notes'
+    | '/_site-layout/_app-layout/profile'
     | '/api/auth/$'
     | '/_site-layout/_app-layout/_admin-layout/team'
     | '/_site-layout/_app-layout/projects/$projectKey'
     | '/_site-layout/_app-layout/projects/$projectKey/activity'
+    | '/_site-layout/_app-layout/projects/$projectKey/archive'
     | '/_site-layout/_app-layout/_admin-layout/projects/$projectKey/settings'
   fileRoutesById: FileRoutesById
 }
@@ -295,6 +320,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof notesNotesRouteImport
       parentRoute: typeof app_layoutAppLayoutRoute
     }
+    '/_site-layout/_app-layout/profile': {
+      id: '/_site-layout/_app-layout/profile'
+      path: '/profile'
+      fullPath: '/profile'
+      preLoaderRoute: typeof profileProfileRouteImport
+      parentRoute: typeof app_layoutAppLayoutRoute
+    }
     '/api/auth/$': {
       id: '/api/auth/$'
       path: '/api/auth/$'
@@ -321,6 +353,13 @@ declare module '@tanstack/react-router' {
       path: '/projects/$projectKey/activity'
       fullPath: '/projects/$projectKey/activity'
       preLoaderRoute: typeof projects_projectKey_activityProjectsProjectKeyActivityRouteImport
+      parentRoute: typeof app_layoutAppLayoutRoute
+    }
+    '/_site-layout/_app-layout/projects/$projectKey/archive': {
+      id: '/_site-layout/_app-layout/projects/$projectKey/archive'
+      path: '/projects/$projectKey/archive'
+      fullPath: '/projects/$projectKey/archive'
+      preLoaderRoute: typeof projects_projectKey_archiveProjectsProjectKeyArchiveRouteImport
       parentRoute: typeof app_layoutAppLayoutRoute
     }
     '/_site-layout/_app-layout/_admin-layout/projects/$projectKey/settings': {
@@ -355,8 +394,10 @@ interface app_layoutAppLayoutRouteChildren {
   admin_layoutAdminLayoutRoute: typeof admin_layoutAdminLayoutRouteWithChildren
   delegatedDelegatedRoute: typeof delegatedDelegatedRoute
   notesNotesRoute: typeof notesNotesRoute
+  profileProfileRoute: typeof profileProfileRoute
   projects_projectKeyProjectsProjectKeyRoute: typeof projects_projectKeyProjectsProjectKeyRoute
   projects_projectKey_activityProjectsProjectKeyActivityRoute: typeof projects_projectKey_activityProjectsProjectKeyActivityRoute
+  projects_projectKey_archiveProjectsProjectKeyArchiveRoute: typeof projects_projectKey_archiveProjectsProjectKeyArchiveRoute
 }
 
 const app_layoutAppLayoutRouteChildren: app_layoutAppLayoutRouteChildren = {
@@ -364,10 +405,13 @@ const app_layoutAppLayoutRouteChildren: app_layoutAppLayoutRouteChildren = {
   admin_layoutAdminLayoutRoute: admin_layoutAdminLayoutRouteWithChildren,
   delegatedDelegatedRoute: delegatedDelegatedRoute,
   notesNotesRoute: notesNotesRoute,
+  profileProfileRoute: profileProfileRoute,
   projects_projectKeyProjectsProjectKeyRoute:
     projects_projectKeyProjectsProjectKeyRoute,
   projects_projectKey_activityProjectsProjectKeyActivityRoute:
     projects_projectKey_activityProjectsProjectKeyActivityRoute,
+  projects_projectKey_archiveProjectsProjectKeyArchiveRoute:
+    projects_projectKey_archiveProjectsProjectKeyArchiveRoute,
 }
 
 const app_layoutAppLayoutRouteWithChildren =

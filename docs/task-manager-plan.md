@@ -168,10 +168,16 @@ Built once, in the slice that first needs them, and used by every procedure afte
   (`components/shared/activity-feed`).
 - **Tests**: someone else's comment can't be edited or deleted; a mention notifies the person.
 
-### 8. Profile and Archive
+### 8. Profile and Archive ✓
 
-- Profile: name and avatar (the template's image upload).
-- An archive list per project; an admin can restore a task or hard-delete it from there (rule 10).
+- Profile (`/profile`, from the account menu): your own name and picture (the template's image upload, kind
+  `avatar`, on `user.avatar_media_id`). The picture shows on cards, member lists and the people picker; the email
+  and role stay an admin's, on the team page.
+- An archive list per project (`/projects/$projectKey/archive`, linked from the board's header). Any member can
+  restore a task (it goes back to the bottom of its column); an admin can hard-delete one from there, after
+  confirming (rule 10). Its comments, logs, links, hand-offs and notifications go with it; the history keeps a
+  `task.deleted` entry.
+- **Tests**: hard delete only for an admin and only from the archive.
 
 ## Housekeeping
 

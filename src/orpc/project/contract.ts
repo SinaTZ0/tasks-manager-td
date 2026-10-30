@@ -23,6 +23,8 @@ export const personSchema = z.object({
   id: z.string(),
   name: z.string(),
   status: z.enum(USER_STATUSES),
+  /** Their picture's small variant, or null for none: the cap then shows their initial. */
+  avatarUrl: z.string().nullable(),
 });
 
 export type Person = z.infer<typeof personSchema>;

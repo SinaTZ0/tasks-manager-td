@@ -1,7 +1,7 @@
 import { ORPCError } from "@orpc/client";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { HistoryIcon, SettingsIcon } from "lucide-react";
+import { ArchiveIcon, HistoryIcon, SettingsIcon } from "lucide-react";
 import { useMemo } from "react";
 
 import { AvatarGroup } from "#/components/primitive/avatar/avatar";
@@ -97,7 +97,7 @@ function BoardPage() {
         <BoardLayoutPicker />
         <AvatarGroup>
           {project.members.map((member) => (
-            <PersonAvatar key={member.id} name={member.name} />
+            <PersonAvatar key={member.id} name={member.name} src={member.avatarUrl} />
           ))}
         </AvatarGroup>
         <Link
@@ -107,6 +107,14 @@ function BoardPage() {
         >
           <HistoryIcon data-icon="inline-start" />
           {m.activity_link()}
+        </Link>
+        <Link
+          to="/projects/$projectKey/archive"
+          params={{ projectKey: project.key }}
+          className={buttonVariants({ variant: "secondary", size: "sm" })}
+        >
+          <ArchiveIcon data-icon="inline-start" />
+          {m.archive_link()}
         </Link>
         {viewer.role === "admin" && (
           <Link

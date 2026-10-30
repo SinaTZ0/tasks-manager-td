@@ -6,7 +6,7 @@ import { PersonAvatar } from "#/components/shared/person-avatar/person-avatar";
 
 /*===== People Checklist =====*/
 
-type Person = { id: string; name: string; email?: string };
+type Person = { id: string; name: string; email?: string; avatarUrl?: string | null };
 
 /**
  * A check key per teammate, with their cap and name: who is on a project. Each row's label is its tap target.
@@ -41,7 +41,7 @@ export function PeopleChecklist({
               />
               <FieldLabel htmlFor={id} className="min-w-0">
                 <span className="flex min-w-0 items-center gap-2">
-                  <PersonAvatar name={person.name} decorative />
+                  <PersonAvatar name={person.name} src={person.avatarUrl} decorative />
                   <span className="min-w-0">
                     <span className="block truncate">{person.name}</span>
                     {person.email && (

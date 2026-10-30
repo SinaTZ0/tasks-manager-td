@@ -9,7 +9,7 @@ export type ColumnRecord = typeof boardColumn.$inferSelect;
 type NewColumnRecord = typeof boardColumn.$inferInsert;
 
 /** A member of a project, with the account fields the pages show. */
-export type MemberRow = { projectId: string; id: string; name: string; status: string };
+export type MemberRow = { projectId: string; id: string; name: string; status: string; avatarMediaId: string | null };
 
 /*===== Projects =====*/
 /** Every project, by name. For admins, who see them all. */
@@ -75,7 +75,13 @@ export function findMembersOfProjects({
 }): Promise<MemberRow[]> {
   if (projectIds.length === 0) return Promise.resolve([]);
   return db
-    .select({ projectId: projectMember.projectId, id: user.id, name: user.name, status: user.status })
+    .select({
+      projectId: projectMember.projectId,
+      id: user.id,
+      name: user.name,
+      status: user.status,
+      avatarMediaId: user.avatarMediaId,
+    })
     .from(projectMember)
     .innerJoin(user, eq(user.id, projectMember.userId))
     .where(inArray(projectMember.projectId, projectIds))

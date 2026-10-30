@@ -143,6 +143,9 @@ function describe({ item, people }: { item: ActivityItem; people: Map<string, Pe
         ],
       };
 
+    case "user.profile_updated":
+      return { clauses: [m.activity_user_profile_updated()] };
+
     /*------ Project ------*/
     case "project.created":
       return { clauses: [m.activity_project_created()] };
@@ -197,6 +200,10 @@ function describe({ item, people }: { item: ActivityItem; people: Map<string, Pe
       return { clauses: [m.activity_task_reordered({ column: columnOf(after) })] };
     case "task.archived":
       return { clauses: [m.activity_task_archived()] };
+    case "task.restored":
+      return { clauses: [m.activity_task_restored()] };
+    case "task.deleted":
+      return { clauses: [m.activity_task_deleted()] };
     case "task.delegated":
       return {
         clauses: [m.activity_task_delegated({ name: nameOf(after?.assigneeId) })],

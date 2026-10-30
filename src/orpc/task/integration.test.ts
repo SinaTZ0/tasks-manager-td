@@ -5,7 +5,16 @@ import { db } from "#/db/client.server";
 import { activity } from "#/db/schema";
 import { createTestProject, deleteTestProject } from "#/db/test-fixtures.server";
 import { findColumns } from "#/orpc/project/repository";
-import { archiveTask, createTask, getBoard, getTask, moveTask, updateTask } from "#/orpc/task/service";
+import {
+  archiveTask,
+  createTask,
+  deleteTask,
+  getBoard,
+  getTask,
+  moveTask,
+  restoreTask,
+  updateTask,
+} from "#/orpc/task/service";
 
 /*===== Tasks =====*/
 // Every change to a task leaves a history entry in the same transaction (docs/app.md rule 7), and archiving takes a
@@ -144,5 +153,25 @@ describe("tasks", () => {
       position: "!",
     });
     expect(invalid).toMatchObject({ kind: "invalid" });
+  });
+
+  it("hard-deletes only an archived task, and only for an admin (rule 10)", async () => {
+    const { projectId, users } = fixture;
+    const created = await createTask({ db, actorId: users.ali, projectId, input: { title: "پاک‌شدنی" } });
+    if (created.kind !== "success") throw new Error("setup failed");
+    const taskId = created.task.id;
+    const remove = (id: string, role: string) => deleteTask({ db, actor: { id, role }, projectId, taskId });
+
+    expect(await remove(users.admin, "admin")).toMatchObject({ kind: "invalid" });
+    await archiveTask({ db, actorId: users.ali, projectId, taskId });
+    expect(await remove(users.ali, "user")).toMatchObject({ kind: "invalid" });
+
+    // Restored, it is live again and can't be deleted; archived once more, the admin can.
+    expect(await restoreTask({ db, actorId: users.ali, projectId, taskId })).toEqual({ kind: "ok" });
+    expect(await getTask({ db, projectId, number: created.task.number })).toMatchObject({ archivedAt: null });
+    await archiveTask({ db, actorId: users.ali, projectId, taskId });
+    expect(await remove(users.admin, "admin")).toEqual({ kind: "ok" });
+    expect(await getTask({ db, projectId, number: created.task.number })).toBeNull();
+    expect((await historyOf(taskId)).map((entry) => entry.action)).toContain("task.deleted");
   });
 });

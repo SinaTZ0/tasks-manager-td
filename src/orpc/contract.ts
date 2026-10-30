@@ -6,6 +6,7 @@ import { dependencyContract } from "#/orpc/dependency/contract";
 import { mediaContract } from "#/orpc/media/contract";
 import { noteContract } from "#/orpc/note/contract";
 import { notificationContract } from "#/orpc/notification/contract";
+import { profileContract } from "#/orpc/profile/contract";
 import { projectContract } from "#/orpc/project/contract";
 import { sessionContract } from "#/orpc/session/contract";
 import { siteContract } from "#/orpc/site/contract";
@@ -24,6 +25,7 @@ export const contract = {
   media: mediaContract,
   note: noteContract,
   notification: notificationContract,
+  profile: profileContract,
   project: projectContract,
   session: sessionContract,
   site: siteContract,

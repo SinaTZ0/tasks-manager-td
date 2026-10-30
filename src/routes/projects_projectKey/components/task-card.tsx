@@ -150,8 +150,14 @@ export function TaskCard({
       {/*------ Footer ------*/}
       <footer className="flex min-h-11 items-center justify-between gap-3 px-3 pb-2.5">
         <span className="flex items-center gap-2">
-          {owner && assignee && owner.id !== assignee.id && <PersonAvatar name={owner.name} owner />}
-          {assignee ? <PersonAvatar name={assignee.name} /> : <Marking>{m.task_unassigned()}</Marking>}
+          {owner && assignee && owner.id !== assignee.id && (
+            <PersonAvatar name={owner.name} src={owner.avatarUrl} owner />
+          )}
+          {assignee ? (
+            <PersonAvatar name={assignee.name} src={assignee.avatarUrl} />
+          ) : (
+            <Marking>{m.task_unassigned()}</Marking>
+          )}
         </span>
         <span className="flex items-center gap-3">
           <SpentReadout task={task} />

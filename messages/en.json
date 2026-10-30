@@ -1118,5 +1118,75 @@
   "task_tab_comments": "Comments",
   "task_tab_activity": "Activity",
   "task_tab_time": "Time",
-  "task_tabs": "Task details"
+  "task_tabs": "Task details",
+  "activity_user_profile_updated": "updated their profile",
+  "activity_task_restored": "restored the task from the archive",
+  "activity_task_deleted": "deleted the task for good",
+  "task_error_delete_admin_only": "Only an admin can delete a task for good.",
+  "task_error_delete_archived_only": "Archive the task before deleting it.",
+  "profile_error_avatar_unusable": "This picture can't be used. Upload it again.",
+  "nav_profile": "Profile",
+  "profile_title": "Your profile",
+  "profile_description": "Your name and picture show on your cards, comments and everywhere the team sees you.",
+  "profile_name_label": "Name",
+  "profile_email_label": "Email (an admin can change it)",
+  "profile_avatar_label": "Picture",
+  "profile_avatar_preview": "Your picture",
+  "profile_avatar_choose": "Choose a picture",
+  "profile_avatar_change": "Change",
+  "profile_avatar_remove": "Remove",
+  "profile_avatar_hint": "Cropped to a square. It's saved with the form.",
+  "profile_avatar_upload_failed": "Couldn't upload the picture. Try again.",
+  "profile_save": "Save",
+  "profile_saved": "Profile saved.",
+  "profile_save_failed": "Couldn't save your profile. Try again.",
+  "archive_link": "Archive",
+  "archive_heading": [
+    {
+      "declarations": ["input project"],
+      "match": {
+        "": "Archive · {project}"
+      }
+    }
+  ],
+  "archive_description": "Tasks taken off the board. Restore one to put it back at the bottom of its column.",
+  "archive_empty": "Nothing is archived.",
+  "archive_archived_on": [
+    {
+      "declarations": ["input date"],
+      "match": {
+        "": "Archived {date}"
+      }
+    }
+  ],
+  "archive_restore": "Restore",
+  "archive_restored": [
+    {
+      "declarations": ["input code"],
+      "match": {
+        "": "{code} is back on the board."
+      }
+    }
+  ],
+  "archive_restore_failed": "Couldn't restore the task. Try again.",
+  "archive_delete": "Delete for good",
+  "archive_delete_title": [
+    {
+      "declarations": ["input code"],
+      "match": {
+        "": "Delete {code} for good?"
+      }
+    }
+  ],
+  "archive_delete_description": "Its comments, time logs and links go with it, and it can't be brought back. The history keeps a line saying it was deleted.",
+  "archive_delete_confirm": "Delete for good",
+  "archive_deleted": [
+    {
+      "declarations": ["input code"],
+      "match": {
+        "": "{code} was deleted."
+      }
+    }
+  ],
+  "archive_delete_failed": "Couldn't delete the task. Try again."
 }

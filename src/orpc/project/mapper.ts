@@ -1,3 +1,4 @@
+import { mediaUrl } from "#/lib/storage.server";
 import { USER_STATUSES } from "#/lib/user-constants";
 import { oneOf } from "#/orpc/allowed-values";
 import type { Column, Person, ProjectSummary } from "#/orpc/project/contract";
@@ -5,11 +6,12 @@ import { COLUMN_KINDS } from "#/orpc/project/constants";
 import type { ColumnRecord, MemberRow, ProjectRecord } from "#/orpc/project/repository";
 
 /*===== Public Shapes =====*/
-export function toPerson(row: Pick<MemberRow, "id" | "name" | "status">): Person {
+export function toPerson(row: Pick<MemberRow, "id" | "name" | "status" | "avatarMediaId">): Person {
   return {
     id: row.id,
     name: row.name,
     status: oneOf({ allowed: USER_STATUSES, value: row.status, what: "user status" }),
+    avatarUrl: row.avatarMediaId ? mediaUrl({ kind: "avatar", mediaId: row.avatarMediaId, variant: "thumb" }) : null,
   };
 }
 

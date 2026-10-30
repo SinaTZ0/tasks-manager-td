@@ -91,7 +91,7 @@ function ProjectCard({ project }: { project: ProjectSummary }) {
         ) : (
           <AvatarGroup>
             {project.members.map((member) => (
-              <PersonAvatar key={member.id} name={member.name} />
+              <PersonAvatar key={member.id} name={member.name} src={member.avatarUrl} />
             ))}
           </AvatarGroup>
         )}

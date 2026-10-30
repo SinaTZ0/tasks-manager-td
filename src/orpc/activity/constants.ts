@@ -7,6 +7,7 @@ export const ACTIVITY_ACTIONS = [
   "user.created",
   "user.role_changed",
   "user.status_changed",
+  "user.profile_updated",
   /*------ Project ------*/
   "project.created",
   "project.renamed",
@@ -21,6 +22,8 @@ export const ACTIVITY_ACTIONS = [
   "task.moved",
   "task.reordered",
   "task.archived",
+  "task.restored",
+  "task.deleted",
   "task.delegated",
   /*------ Status ------*/
   "task.started",

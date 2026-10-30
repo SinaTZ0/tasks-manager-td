@@ -1,4 +1,4 @@
-import { and, asc, desc, eq, inArray, isNull, ne, sql } from "drizzle-orm";
+import { and, asc, desc, eq, inArray, isNotNull, isNull, ne, sql } from "drizzle-orm";
 
 import type { Database } from "#/db/client.server";
 import { boardColumn, label, project, projectMember, task, taskLabel, user } from "#/db/schema";
@@ -8,7 +8,7 @@ export type TaskRecord = typeof task.$inferSelect;
 type NewTaskRecord = typeof task.$inferInsert;
 export type LabelRecord = typeof label.$inferSelect;
 export type ColumnRow = { id: string; kind: string; name: string | null };
-export type PersonRow = { id: string; name: string; status: string };
+export type PersonRow = { id: string; name: string; status: string; avatarMediaId: string | null };
 
 /*===== Projects and Columns =====*/
 export async function findProjectKey({ db, projectId }: { db: Database; projectId: string }): Promise<string> {
@@ -114,7 +114,7 @@ export async function findActiveMemberIds({
 export function findPeople({ db, ids }: { db: Database; ids: string[] }): Promise<PersonRow[]> {
   if (ids.length === 0) return Promise.resolve([]);
   return db
-    .select({ id: user.id, name: user.name, status: user.status })
+    .select({ id: user.id, name: user.name, status: user.status, avatarMediaId: user.avatarMediaId })
     .from(user)
     .where(inArray(user.id, ids))
     .orderBy(asc(user.name));
@@ -184,6 +184,20 @@ export async function updateTaskRow({
   const [row] = await db.update(task).set(values).where(eq(task.id, id)).returning();
   if (!row) throw new Error("updateTaskRow: update returned no row");
   return row;
+}
+
+/** Removes a task for good, with everything that cascades from it (comments, logs, links, hand-offs, alerts). */
+export async function deleteTaskRow({ db, id }: { db: Database; id: string }): Promise<void> {
+  await db.delete(task).where(eq(task.id, id));
+}
+
+/** A project's archived tasks, most recently archived first. */
+export function findArchivedTasks({ db, projectId }: { db: Database; projectId: string }): Promise<TaskRecord[]> {
+  return db
+    .select()
+    .from(task)
+    .where(and(eq(task.projectId, projectId), isNotNull(task.archivedAt)))
+    .orderBy(desc(task.archivedAt));
 }
 
 /*===== Labels =====*/

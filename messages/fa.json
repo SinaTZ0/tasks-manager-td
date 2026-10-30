@@ -1118,5 +1118,75 @@
   "task_tab_comments": "نظرها",
   "task_tab_activity": "تاریخچه",
   "task_tab_time": "زمان",
-  "task_tabs": "جزئیات کار"
+  "task_tabs": "جزئیات کار",
+  "activity_user_profile_updated": "نمایه‌اش را به‌روز کرد",
+  "activity_task_restored": "کار را از بایگانی برگرداند",
+  "activity_task_deleted": "کار را برای همیشه حذف کرد",
+  "task_error_delete_admin_only": "فقط مدیر می‌تواند کاری را برای همیشه حذف کند.",
+  "task_error_delete_archived_only": "پیش از حذف، کار را بایگانی کنید.",
+  "profile_error_avatar_unusable": "این تصویر قابل استفاده نیست. دوباره بارگذاری کنید.",
+  "nav_profile": "نمایه",
+  "profile_title": "نمایه‌ی شما",
+  "profile_description": "نام و تصویرتان روی کارها، نظرها و هر جا که تیم شما را می‌بیند نشان داده می‌شود.",
+  "profile_name_label": "نام",
+  "profile_email_label": "ایمیل (مدیر می‌تواند تغییرش دهد)",
+  "profile_avatar_label": "تصویر",
+  "profile_avatar_preview": "تصویر شما",
+  "profile_avatar_choose": "انتخاب تصویر",
+  "profile_avatar_change": "تغییر",
+  "profile_avatar_remove": "حذف",
+  "profile_avatar_hint": "به شکل مربع بریده می‌شود و با ذخیره‌ی فرم ثبت می‌شود.",
+  "profile_avatar_upload_failed": "تصویر بارگذاری نشد. دوباره امتحان کنید.",
+  "profile_save": "ذخیره",
+  "profile_saved": "نمایه ذخیره شد.",
+  "profile_save_failed": "نمایه ذخیره نشد. دوباره امتحان کنید.",
+  "archive_link": "بایگانی",
+  "archive_heading": [
+    {
+      "declarations": ["input project"],
+      "match": {
+        "": "بایگانی · {project}"
+      }
+    }
+  ],
+  "archive_description": "کارهایی که از تخته برداشته شده‌اند. با بازگرداندن، کار به انتهای ستون خودش برمی‌گردد.",
+  "archive_empty": "چیزی بایگانی نشده است.",
+  "archive_archived_on": [
+    {
+      "declarations": ["input date"],
+      "match": {
+        "": "بایگانی‌شده در {date}"
+      }
+    }
+  ],
+  "archive_restore": "بازگرداندن",
+  "archive_restored": [
+    {
+      "declarations": ["input code"],
+      "match": {
+        "": "{code} به تخته برگشت."
+      }
+    }
+  ],
+  "archive_restore_failed": "کار بازگردانده نشد. دوباره امتحان کنید.",
+  "archive_delete": "حذف همیشگی",
+  "archive_delete_title": [
+    {
+      "declarations": ["input code"],
+      "match": {
+        "": "{code} برای همیشه حذف شود؟"
+      }
+    }
+  ],
+  "archive_delete_description": "نظرها، زمان‌ها و وابستگی‌هایش هم حذف می‌شوند و برگرداندنی نیست. در تاریخچه فقط ثبت می‌شود که حذف شده است.",
+  "archive_delete_confirm": "برای همیشه حذف کن",
+  "archive_deleted": [
+    {
+      "declarations": ["input code"],
+      "match": {
+        "": "{code} حذف شد."
+      }
+    }
+  ],
+  "archive_delete_failed": "کار حذف نشد. دوباره امتحان کنید."
 }

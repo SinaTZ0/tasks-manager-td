@@ -12,6 +12,7 @@ import { getHandoffs } from "#/orpc/delegation/service";
 import { findBlockingTasks, findReleasedDependents, findWaitsFor } from "#/orpc/dependency/repository";
 import { notify, type NotificationEntry } from "#/orpc/notification/service";
 import type { ColumnKind } from "#/orpc/project/constants";
+import type { Person } from "#/orpc/project/contract";
 import { toPerson } from "#/orpc/project/mapper";
 import {
   BLOCKED_ENTRY_KINDS,
@@ -21,10 +22,12 @@ import {
   taskCode,
   type TaskStatusAction,
 } from "#/orpc/task/constants";
-import type { Board, Label, TaskCard, TaskDetail } from "#/orpc/task/contract";
+import type { ArchivedTask, Board, Label, TaskCard, TaskDetail } from "#/orpc/task/contract";
 import { toLabel, toTaskCard, toTaskDetail } from "#/orpc/task/mapper";
 import {
+  deleteTaskRow,
   findActiveMemberIds,
+  findArchivedTasks,
   findColumn,
   findColumnByKind,
   findColumnPositions,
@@ -743,6 +746,103 @@ export async function archiveTask({
       actorId,
       entries: [{ action: "task.archived", projectId, taskId, snapshot: { code, title: current.title } }],
     });
+    return { kind: "ok" };
+  });
+}
+
+/*===== Archive List =====*/
+/** A project's archived tasks as cards, most recently archived first, with when each was archived and who they name. */
+export async function listArchivedTasks({
+  db,
+  projectId,
+}: {
+  db: Database;
+  projectId: string;
+}): Promise<{ tasks: ArchivedTask[]; people: Person[] }> {
+  const records = await findArchivedTasks({ db, projectId });
+  const cards = await toCards({ db, records });
+  const people = await findPeople({
+    db,
+    ids: [...new Set(records.flatMap((record) => [record.ownerId, ...(record.assigneeId ? [record.assigneeId] : [])]))],
+  });
+  return {
+    tasks: cards.map((card, index) => ({ ...card, archivedAt: records[index]?.archivedAt ?? new Date(0) })),
+    people: people.map(toPerson),
+  };
+}
+
+/*===== Restore =====*/
+/**
+ * Puts an archived task back on the board, at the bottom of the column it was in (docs/app.md → Archive & restore).
+ * Any member may, as any member may archive one. If it is in a column that holds others up, its dependents wait for it
+ * again: being blocked is worked out from the board, not stored.
+ *
+ * @returns `not-found` for a task the project doesn't have; restoring a live task is a no-op.
+ */
+export async function restoreTask({
+  db,
+  actorId,
+  projectId,
+  taskId,
+}: {
+  db: Database;
+  actorId: string;
+  projectId: string;
+  taskId: string;
+}): Promise<{ kind: "ok" } | NotFound> {
+  if (!isUuid(taskId)) return { kind: "not-found" };
+
+  return db.transaction(async (tx): Promise<{ kind: "ok" } | NotFound> => {
+    const current = await lockTask({ db: tx, projectId, id: taskId });
+    if (!current) return { kind: "not-found" };
+    if (!current.archivedAt) return { kind: "ok" };
+
+    const position = generateKeyBetween(await findLastPosition({ db: tx, columnId: current.columnId }), null);
+    await updateTaskRow({ db: tx, id: taskId, values: { archivedAt: null, position, updatedAt: new Date() } });
+    const code = taskCode({ key: await findProjectKey({ db: tx, projectId }), number: current.number });
+    await recordActivity({
+      db: tx,
+      actorId,
+      entries: [{ action: "task.restored", projectId, taskId, snapshot: { code, title: current.title } }],
+    });
+    return { kind: "ok" };
+  });
+}
+
+/*===== Delete =====*/
+/**
+ * Deletes an archived task for good: only an admin, and only from the archive (rule 10). Its comments, time logs,
+ * links, hand-offs and notifications go with it; its history stays, with one more entry saying it was deleted, since
+ * the history is never edited (rule 7). The code (`TD-42`) is never handed out again.
+ *
+ * @returns `not-found` for a task the project doesn't have; `invalid` for a live task or an actor who isn't an admin.
+ */
+export async function deleteTask({
+  db,
+  actor,
+  projectId,
+  taskId,
+}: {
+  db: Database;
+  actor: TaskActor;
+  projectId: string;
+  taskId: string;
+}): Promise<{ kind: "ok" } | NotFound | Invalid> {
+  if (!isUuid(taskId)) return { kind: "not-found" };
+  if (actor.role !== "admin") return { kind: "invalid", fields: {}, errors: [m.task_error_delete_admin_only()] };
+
+  return db.transaction(async (tx): Promise<{ kind: "ok" } | NotFound | Invalid> => {
+    const current = await lockTask({ db: tx, projectId, id: taskId });
+    if (!current) return { kind: "not-found" };
+    if (!current.archivedAt) return { kind: "invalid", fields: {}, errors: [m.task_error_delete_archived_only()] };
+
+    const code = taskCode({ key: await findProjectKey({ db: tx, projectId }), number: current.number });
+    await recordActivity({
+      db: tx,
+      actorId: actor.id,
+      entries: [{ action: "task.deleted", projectId, taskId, snapshot: { code, title: current.title } }],
+    });
+    await deleteTaskRow({ db: tx, id: taskId });
     return { kind: "ok" };
   });
 }

@@ -65,6 +65,10 @@ function AccountMenu({ viewer }: { viewer: Viewer }) {
           </DropdownMenuLabel>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
+        <DropdownMenuItem render={<Link to="/profile" />}>
+          <UserIcon />
+          {m.nav_profile()}
+        </DropdownMenuItem>
         <DropdownMenuItem disabled={signOut.isPending} onClick={() => signOut.mutate()}>
           <LogOutIcon />
           {m.nav_sign_out()}
