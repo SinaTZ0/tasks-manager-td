@@ -328,6 +328,49 @@
   "label_new_label": "New label",
   "label_add": "Add",
   "label_color": "Label colour",
+  "label_manage": "Manage labels",
+  "label_dialog_title": "Labels",
+  "label_dialog_description_admin": "Add, rename, recolour or delete this project's labels.",
+  "label_dialog_description_member": "Add a label to this project. Only an admin can rename or delete one.",
+  "label_empty": "No labels yet.",
+  "label_name": "Name",
+  "label_save": "Save",
+  "label_saved": "Label saved.",
+  "label_delete": [
+    {
+      "declarations": ["input name"],
+      "match": {
+        "": "Delete “{name}”"
+      }
+    }
+  ],
+  "label_delete_confirm": [
+    {
+      "declarations": ["input name"],
+      "match": {
+        "": "Delete “{name}”? It comes off every task that has it."
+      }
+    }
+  ],
+  "label_delete_submit": "Delete",
+  "label_delete_cancel": "Cancel",
+  "label_deleted": [
+    {
+      "declarations": ["input name"],
+      "match": {
+        "": "“{name}” deleted."
+      }
+    }
+  ],
+  "label_used_by": [
+    {
+      "declarations": ["input count", "local countText = count: number"],
+      "match": {
+        "": "On {countText} tasks"
+      }
+    }
+  ],
+  "label_save_failed": "Couldn't save the label. Try again.",
   "task_labels": "Labels",
   "task_unassigned": "Unassigned",
   "task_has_description": "Has a description",
@@ -926,6 +969,30 @@
       "declarations": ["input name"],
       "match": {
         "": "added the label {name}"
+      }
+    }
+  ],
+  "activity_label_renamed": [
+    {
+      "declarations": ["input from", "input to"],
+      "match": {
+        "": "renamed the label {from} to {to}"
+      }
+    }
+  ],
+  "activity_label_recolored": [
+    {
+      "declarations": ["input name"],
+      "match": {
+        "": "changed the colour of the label {name}"
+      }
+    }
+  ],
+  "activity_label_deleted": [
+    {
+      "declarations": ["input name"],
+      "match": {
+        "": "deleted the label {name}"
       }
     }
   ],

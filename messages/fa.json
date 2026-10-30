@@ -328,6 +328,49 @@
   "label_new_label": "برچسب تازه",
   "label_add": "افزودن",
   "label_color": "رنگ برچسب",
+  "label_manage": "مدیریت برچسب‌ها",
+  "label_dialog_title": "برچسب‌ها",
+  "label_dialog_description_admin": "برچسب‌های این پروژه را بیفزایید، نامشان را عوض کنید، رنگشان را تغییر دهید یا حذفشان کنید.",
+  "label_dialog_description_member": "برچسبی به این پروژه بیفزایید. تغییر نام یا حذف برچسب فقط با مدیر است.",
+  "label_empty": "هنوز برچسبی نیست.",
+  "label_name": "نام",
+  "label_save": "ذخیره",
+  "label_saved": "برچسب ذخیره شد.",
+  "label_delete": [
+    {
+      "declarations": ["input name"],
+      "match": {
+        "": "حذف «{name}»"
+      }
+    }
+  ],
+  "label_delete_confirm": [
+    {
+      "declarations": ["input name"],
+      "match": {
+        "": "«{name}» حذف شود؟ از همهٔ کارهایی که آن را دارند برداشته می‌شود."
+      }
+    }
+  ],
+  "label_delete_submit": "حذف",
+  "label_delete_cancel": "انصراف",
+  "label_deleted": [
+    {
+      "declarations": ["input name"],
+      "match": {
+        "": "«{name}» حذف شد."
+      }
+    }
+  ],
+  "label_used_by": [
+    {
+      "declarations": ["input count", "local countText = count: number"],
+      "match": {
+        "": "روی {countText} کار"
+      }
+    }
+  ],
+  "label_save_failed": "برچسب ذخیره نشد. دوباره تلاش کنید.",
   "task_labels": "برچسب‌ها",
   "task_unassigned": "بی‌مسئول",
   "task_has_description": "توضیح دارد",
@@ -926,6 +969,30 @@
       "declarations": ["input name"],
       "match": {
         "": "برچسب «{name}» را ساخت"
+      }
+    }
+  ],
+  "activity_label_renamed": [
+    {
+      "declarations": ["input from", "input to"],
+      "match": {
+        "": "نام برچسب را از «{from}» به «{to}» تغییر داد"
+      }
+    }
+  ],
+  "activity_label_recolored": [
+    {
+      "declarations": ["input name"],
+      "match": {
+        "": "رنگ برچسب «{name}» را تغییر داد"
+      }
+    }
+  ],
+  "activity_label_deleted": [
+    {
+      "declarations": ["input name"],
+      "match": {
+        "": "برچسب «{name}» را حذف کرد"
       }
     }
   ],

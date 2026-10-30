@@ -222,4 +222,16 @@ export const taskContract = {
     .errors(errors)
     .input(z.strictObject({ projectId: z.string(), name: z.string(), color: z.enum(LABEL_COLORS) }))
     .output(labelSchema),
+  /** Renames or recolours a label. Admins only: anyone else gets `FORBIDDEN`. */
+  updateLabel: oc
+    .errors(errors)
+    .input(
+      z.strictObject({ projectId: z.string(), labelId: z.string(), name: z.string(), color: z.enum(LABEL_COLORS) }),
+    )
+    .output(labelSchema),
+  /** Deletes a label and takes it off every task that has it. Admins only: anyone else gets `FORBIDDEN`. */
+  deleteLabel: oc
+    .errors(errors)
+    .input(z.strictObject({ projectId: z.string(), labelId: z.string() }))
+    .output(z.void()),
 };

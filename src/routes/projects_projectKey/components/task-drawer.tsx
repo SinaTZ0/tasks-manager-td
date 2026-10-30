@@ -241,7 +241,15 @@ function TaskDetails({
             />
             <EstimateField key={task.estimateMinutes} task={task} update={update} readOnly={readOnly} />
             <Separator />
-            <LabelPicker task={task} update={update} projectId={project.id} labels={board.labels} readOnly={readOnly} />
+            <LabelPicker
+              task={task}
+              update={update}
+              projectId={project.id}
+              labels={board.labels}
+              tasks={board.tasks}
+              isAdmin={isAdmin}
+              readOnly={readOnly}
+            />
             <Separator />
             <TaskDelegation task={task} project={project} code={code} readOnly={readOnly} />
             <Separator />

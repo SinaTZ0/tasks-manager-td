@@ -13,8 +13,10 @@ import {
   archiveTaskProcedure,
   createLabelProcedure,
   createTaskProcedure,
+  deleteLabelProcedure,
   moveTaskProcedure,
   taskBoardProcedure,
+  updateLabelProcedure,
   updateTaskProcedure,
 } from "#/orpc/task/procedure";
 import { addTimeEntryProcedure } from "#/orpc/time/procedure";
@@ -95,6 +97,22 @@ describe("roles", () => {
     expect(await codeOf(call(archiveTaskProcedure, { projectId, taskId }, as(users.ali)))).toBe("FORBIDDEN");
     // A user still does the everyday work.
     expect(await codeOf(call(updateTaskProcedure, { projectId, taskId, title: "کار" }, as(users.ali)))).toBe("OK");
+  });
+
+  it("lets a user add a label but only an admin rename or delete one", async () => {
+    const { projectId, users } = fixture;
+    const created = await call(createLabelProcedure, { projectId, name: "فوری", color: "pink" }, as(users.ali));
+    await call(updateTaskProcedure, { projectId, taskId, labelIds: [created.id] }, as(users.ali));
+    const labelId = created.id;
+
+    const rename = { projectId, labelId, name: "دیگر", color: "pink" } as const;
+    expect(await codeOf(call(updateLabelProcedure, rename, as(users.ali)))).toBe("FORBIDDEN");
+    expect(await codeOf(call(deleteLabelProcedure, { projectId, labelId }, as(users.ali)))).toBe("FORBIDDEN");
+
+    await call(deleteLabelProcedure, { projectId, labelId }, as(users.admin));
+    const board = await call(taskBoardProcedure, { projectId }, as(users.admin));
+    expect(board.labels.map((label) => label.id)).not.toContain(labelId);
+    expect(board.tasks.find((task) => task.id === taskId)?.labelIds).toEqual([]);
   });
 
   it("never gives a viewer a task", async () => {

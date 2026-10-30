@@ -43,6 +43,7 @@ import {
   archiveTaskProcedure,
   createLabelProcedure,
   createTaskProcedure,
+  deleteLabelProcedure,
   deleteTaskProcedure,
   getTaskProcedure,
   moveTaskProcedure,
@@ -50,6 +51,7 @@ import {
   restoreTaskProcedure,
   taskBoardProcedure,
   transitionTaskProcedure,
+  updateLabelProcedure,
   updateTaskProcedure,
 } from "#/orpc/task/procedure";
 import {
@@ -162,6 +164,8 @@ export const router = implementer.router({
     transition: transitionTaskProcedure,
     mine: myTasksProcedure,
     createLabel: createLabelProcedure,
+    updateLabel: updateLabelProcedure,
+    deleteLabel: deleteLabelProcedure,
   },
   team: {
     list: listTeamProcedure,

@@ -39,6 +39,8 @@ import {
   findColumn,
   findColumnByKind,
   findColumnPositions,
+  deleteLabelRow,
+  findLabel,
   findLabelByName,
   findLabelIdsByTask,
   findLabels,
@@ -52,6 +54,7 @@ import {
   lockTask,
   replaceTaskLabels,
   takeTaskNumber,
+  updateLabelRow,
   updateTaskRow,
   type ColumnRow,
   type TaskRecord,
@@ -989,4 +992,85 @@ export async function createLabel({
     });
     return { kind: "success", label: toLabel(record) };
   });
+}
+
+/**
+ * Renames or recolours one of the project's labels. Admins only (the procedure checks): the change shows on every task
+ * that has it. The history of those tasks keeps the old name, since it stores names, not ids.
+ */
+export async function updateLabel({
+  db,
+  actorId,
+  projectId,
+  labelId,
+  input,
+}: {
+  db: Database;
+  actorId: string;
+  projectId: string;
+  labelId: string;
+  input: unknown;
+}): Promise<LabelResult | NotFound> {
+  const current = await findLabel({ db, projectId, labelId });
+  if (!current) return { kind: "not-found" };
+
+  const parsed = newLabelSchema.safeParse(input);
+  if (!parsed.success) return { kind: "invalid", fields: issuesToErrorData(parsed.error.issues).fields };
+  const { name, color } = parsed.data;
+  if (name === current.name && color === current.color) return { kind: "success", label: toLabel(current) };
+
+  const taken = await findLabelByName({ db, projectId, name });
+  if (taken && taken.id !== labelId) return { kind: "invalid", fields: { name: m.label_error_name_taken() } };
+
+  return db.transaction(async (tx): Promise<LabelResult> => {
+    const record = await updateLabelRow({ db: tx, labelId, values: { name, color } });
+    await recordActivity({
+      db: tx,
+      actorId,
+      entries: [
+        {
+          action: "label.updated",
+          projectId,
+          before: { name: current.name, color: current.color },
+          after: { name, color },
+          snapshot: { labelId, name },
+        },
+      ],
+    });
+    return { kind: "success", label: toLabel(record) };
+  });
+}
+
+/** Deletes one of the project's labels, taking it off every task that has it. Admins only (the procedure checks). */
+export async function deleteLabel({
+  db,
+  actorId,
+  projectId,
+  labelId,
+}: {
+  db: Database;
+  actorId: string;
+  projectId: string;
+  labelId: string;
+}): Promise<{ kind: "ok" } | NotFound> {
+  const current = await findLabel({ db, projectId, labelId });
+  if (!current) return { kind: "not-found" };
+
+  await db.transaction(async (tx) => {
+    // Recorded first: the entry names the label, which is gone once the row is.
+    await recordActivity({
+      db: tx,
+      actorId,
+      entries: [
+        {
+          action: "label.deleted",
+          projectId,
+          before: { name: current.name, color: current.color },
+          snapshot: { labelId, name: current.name },
+        },
+      ],
+    });
+    await deleteLabelRow({ db: tx, labelId });
+  });
+  return { kind: "ok" };
 }

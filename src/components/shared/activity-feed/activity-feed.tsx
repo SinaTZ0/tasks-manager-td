@@ -189,6 +189,18 @@ function describe({ item, people }: { item: ActivityItem; people: Map<string, Pe
       };
     case "label.created":
       return { clauses: [m.activity_label_created({ name: isolate(textOf(after, "name") ?? "?") })] };
+    case "label.updated": {
+      const from = textOf(before, "name") ?? "?";
+      const to = textOf(after, "name") ?? from;
+      const clauses: string[] = [];
+      if (from !== to) clauses.push(m.activity_label_renamed({ from: isolate(from), to: isolate(to) }));
+      if (textOf(before, "color") !== textOf(after, "color")) {
+        clauses.push(m.activity_label_recolored({ name: isolate(to) }));
+      }
+      return { clauses: clauses.length > 0 ? clauses : [m.activity_label_recolored({ name: isolate(to) })] };
+    }
+    case "label.deleted":
+      return { clauses: [m.activity_label_deleted({ name: snapshotName() })] };
 
     /*------ Task ------*/
     case "task.created":

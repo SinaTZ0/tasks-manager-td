@@ -12,11 +12,12 @@ Made with the user on 2026-10-30. They answer the spec's open questions and over
 - **Accounts**: there is no public sign-up. An admin creates every account, and the person signs in with the password
   the admin set.
 - **Roles** (three levels since 2026-10-30, slice 9): `admin`, `user` and `viewer`. An admin can give anyone any role.
-  The last active admin can't be demoted or deactivated, so the team is never locked out.
+  The last active admin can't be demoted or deactivated, so the team is never locked out. Every action by role is in
+  [permissions.md](./permissions.md).
   - **Admin**: everything. The only one who creates projects and tasks, changes project settings, and archives,
-    restores or deletes tasks.
+    restores or deletes tasks, and renames or deletes labels.
   - **User**: works on the tasks of their projects: edits, moves, starts, pauses, stops, tracks time, comments,
-    delegates, links dependencies, adds labels. Can't create or archive a task.
+    delegates, links dependencies, adds labels. Can't create or archive a task, or rename or delete a label.
   - **Viewer**: read-only. Sees their projects' boards, cards, comments and history, and nothing they do changes
     anything. Can be @mentioned (and is notified), but can't be assigned, own or be delegated a task.
 - **Leaving the team**: deactivate (the existing `blocked` status), never delete. A deactivated user can't sign in and
@@ -45,7 +46,7 @@ Made with the user on 2026-10-30. They answer the spec's open questions and over
   cancelled) and keeps exactly one column of each, so "Pause → the Paused column" always has one answer. Columns can
   be renamed, reordered and given a WIP limit; the cancelled column is never drawn on the board.
 - **Project settings are admin-only**: members, columns, WIP limits. Labels can be added by any member, because tagging
-  is part of everyday work.
+  is part of everyday work; renaming or deleting one changes every task that has it, so that is an admin's.
 - **Owner**: whoever creates a task owns it (an admin, since slice 9). The owner or an admin can hand ownership to someone else; delegation never
   does (rule 6).
 - **Comments are soft-deleted**: a deleted comment leaves "comment deleted" in the thread, and its text stays in the

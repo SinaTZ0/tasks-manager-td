@@ -315,3 +315,40 @@ export async function insertLabel({
   if (!row) throw new Error("insertLabel: insert returned no row");
   return row;
 }
+
+/** One of the project's labels; undefined for a label another project has, so an id can't reach across projects. */
+export async function findLabel({
+  db,
+  projectId,
+  labelId,
+}: {
+  db: Database;
+  projectId: string;
+  labelId: string;
+}): Promise<LabelRecord | undefined> {
+  const [row] = await db
+    .select()
+    .from(label)
+    .where(and(eq(label.projectId, projectId), eq(label.id, labelId)))
+    .limit(1);
+  return row;
+}
+
+export async function updateLabelRow({
+  db,
+  labelId,
+  values,
+}: {
+  db: Database;
+  labelId: string;
+  values: Pick<typeof label.$inferInsert, "name" | "color">;
+}): Promise<LabelRecord> {
+  const [row] = await db.update(label).set(values).where(eq(label.id, labelId)).returning();
+  if (!row) throw new Error("updateLabelRow: update returned no row");
+  return row;
+}
+
+/** Deletes a label. `task_label` cascades, so it also comes off every task that had it, archived ones included. */
+export async function deleteLabelRow({ db, labelId }: { db: Database; labelId: string }): Promise<void> {
+  await db.delete(label).where(eq(label.id, labelId));
+}

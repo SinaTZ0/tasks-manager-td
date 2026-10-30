@@ -10,6 +10,7 @@ import {
   archiveTask,
   createLabel,
   createTask,
+  deleteLabel,
   deleteTask,
   getBoard,
   getTask,
@@ -18,6 +19,7 @@ import {
   moveTask,
   restoreTask,
   transitionTask,
+  updateLabel,
   updateTask,
 } from "#/orpc/task/service";
 
@@ -152,4 +154,26 @@ export const createLabelProcedure = base.task.createLabel
     const result = await createLabel({ db: context.db, actorId: context.user.id, projectId, input: fields });
     if (result.kind === "invalid") throw errors.INVALID_INPUT({ data: { errors: [], fields: result.fields } });
     return result.label;
+  });
+
+// Renaming or deleting a label changes every task that has it, so unlike adding one it is an admin's.
+export const updateLabelProcedure = base.task.updateLabel
+  .use(requireAdminMiddleware)
+  .use(provideDbMiddleware)
+  .use(requireProjectMemberMiddleware)
+  .handler(async ({ context, input, errors }) => {
+    const { projectId, labelId, ...fields } = input;
+    const result = await updateLabel({ db: context.db, actorId: context.user.id, projectId, labelId, input: fields });
+    if (result.kind === "not-found") throw errors.NOT_FOUND({ data: noData });
+    if (result.kind === "invalid") throw errors.INVALID_INPUT({ data: { errors: [], fields: result.fields } });
+    return result.label;
+  });
+
+export const deleteLabelProcedure = base.task.deleteLabel
+  .use(requireAdminMiddleware)
+  .use(provideDbMiddleware)
+  .use(requireProjectMemberMiddleware)
+  .handler(async ({ context, input, errors }) => {
+    const result = await deleteLabel({ db: context.db, actorId: context.user.id, ...input });
+    if (result.kind === "not-found") throw errors.NOT_FOUND({ data: noData });
   });

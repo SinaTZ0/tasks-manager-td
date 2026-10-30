@@ -16,6 +16,8 @@ export const ACTIVITY_ACTIONS = [
   "column.updated",
   "column.moved",
   "label.created",
+  "label.updated",
+  "label.deleted",
   /*------ Task ------*/
   "task.created",
   "task.updated",
