@@ -575,6 +575,12 @@
   }
 }
 
+/* A task's details in three columns: the work and the conversation share the room 5:4, and the details column is
+   fixed at the width its widest row (the label colour keys) needs. */
+@utility task-columns {
+  grid-template-columns: minmax(0, 5fr) minmax(0, 4fr) 24rem;
+}
+
 /* A part being dragged on the board (dnd-kit): where it is and how it slides come in as custom properties. */
 @utility drag-motion {
   transform: var(--drag-transform, none);

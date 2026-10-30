@@ -49,8 +49,10 @@ import { useTaskUpdate } from "#/routes/projects_projectKey/use-task-update";
 /*===== Task Drawer =====*/
 
 /**
- * A card's details in a wide side panel over the board, opened by `?task=TD-42` so it has a link. Closing it drops the
- * param. Its status and timer keys sit on top, its time at the bottom; every field saves on its own, as it changes.
+ * A card's details in a panel floating over nearly the whole page, opened by `?task=TD-42` so it has a link. Closing it
+ * drops the param. Under its header the card reads in three columns that scroll on their own: the work (status and
+ * timer keys, then what the task is), the conversation (comments, history, time), and the details people look things
+ * up in. Every field saves on its own, as it changes.
  */
 export function TaskDrawer({
   code,
@@ -75,7 +77,7 @@ export function TaskDrawer({
 
   return (
     <Sheet open onOpenChange={(open) => !open && close()}>
-      <SheetContent size="wide" className="overflow-y-auto">
+      <SheetContent size="page" className="overflow-hidden">
         {task ? (
           <TaskDetails task={task} project={project} board={board} people={people} onArchived={close} />
         ) : (
@@ -150,7 +152,7 @@ function TaskDetails({
 
   return (
     // Files dropped or pasted anywhere on the card become its attachments.
-    <div {...drop.props} className="relative flex flex-col gap-4">
+    <div {...drop.props} className="relative flex min-h-0 flex-1 flex-col">
       {drop.over && (
         <div className="pointer-events-none absolute inset-2 z-20 rounded-housing border-2 border-dashed border-ring bg-background/90">
           {/* Sticky, so the label stays in view however far the drawer is scrolled. */}
@@ -174,11 +176,12 @@ function TaskDetails({
       </SheetHeader>
 
       {archived ? (
-        <p className="px-6">{m.task_archived_notice()}</p>
+        <p className="p-6">{m.task_archived_notice()}</p>
       ) : (
-        <div className="grid grid-cols-3 gap-8 px-6 pb-6">
-          {/*------ Main ------*/}
-          <div className="col-span-2 flex min-w-0 flex-col gap-6">
+        // Each column scrolls on its own, so the thread stays in view while the checklist or a field is worked on.
+        <div className="grid min-h-0 flex-1 task-columns divide-x divide-border">
+          {/*------ Work ------*/}
+          <div className="flex min-h-0 flex-col gap-6 overflow-y-auto p-6">
             <TaskStatusPanel
               task={task}
               project={project}
@@ -194,10 +197,11 @@ function TaskDetails({
             <Separator />
             <TaskAttachments task={task} projectId={project.id} people={people} uploads={uploads} readOnly={readOnly} />
             <Separator />
-            <LabelPicker task={task} update={update} projectId={project.id} labels={board.labels} readOnly={readOnly} />
-            <Separator />
             <TaskDependencies task={task} project={project} board={board} kinds={kinds} readOnly={readOnly} />
-            <Separator />
+          </div>
+
+          {/*------ Conversation ------*/}
+          <div className="flex min-h-0 flex-col overflow-y-auto p-6">
             <TaskTabs
               task={task}
               project={project}
@@ -209,8 +213,8 @@ function TaskDetails({
             />
           </div>
 
-          {/*------ Side ------*/}
-          <div className="flex flex-col gap-5">
+          {/*------ Details ------*/}
+          <div className="flex min-h-0 flex-col gap-5 overflow-y-auto bg-muted/40 p-6">
             <PriorityField task={task} update={update} readOnly={readOnly} />
             <PersonField
               task={task}
@@ -236,6 +240,8 @@ function TaskDetails({
               finished={column?.kind === "done" || column?.kind === "cancelled"}
             />
             <EstimateField key={task.estimateMinutes} task={task} update={update} readOnly={readOnly} />
+            <Separator />
+            <LabelPicker task={task} update={update} projectId={project.id} labels={board.labels} readOnly={readOnly} />
             <Separator />
             <TaskDelegation task={task} project={project} code={code} readOnly={readOnly} />
             <Separator />
@@ -279,7 +285,7 @@ function TaskDetails({
 /*===== Tabs =====*/
 
 /**
- * The drawer's lower half: the comment thread, the task's history, and its time, one at a time. Comments come first:
+ * The drawer's middle column: the comment thread, the task's history, and its time, one at a time. Comments come first:
  * they are what people come back to a card for.
  */
 type TaskTab = "comments" | "activity" | "time";

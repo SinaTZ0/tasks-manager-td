@@ -21,8 +21,7 @@ const twContentStyles = defineStyles({
   typography: "text-body-sm",
   interaction: "transition duration-200 ease-in-out",
   state: "data-ending-style:opacity-0 data-starting-style:opacity-0",
-  // The top/bottom edges are full width; start/end edges are a side panel capped at 24rem, or 44rem when `data-size` is
-  // `wide` (a task's drawer, which holds a whole form).
+  // The top/bottom edges are full width; start/end edges are a side panel capped at 24rem.
   stateBottom:
     "data-[side=bottom]:inset-x-0 data-[side=bottom]:bottom-0 data-[side=bottom]:h-auto data-[side=bottom]:rounded-t-housing data-[side=bottom]:border-t data-[side=bottom]:data-ending-style:translate-y-10 data-[side=bottom]:data-starting-style:translate-y-10",
   stateTop:
@@ -31,8 +30,11 @@ const twContentStyles = defineStyles({
     "data-[side=start]:inset-y-0 data-[side=start]:inset-s-0 data-[side=start]:h-full data-[side=start]:w-[min(88vw,24rem)] data-[side=start]:border-e data-[side=start]:data-ending-style:translate-x-10 data-[side=start]:data-starting-style:translate-x-10 ltr:data-[side=start]:data-ending-style:-translate-x-10 ltr:data-[side=start]:data-starting-style:-translate-x-10",
   stateEnd:
     "data-[side=end]:inset-y-0 data-[side=end]:inset-e-0 data-[side=end]:h-full data-[side=end]:w-[min(88vw,24rem)] data-[side=end]:border-s data-[side=end]:data-ending-style:-translate-x-10 data-[side=end]:data-starting-style:-translate-x-10 ltr:data-[side=end]:data-ending-style:translate-x-10 ltr:data-[side=end]:data-starting-style:translate-x-10",
-  stateWide:
-    "data-[size=wide]:data-[side=end]:w-[min(92vw,44rem)] data-[size=wide]:data-[side=start]:w-[min(92vw,44rem)]",
+  // `data-size="page"` (a task's details) is no side panel: it floats over nearly the whole page, a margin of desk on
+  // all four sides so it reads as lifted on top, and grows in place instead of sliding. It carries no `data-side`, so
+  // none of the edge styles above apply.
+  statePage:
+    "data-[size=page]:inset-4 data-[size=page]:rounded-housing data-[size=page]:border data-[size=page]:data-ending-style:scale-[0.98] data-[size=page]:data-starting-style:scale-[0.98] data-[size=page]:lg:inset-6",
   motion: "motion-reduce:transition-none",
 });
 

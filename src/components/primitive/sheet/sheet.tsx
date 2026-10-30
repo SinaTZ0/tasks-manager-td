@@ -42,7 +42,8 @@ function SheetOverlay({ className, ...props }: SheetPrimitive.Backdrop.Props) {
 
 /**
  * The sliding panel. `side` is logical: `start` and `end` follow the reading direction (right and left in Persian),
- * so the mobile menu opens from the inline start edge. `size="wide"` makes a side panel wide enough for a whole form.
+ * so the mobile menu opens from the inline start edge. `size="page"` ignores `side`: the panel floats over nearly the whole
+ * page, for content with room for columns (a task's details).
  */
 function SheetContent({
   className,
@@ -53,7 +54,7 @@ function SheetContent({
   ...props
 }: SheetPrimitive.Popup.Props & {
   side?: "top" | "bottom" | "start" | "end";
-  size?: "default" | "wide";
+  size?: "default" | "page";
   showCloseButton?: boolean;
 }) {
   return (
@@ -61,7 +62,7 @@ function SheetContent({
       <SheetOverlay />
       <SheetPrimitive.Popup
         data-slot="sheet-content"
-        data-side={side}
+        data-side={size === "page" ? undefined : side}
         data-size={size}
         className={cn(sheetContentClasses, className)}
         {...props}
