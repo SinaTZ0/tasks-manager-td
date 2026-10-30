@@ -5,6 +5,7 @@ import { checklistContract } from "#/orpc/checklist/contract";
 import { commentContract } from "#/orpc/comment/contract";
 import { delegationContract } from "#/orpc/delegation/contract";
 import { dependencyContract } from "#/orpc/dependency/contract";
+import { liveContract } from "#/orpc/live/contract";
 import { mediaContract } from "#/orpc/media/contract";
 import { noteContract } from "#/orpc/note/contract";
 import { notificationContract } from "#/orpc/notification/contract";
@@ -27,6 +28,7 @@ export const contract = {
   comment: commentContract,
   delegation: delegationContract,
   dependency: dependencyContract,
+  live: liveContract,
   media: mediaContract,
   note: noteContract,
   notification: notificationContract,

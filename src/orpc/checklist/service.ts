@@ -18,6 +18,7 @@ import {
   type ChecklistItemRecord,
 } from "#/orpc/checklist/repository";
 import { checklistTextSchema } from "#/orpc/checklist/validation";
+import { publishLive } from "#/orpc/live/publish";
 import { taskCode } from "#/orpc/task/constants";
 import { findProjectKey, lockTask, type TaskRecord } from "#/orpc/task/repository";
 import { m } from "#/paraglide/messages";
@@ -163,6 +164,9 @@ export async function editChecklistItem({
     if (ticking || unticking) {
       const action = ticking ? "checklist.ticked" : "checklist.unticked";
       await recordItem({ db: tx, actorId, projectId, task, action, item: record });
+    } else {
+      // A rename writes no history, so it tells the open boards itself.
+      await publishLive({ db: tx, signals: [{ kind: "project", id: projectId }] });
     }
     return { kind: "success", item: toChecklistItem(record) };
   });
@@ -196,6 +200,8 @@ export async function moveChecklistItem({
     const finalPosition = resolvePosition({ wanted: position, taken });
     if (finalPosition !== found.item.position) {
       await updateChecklistItem({ db: tx, id: itemId, values: { position: finalPosition } });
+      // A reorder writes no history, so it tells the open boards itself.
+      await publishLive({ db: tx, signals: [{ kind: "project", id: projectId }] });
     }
     return { kind: "ok" };
   });

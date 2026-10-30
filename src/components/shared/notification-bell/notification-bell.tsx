@@ -17,6 +17,7 @@ import { toast } from "#/components/primitive/toast/toast";
 import { describeApiFailure } from "#/lib/api-error";
 import { formatDate, formatNumber, isoToDate } from "#/lib/locale";
 import { orpc } from "#/orpc/client";
+import { useLiveConnected } from "#/hooks/use-live-updates";
 import { NOTIFICATION_POLL_MS } from "#/orpc/notification/constants";
 import type { Notification } from "#/orpc/notification/contract";
 import { m } from "#/paraglide/messages";
@@ -43,7 +44,10 @@ function sentenceOf(item: Notification): string {
   }
 }
 
-/** The bell's polling query: the site layout loads it first, and it asks again every half minute. */
+/**
+ * The bell's polling query: the site layout loads it first, and it asks again every half minute. The bell itself stops
+ * asking while the live stream is open, which tells it about new ones.
+ */
 export const notificationsQuery = () => orpc.notification.list.queryOptions({ refetchInterval: NOTIFICATION_POLL_MS });
 
 /*===== Notification Bell =====*/
@@ -51,13 +55,14 @@ export const notificationsQuery = () => orpc.notification.list.queryOptions({ re
 /**
  * The viewer's notifications, in the header on every page (docs/app.md → Notification): a key with a bell that lights
  * an orange LED and prints the count while some are unread, opening the latest as a list. Each one opens its task and
- * is marked read; "mark all read" clears the rest. No live connection yet: the list is asked for again every half
- * minute (`NOTIFICATION_POLL_MS`).
+ * is marked read; "mark all read" clears the rest. While the page holds the live stream open, a new one shows at once;
+ * otherwise the list is asked for again every half minute (`NOTIFICATION_POLL_MS`).
  */
 export function NotificationBell() {
   const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
-  const { data } = useSuspenseQuery(notificationsQuery());
+  const live = useLiveConnected();
+  const { data } = useSuspenseQuery({ ...notificationsQuery(), refetchInterval: live ? false : NOTIFICATION_POLL_MS });
 
   const markRead = useMutation(
     orpc.notification.markRead.mutationOptions({

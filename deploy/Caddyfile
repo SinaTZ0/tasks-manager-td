@@ -15,7 +15,10 @@
 # ===== App =====
 {$DOMAIN} {
 	import tls-{$TLS_MODE:auto}
-	encode zstd gzip
+	# The live stream (`live.events`, server-sent events) is left uncompressed, so each event goes out as it is written;
+	# `reverse_proxy` already flushes `text/event-stream` responses without buffering them.
+	@compressible not path /rpc/live/*
+	encode @compressible zstd gzip
 
 	# Above the app's 20 MB attachment limit (`ATTACHMENT_MAX_BYTES`; pictures stop at 10 MB), plus room for the
 	# multipart encoding.

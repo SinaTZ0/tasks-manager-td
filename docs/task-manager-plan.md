@@ -260,7 +260,7 @@ follows the backend flow, then the frontend flow; desktop first (the phone layou
   its files from storage.
 - **Tests**: a viewer can't add one; deleting a task removes its attachments' files.
 
-### 16. Live Updates
+### 16. Live Updates ✓
 
 - Everyone on a board sees changes as they happen. An oRPC event-iterator procedure (server-sent events, one way into
   the server as before) streams "project X changed" and "you have a notification"; the page invalidates the matching

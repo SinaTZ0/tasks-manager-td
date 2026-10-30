@@ -20,6 +20,7 @@ import {
 import { delegatedByMeProcedure, delegateTaskProcedure } from "#/orpc/delegation/procedure";
 import { addDependencyProcedure, removeDependencyProcedure } from "#/orpc/dependency/procedure";
 import { implementer } from "#/orpc/implementer.server";
+import { liveEventsProcedure } from "#/orpc/live/procedure";
 import { uploadMediaProcedure } from "#/orpc/media/procedure";
 import { createNoteProcedure, deleteNoteProcedure, listNotesProcedure } from "#/orpc/note/procedure";
 import { listNotificationsProcedure, markNotificationsReadProcedure } from "#/orpc/notification/procedure";
@@ -98,6 +99,9 @@ export const router = implementer.router({
   dependency: {
     add: addDependencyProcedure,
     remove: removeDependencyProcedure,
+  },
+  live: {
+    events: liveEventsProcedure,
   },
   media: {
     upload: uploadMediaProcedure,

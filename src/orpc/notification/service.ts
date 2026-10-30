@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 import type { Database } from "#/db/client.server";
+import { publishLive } from "#/orpc/live/publish";
 import { oneOf } from "#/orpc/allowed-values";
 import { NOTIFICATION_KINDS, NOTIFICATION_LIST_LIMIT, type NotificationKind } from "#/orpc/notification/constants";
 import type { Notification } from "#/orpc/notification/contract";
@@ -42,12 +43,10 @@ export async function notify({
   actorId: string;
   entries: NotificationEntry[];
 }): Promise<void> {
-  await insertNotifications({
-    db,
-    values: entries
-      .filter((entry) => entry.userId !== actorId)
-      .map((entry) => ({ ...entry, actorId, data: entry.data })),
-  });
+  const told = entries.filter((entry) => entry.userId !== actorId);
+  await insertNotifications({ db, values: told.map((entry) => ({ ...entry, actorId, data: entry.data })) });
+  // The bell hears about it at once while its page holds the live stream open (slice 16).
+  await publishLive({ db, signals: told.map((entry) => ({ kind: "notification" as const, id: entry.userId })) });
 }
 
 /*===== Due Dates =====*/

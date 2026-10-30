@@ -228,6 +228,24 @@ return { id: result.id };
   (`src/lib/localized-text.ts`), read with `localize()` in the request's locale ([frontend/i18n.md](../frontend/i18n.md)
   → Content in Several Languages).
 
+### Live updates
+
+Open pages hear about changes made elsewhere through one procedure, `live.events` (`src/orpc/live/`): server-sent
+events over the same `/rpc` path, never carrying data. An event only names what changed (a project, or "you have a
+notification"); the page refetches those queries through the usual procedures and their checks
+(`src/hooks/use-live-updates.ts`).
+
+- **Publish in the transaction.** `publishLive` sends a Postgres `NOTIFY`, which is delivered only when the change
+  commits. `recordActivity` publishes every project it records and `notify` every person it tells, so a service that
+  writes history needs nothing more; a change without history (a checklist rename or reorder) publishes itself.
+- **One listener per process.** `listener.server.ts` holds one `LISTEN` connection for all of the process's streams,
+  so two app containers during a deploy both hear every change.
+- **Filtered per person.** A project event reaches a stream only if its person can open the project (member, or admin),
+  checked against the database for each event.
+- **Missed events are refetched.** A stream starts with `ready`, and sends it again when the listener reconnects; the
+  page refetches everything it shows on any `ready` after the first. While the stream is closed, the bell polls.
+- Caddy leaves `/rpc/live/*` uncompressed and doesn't buffer `text/event-stream` (`deploy/Caddyfile`).
+
 ### Testing
 
 - Test consequential behavior against the real database (`DATABASE_URL`): a representative success case and the

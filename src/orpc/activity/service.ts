@@ -11,6 +11,7 @@ import {
   findTaskHistory,
   insertActivities,
 } from "#/orpc/activity/repository";
+import { publishLive } from "#/orpc/live/publish";
 
 /*===== Record =====*/
 /** One change, as the history keeps it. */
@@ -29,7 +30,7 @@ export type ActivityEntry = {
 /**
  * Records changes in the history (docs/app.md rule 7). Call it with the transaction that makes the change, so the
  * change and its entry land together or not at all; a service that changes a project or task without calling it is a
- * bug.
+ * bug. Each project it names is also published to the open boards (`publishLive`), on commit.
  */
 export async function recordActivity({
   db,
@@ -52,6 +53,9 @@ export async function recordActivity({
       snapshot: entry.snapshot ?? {},
     })),
   });
+  // Every change to a project writes history, so this is where open boards hear about it (slice 16).
+  const projectIds = entries.flatMap((entry) => (entry.projectId ? [entry.projectId] : []));
+  await publishLive({ db, signals: projectIds.map((id) => ({ kind: "project" as const, id })) });
 }
 
 /*===== Read =====*/
