@@ -191,6 +191,7 @@
   --color-cut: var(--cut);
   --color-cut-focus: var(--cut-focus);
   --color-field: var(--field);
+  --color-field-disabled: var(--field-disabled);
   --color-housing-ledge: var(--housing-ledge);
   --color-glass: var(--glass);
   --color-glass-foreground: var(--glass-foreground);
@@ -306,6 +307,8 @@
   --cut: #111111;
   --cut-focus: #f23a0c;
   --field: #ebebeb;
+  /* A disabled plate sinks toward the cut, never lighter than a live one (which would read as more active) */
+  --field-disabled: #d4d4d2;
   --housing-ledge: #676767;
   /* Display glass is set into the housing, not another card colour. Named `glass`, not `display`: `text-display` is a type style, and a colour of the same name would print it in the glass colour. */
   --glass: #141513;
@@ -409,6 +412,7 @@
   --keycap-graphite-foreground: #ededed;
   --cut: #050505;
   --field: #1d1d1d;
+  --field-disabled: #151515;
   --housing-ledge: #0a0a0a;
   --glass: #0b0c0a;
 

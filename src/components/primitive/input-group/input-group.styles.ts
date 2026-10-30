@@ -19,7 +19,7 @@ const twGroupStyles = defineStyles({
   // Same signals as a single field: orange cut on focus, yellow while invalid and unfocused.
   focus: "has-[[data-slot=input-group-control]:focus-visible]:before:bg-cut-focus",
   invalid: "has-[[data-slot=input-group-control][aria-invalid=true]:not(:focus-visible)]:before:bg-signal-attention",
-  disabled: "has-disabled:cursor-not-allowed has-disabled:text-muted-foreground has-disabled:after:bg-muted",
+  disabled: "has-disabled:cursor-not-allowed has-disabled:text-muted-foreground has-disabled:after:bg-field-disabled",
   // Inside a combobox popup the popup itself shows focus, so the cut stays dark.
   focusCombobox: "in-data-[slot=combobox-content]:before:bg-cut",
 });

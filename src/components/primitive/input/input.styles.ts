@@ -22,7 +22,7 @@ const twFieldPlateState = defineStyles({
   focus: "has-[:focus-visible]:before:bg-cut-focus",
   invalid: "has-[[aria-invalid=true]:not(:focus-visible)]:before:bg-signal-attention",
   // A disabled field keeps its cut (the part is still there) but its plate goes flat and its text muted
-  disabled: "has-disabled:cursor-not-allowed has-disabled:text-muted-foreground has-disabled:after:bg-muted",
+  disabled: "has-disabled:cursor-not-allowed has-disabled:text-muted-foreground has-disabled:after:bg-field-disabled",
 });
 
 /*===== Native Control =====*/

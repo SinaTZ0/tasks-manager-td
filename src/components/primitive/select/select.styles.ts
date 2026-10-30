@@ -23,7 +23,7 @@ const twTriggerStyles = defineStyles({
   state: "data-popup-open:before:bg-cut-focus",
   invalid: "aria-invalid:not-focus-visible:not-data-popup-open:before:bg-signal-attention",
   disabled:
-    "disabled:cursor-not-allowed disabled:text-muted-foreground disabled:after:bg-muted data-disabled:cursor-not-allowed data-disabled:text-muted-foreground data-disabled:after:bg-muted",
+    "disabled:cursor-not-allowed disabled:text-muted-foreground disabled:after:bg-field-disabled data-disabled:cursor-not-allowed data-disabled:text-muted-foreground data-disabled:after:bg-field-disabled",
   icon: "[&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
 });
 
