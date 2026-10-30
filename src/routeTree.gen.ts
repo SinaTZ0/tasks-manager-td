@@ -28,6 +28,7 @@ import { Route as teamTeamRouteImport } from './routes/team/team'
 import { Route as projects_projectKeyProjectsProjectKeyRouteImport } from './routes/projects_projectKey/projects-project-key'
 import { Route as projects_projectKey_activityProjectsProjectKeyActivityRouteImport } from './routes/projects_projectKey_activity/projects-project-key-activity'
 import { Route as projects_projectKey_archiveProjectsProjectKeyArchiveRouteImport } from './routes/projects_projectKey_archive/projects-project-key-archive'
+import { Route as projects_projectKey_calendarProjectsProjectKeyCalendarRouteImport } from './routes/projects_projectKey_calendar/projects-project-key-calendar'
 import { Route as projects_projectKey_settingsProjectsProjectKeySettingsRouteImport } from './routes/projects_projectKey_settings/projects-project-key-settings'
 
 const site_layoutSiteLayoutRoute = site_layoutSiteLayoutRouteImport.update({
@@ -125,6 +126,12 @@ const projects_projectKey_archiveProjectsProjectKeyArchiveRoute =
     path: '/projects/$projectKey/archive',
     getParentRoute: () => app_layoutAppLayoutRoute,
   } as any)
+const projects_projectKey_calendarProjectsProjectKeyCalendarRoute =
+  projects_projectKey_calendarProjectsProjectKeyCalendarRouteImport.update({
+    id: '/projects/$projectKey/calendar',
+    path: '/projects/$projectKey/calendar',
+    getParentRoute: () => app_layoutAppLayoutRoute,
+  } as any)
 const projects_projectKey_settingsProjectsProjectKeySettingsRoute =
   projects_projectKey_settingsProjectsProjectKeySettingsRouteImport.update({
     id: '/projects/$projectKey/settings',
@@ -149,6 +156,7 @@ export interface FileRoutesByFullPath {
   '/projects/$projectKey': typeof projects_projectKeyProjectsProjectKeyRoute
   '/projects/$projectKey/activity': typeof projects_projectKey_activityProjectsProjectKeyActivityRoute
   '/projects/$projectKey/archive': typeof projects_projectKey_archiveProjectsProjectKeyArchiveRoute
+  '/projects/$projectKey/calendar': typeof projects_projectKey_calendarProjectsProjectKeyCalendarRoute
   '/projects/$projectKey/settings': typeof projects_projectKey_settingsProjectsProjectKeySettingsRoute
 }
 export interface FileRoutesByTo {
@@ -168,6 +176,7 @@ export interface FileRoutesByTo {
   '/projects/$projectKey': typeof projects_projectKeyProjectsProjectKeyRoute
   '/projects/$projectKey/activity': typeof projects_projectKey_activityProjectsProjectKeyActivityRoute
   '/projects/$projectKey/archive': typeof projects_projectKey_archiveProjectsProjectKeyArchiveRoute
+  '/projects/$projectKey/calendar': typeof projects_projectKey_calendarProjectsProjectKeyCalendarRoute
   '/projects/$projectKey/settings': typeof projects_projectKey_settingsProjectsProjectKeySettingsRoute
 }
 export interface FileRoutesById {
@@ -191,6 +200,7 @@ export interface FileRoutesById {
   '/_site-layout/_app-layout/projects/$projectKey': typeof projects_projectKeyProjectsProjectKeyRoute
   '/_site-layout/_app-layout/projects/$projectKey/activity': typeof projects_projectKey_activityProjectsProjectKeyActivityRoute
   '/_site-layout/_app-layout/projects/$projectKey/archive': typeof projects_projectKey_archiveProjectsProjectKeyArchiveRoute
+  '/_site-layout/_app-layout/projects/$projectKey/calendar': typeof projects_projectKey_calendarProjectsProjectKeyCalendarRoute
   '/_site-layout/_app-layout/_admin-layout/projects/$projectKey/settings': typeof projects_projectKey_settingsProjectsProjectKeySettingsRoute
 }
 export interface FileRouteTypes {
@@ -212,6 +222,7 @@ export interface FileRouteTypes {
     | '/projects/$projectKey'
     | '/projects/$projectKey/activity'
     | '/projects/$projectKey/archive'
+    | '/projects/$projectKey/calendar'
     | '/projects/$projectKey/settings'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -231,6 +242,7 @@ export interface FileRouteTypes {
     | '/projects/$projectKey'
     | '/projects/$projectKey/activity'
     | '/projects/$projectKey/archive'
+    | '/projects/$projectKey/calendar'
     | '/projects/$projectKey/settings'
   id:
     | '__root__'
@@ -253,6 +265,7 @@ export interface FileRouteTypes {
     | '/_site-layout/_app-layout/projects/$projectKey'
     | '/_site-layout/_app-layout/projects/$projectKey/activity'
     | '/_site-layout/_app-layout/projects/$projectKey/archive'
+    | '/_site-layout/_app-layout/projects/$projectKey/calendar'
     | '/_site-layout/_app-layout/_admin-layout/projects/$projectKey/settings'
   fileRoutesById: FileRoutesById
 }
@@ -400,6 +413,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof projects_projectKey_archiveProjectsProjectKeyArchiveRouteImport
       parentRoute: typeof app_layoutAppLayoutRoute
     }
+    '/_site-layout/_app-layout/projects/$projectKey/calendar': {
+      id: '/_site-layout/_app-layout/projects/$projectKey/calendar'
+      path: '/projects/$projectKey/calendar'
+      fullPath: '/projects/$projectKey/calendar'
+      preLoaderRoute: typeof projects_projectKey_calendarProjectsProjectKeyCalendarRouteImport
+      parentRoute: typeof app_layoutAppLayoutRoute
+    }
     '/_site-layout/_app-layout/_admin-layout/projects/$projectKey/settings': {
       id: '/_site-layout/_app-layout/_admin-layout/projects/$projectKey/settings'
       path: '/projects/$projectKey/settings'
@@ -438,6 +458,7 @@ interface app_layoutAppLayoutRouteChildren {
   projects_projectKeyProjectsProjectKeyRoute: typeof projects_projectKeyProjectsProjectKeyRoute
   projects_projectKey_activityProjectsProjectKeyActivityRoute: typeof projects_projectKey_activityProjectsProjectKeyActivityRoute
   projects_projectKey_archiveProjectsProjectKeyArchiveRoute: typeof projects_projectKey_archiveProjectsProjectKeyArchiveRoute
+  projects_projectKey_calendarProjectsProjectKeyCalendarRoute: typeof projects_projectKey_calendarProjectsProjectKeyCalendarRoute
 }
 
 const app_layoutAppLayoutRouteChildren: app_layoutAppLayoutRouteChildren = {
@@ -454,6 +475,8 @@ const app_layoutAppLayoutRouteChildren: app_layoutAppLayoutRouteChildren = {
     projects_projectKey_activityProjectsProjectKeyActivityRoute,
   projects_projectKey_archiveProjectsProjectKeyArchiveRoute:
     projects_projectKey_archiveProjectsProjectKeyArchiveRoute,
+  projects_projectKey_calendarProjectsProjectKeyCalendarRoute:
+    projects_projectKey_calendarProjectsProjectKeyCalendarRoute,
 }
 
 const app_layoutAppLayoutRouteWithChildren =

@@ -1,5 +1,4 @@
 import { useQuery } from "@tanstack/react-query";
-import { useNavigate } from "@tanstack/react-router";
 import { CopyIcon, FolderInputIcon, PaperclipIcon } from "lucide-react";
 import { useState } from "react";
 
@@ -58,19 +57,21 @@ export function TaskDrawer({
   project,
   board,
   people,
+  onClose,
 }: {
   code: string;
   project: Project;
   board: Board;
   people: Map<string, Person>;
+  /** Closes it: the page drops `?task=` from its own address (the board's, the calendar's). */
+  onClose: () => void;
 }) {
-  const navigate = useNavigate({ from: "/projects/$projectKey" });
-  // Filled by the board's loader for a link; `useQuery` rather than suspense so a missing task says so in the panel.
+  // Filled by the page's loader for a link; `useQuery` rather than suspense so a missing task says so in the panel.
   const { data: task, isPending } = useQuery({
     ...taskQuery({ projectId: project.id, number: taskNumberOf(code) }),
     retry: false,
   });
-  const close = () => void navigate({ search: (previous) => ({ ...previous, task: undefined }) });
+  const close = onClose;
 
   return (
     <Sheet open onOpenChange={(open) => !open && close()}>

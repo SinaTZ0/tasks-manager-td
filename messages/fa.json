@@ -1727,5 +1727,40 @@
   "transfer_project": "پروژه",
   "transfer_column": "ستون",
   "transfer_confirm_move": "انتقال بده",
-  "transfer_confirm_copy": "رونوشت بساز"
+  "transfer_confirm_copy": "رونوشت بساز",
+  "calendar_heading": [
+    {
+      "declarations": ["input project"],
+      "match": {
+        "": "تقویم {project}"
+      }
+    }
+  ],
+  "calendar_moved": [
+    {
+      "declarations": ["input code", "input date"],
+      "match": {
+        "": "سررسید {code}: {date}"
+      }
+    }
+  ],
+  "calendar_no_due": [
+    {
+      "declarations": ["input count", "local countText = count: number"],
+      "match": {
+        "": "بدون سررسید: {countText}"
+      }
+    }
+  ],
+  "calendar_link": "تقویم",
+  "board_link": "تخته",
+  "calendar_previous": "ماه قبل",
+  "calendar_next": "ماه بعد",
+  "calendar_this_month": "این ماه",
+  "calendar_today": "امروز",
+  "calendar_move_failed": "سررسید تغییر نکرد. دوباره امتحان کنید.",
+  "calendar_instructions": "کارت را روی روز دیگری بکشید، یا با کلیدهای جهت جابه‌جایش کنید.",
+  "calendar_grid": "روزهای ماه",
+  "calendar_late": "دیرکرد",
+  "calendar_due_soon": "نزدیک سررسید"
 }

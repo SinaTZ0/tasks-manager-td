@@ -1,7 +1,7 @@
 import { ORPCError } from "@orpc/client";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, Link, redirect, useNavigate } from "@tanstack/react-router";
-import { ArchiveIcon, HistoryIcon, SettingsIcon } from "lucide-react";
+import { ArchiveIcon, CalendarDaysIcon, HistoryIcon, SettingsIcon } from "lucide-react";
 import { useMemo } from "react";
 
 import { AvatarGroup } from "#/components/primitive/avatar/avatar";
@@ -143,6 +143,15 @@ function BoardPage() {
           ))}
         </AvatarGroup>
         <Link
+          to="/projects/$projectKey/calendar"
+          params={{ projectKey: project.key }}
+          search={{ assignee, label, priority, due, blocked }}
+          className={buttonVariants({ variant: "secondary", size: "sm" })}
+        >
+          <CalendarDaysIcon data-icon="inline-start" />
+          {m.calendar_link()}
+        </Link>
+        <Link
           to="/projects/$projectKey/activity"
           params={{ projectKey: project.key }}
           className={buttonVariants({ variant: "secondary", size: "sm" })}
@@ -196,7 +205,16 @@ function BoardPage() {
         </CardContent>
       </Card>
 
-      {openTask && <TaskDrawer key={openTask} code={openTask} project={project} board={board} people={people} />}
+      {openTask && (
+        <TaskDrawer
+          key={openTask}
+          code={openTask}
+          project={project}
+          board={board}
+          people={people}
+          onClose={() => void navigate({ search: (previous) => ({ ...previous, task: undefined }) })}
+        />
+      )}
     </div>
   );
 }

@@ -15,6 +15,7 @@ export const routes = rootRoute("__root.tsx", [
       route("/projects/$projectKey", "projects_projectKey/projects-project-key.tsx"),
       route("/projects/$projectKey/activity", "projects_projectKey_activity/projects-project-key-activity.tsx"),
       route("/projects/$projectKey/archive", "projects_projectKey_archive/projects-project-key-archive.tsx"),
+      route("/projects/$projectKey/calendar", "projects_projectKey_calendar/projects-project-key-calendar.tsx"),
       layout("admin_layout/admin-layout.tsx", [
         route("/team", "team/team.tsx"),
         route("/projects/$projectKey/settings", "projects_projectKey_settings/projects-project-key-settings.tsx"),

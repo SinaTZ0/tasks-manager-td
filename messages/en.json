@@ -1727,5 +1727,40 @@
   "transfer_project": "Project",
   "transfer_column": "Column",
   "transfer_confirm_move": "Move",
-  "transfer_confirm_copy": "Copy"
+  "transfer_confirm_copy": "Copy",
+  "calendar_heading": [
+    {
+      "declarations": ["input project"],
+      "match": {
+        "": "{project} calendar"
+      }
+    }
+  ],
+  "calendar_moved": [
+    {
+      "declarations": ["input code", "input date"],
+      "match": {
+        "": "{code} is now due {date}"
+      }
+    }
+  ],
+  "calendar_no_due": [
+    {
+      "declarations": ["input count", "local countText = count: number"],
+      "match": {
+        "": "No due date: {countText}"
+      }
+    }
+  ],
+  "calendar_link": "Calendar",
+  "board_link": "Board",
+  "calendar_previous": "Previous month",
+  "calendar_next": "Next month",
+  "calendar_this_month": "This month",
+  "calendar_today": "Today",
+  "calendar_move_failed": "Couldn't change the due date. Try again.",
+  "calendar_instructions": "Drag a card to another day, or move it with the arrow keys.",
+  "calendar_grid": "Days of the month",
+  "calendar_late": "Late",
+  "calendar_due_soon": "Due soon"
 }

@@ -327,7 +327,7 @@ ask the user before building that slice.
 - **Tests**: a move keeps the task's time and comments and drops its dependencies on the old project; a move whose
   assignee isn't on the target is refused; an old code opens the moved task.
 
-### 21. Calendar View
+### 21. Calendar View ✓
 
 - `/projects/$projectKey/calendar`, beside the board: a month grid (Jalali months in Persian, Gregorian in English,
   weeks starting on Saturday in both, the team's day from `src/lib/team-day.ts`) placing each live card with a due
