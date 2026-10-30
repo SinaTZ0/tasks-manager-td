@@ -808,5 +808,315 @@
   "delegated_title": "واگذارشده‌های من",
   "delegated_description": "کارهایی که واگذار کرده‌اید یا مالکشان هستید و حالا کس دیگری انجامشان می‌دهد.",
   "delegated_empty": "فعلاً کاری واگذار نشده.",
-  "delegated_not_owner": "مالکش کس دیگری است"
+  "delegated_not_owner": "مالکش کس دیگری است",
+  "comment_error_invalid": "این نظر را نمی‌توان به این شکل ذخیره کرد.",
+  "comment_error_required": "اول چیزی بنویسید.",
+  "comment_error_not_yours": "فقط نظرهای خودتان را می‌توانید تغییر دهید.",
+  "activity_link": "فعالیت‌ها",
+  "activity_heading": [
+    {
+      "declarations": ["input project"],
+      "match": {
+        "": "فعالیت‌ها · {project}"
+      }
+    }
+  ],
+  "activity_description": "همه تغییرهای این پروژه، از تازه‌ترین.",
+  "activity_back_to_board": "بازگشت به تخته",
+  "activity_empty": "هنوز اتفاقی نیفتاده است.",
+  "activity_load_more": "موارد قدیمی‌تر",
+  "activity_load_failed": "موارد قدیمی‌تر بارگذاری نشد. دوباره امتحان کنید.",
+  "activity_someone": "کسی",
+  "activity_user_created": [
+    {
+      "declarations": ["input name"],
+      "match": {
+        "": "{name} را به تیم افزود"
+      }
+    }
+  ],
+  "activity_user_role_changed": [
+    {
+      "declarations": ["input name", "input role"],
+      "match": {
+        "": "نقش {name} را «{role}» کرد"
+      }
+    }
+  ],
+  "activity_user_activated": [
+    {
+      "declarations": ["input name"],
+      "match": {
+        "": "{name} را دوباره فعال کرد"
+      }
+    }
+  ],
+  "activity_user_deactivated": [
+    {
+      "declarations": ["input name"],
+      "match": {
+        "": "{name} را غیرفعال کرد"
+      }
+    }
+  ],
+  "activity_project_created": "پروژه را ساخت",
+  "activity_project_renamed": [
+    {
+      "declarations": ["input from", "input to"],
+      "match": {
+        "": "نام پروژه را از «{from}» به «{to}» تغییر داد"
+      }
+    }
+  ],
+  "activity_member_added": [
+    {
+      "declarations": ["input name"],
+      "match": {
+        "": "{name} را به پروژه افزود"
+      }
+    }
+  ],
+  "activity_member_removed": [
+    {
+      "declarations": ["input name"],
+      "match": {
+        "": "{name} را از پروژه برداشت"
+      }
+    }
+  ],
+  "activity_column_renamed": [
+    {
+      "declarations": ["input from", "input to"],
+      "match": {
+        "": "نام ستون «{from}» را به «{to}» تغییر داد"
+      }
+    }
+  ],
+  "activity_column_wip_set": [
+    {
+      "declarations": ["input column", "input limit"],
+      "match": {
+        "": "سقف کار ستون «{column}» را {limit} گذاشت"
+      }
+    }
+  ],
+  "activity_column_wip_removed": [
+    {
+      "declarations": ["input column"],
+      "match": {
+        "": "سقف کار ستون «{column}» را برداشت"
+      }
+    }
+  ],
+  "activity_column_moved": [
+    {
+      "declarations": ["input column"],
+      "match": {
+        "": "ستون «{column}» را جابه‌جا کرد"
+      }
+    }
+  ],
+  "activity_label_created": [
+    {
+      "declarations": ["input name"],
+      "match": {
+        "": "برچسب «{name}» را ساخت"
+      }
+    }
+  ],
+  "activity_task_created": [
+    {
+      "declarations": ["input column"],
+      "match": {
+        "": "کار را در «{column}» ساخت"
+      }
+    }
+  ],
+  "activity_task_title": [
+    {
+      "declarations": ["input title"],
+      "match": {
+        "": "عنوان کار را «{title}» کرد"
+      }
+    }
+  ],
+  "activity_task_description": "توضیح را ویرایش کرد",
+  "activity_task_priority": [
+    {
+      "declarations": ["input from", "input to"],
+      "match": {
+        "": "اولویت را از «{from}» به «{to}» تغییر داد"
+      }
+    }
+  ],
+  "activity_task_due_set": [
+    {
+      "declarations": ["input date"],
+      "match": {
+        "": "سررسید را {date} گذاشت"
+      }
+    }
+  ],
+  "activity_task_due_removed": "سررسید را برداشت",
+  "activity_task_estimate_set": [
+    {
+      "declarations": ["input duration"],
+      "match": {
+        "": "تخمین زمان را {duration} گذاشت"
+      }
+    }
+  ],
+  "activity_task_estimate_removed": "تخمین زمان را برداشت",
+  "activity_task_owner": [
+    {
+      "declarations": ["input name"],
+      "match": {
+        "": "مالکیت را به {name} داد"
+      }
+    }
+  ],
+  "activity_task_assigned": [
+    {
+      "declarations": ["input name"],
+      "match": {
+        "": "کار را به {name} سپرد"
+      }
+    }
+  ],
+  "activity_task_unassigned": "مسئول کار را برداشت",
+  "activity_task_labels": [
+    {
+      "declarations": ["input labels"],
+      "match": {
+        "": "برچسب‌ها را {labels} کرد"
+      }
+    }
+  ],
+  "activity_task_labels_removed": "برچسب‌ها را برداشت",
+  "activity_task_changed": "کار را ویرایش کرد",
+  "activity_task_moved": [
+    {
+      "declarations": ["input from", "input to"],
+      "match": {
+        "": "کار را از «{from}» به «{to}» برد"
+      }
+    }
+  ],
+  "activity_task_forced": "با وجود مسدود بودن جلو رفت",
+  "activity_task_reordered": [
+    {
+      "declarations": ["input column"],
+      "match": {
+        "": "جای کار را در «{column}» عوض کرد"
+      }
+    }
+  ],
+  "activity_task_archived": "کار را بایگانی کرد",
+  "activity_task_delegated": [
+    {
+      "declarations": ["input name"],
+      "match": {
+        "": "کار را به {name} واگذار کرد"
+      }
+    }
+  ],
+  "activity_task_started": "کار را شروع کرد",
+  "activity_task_resumed": "کار را از سر گرفت",
+  "activity_task_paused": "کار را به مکث برد",
+  "activity_task_completed": "کار را تمام کرد",
+  "activity_task_stopped": "کار را متوقف کرد",
+  "activity_task_reopened": "کار را دوباره باز کرد",
+  "activity_time_started": "زمان‌سنج را روشن کرد",
+  "activity_time_stopped": [
+    {
+      "declarations": ["input duration"],
+      "match": {
+        "": "زمان‌سنج را پس از {duration} خاموش کرد"
+      }
+    }
+  ],
+  "activity_time_stopped_other": [
+    {
+      "declarations": ["input name", "input duration"],
+      "match": {
+        "": "زمان‌سنج {name} را پس از {duration} خاموش کرد"
+      }
+    }
+  ],
+  "activity_time_added": [
+    {
+      "declarations": ["input duration", "input date"],
+      "match": {
+        "": "{duration} کار برای {date} ثبت کرد"
+      }
+    }
+  ],
+  "activity_time_removed": [
+    {
+      "declarations": ["input duration", "input date"],
+      "match": {
+        "": "ثبت {duration} برای {date} را حذف کرد"
+      }
+    }
+  ],
+  "activity_dependency_added": [
+    {
+      "declarations": ["input code"],
+      "match": {
+        "": "کار را منتظر {code} کرد"
+      }
+    }
+  ],
+  "activity_dependency_removed": [
+    {
+      "declarations": ["input code"],
+      "match": {
+        "": "انتظار کار برای {code} را برداشت"
+      }
+    }
+  ],
+  "activity_task_unblocked": [
+    {
+      "declarations": ["input code"],
+      "match": {
+        "": "{code} را تمام کرد و این کار دیگر مسدود نیست"
+      }
+    }
+  ],
+  "activity_comment_added": "نظر داد",
+  "activity_comment_edited": "نظری را ویرایش کرد",
+  "activity_comment_deleted": "نظری را حذف کرد",
+  "comment_title": "نظرها",
+  "comment_empty": "هنوز نظری نیست.",
+  "comment_delete_failed": "نظر حذف نشد. دوباره امتحان کنید.",
+  "comment_save_failed": "نظر ذخیره نشد. دوباره امتحان کنید.",
+  "comment_edited": "ویرایش‌شده",
+  "comment_edit": [
+    {
+      "declarations": ["input date"],
+      "match": {
+        "": "ویرایش نظر شما در {date}"
+      }
+    }
+  ],
+  "comment_delete": [
+    {
+      "declarations": ["input date"],
+      "match": {
+        "": "حذف نظر شما در {date}"
+      }
+    }
+  ],
+  "comment_deleted": "این نظر حذف شده است.",
+  "comment_edit_label": "ویرایش نظر",
+  "comment_save": "ذخیره",
+  "comment_cancel": "انصراف",
+  "comment_new_label": "افزودن نظر",
+  "comment_placeholder": "نظرتان را بنویسید. برای نام بردن از کسی @ بزنید.",
+  "comment_hint": "با Ctrl+Enter فرستاده می‌شود.",
+  "comment_send": "فرستادن",
+  "task_tab_comments": "نظرها",
+  "task_tab_activity": "تاریخچه",
+  "task_tab_time": "زمان",
+  "task_tabs": "جزئیات کار"
 }

@@ -1,7 +1,7 @@
+import { priorityName } from "#/lib/priority-name";
 import { cn } from "#/lib/utils";
 import { TASK_PRIORITIES, type TaskPriority } from "#/orpc/task/constants";
 import { m } from "#/paraglide/messages";
-import { priorityName } from "#/routes/projects_projectKey/task-text";
 
 /*===== Priority Mark =====*/
 

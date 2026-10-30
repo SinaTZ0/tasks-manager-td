@@ -157,11 +157,16 @@ Built once, in the slice that first needs them, and used by every procedure afte
   doing. The bell asks again every 30 seconds (`NOTIFICATION_POLL_MS`).
 - **Tests**: delegation never changes the owner; a notification reaches only its user.
 
-### 7. Comments and History
+### 7. Comments and History ✓
 
-- Comments in the rich-text editor, with @mentions; edit and soft-delete your own.
-- The drawer's tabs: Comments, Activity, Time. A project-level activity feed.
-- **Tests**: someone else's comment can't be edited.
+- Comments in the rich-text editor, with @mentions (Tiptap's mention extension; the picker lists the project's active
+  members and is built on the popover primitive). A mention keeps the person's id and name; each member a comment
+  mentions for the first time is notified (`mentioned`). Edit and soft-delete your own: nobody else, an admin
+  included, can change a comment; a deleted one leaves a line in the thread, and the history keeps its text.
+- The drawer's tabs: Comments, Activity, Time. A project-level activity feed (`/projects/$projectKey/activity`, a page
+  of 50 at a time), linked from the board's header. Every history action reads as a sentence
+  (`components/shared/activity-feed`).
+- **Tests**: someone else's comment can't be edited or deleted; a mention notifies the person.
 
 ### 8. Profile and Archive
 

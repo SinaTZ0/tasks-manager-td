@@ -1,4 +1,11 @@
+import { projectActivityProcedure, taskActivityProcedure } from "#/orpc/activity/procedure";
 import { createCaptchaChallengeProcedure } from "#/orpc/captcha/procedure";
+import {
+  addCommentProcedure,
+  editCommentProcedure,
+  listCommentsProcedure,
+  removeCommentProcedure,
+} from "#/orpc/comment/procedure";
 import { delegatedByMeProcedure, delegateTaskProcedure } from "#/orpc/delegation/procedure";
 import { addDependencyProcedure, removeDependencyProcedure } from "#/orpc/dependency/procedure";
 import { implementer } from "#/orpc/implementer.server";
@@ -43,8 +50,18 @@ import {
 /*===== API Router =====*/
 // Assembled with the undecorated implementer (see `implementer.server.ts`).
 export const router = implementer.router({
+  activity: {
+    forTask: taskActivityProcedure,
+    forProject: projectActivityProcedure,
+  },
   captcha: {
     createChallenge: createCaptchaChallengeProcedure,
+  },
+  comment: {
+    list: listCommentsProcedure,
+    add: addCommentProcedure,
+    edit: editCommentProcedure,
+    remove: removeCommentProcedure,
   },
   delegation: {
     delegate: delegateTaskProcedure,

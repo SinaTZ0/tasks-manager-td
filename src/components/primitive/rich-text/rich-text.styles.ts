@@ -22,6 +22,9 @@ const twProseStyles = defineStyles({
   // Links are underlined: colour alone can't mark them (brand-text is close to the body text).
   appearanceLinks:
     "[&_a]:text-brand-text [&_a]:underline [&_a]:decoration-1 [&_a]:underline-offset-4 [&_a:hover]:decoration-2",
+  // A mention is the person's name on the pale info plate, isolated so a Latin name sits right in Persian.
+  appearanceMentions:
+    "[&_[data-type=mention]]:rounded-xs [&_[data-type=mention]]:bg-info-surface [&_[data-type=mention]]:px-1 [&_[data-type=mention]]:font-semibold [&_[data-type=mention]]:[unicode-bidi:isolate]",
   focusLinks:
     "[&_a]:rounded-xs [&_a:focus-visible]:outline-2 [&_a:focus-visible]:outline-offset-2 [&_a:focus-visible]:outline-ring",
 });

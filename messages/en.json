@@ -808,5 +808,315 @@
   "delegated_title": "Delegated by me",
   "delegated_description": "Tasks you handed on, or own, that someone else is doing now.",
   "delegated_empty": "Nothing is handed on right now.",
-  "delegated_not_owner": "Someone else owns it"
+  "delegated_not_owner": "Someone else owns it",
+  "comment_error_invalid": "This comment can't be saved as written.",
+  "comment_error_required": "Write something first.",
+  "comment_error_not_yours": "You can only change your own comments.",
+  "activity_link": "Activity",
+  "activity_heading": [
+    {
+      "declarations": ["input project"],
+      "match": {
+        "": "Activity · {project}"
+      }
+    }
+  ],
+  "activity_description": "Every change to this project, newest first.",
+  "activity_back_to_board": "Back to the board",
+  "activity_empty": "Nothing has happened here yet.",
+  "activity_load_more": "Load more",
+  "activity_load_failed": "Older entries couldn't be loaded. Try again.",
+  "activity_someone": "someone",
+  "activity_user_created": [
+    {
+      "declarations": ["input name"],
+      "match": {
+        "": "added {name} to the team"
+      }
+    }
+  ],
+  "activity_user_role_changed": [
+    {
+      "declarations": ["input name", "input role"],
+      "match": {
+        "": "made {name} {role}"
+      }
+    }
+  ],
+  "activity_user_activated": [
+    {
+      "declarations": ["input name"],
+      "match": {
+        "": "reactivated {name}"
+      }
+    }
+  ],
+  "activity_user_deactivated": [
+    {
+      "declarations": ["input name"],
+      "match": {
+        "": "deactivated {name}"
+      }
+    }
+  ],
+  "activity_project_created": "created the project",
+  "activity_project_renamed": [
+    {
+      "declarations": ["input from", "input to"],
+      "match": {
+        "": "renamed the project from {from} to {to}"
+      }
+    }
+  ],
+  "activity_member_added": [
+    {
+      "declarations": ["input name"],
+      "match": {
+        "": "added {name} to the project"
+      }
+    }
+  ],
+  "activity_member_removed": [
+    {
+      "declarations": ["input name"],
+      "match": {
+        "": "removed {name} from the project"
+      }
+    }
+  ],
+  "activity_column_renamed": [
+    {
+      "declarations": ["input from", "input to"],
+      "match": {
+        "": "renamed the column {from} to {to}"
+      }
+    }
+  ],
+  "activity_column_wip_set": [
+    {
+      "declarations": ["input column", "input limit", "local limitText = limit: number"],
+      "match": {
+        "": "set the WIP limit of {column} to {limitText}"
+      }
+    }
+  ],
+  "activity_column_wip_removed": [
+    {
+      "declarations": ["input column"],
+      "match": {
+        "": "removed the WIP limit of {column}"
+      }
+    }
+  ],
+  "activity_column_moved": [
+    {
+      "declarations": ["input column"],
+      "match": {
+        "": "moved the column {column}"
+      }
+    }
+  ],
+  "activity_label_created": [
+    {
+      "declarations": ["input name"],
+      "match": {
+        "": "added the label {name}"
+      }
+    }
+  ],
+  "activity_task_created": [
+    {
+      "declarations": ["input column"],
+      "match": {
+        "": "created the task in {column}"
+      }
+    }
+  ],
+  "activity_task_title": [
+    {
+      "declarations": ["input title"],
+      "match": {
+        "": "renamed the task to {title}"
+      }
+    }
+  ],
+  "activity_task_description": "edited the description",
+  "activity_task_priority": [
+    {
+      "declarations": ["input from", "input to"],
+      "match": {
+        "": "changed the priority from {from} to {to}"
+      }
+    }
+  ],
+  "activity_task_due_set": [
+    {
+      "declarations": ["input date"],
+      "match": {
+        "": "set the due date to {date}"
+      }
+    }
+  ],
+  "activity_task_due_removed": "removed the due date",
+  "activity_task_estimate_set": [
+    {
+      "declarations": ["input duration"],
+      "match": {
+        "": "set the estimate to {duration}"
+      }
+    }
+  ],
+  "activity_task_estimate_removed": "removed the estimate",
+  "activity_task_owner": [
+    {
+      "declarations": ["input name"],
+      "match": {
+        "": "made {name} the owner"
+      }
+    }
+  ],
+  "activity_task_assigned": [
+    {
+      "declarations": ["input name"],
+      "match": {
+        "": "assigned the task to {name}"
+      }
+    }
+  ],
+  "activity_task_unassigned": "unassigned the task",
+  "activity_task_labels": [
+    {
+      "declarations": ["input labels"],
+      "match": {
+        "": "set the labels to {labels}"
+      }
+    }
+  ],
+  "activity_task_labels_removed": "removed the labels",
+  "activity_task_changed": "edited the task",
+  "activity_task_moved": [
+    {
+      "declarations": ["input from", "input to"],
+      "match": {
+        "": "moved the task from {from} to {to}"
+      }
+    }
+  ],
+  "activity_task_forced": "Went ahead while still blocked",
+  "activity_task_reordered": [
+    {
+      "declarations": ["input column"],
+      "match": {
+        "": "reordered the task in {column}"
+      }
+    }
+  ],
+  "activity_task_archived": "archived the task",
+  "activity_task_delegated": [
+    {
+      "declarations": ["input name"],
+      "match": {
+        "": "handed the task to {name}"
+      }
+    }
+  ],
+  "activity_task_started": "started the task",
+  "activity_task_resumed": "resumed the task",
+  "activity_task_paused": "paused the task",
+  "activity_task_completed": "marked the task done",
+  "activity_task_stopped": "stopped the task",
+  "activity_task_reopened": "reopened the task",
+  "activity_time_started": "started the timer",
+  "activity_time_stopped": [
+    {
+      "declarations": ["input duration"],
+      "match": {
+        "": "stopped the timer after {duration}"
+      }
+    }
+  ],
+  "activity_time_stopped_other": [
+    {
+      "declarations": ["input name", "input duration"],
+      "match": {
+        "": "stopped {name}'s timer after {duration}"
+      }
+    }
+  ],
+  "activity_time_added": [
+    {
+      "declarations": ["input duration", "input date"],
+      "match": {
+        "": "logged {duration} on {date}"
+      }
+    }
+  ],
+  "activity_time_removed": [
+    {
+      "declarations": ["input duration", "input date"],
+      "match": {
+        "": "removed {duration} logged for {date}"
+      }
+    }
+  ],
+  "activity_dependency_added": [
+    {
+      "declarations": ["input code"],
+      "match": {
+        "": "made the task wait for {code}"
+      }
+    }
+  ],
+  "activity_dependency_removed": [
+    {
+      "declarations": ["input code"],
+      "match": {
+        "": "stopped the task waiting for {code}"
+      }
+    }
+  ],
+  "activity_task_unblocked": [
+    {
+      "declarations": ["input code"],
+      "match": {
+        "": "finished {code}, so the task is no longer blocked"
+      }
+    }
+  ],
+  "activity_comment_added": "commented",
+  "activity_comment_edited": "edited a comment",
+  "activity_comment_deleted": "deleted a comment",
+  "comment_title": "Comments",
+  "comment_empty": "No comments yet.",
+  "comment_delete_failed": "Couldn't delete the comment. Try again.",
+  "comment_save_failed": "Couldn't save the comment. Try again.",
+  "comment_edited": "Edited",
+  "comment_edit": [
+    {
+      "declarations": ["input date"],
+      "match": {
+        "": "Edit your comment from {date}"
+      }
+    }
+  ],
+  "comment_delete": [
+    {
+      "declarations": ["input date"],
+      "match": {
+        "": "Delete your comment from {date}"
+      }
+    }
+  ],
+  "comment_deleted": "This comment was deleted.",
+  "comment_edit_label": "Edit comment",
+  "comment_save": "Save",
+  "comment_cancel": "Cancel",
+  "comment_new_label": "Add a comment",
+  "comment_placeholder": "Write a comment. Type @ to mention someone.",
+  "comment_hint": "Ctrl+Enter sends it.",
+  "comment_send": "Send",
+  "task_tab_comments": "Comments",
+  "task_tab_activity": "Activity",
+  "task_tab_time": "Time",
+  "task_tabs": "Task details"
 }

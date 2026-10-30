@@ -22,7 +22,8 @@ function PopoverTrigger({ ...props }: PopoverPrimitive.Trigger.Props) {
 
 /**
  * The floating module. `side` and `align` take Base UI's values, including the logical `inline-start` and
- * `inline-end`, which follow the reading direction.
+ * `inline-end`, which follow the reading direction. `anchor` places it by something other than its trigger, such as
+ * the caret in an editor.
  */
 function PopoverContent({
   className,
@@ -31,9 +32,10 @@ function PopoverContent({
   side = "bottom",
   // Clears the trigger's cut (3px) with room to spare, so the module never touches the part that opened it
   sideOffset = 8,
+  anchor,
   ...props
 }: PopoverPrimitive.Popup.Props &
-  Pick<PopoverPrimitive.Positioner.Props, "align" | "alignOffset" | "side" | "sideOffset">) {
+  Pick<PopoverPrimitive.Positioner.Props, "align" | "alignOffset" | "side" | "sideOffset" | "anchor">) {
   return (
     <PopoverPrimitive.Portal>
       <PopoverPrimitive.Positioner
@@ -41,6 +43,7 @@ function PopoverContent({
         alignOffset={alignOffset}
         side={side}
         sideOffset={sideOffset}
+        anchor={anchor}
         className={popoverPositionerClasses}
       >
         <PopoverPrimitive.Popup

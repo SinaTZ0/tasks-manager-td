@@ -1,6 +1,15 @@
+import { z } from "zod";
+
 import type { Database } from "#/db/client.server";
-import type { ActivityAction } from "#/orpc/activity/constants";
-import { insertActivities } from "#/orpc/activity/repository";
+import { ACTIVITY_ACTIONS, type ActivityAction } from "#/orpc/activity/constants";
+import type { ActivityItem, ActivityPage } from "#/orpc/activity/contract";
+import {
+  type ActivityRow,
+  findProjectHistory,
+  findProjectHistoryBetween,
+  findTaskHistory,
+  insertActivities,
+} from "#/orpc/activity/repository";
 
 /*===== Record =====*/
 /** One change, as the history keeps it. */
@@ -42,4 +51,77 @@ export async function recordActivity({
       snapshot: entry.snapshot ?? {},
     })),
   });
+}
+
+/*===== Read =====*/
+const TASK_HISTORY_LIMIT = 200;
+const PROJECT_PAGE_SIZE = 50;
+
+const isUuid = (value: string) => z.guid().safeParse(value).success;
+const isAction = (value: string): value is ActivityAction => (ACTIVITY_ACTIONS as readonly string[]).includes(value);
+const textOf = (value: unknown) => (typeof value === "string" ? value : null);
+const fieldsOf = (value: unknown) =>
+  value !== null && typeof value === "object" && !Array.isArray(value) ? (value as Record<string, unknown>) : null;
+
+/** Rows as the history pages read them. A row with an action this code no longer knows is left out. */
+function toItems(rows: ActivityRow[]): ActivityItem[] {
+  return rows.flatMap((row) => {
+    if (!isAction(row.action)) return [];
+    const snapshot = fieldsOf(row.snapshot) ?? {};
+    return [
+      {
+        id: row.id,
+        action: row.action,
+        actorId: row.actorId,
+        actorName: row.actorName,
+        taskId: row.taskId,
+        taskCode: textOf(snapshot.code),
+        taskTitle: textOf(snapshot.title),
+        before: fieldsOf(row.before),
+        after: fieldsOf(row.after),
+        snapshot,
+        createdAt: row.createdAt,
+      },
+    ];
+  });
+}
+
+/** A task's history, newest first: its latest 200 entries. The caller has checked the viewer is on the project. */
+export async function getTaskHistory({
+  db,
+  projectId,
+  taskId,
+}: {
+  db: Database;
+  projectId: string;
+  taskId: string;
+}): Promise<ActivityItem[]> {
+  if (!isUuid(taskId)) return [];
+  return toItems(await findTaskHistory({ db, projectId, taskId, limit: TASK_HISTORY_LIMIT }));
+}
+
+/**
+ * One page of a project's history, newest first, made before `before`. The changes of one transaction share a
+ * timestamp, and the cursor is a `Date` (milliseconds, where Postgres keeps microseconds), so a page never ends inside
+ * one millisecond: it takes the whole of its last one, and the next page starts below it. A page can run a little over
+ * 50 for that.
+ */
+export async function getProjectHistory({
+  db,
+  projectId,
+  before,
+}: {
+  db: Database;
+  projectId: string;
+  before: Date | undefined;
+}): Promise<ActivityPage> {
+  const rows = await findProjectHistory({ db, projectId, before, limit: PROJECT_PAGE_SIZE + 1 });
+  if (rows.length <= PROJECT_PAGE_SIZE) return { items: toItems(rows), nextCursor: null };
+
+  const last = rows[PROJECT_PAGE_SIZE - 1];
+  if (!last) return { items: toItems(rows), nextCursor: null };
+  // `Date` drops the microseconds, so this is the start of the last row's millisecond.
+  const boundary = new Date(last.createdAt.getTime());
+  const page = await findProjectHistoryBetween({ db, projectId, from: boundary, before });
+  return { items: toItems(page), nextCursor: boundary };
 }

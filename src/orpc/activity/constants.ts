@@ -39,6 +39,8 @@ export const ACTIVITY_ACTIONS = [
   "task.unblocked",
   /*------ Comments ------*/
   "comment.added",
+  "comment.edited",
+  "comment.deleted",
 ] as const;
 
 export type ActivityAction = (typeof ACTIVITY_ACTIONS)[number];

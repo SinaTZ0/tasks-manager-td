@@ -1,4 +1,4 @@
-import type { Editor, Extensions } from "@tiptap/core";
+import type { Editor } from "@tiptap/core";
 import { Placeholder } from "@tiptap/extensions";
 import { EditorContent, useEditor, useEditorState } from "@tiptap/react";
 import { Toolbar as ToolbarPrimitive } from "@base-ui/react/toolbar";
@@ -16,7 +16,7 @@ import {
 } from "lucide-react";
 import { useEffect, useId, useRef, useState, type ComponentType, type SVGProps } from "react";
 
-import { EMPTY_RICH_TEXT, richTextExtensions, type RichTextDoc } from "#/lib/rich-text";
+import { EMPTY_RICH_TEXT, richTextExtensions, type MentionSuggestion, type RichTextDoc } from "#/lib/rich-text";
 import { cn } from "#/lib/utils";
 import { m } from "#/paraglide/messages";
 
@@ -54,8 +54,8 @@ export type RichTextEditorProps = {
   disabled?: boolean;
   /** Puts the caret at the end once the editor is ready. */
   autoFocus?: boolean;
-  /** More extensions, after the shared ones (`richTextExtensions`), e.g. @mentions. Read once, on the first render. */
-  extensions?: Extensions;
+  /** The picker `@` opens, to mention someone (`richTextExtensions`). Read once, on the first render. */
+  mention?: MentionSuggestion;
   /** Ctrl+Enter (⌘+Enter on a Mac): send a comment without reaching for the mouse. */
   onSubmit?: () => void;
   /** Layout only (width, margins, grid placement): it goes on the plate. */
@@ -124,7 +124,7 @@ function RichTextEditor({
   placeholder,
   disabled = false,
   autoFocus = false,
-  extensions,
+  mention,
   onSubmit,
   className,
   ...surface
@@ -149,11 +149,10 @@ function RichTextEditor({
     // The toolbar subscribes to what it needs (`useEditorState`); the rest of the component doesn't redraw per key.
     shouldRerenderOnTransaction: false,
     extensions: [
-      ...richTextExtensions(),
+      ...richTextExtensions({ mention }),
       // Read when Tiptap draws the placeholder, after render.
       // oxlint-disable-next-line react/refs
       Placeholder.configure({ placeholder: () => latest.current.placeholder ?? "" }),
-      ...(extensions ?? []),
     ],
     content: value ?? EMPTY_RICH_TEXT,
     editable: !disabled,

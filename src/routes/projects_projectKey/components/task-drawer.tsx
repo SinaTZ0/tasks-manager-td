@@ -5,8 +5,11 @@ import { Marking } from "#/components/primitive/marking/marking";
 import { Separator } from "#/components/primitive/separator/separator";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "#/components/primitive/sheet/sheet";
 import { Spinner } from "#/components/primitive/spinner/spinner";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "#/components/primitive/tabs/tabs";
+import { ActivityFeed } from "#/components/shared/activity-feed/activity-feed";
 import { columnTitle } from "#/lib/column-title";
 import { formatDate } from "#/lib/locale";
+import { orpc } from "#/orpc/client";
 import type { Person, Project } from "#/orpc/project/contract";
 import { taskCode } from "#/orpc/task/constants";
 import type { Board, TaskDetail } from "#/orpc/task/contract";
@@ -20,6 +23,7 @@ import {
   PriorityField,
 } from "#/routes/projects_projectKey/components/task-meta-fields";
 import { TaskDescriptionField } from "#/routes/projects_projectKey/components/task-description-field";
+import { TaskComments } from "#/routes/projects_projectKey/components/task-comments";
 import { TaskDelegation } from "#/routes/projects_projectKey/components/task-delegation";
 import { TaskDependencies } from "#/routes/projects_projectKey/components/task-dependencies";
 import { TaskStatusPanel } from "#/routes/projects_projectKey/components/task-status-panel";
@@ -127,7 +131,7 @@ function TaskDetails({
             <Separator />
             <TaskDependencies task={task} project={project} board={board} kinds={kinds} />
             <Separator />
-            <TaskTimeSection task={task} project={project} people={people} viewerId={viewer.id} />
+            <TaskTabs task={task} project={project} people={people} viewerId={viewer.id} />
           </div>
 
           {/*------ Side ------*/}
@@ -153,4 +157,50 @@ function TaskDetails({
       )}
     </>
   );
+}
+
+/*===== Tabs =====*/
+
+/**
+ * The drawer's lower half: the comment thread, the task's history, and its time, one at a time. Comments come first:
+ * they are what people come back to a card for.
+ */
+function TaskTabs({
+  task,
+  project,
+  people,
+  viewerId,
+}: {
+  task: TaskDetail;
+  project: Project;
+  people: Map<string, Person>;
+  viewerId: string;
+}) {
+  return (
+    <Tabs defaultValue="comments">
+      <TabsList aria-label={m.task_tabs()}>
+        <TabsTrigger value="comments">{m.task_tab_comments()}</TabsTrigger>
+        <TabsTrigger value="activity">{m.task_tab_activity()}</TabsTrigger>
+        <TabsTrigger value="time">{m.task_tab_time()}</TabsTrigger>
+      </TabsList>
+      <TabsContent value="comments">
+        <TaskComments task={task} project={project} viewerId={viewerId} />
+      </TabsContent>
+      <TabsContent value="activity">
+        <TaskActivity task={task} project={project} people={people} />
+      </TabsContent>
+      <TabsContent value="time">
+        <TaskTimeSection task={task} project={project} people={people} viewerId={viewerId} />
+      </TabsContent>
+    </Tabs>
+  );
+}
+
+/** The task's history, newest first; fetched when the tab is first opened. */
+function TaskActivity({ task, project, people }: { task: TaskDetail; project: Project; people: Map<string, Person> }) {
+  const { data: items } = useQuery(
+    orpc.activity.forTask.queryOptions({ input: { projectId: project.id, taskId: task.id } }),
+  );
+  if (!items) return <Spinner aria-label={m.common_loading()} />;
+  return <ActivityFeed items={items} people={people} />;
 }

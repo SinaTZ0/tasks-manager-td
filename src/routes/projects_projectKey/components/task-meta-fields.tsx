@@ -5,11 +5,11 @@ import { Field, FieldDescription, FieldError, FieldLabel } from "#/components/pr
 import { Input } from "#/components/primitive/input/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "#/components/primitive/select/select";
 import { formatDuration, parseDuration } from "#/lib/duration";
+import { priorityName } from "#/lib/priority-name";
 import type { Person } from "#/orpc/project/contract";
 import { ESTIMATE_MAX_MINUTES, TASK_PRIORITIES, type TaskPriority } from "#/orpc/task/constants";
 import type { TaskDetail } from "#/orpc/task/contract";
 import { m } from "#/paraglide/messages";
-import { priorityName } from "#/routes/projects_projectKey/task-text";
 import type { useTaskUpdate } from "#/routes/projects_projectKey/use-task-update";
 
 /*===== Types =====*/

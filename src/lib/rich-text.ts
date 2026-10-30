@@ -1,4 +1,5 @@
 import { getSchema, type Extensions, type JSONContent } from "@tiptap/core";
+import { Mention, type MentionOptions } from "@tiptap/extension-mention";
 import { Node as ProseMirrorNode } from "@tiptap/pm/model";
 import { StarterKit } from "@tiptap/starter-kit";
 
@@ -11,12 +12,16 @@ import { StarterKit } from "@tiptap/starter-kit";
 /** A stored document: Tiptap's JSON, whose root is a `doc` node. */
 export type RichTextDoc = JSONContent;
 
+/** The picker that `@` opens in an editor: which people match and how they are shown (the comment editor's). */
+export type MentionSuggestion = MentionOptions["suggestion"];
+
 /**
- * The features a document may use: paragraphs, bold, italic, strike, inline code, lists, quotes and links. Headings,
- * code blocks, rules and underline are left out: a task's notes don't need a page's structure, and fewer marks keep it
- * calm. Links open in a new tab and never run `javascript:`.
+ * The features a document may use: paragraphs, bold, italic, strike, inline code, lists, quotes, links and @mentions.
+ * Headings, code blocks, rules and underline are left out: a task's notes don't need a page's structure, and fewer
+ * marks keep it calm. Links open in a new tab and never run `javascript:`. A mention keeps the person's id and the name
+ * they had then (`@Sara`), so it survives a rename; only an editor given `mention` offers the picker.
  */
-export function richTextExtensions(): Extensions {
+export function richTextExtensions({ mention }: { mention?: MentionSuggestion } = {}): Extensions {
   return [
     StarterKit.configure({
       heading: false,
@@ -30,6 +35,16 @@ export function richTextExtensions(): Extensions {
         protocols: ["http", "https", "mailto"],
         HTMLAttributes: { rel: "noopener noreferrer nofollow", target: "_blank" },
       },
+    }),
+    Mention.configure({
+      HTMLAttributes: { "data-type": "mention" },
+      renderText: ({ node }) => `@${String(node.attrs.label ?? node.attrs.id)}`,
+      renderHTML: ({ node, options }) => [
+        "span",
+        { ...options.HTMLAttributes, "data-id": String(node.attrs.id) },
+        `@${String(node.attrs.label ?? node.attrs.id)}`,
+      ],
+      ...(mention ? { suggestion: mention } : {}),
     }),
   ];
 }
@@ -85,12 +100,28 @@ function hasSafeLinks(node: ProseMirrorNode): boolean {
 }
 
 function plainText(node: ProseMirrorNode): string {
-  return node.textBetween(0, node.content.size, BLOCK_SEPARATOR, " ").trim();
+  // A mention reads as the name it was written with; any other inline leaf (a line break) as a space.
+  return node
+    .textBetween(0, node.content.size, BLOCK_SEPARATOR, (leaf) =>
+      leaf.type.name === "mention" ? `@${String(leaf.attrs.label ?? leaf.attrs.id)}` : " ",
+    )
+    .trim();
 }
 
 /** Whether a document has no text: an editor left empty stores nothing. */
 export function isEmptyRichText(doc: RichTextDoc | null | undefined): boolean {
   return !doc || richTextToPlainText(doc).length === 0;
+}
+
+/** The ids of the people a document mentions, each once. */
+export function mentionedIds(doc: RichTextDoc): string[] {
+  const ids = new Set<string>();
+  const visit = (node: JSONContent) => {
+    if (node.type === "mention" && typeof node.attrs?.id === "string") ids.add(node.attrs.id);
+    node.content?.forEach(visit);
+  };
+  visit(doc);
+  return [...ids];
 }
 
 /*===== Writing =====*/

@@ -1,4 +1,6 @@
+import { activityContract } from "#/orpc/activity/contract";
 import { captchaContract } from "#/orpc/captcha/contract";
+import { commentContract } from "#/orpc/comment/contract";
 import { delegationContract } from "#/orpc/delegation/contract";
 import { dependencyContract } from "#/orpc/dependency/contract";
 import { mediaContract } from "#/orpc/media/contract";
@@ -14,7 +16,9 @@ import { timeContract } from "#/orpc/time/contract";
 /*===== API Contract =====*/
 // Source of truth for the API. The browser client is typed from this, never from the router.
 export const contract = {
+  activity: activityContract,
   captcha: captchaContract,
+  comment: commentContract,
   delegation: delegationContract,
   dependency: dependencyContract,
   media: mediaContract,
