@@ -244,6 +244,13 @@ function SortableColumn({
 
 /*===== Board =====*/
 
+/**
+ * A column's cards, with a dashed rule printed in the gap between each pair. The rule is the lower card's ::before,
+ * so it travels with that card while the list reorders under a drag.
+ */
+const CARD_LIST =
+  "flex flex-col gap-5 [&>li+li]:relative [&>li+li]:before:absolute [&>li+li]:before:inset-x-2 [&>li+li]:before:-top-2.75 [&>li+li]:before:border-t-2 [&>li+li]:before:border-dashed [&>li+li]:before:border-muted-foreground/60";
+
 /** The id of the page's "show cancelled" switch: where focus goes when a stopped card leaves the board. */
 export const SHOW_CANCELLED_ID = "show-cancelled";
 
@@ -668,7 +675,7 @@ export function Board({
                 movable={canMoveColumns}
               >
                 <SortableContext id={column.id} items={ids} strategy={verticalListSortingStrategy}>
-                  <ol className="flex flex-col gap-2">
+                  <ol className={CARD_LIST}>
                     {ids.map((id) => {
                       const task = tasks.get(id);
                       if (!task) return null;
@@ -726,7 +733,7 @@ export function Board({
             total={filter ? (totals.get(cancelled.id) ?? 0) : undefined}
             wipLimit={null}
           >
-            <ol className="flex flex-col gap-2">
+            <ol className={CARD_LIST}>
               {cancelledTasks.map((task) => (
                 <li key={task.id}>
                   <TaskCard
