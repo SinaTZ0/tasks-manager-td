@@ -11,8 +11,14 @@ Made with the user on 2026-10-30. They answer the spec's open questions and over
 
 - **Accounts**: there is no public sign-up. An admin creates every account, and the person signs in with the password
   the admin set.
-- **Roles**: `admin` and `user`. An admin can promote anyone to admin and demote an admin to user. The last active
-  admin can't be demoted or deactivated, so the team is never locked out.
+- **Roles** (three levels since 2026-10-30, slice 9): `admin`, `user` and `viewer`. An admin can give anyone any role.
+  The last active admin can't be demoted or deactivated, so the team is never locked out.
+  - **Admin**: everything. The only one who creates projects and tasks, changes project settings, and archives,
+    restores or deletes tasks.
+  - **User**: works on the tasks of their projects: edits, moves, starts, pauses, stops, tracks time, comments,
+    delegates, links dependencies, adds labels. Can't create or archive a task.
+  - **Viewer**: read-only. Sees their projects' boards, cards, comments and history, and nothing they do changes
+    anything. Can be @mentioned (and is notified), but can't be assigned, own or be delegated a task.
 - **Leaving the team**: deactivate (the existing `blocked` status), never delete. A deactivated user can't sign in and
   can't be assigned new work; their cards, comments and name stay.
 - **Projects**: one board per project. Only an admin creates a project and chooses its members. A member sees only the
@@ -40,7 +46,7 @@ Made with the user on 2026-10-30. They answer the spec's open questions and over
   be renamed, reordered and given a WIP limit; the cancelled column is never drawn on the board.
 - **Project settings are admin-only**: members, columns, WIP limits. Labels can be added by any member, because tagging
   is part of everyday work.
-- **Owner**: whoever creates a task owns it. The owner or an admin can hand ownership to someone else; delegation never
+- **Owner**: whoever creates a task owns it (an admin, since slice 9). The owner or an admin can hand ownership to someone else; delegation never
   does (rule 6).
 - **Comments are soft-deleted**: a deleted comment leaves "comment deleted" in the thread, and its text stays in the
   Activity entry. Nothing is hard-deleted except an archived task, by an admin (rule 10).
@@ -57,8 +63,8 @@ Added in the slice that first needs them, versions checked against React 19 at i
 | `@tiptap/react`, `@tiptap/pm`, `@tiptap/starter-kit`, `@tiptap/static-renderer` | 2     | The rich-text editor and its read-only rendering                             |
 | `@tiptap/extension-mention`, `@tiptap/suggestion`                               | 7     | @mentions in comments, with a picker built from the popover primitive        |
 
-Not needed: a separate mentions library (Tiptap's covers it), a websocket library (in-app notifications refetch; oRPC can stream
-later), a date library beyond what the day picker brings (`src/lib/locale.ts` formats dates and durations with
+Not needed: a separate mentions library (Tiptap's covers it), a websocket library (live updates in slice 16 use oRPC's event
+iterator, served as server-sent events), a date library beyond what the day picker brings (`src/lib/locale.ts` formats dates and durations with
 `Intl`), a graph library (cycles are one recursive query).
 
 ## Cross-Cutting Rules
@@ -179,6 +185,97 @@ Built once, in the slice that first needs them, and used by every procedure afte
   `task.deleted` entry.
 - **Tests**: hard delete only for an admin and only from the archive.
 
+## Phase 2
+
+Agreed with the user on 2026-10-30, in this order. The aim is the practical gap to Trello for a team of five; niche
+features (integrations, power-ups, templates, recurring cards, swimlanes, reactions, bulk actions) stay out. Each slice
+follows the backend flow, then the frontend flow; desktop first (the phone layout is checked after).
+
+### 9. Three Roles
+
+- **Roles**: `viewer` joins `USER_ROLES` (`src/lib/user-constants.ts`); the team page's role picker offers all three,
+  with a line saying what each can do. Changing a role is an Activity entry, as now.
+- **One server check per level**: a middleware (or a check in each procedure) refuses a viewer every change
+  (`FORBIDDEN`, with a message in the reader's language); creating a task (the form and quick add) and archiving it
+  become admin-only, like restore and delete already are. Read procedures stay open to every member.
+- **People pickers**: a viewer is left out of the assignee, owner and delegate pickers, and the server refuses them
+  there too. The @mention picker still lists them.
+- **Making someone a viewer** keeps their open tasks assigned to them; the team page says how many they have, so the
+  admin can hand them on.
+- **Pages**: a user sees no "new task", quick add or archive keys; a viewer sees the board without dragging, the drawer
+  with every field read-only, no comment box, no timer keys. Each hidden key is also refused by the server.
+- **Tests**: a viewer can't change anything (one mutation of each feature is enough); a user can't create or archive a
+  task; a viewer can't be assigned.
+
+### 10. My Tasks
+
+- `/my-tasks` (a nav item, not for viewers): every live task assigned to me across my projects, grouped by project,
+  the ones in doing first, then by due date. Each row shows the code, title, column, due date and running timer, and
+  opens the card's drawer on its board.
+- One procedure (`task.mine`) that reads only the viewer's projects.
+- **Tests**: tasks from a project I've left don't show.
+
+### 11. Search and Filters
+
+- **Board filters**: a filter bar on the board: assignee (with "me" and "nobody"), label, priority, due (overdue, this
+  week, none) and blocked. Kept in typed search params, so a filtered board can be linked; the board's cards are
+  already loaded, so filtering happens in the browser. Columns show "3 of 9" while filtered; a clear key resets it.
+- **Search**: a search field in the header (`/` focuses it) and a `/search?q=` page across my projects: task code
+  (`TGQ-12` goes straight to the card), title, description and comment text. Persian text is normalized the same way
+  as when it's saved (`src/lib/persian-text.ts`), so ی/ي and ک/ك match. `ILIKE` on the plain-text copies is enough at
+  this size; archived tasks are included and marked.
+- **Tests**: search never returns a task from a project I'm not on.
+
+### 12. Due Dates
+
+- **On the card, drawer and My Tasks**: the due date turns yellow when it is today or tomorrow and red when it is past,
+  with words beside the colour ("due today", "2 days late"). Done, cancelled and archived tasks never warn.
+- **"Today" is the team's**: one team time zone constant (`Asia/Tehran`), so the server and every browser agree.
+- **Notifications**: the assignee (or the owner, with no assignee) is told once when a task is due tomorrow and once
+  when it becomes overdue. No scheduler: the check runs when notifications are read (the bell polls), and a unique key
+  (task, kind, due date) keeps it to once; changing the due date allows a new one.
+- **Tests**: an overdue task notifies once, not on every poll; a done task never does.
+
+### 13. Checklists
+
+- A checklist inside a card: add an item (Enter adds the next), tick, rename, reorder (drag and keyboard), delete.
+  The drawer shows progress (`2/5`) above the list. Users and admins can change it; viewers see it.
+- Adding, ticking and deleting items are Activity entries; renames and reorders are not, to keep the history readable.
+- **Tests**: ticking an item records who and when.
+
+### 14. Counts on the Card
+
+- The card's front shows small badges: comments (💬 3), checklist progress (☑ 2/5, done when all ticked) and
+  attachments (once slice 15 lands), each with an accessible label. The board query returns the counts with the cards,
+  in one query, not one per card.
+
+### 15. Attachments
+
+- Files and links on a card: drag a file onto the drawer, paste a screenshot, or pick files; any type up to a size
+  limit (20 MB), stored like pictures (`docs/backend/media.md`) under a new `attachment` kind. Images get a preview
+  variant and open full size; other files download with their name.
+- A link attachment is a URL with an optional title. Comment and description editors can paste images into an
+  attachment too.
+- Whoever added one, or an admin, can remove it; adding and removing are Activity entries. Hard-deleting a task removes
+  its files from storage.
+- **Tests**: a viewer can't add one; deleting a task removes its attachments' files.
+
+### 16. Live Updates
+
+- Everyone on a board sees changes as they happen. An oRPC event-iterator procedure (server-sent events, one way into
+  the server as before) streams "project X changed" and "you have a notification"; the page invalidates the matching
+  queries, so data still comes from the usual procedures and their checks.
+- Changes are published through Postgres `LISTEN`/`NOTIFY`, so it keeps working while a deploy briefly runs two app
+  containers. Caddy must not buffer the stream. The bell stops polling while the stream is open and falls back to
+  polling if it drops.
+- **Tests**: a change is published only to members of its project.
+
+### After These
+
+Not planned yet, in rough order of use: watchers, keyboard shortcuts beyond `/` (`n` new card, `e` edit), browser
+notifications, moving or copying a card to another project, a calendar view of due dates. Sub-tasks are left out:
+checklists cover them at this size. Then the phone layout.
+
 ## Housekeeping
 
 - In slice 1: rewrite `docs/app.md`'s Open Questions as a pointer to the Decisions here, and update the note
@@ -186,5 +283,5 @@ Built once, in the slice that first needs them, and used by every procedure afte
   shape to copy).
 - Before the first deploy ✓: `drizzle/` is one fresh initial migration, and `deploy/deploy.sh admin <email>` creates
   the first admin (not a deploy step: it needs a password; docs/deployment.md → The first admin).
-- After the MVP, the spec's "should have" list: My Tasks, filters, search, sub-tasks, checklists, attachments,
-  watchers, WIP warnings, due-date alerts, real-time, keyboard shortcuts.
+- After the MVP, the spec's "should have" list became Phase 2 above (WIP warnings already exist: a column over its
+  limit is marked).
