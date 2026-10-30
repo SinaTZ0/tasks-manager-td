@@ -341,7 +341,7 @@ the steps that already ran on the server and update the ones that haven't.
 
 ## Rolling Back
 
-Every build tags the app's image with the commit it was built from (`template-app:381286c`), and the newest three are
+Every build tags the app's image with the commit it was built from (`tofang-app:381286c`), and the newest three are
 kept (`KeepVersions` in `tools/deploy/internal/stack`); older tags are removed after each deploy, never the running one.
 The build cache is trimmed then too, to its 3 GB most recently used (`BuildCacheKeep`), so repeated builds don't fill
 the disk. Only `app` builds the image; `migrate` and `storage-init` run the one it built. Choose Roll back

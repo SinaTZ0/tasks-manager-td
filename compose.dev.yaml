@@ -4,7 +4,7 @@
 # `.env.example`.
 
 # Pinned so the volumes keep their names even when the folder is renamed. Rename per project.
-name: template-dev
+name: tofang-dev
 
 services:
   db:

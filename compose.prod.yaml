@@ -8,7 +8,7 @@
 # Needs Docker Compose 2.23.1 or later (inline `configs`).
 
 # Pinned so the volumes keep their names even when the folder is renamed. Rename per project.
-name: template
+name: tofang
 
 # ===== Shared =====
 x-logging: &logging # Docker keeps container logs forever by default; rotate them.
@@ -20,7 +20,7 @@ x-logging: &logging # Docker keeps container logs forever by default; rotate the
 x-app-image: &app-image
   # The same image runs the app and both jobs. Only `app` builds it: with a `build` each, Compose builds the image three
   # times and unpacks each copy, which can fill a small disk; the jobs use the image `app` built.
-  image: template-app
+  image: tofang-app
   init: true
   logging: *logging
 
@@ -101,7 +101,7 @@ services:
   # ------ One-time Jobs ------
   migrate:
     <<: *app-image
-    # Never from Docker Hub: a missing `template-app` means `app` hasn't been built yet.
+    # Never from Docker Hub: a missing `tofang-app` means `app` hasn't been built yet.
     pull_policy: never
     command: ["node", "deploy/migrate.mjs"]
     restart: "no"
@@ -163,7 +163,7 @@ services:
       context: tools/error-viewer
       args:
         GOPROXY: ${GOPROXY:-}
-    image: template-error-viewer
+    image: tofang-error-viewer
     restart: unless-stopped
     environment:
       PUBLIC_KEY: ${ERROR_VIEWER_PUBLIC_KEY:?set ERROR_VIEWER_PUBLIC_KEY in .env}
