@@ -93,6 +93,18 @@ export const taskContract = {
     .output(taskDetailSchema),
   create: oc.errors(errors).input(createTaskInputSchema).output(taskCardSchema),
   update: oc.errors(errors).input(updateTaskInputSchema).output(taskDetailSchema),
+  move: oc
+    .errors(errors)
+    .input(
+      z.strictObject({
+        projectId: z.string(),
+        taskId: z.string(),
+        columnId: z.string(),
+        /** The key the board computed between the card's new neighbours (`src/lib/position.ts`). */
+        position: z.string(),
+      }),
+    )
+    .output(taskCardSchema),
   archive: oc
     .errors(errors)
     .input(z.strictObject({ projectId: z.string(), taskId: z.string() }))

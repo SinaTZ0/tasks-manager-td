@@ -381,5 +381,6 @@
         "": "{code} archived."
       }
     }
-  ]
+  ],
+  "task_error_position_invalid": "The board was out of date. It has been refreshed; try again."
 }

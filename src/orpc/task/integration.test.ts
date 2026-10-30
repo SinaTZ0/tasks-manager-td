@@ -4,7 +4,8 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { db } from "#/db/client.server";
 import { activity } from "#/db/schema";
 import { createTestProject, deleteTestProject } from "#/db/test-fixtures.server";
-import { archiveTask, createTask, getBoard, getTask, updateTask } from "#/orpc/task/service";
+import { findColumns } from "#/orpc/project/repository";
+import { archiveTask, createTask, getBoard, getTask, moveTask, updateTask } from "#/orpc/task/service";
 
 /*===== Tasks =====*/
 // Every change to a task leaves a history entry in the same transaction (docs/app.md rule 7), and archiving takes a
@@ -93,5 +94,55 @@ describe("tasks", () => {
       archivedAt: expect.any(Date),
     });
     expect((await historyOf(created.task.id)).map((entry) => entry.action)).toEqual(["task.created", "task.archived"]);
+  });
+
+  it("records the columns a move leaves and enters, and never lets two cards share a position", async () => {
+    const { projectId, users } = fixture;
+    const columns = await findColumns({ db, projectId });
+    const todo = columns.find((column) => column.kind === "todo");
+    if (!todo) throw new Error("setup failed");
+
+    const a = await createTask({ db, actorId: users.ali, projectId, input: { title: "الف" } });
+    const b = await createTask({ db, actorId: users.ali, projectId, input: { title: "ب" } });
+    if (a.kind !== "success" || b.kind !== "success") throw new Error("setup failed");
+
+    // Both dropped into the same gap at once: the second gets a key of its own.
+    const first = await moveTask({
+      db,
+      actorId: users.ali,
+      projectId,
+      taskId: a.task.id,
+      columnId: todo.id,
+      position: "a0",
+    });
+    const second = await moveTask({
+      db,
+      actorId: users.reza,
+      projectId,
+      taskId: b.task.id,
+      columnId: todo.id,
+      position: "a0",
+    });
+    if (first.kind !== "success" || second.kind !== "success") throw new Error("move failed");
+    expect(first.task.position).toBe("a0");
+    expect(second.task.position).not.toBe("a0");
+    expect(second.task.position > first.task.position).toBe(true);
+
+    const [, moved] = await historyOf(a.task.id);
+    expect(moved).toMatchObject({
+      action: "task.moved",
+      before: { columnKind: "backlog" },
+      after: { columnId: todo.id, columnKind: "todo" },
+    });
+
+    const invalid = await moveTask({
+      db,
+      actorId: users.ali,
+      projectId,
+      taskId: a.task.id,
+      columnId: todo.id,
+      position: "!",
+    });
+    expect(invalid).toMatchObject({ kind: "invalid" });
   });
 });

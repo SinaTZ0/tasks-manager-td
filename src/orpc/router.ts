@@ -6,6 +6,7 @@ import {
   createProjectProcedure,
   getProjectProcedure,
   listProjectsProcedure,
+  moveColumnProcedure,
   renameProjectProcedure,
   setProjectMemberProcedure,
   updateColumnProcedure,
@@ -17,6 +18,7 @@ import {
   createLabelProcedure,
   createTaskProcedure,
   getTaskProcedure,
+  moveTaskProcedure,
   taskBoardProcedure,
   updateTaskProcedure,
 } from "#/orpc/task/procedure";
@@ -48,6 +50,7 @@ export const router = implementer.router({
     rename: renameProjectProcedure,
     setMember: setProjectMemberProcedure,
     updateColumn: updateColumnProcedure,
+    moveColumn: moveColumnProcedure,
   },
   session: {
     viewer: viewerProcedure,
@@ -60,6 +63,7 @@ export const router = implementer.router({
     get: getTaskProcedure,
     create: createTaskProcedure,
     update: updateTaskProcedure,
+    move: moveTaskProcedure,
     archive: archiveTaskProcedure,
     createLabel: createLabelProcedure,
   },

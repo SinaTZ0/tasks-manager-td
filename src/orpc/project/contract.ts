@@ -70,6 +70,13 @@ const notFoundErrors = {
 /*===== Procedures =====*/
 const adminErrors = { ...commonErrors, ...authErrors, ...roleErrors };
 
+const moveColumnInputSchema = z.strictObject({
+  projectId: z.string(),
+  columnId: z.string(),
+  /** The key the board computed between the column's new neighbours (`src/lib/position.ts`). */
+  position: z.string(),
+});
+
 export const projectContract = {
   /** The viewer's projects; an admin's are all of them. */
   list: oc.errors({ ...commonErrors, ...authErrors }).output(z.array(projectSummarySchema)),
@@ -89,5 +96,9 @@ export const projectContract = {
   updateColumn: oc
     .errors({ ...adminErrors, ...notFoundErrors })
     .input(updateColumnInputSchema)
+    .output(columnSchema),
+  moveColumn: oc
+    .errors({ ...adminErrors, ...notFoundErrors })
+    .input(moveColumnInputSchema)
     .output(columnSchema),
 };

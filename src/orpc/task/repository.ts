@@ -1,4 +1,4 @@
-import { and, asc, desc, eq, inArray, isNull, sql } from "drizzle-orm";
+import { and, asc, desc, eq, inArray, isNull, ne, sql } from "drizzle-orm";
 
 import type { Database } from "#/db/client.server";
 import { boardColumn, label, project, projectMember, task, taskLabel, user } from "#/db/schema";
@@ -72,6 +72,23 @@ export async function findLastPosition({ db, columnId }: { db: Database; columnI
     .orderBy(desc(task.position))
     .limit(1);
   return row?.position ?? null;
+}
+
+/** The positions of a column's live tasks, other than `exceptId`'s. */
+export async function findColumnPositions({
+  db,
+  columnId,
+  exceptId,
+}: {
+  db: Database;
+  columnId: string;
+  exceptId: string;
+}): Promise<string[]> {
+  const rows = await db
+    .select({ position: task.position })
+    .from(task)
+    .where(and(eq(task.columnId, columnId), isNull(task.archivedAt), ne(task.id, exceptId)));
+  return rows.map((row) => row.position);
 }
 
 /*===== People =====*/

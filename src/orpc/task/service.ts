@@ -2,6 +2,7 @@ import { generateKeyBetween } from "fractional-indexing";
 import { z } from "zod";
 
 import type { Database } from "#/db/client.server";
+import { isPositionKey, resolvePosition } from "#/lib/position";
 import { issuesToErrorData } from "#/lib/schema-issues";
 import { recordActivity } from "#/orpc/activity/service";
 import { toPerson } from "#/orpc/project/mapper";
@@ -12,6 +13,7 @@ import {
   findActiveMemberIds,
   findColumn,
   findColumnByKind,
+  findColumnPositions,
   findLabelByName,
   findLabelIdsByTask,
   findLabels,
@@ -290,6 +292,74 @@ export async function updateTask({
       entries: [{ action: "task.updated", projectId, taskId, before, after, snapshot: { code, title: record.title } }],
     });
     return { kind: "success", task: toTaskDetail({ record, labelIds: nextLabelIds }) };
+  });
+}
+
+/*===== Move =====*/
+type MoveResult = { kind: "success"; task: TaskCard } | NotFound | Invalid;
+
+/**
+ * Puts a card in a column at a position: dragged on the board or sent with "move to…". The board computes the key
+ * between the card's new neighbours for its optimistic move; if another card took that key meanwhile, the card gets a
+ * fresh one just after it, and the board's refetch shows where it landed. A move between columns is what the history's
+ * "time in each column" is summed from, so its entry keeps both columns' kinds and names.
+ *
+ * @returns `invalid` for a key the board couldn't have made or a column that isn't on the board; `not-found` for a
+ * task the project doesn't have or one that is archived.
+ */
+export async function moveTask({
+  db,
+  actorId,
+  projectId,
+  taskId,
+  columnId,
+  position,
+}: {
+  db: Database;
+  actorId: string;
+  projectId: string;
+  taskId: string;
+  columnId: string;
+  position: string;
+}): Promise<MoveResult> {
+  if (!isPositionKey(position)) return { kind: "invalid", fields: { position: m.task_error_position_invalid() } };
+  if (!isUuid(taskId)) return { kind: "not-found" };
+  const column = isUuid(columnId) ? await findColumn({ db, projectId, columnId }) : undefined;
+  // Cancelling is "stop", with its reason; a drag never does it.
+  if (!column || column.kind === "cancelled") {
+    return { kind: "invalid", fields: { columnId: m.task_error_column_unusable() } };
+  }
+
+  return db.transaction(async (tx): Promise<MoveResult> => {
+    const current = await lockTask({ db: tx, projectId, id: taskId });
+    if (!current || current.archivedAt) return { kind: "not-found" };
+
+    const taken = await findColumnPositions({ db: tx, columnId, exceptId: taskId });
+    const finalPosition = resolvePosition({ wanted: position, taken });
+    const labelIds = (await findLabelIdsByTask({ db: tx, taskIds: [taskId] })).get(taskId) ?? [];
+    if (current.columnId === columnId && current.position === finalPosition) {
+      return { kind: "success", task: toTaskCard({ record: current, labelIds }) };
+    }
+
+    const record = await updateTaskRow({ db: tx, id: taskId, values: { columnId, position: finalPosition } });
+    const code = taskCode({ key: await findProjectKey({ db: tx, projectId }), number: current.number });
+    const from =
+      current.columnId === columnId ? column : await findColumn({ db: tx, projectId, columnId: current.columnId });
+    await recordActivity({
+      db: tx,
+      actorId,
+      entries: [
+        {
+          action: current.columnId === columnId ? "task.reordered" : "task.moved",
+          projectId,
+          taskId,
+          before: { columnId: current.columnId, columnKind: from?.kind, columnName: from?.name ?? null },
+          after: { columnId, columnKind: column.kind, columnName: column.name },
+          snapshot: { code, title: current.title },
+        },
+      ],
+    });
+    return { kind: "success", task: toTaskCard({ record, labelIds }) };
   });
 }
 

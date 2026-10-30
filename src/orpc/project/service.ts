@@ -2,6 +2,7 @@ import { generateNKeysBetween } from "fractional-indexing";
 import { z } from "zod";
 
 import type { Database } from "#/db/client.server";
+import { isPositionKey, resolvePosition } from "#/lib/position";
 import { issuesToErrorData } from "#/lib/schema-issues";
 import { recordActivity } from "#/orpc/activity/service";
 import type { Column, Project, ProjectSummary } from "#/orpc/project/contract";
@@ -269,6 +270,46 @@ export async function changeColumn({
           snapshot: { columnId, kind: current.kind },
         },
       ],
+    });
+    return { kind: "success", column: toColumn(record) };
+  });
+}
+
+/*===== Column Order =====*/
+/**
+ * Moves a column to a new place on the board. As with cards, a key another column took meanwhile is replaced with a
+ * fresh one just after it.
+ */
+export async function moveColumn({
+  db,
+  actorId,
+  projectId,
+  columnId,
+  position,
+}: {
+  db: Database;
+  actorId: string;
+  projectId: string;
+  columnId: string;
+  position: string;
+}): Promise<ColumnResult> {
+  if (!isPositionKey(position)) return { kind: "invalid", fields: { position: m.task_error_position_invalid() } };
+  if (!isUuid(projectId) || !isUuid(columnId)) return { kind: "not-found" };
+
+  return db.transaction(async (tx): Promise<ColumnResult> => {
+    const columns = await findColumns({ db: tx, projectId });
+    const current = columns.find((column) => column.id === columnId);
+    if (!current) return { kind: "not-found" };
+
+    const taken = columns.filter((column) => column.id !== columnId).map((column) => column.position);
+    const finalPosition = resolvePosition({ wanted: position, taken });
+    if (finalPosition === current.position) return { kind: "success", column: toColumn(current) };
+
+    const record = await updateColumnRow({ db: tx, id: columnId, values: { position: finalPosition } });
+    await recordActivity({
+      db: tx,
+      actorId,
+      entries: [{ action: "column.moved", projectId, snapshot: { columnId, kind: current.kind, name: current.name } }],
     });
     return { kind: "success", column: toColumn(record) };
   });

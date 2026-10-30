@@ -13,10 +13,13 @@ export const ACTIVITY_ACTIONS = [
   "member.added",
   "member.removed",
   "column.updated",
+  "column.moved",
   "label.created",
   /*------ Task ------*/
   "task.created",
   "task.updated",
+  "task.moved",
+  "task.reordered",
   "task.archived",
 ] as const;
 

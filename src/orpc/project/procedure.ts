@@ -6,6 +6,7 @@ import {
   createProject,
   getProject,
   listProjects,
+  moveColumn,
   renameProject,
   setProjectMember,
 } from "#/orpc/project/service";
@@ -67,6 +68,16 @@ export const updateColumnProcedure = base.project.updateColumn
   .handler(async ({ context, input, errors }) => {
     const { projectId, columnId, ...change } = input;
     const result = await changeColumn({ db: context.db, actorId: context.user.id, projectId, columnId, input: change });
+    if (result.kind === "not-found") throw errors.NOT_FOUND({ data: noData });
+    if (result.kind === "invalid") throw errors.INVALID_INPUT({ data: { errors: [], fields: result.fields } });
+    return result.column;
+  });
+
+export const moveColumnProcedure = base.project.moveColumn
+  .use(requireRoleMiddleware("admin"))
+  .use(provideDbMiddleware)
+  .handler(async ({ context, input, errors }) => {
+    const result = await moveColumn({ db: context.db, actorId: context.user.id, ...input });
     if (result.kind === "not-found") throw errors.NOT_FOUND({ data: noData });
     if (result.kind === "invalid") throw errors.INVALID_INPUT({ data: { errors: [], fields: result.fields } });
     return result.column;
