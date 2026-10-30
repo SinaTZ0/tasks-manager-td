@@ -458,7 +458,7 @@ export const taskLabel = pgTable(
 
 /*===== Activity =====*/
 // The history of every change (docs/app.md rule 7), written in the same transaction as the change by `recordActivity`
-// (`src/orpc/activity/service.ts`). Append-only: a trigger (drizzle/*_activity-append-only.sql) refuses updates and
+// (`src/orpc/activity/service.ts`). Append-only: a trigger (at the end of drizzle/0000_init.sql) refuses updates and
 // deletes. `taskId` has no foreign key, so an archived task can be hard-deleted and its history stays; `snapshot`
 // keeps what the entry needs to read well later (a task's code and title, a column's name), since those change.
 
