@@ -1,5 +1,5 @@
 import { cva } from "class-variance-authority";
-import { markingClasses, readoutClasses } from "../instrument.styles";
+import { markingClasses, readingClasses, readoutClasses } from "../instrument.styles";
 
 /*===== Variants =====*/
 
@@ -9,6 +9,8 @@ const twVariant = {
   default: markingClasses,
   // Codes, ids, counts and shortcuts in the instrument mono
   code: readoutClasses,
+  // A value the part shows (a count, a date, time spent), in full ink so it reads apart from the markings
+  reading: readingClasses,
 };
 
 const markingVariants = cva("", {

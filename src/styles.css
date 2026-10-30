@@ -134,10 +134,11 @@
 
 @theme inline {
   /* Body copy is Vazirmatn. Everything printed on the instrument (headings, key legends, markings) is Plex Sans
-     Arabic, and every code, number and timer is Plex Mono. */
+     Arabic, and every code, number and timer is Plex Mono. Plex Mono has no Persian digits: without Vazirmatn next in
+     line, "۶" or "۰/۲" fell to the system's thin monospace and all but vanished at marking size. */
   --font-sans: "Vazirmatn Variable", "Segoe UI", Tahoma, system-ui, sans-serif;
   --font-heading: "IBM Plex Sans Arabic", "Vazirmatn Variable", system-ui, sans-serif;
-  --font-mono: "IBM Plex Mono", ui-monospace, monospace;
+  --font-mono: "IBM Plex Mono", "Vazirmatn Variable", ui-monospace, monospace;
 
   /*------ shadcn semantic colors ------*/
   --color-background: var(--background);

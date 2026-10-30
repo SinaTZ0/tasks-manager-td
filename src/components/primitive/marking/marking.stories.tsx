@@ -39,6 +39,10 @@ export const InContext: Story = {
         <Marking>میانبر</Marking>
         <Marking variant="code">Ctrl+K</Marking>
       </span>
+      <span className="flex items-center gap-2">
+        <Marking>چک‌لیست</Marking>
+        <Marking variant="reading">۱/۲</Marking>
+      </span>
     </div>
   ),
 };

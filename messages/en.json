@@ -1304,6 +1304,14 @@
   "due_today": "Due today",
   "due_tomorrow": "Due tomorrow",
   "due_late_one": "A day late",
+  "due_in_days": [
+    {
+      "declarations": ["input days", "local daysText = days: number"],
+      "match": {
+        "": "{daysText} days left"
+      }
+    }
+  ],
   "due_late": [
     {
       "declarations": ["input days", "local daysText = days: number"],

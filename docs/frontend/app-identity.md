@@ -101,7 +101,9 @@ a status colour uses the `success` / `warning` / `info` / `destructive` text tok
 - **Vazirmatn** (`font-sans`) for reading: task titles, descriptions, comments.
 - **IBM Plex Sans Arabic** (`font-heading`) for everything printed on the instrument: headings, key legends,
   markings.
-- **IBM Plex Mono** (`font-mono`) for codes, counts, shortcuts and timers, always inside an LTR isolate.
+- **IBM Plex Mono** (`font-mono`) for codes, counts, shortcuts and timers, inside an isolate (LTR for codes). Plex
+  Mono has no Persian digits, so Vazirmatn follows it in the stack and draws them. Counts and dates on a card print
+  as readings, in full ink: muted grey is for the silkscreen that names them.
 - Type styles are `text-<name>` in `styles.css` (`text-h2`, `text-body`, `text-marking`, `text-stat`…); keep the list
   in `cn` (`src/lib/utils.ts`) in step.
 

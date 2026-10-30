@@ -85,7 +85,7 @@ export function BoardColumn({
           {total !== undefined ? (
             <Marking>{m.board_filtered_count({ shown: count, total })}</Marking>
           ) : (
-            <Marking variant="code" aria-hidden={wipLimit === null || undefined}>
+            <Marking variant="reading" aria-hidden={wipLimit === null || undefined}>
               {wipLimit === null ? (
                 pad(count)
               ) : (

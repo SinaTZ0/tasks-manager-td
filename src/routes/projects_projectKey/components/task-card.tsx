@@ -27,10 +27,12 @@ import { PriorityMark } from "#/routes/projects_projectKey/components/priority-m
 
 /*===== Time Spent =====*/
 
-/** The card's time spent as `h:mm`, the sum of its logs. Nothing until some time is logged. */
+/** Whether the card prints its time spent: once a minute is logged, or while a timer runs. */
+const showsSpent = (task: TaskCardData) => task.runningSince.length > 0 || task.spentSeconds >= 60;
+
+/** The card's time spent as `h:mm`, the sum of its logs. */
 function SpentReadout({ task }: { task: TaskCardData }) {
   if (task.runningSince.length > 0) return <RunningReadout task={task} />;
-  if (task.spentSeconds < 60) return null;
   return <SpentMarking seconds={task.spentSeconds} />;
 }
 
@@ -47,7 +49,7 @@ function RunningReadout({ task }: { task: TaskCardData }) {
 
 function SpentMarking({ seconds }: { seconds: number }) {
   return (
-    <Marking variant="code">
+    <Marking variant="reading">
       <span className="sr-only">{m.time_spent_label()}: </span>
       {formatDuration(Math.floor(seconds / 60))}
     </Marking>
@@ -57,8 +59,8 @@ function SpentMarking({ seconds }: { seconds: number }) {
 /*===== Count Badge =====*/
 
 /**
- * A small count on the footer: an icon and a number, read out as `label`. `complete` lights a green LED beside it (a
- * green text would be too faint on the card).
+ * A small count on the footer: an icon in the housing's muted ink and the number in full ink beside it, read out as
+ * `label`. `complete` lights a green LED beside it (a green text would be too faint on the card).
  */
 function CountBadge({
   icon: Icon,
@@ -72,15 +74,25 @@ function CountBadge({
   complete?: boolean;
 }) {
   return (
-    <span className="flex items-center gap-1 text-muted-foreground">
+    <span className="flex items-center gap-1">
       {complete && <Led signal="positive" state="on" size="sm" />}
-      <Icon aria-hidden="true" className="size-3.5" />
+      <Icon aria-hidden="true" className="size-4 text-muted-foreground" />
       <span className="sr-only">{label}</span>
-      <Marking variant="code" aria-hidden="true">
+      <Marking variant="reading" aria-hidden="true">
         {value}
       </Marking>
     </span>
   );
+}
+
+/*===== Footer Cell =====*/
+
+/**
+ * One value on the footer's readout row. The row rules a line between neighbouring cells, the full height of the
+ * footer, so each cell holds its own padding.
+ */
+function FooterCell({ children }: { children: ReactNode }) {
+  return <span className="flex items-center gap-1 px-1.5 py-1.5 first:ps-0 last:pe-0">{children}</span>;
 }
 
 /*===== Task Card =====*/
@@ -202,11 +214,11 @@ export function TaskCard({
       {/* The blocked strip brings its own rule. */}
       <footer
         className={cn(
-          "flex min-h-11 items-center justify-between gap-3 border-border/60 px-3 py-1.5",
+          "flex min-h-11 items-stretch justify-between gap-3 border-border/60 px-3",
           blockedBy.length === 0 && "border-t",
         )}
       >
-        <span className="flex items-center gap-2">
+        <span className="flex items-center gap-2 py-1.5">
           {owner && assignee && owner.id !== assignee.id && (
             <PersonAvatar name={owner.name} src={owner.avatarUrl} owner />
           )}
@@ -216,35 +228,58 @@ export function TaskCard({
             <Marking>{m.task_unassigned()}</Marking>
           )}
         </span>
-        <span className="flex flex-wrap items-center justify-end gap-x-3 gap-y-1">
+        {/* Values sit in cells with a printed rule between them, top to bottom like the readouts on a panel, so "۶"
+            and "۰/۲" never run together. The flags (has a description, watched) share one cell. */}
+        <span className="flex flex-wrap justify-end divide-x divide-border/60">
           {comments > 0 && (
-            <CountBadge
-              icon={MessageSquareIcon}
-              label={m.card_comment_count({ count: comments })}
-              value={formatNumber(comments)}
-            />
+            <FooterCell>
+              <CountBadge
+                icon={MessageSquareIcon}
+                label={m.card_comment_count({ count: comments })}
+                value={formatNumber(comments)}
+              />
+            </FooterCell>
           )}
           {attachments > 0 && (
-            <CountBadge
-              icon={PaperclipIcon}
-              label={m.card_attachment_count({ count: attachments })}
-              value={formatNumber(attachments)}
-            />
+            <FooterCell>
+              <CountBadge
+                icon={PaperclipIcon}
+                label={m.card_attachment_count({ count: attachments })}
+                value={formatNumber(attachments)}
+              />
+            </FooterCell>
           )}
           {checklistTotal > 0 && (
-            <CountBadge
-              icon={ListChecksIcon}
-              label={m.card_checklist_count({ done: checklistDone, total: checklistTotal })}
-              value={`${formatNumber(checklistDone)}/${formatNumber(checklistTotal)}`}
-              complete={checklistDone === checklistTotal}
-            />
+            <FooterCell>
+              <CountBadge
+                icon={ListChecksIcon}
+                label={m.card_checklist_count({ done: checklistDone, total: checklistTotal })}
+                value={`${formatNumber(checklistDone)}/${formatNumber(checklistTotal)}`}
+                complete={checklistDone === checklistTotal}
+              />
+            </FooterCell>
           )}
-          <SpentReadout task={task} />
-          {task.hasDescription && (
-            <AlignStartVerticalIcon aria-label={m.task_has_description()} className="size-3.5 text-muted-foreground" />
+          {showsSpent(task) && (
+            <FooterCell>
+              <SpentReadout task={task} />
+            </FooterCell>
           )}
-          {watching && <EyeIcon aria-label={m.watcher_card_watching()} className="size-3.5 text-muted-foreground" />}
-          {task.dueDate && <DueMark dueDate={task.dueDate} finished={stopped || task.completedAt !== null} />}
+          {(task.hasDescription || watching) && (
+            <FooterCell>
+              {task.hasDescription && (
+                <AlignStartVerticalIcon
+                  aria-label={m.task_has_description()}
+                  className="size-4 text-muted-foreground"
+                />
+              )}
+              {watching && <EyeIcon aria-label={m.watcher_card_watching()} className="size-4 text-muted-foreground" />}
+            </FooterCell>
+          )}
+          {task.dueDate && (
+            <FooterCell>
+              <DueMark dueDate={task.dueDate} finished={stopped || task.completedAt !== null} brief />
+            </FooterCell>
+          )}
         </span>
       </footer>
     </article>

@@ -1,6 +1,8 @@
+import { CalendarClockIcon } from "lucide-react";
+
 import { Led } from "#/components/primitive/led/led";
 import { Marking } from "#/components/primitive/marking/marking";
-import { formatDate, isoToDate } from "#/lib/locale";
+import { formatDate, formatNumber, isoToDate } from "#/lib/locale";
 import { daysBetween, teamToday } from "#/lib/team-day";
 import { m } from "#/paraglide/messages";
 
@@ -22,8 +24,12 @@ export function dueState({ dueDate, finished }: { dueDate: string; finished: boo
   return { tone: days < 0 ? "late" : days <= 1 ? "soon" : null, days };
 }
 
-/** The warning in words, so the colour is never the only cue: "Due today", "Due tomorrow", "3 days late". */
+/**
+ * The days to a due date in words, so the colour is never the only cue: "5 days left", "Due today", "Due tomorrow",
+ * "3 days late".
+ */
 function dueWords(days: number): string {
+  if (days > 1) return m.due_in_days({ days });
   if (days === 0) return m.due_today();
   if (days === 1) return m.due_tomorrow();
   if (days === -1) return m.due_late_one();
@@ -35,26 +41,61 @@ function dueWords(days: number): string {
 /**
  * A due date as the instrument prints it: the date, and once it comes close a lit LED with words beside it (yellow
  * for today or tomorrow, the action red once late). Used on the card, in the drawer and on My Tasks.
+ *
+ * `brief` is for the card's footer, where room is short and the question is "how long have I got": a calendar
+ * mark and the days left, like the footer's other counts, or the warning words once it comes close ("Due today",
+ * "3 days late"). The date is spoken and shows on hover. A finished task has nothing left to count, so it keeps its
+ * date.
  */
 export function DueMark({
   dueDate,
   finished = false,
+  brief = false,
   format = { day: "numeric", month: "short" },
 }: {
   /** ISO date (`2026-11-04`). */
   dueDate: string;
   finished?: boolean;
+  brief?: boolean;
   format?: Intl.DateTimeFormatOptions;
 }) {
   const { tone, days } = dueState({ dueDate, finished });
+  const date = (
+    <>
+      <span className="sr-only">{m.task_due_label()}: </span>
+      {formatDate(isoToDate(dueDate), format)}
+    </>
+  );
+
+  if (brief && !finished) {
+    return (
+      <span className="inline-flex items-center gap-1" title={formatDate(isoToDate(dueDate), format)}>
+        <span className="sr-only">
+          {date}, {dueWords(days)}
+        </span>
+        {tone ? (
+          <>
+            <Led signal={tone === "late" ? "action" : "attention"} state="on" size="sm" />
+            <span aria-hidden="true" className="text-caption font-semibold">
+              {dueWords(days)}
+            </span>
+          </>
+        ) : (
+          <>
+            <CalendarClockIcon aria-hidden="true" className="size-4 text-muted-foreground" />
+            <Marking variant="reading" aria-hidden="true">
+              {formatNumber(days)}
+            </Marking>
+          </>
+        )}
+      </span>
+    );
+  }
 
   return (
     <span className="inline-flex items-center gap-1.5">
       {tone && <Led signal={tone === "late" ? "action" : "attention"} state="on" size="sm" />}
-      <Marking>
-        <span className="sr-only">{m.task_due_label()}: </span>
-        {formatDate(isoToDate(dueDate), format)}
-      </Marking>
+      <Marking variant="reading">{date}</Marking>
       {tone && <span className="text-caption font-semibold">{dueWords(days)}</span>}
     </span>
   );

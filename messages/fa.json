@@ -1304,6 +1304,14 @@
   "due_today": "سررسید امروز",
   "due_tomorrow": "سررسید فردا",
   "due_late_one": "یک روز دیر",
+  "due_in_days": [
+    {
+      "declarations": ["input days", "local daysText = days: number"],
+      "match": {
+        "": "{daysText} روز مانده"
+      }
+    }
+  ],
   "due_late": [
     {
       "declarations": ["input days", "local daysText = days: number"],

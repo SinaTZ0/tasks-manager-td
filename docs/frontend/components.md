@@ -82,8 +82,9 @@ Every part is drawn as hardware ([app-identity.md](./app-identity.md#materials))
 - **Disabled**: the face goes grey and dim, the legend muted; the cut stays, because the part is still there.
 - **Housings and popups**: `bg-card` (or `bg-popover`), one thin border, `rounded-housing`, `shadow-housing` (a hard
   ledge, no blur). Popups lift with `shadow-md`.
-- **Markings**: text printed on a housing uses `markingClasses` (words) or `readoutClasses` (codes, numbers, in mono
-  and LTR), or the `Marking` primitive.
+- **Markings**: text printed on a housing uses `markingClasses` (words), `readoutClasses` (codes, in mono and LTR)
+  or `readingClasses` (a value the part shows, such as a count, a date or time spent: mono in full ink, in its own
+  direction), or the `Marking` primitive (`variant="code"`, `variant="reading"`).
 
 Stories render on a housing panel (the `withHousing` decorator in `.storybook/preview.tsx`), because that is where
 parts live. A story of a housing or a popup opts out with `parameters: { housing: false }`.

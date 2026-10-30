@@ -136,10 +136,20 @@ const markingClasses = "font-heading text-marking tracking-marking text-muted-fo
 /** A code or value printed in the instrument mono: task codes, shortcuts, counts. Always set inside `<bdi dir="ltr">`. */
 const readoutClasses = "font-mono text-marking font-medium tracking-readout text-muted-foreground";
 
+/**
+ * A value read off a part in the instrument mono: a count, a date, time spent. Printed in full ink, one step up from a
+ * marking, so the number stands out from the silkscreen naming it. Set inside a `<bdi>` that takes the text's own
+ * direction (a Persian date reads right to left).
+ */
+// Set tight, unlike a readout, and without tabular figures: both pull Persian digits apart ("۱ ۱"). Plex Mono's Latin
+// digits are one width already.
+const readingClasses = "font-mono text-body-sm font-medium text-foreground";
+
 export {
   cutVariants,
   keycapVariants,
   markingClasses,
+  readingClasses,
   readoutClasses,
   slotClasses,
   twCut,
