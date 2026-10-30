@@ -23,7 +23,7 @@ pnpm services                 # Postgres on 5432, SeaweedFS (S3) on 8333, media 
 pnpm db:migrate               # create the tables
 pnpm db:seed                  # optional: the admin from SEED_ADMIN_EMAIL / SEED_ADMIN_PASSWORD
 pnpm db:seed:notes            # optional: sample notes for that admin
-pnpm dev                      # http://localhost:5173
+pnpm dev                      # http://localhost:3000
 pnpm errors                   # optional, in a second terminal: error viewer on http://localhost:8000
 ```
 

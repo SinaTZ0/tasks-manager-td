@@ -85,18 +85,19 @@ const twKeycapTone = defineStyles({
 
 // Seen from above, a key sinking into its cut stays centred and shrinks a little, so the void widens evenly on every
 // side. Translating it instead slides the key over the lower gap. Momentary keys sink on `:active`; latching parts
-// (Toggle, Tab, Checkbox) hold the same state through `data-pressed`, `data-checked` or `data-active`.
+// (Toggle, Tab, Checkbox) hold the same state through `data-pressed`, `data-checked` or `data-active`. A plain button
+// with `aria-pressed` and a link to the current page (`aria-current="page"`) latch the same way.
 const twKeycapScale = defineStyles({
   regular: {
     geometry: "rounded-keycap",
     active:
-      "active:after:inset-press active:after:shadow-keycap-pressed active:after:brightness-92 data-pressed:after:inset-press data-pressed:after:shadow-keycap-pressed data-pressed:after:brightness-92 data-active:after:inset-press data-active:after:shadow-keycap-pressed data-active:after:brightness-92",
+      "active:after:inset-press active:after:shadow-keycap-pressed active:after:brightness-92 aria-pressed:after:inset-press aria-pressed:after:shadow-keycap-pressed aria-pressed:after:brightness-92 aria-[current=page]:after:inset-press aria-[current=page]:after:shadow-keycap-pressed aria-[current=page]:after:brightness-92 data-pressed:after:inset-press data-pressed:after:shadow-keycap-pressed data-pressed:after:brightness-92 data-active:after:inset-press data-active:after:shadow-keycap-pressed data-active:after:brightness-92",
   },
   compact: {
     geometry: "rounded-keycap-compact",
     focus: "focus-visible:outline-offset-3",
     active:
-      "active:after:inset-press-compact active:after:shadow-keycap-pressed-compact active:after:brightness-92 data-pressed:after:inset-press-compact data-pressed:after:shadow-keycap-pressed-compact data-pressed:after:brightness-92 data-active:after:inset-press-compact data-active:after:shadow-keycap-pressed-compact data-active:after:brightness-92",
+      "active:after:inset-press-compact active:after:shadow-keycap-pressed-compact active:after:brightness-92 aria-pressed:after:inset-press-compact aria-pressed:after:shadow-keycap-pressed-compact aria-pressed:after:brightness-92 aria-[current=page]:after:inset-press-compact aria-[current=page]:after:shadow-keycap-pressed-compact aria-[current=page]:after:brightness-92 data-pressed:after:inset-press-compact data-pressed:after:shadow-keycap-pressed-compact data-pressed:after:brightness-92 data-active:after:inset-press-compact data-active:after:shadow-keycap-pressed-compact data-active:after:brightness-92",
   },
 });
 

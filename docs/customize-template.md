@@ -21,7 +21,8 @@ steps below were applied to it. The languages stay Persian and English.
 - [x] 3. Tokens in `src/styles.css`, light and dark; fonts self-hosted; the type-style list in `cn` updated.
 - [x] 4. Primitives restyled on the instrument recipe, new ones created (toggle, toggle-group, checkbox, switch,
       slider, progress, avatar, kbd, dialog, popover, plus the atoms led, display, marking), stories updated.
-- [ ] 5. Header and footer rebuilt in the new look (they still use the old layout with the new primitives).
+- [x] 5. Header and footer rebuilt as housing strips: model name, the navigation as keys in one slot, language,
+      theme and account keys.
 - [ ] 6. Home route: replace the template's homepage with the board entry (or a redirect to it).
 - [ ] 7. Sign-in and notes pages restyled; favicon and the 1200×630 preview image; `site_name` is set.
 - [ ] 8. The full check (both themes, both directions, phone width, keyboard, reduced motion, lint, typecheck,

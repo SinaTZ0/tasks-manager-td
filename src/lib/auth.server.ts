@@ -32,7 +32,7 @@ export const auth = betterAuth({
   secret: env.BETTER_AUTH_SECRET,
   baseURL: env.BETTER_AUTH_URL,
   database: drizzleAdapter(db, { provider: "pg", schema }),
-  // Vite moves to the next free port (5174, …) when 5173 is taken, and Better-Auth rejects sign-in
+  // Vite moves to the next free port (3001, …) when 3000 is taken, and Better-Auth rejects sign-in
   // and sign-up from any origin other than `baseURL`. Trust every local port in development only.
   trustedOrigins: env.NODE_ENV === "development" ? ["http://localhost:*", "http://127.0.0.1:*"] : [],
   // Better-Auth logs through `console` by default. Route it through the app's logger, which tags the request and

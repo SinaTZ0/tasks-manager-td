@@ -12,10 +12,14 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "#/components/primitive/dropdown-menu/dropdown-menu";
+import { slotClasses } from "#/components/primitive/instrument.styles";
+import { Led } from "#/components/primitive/led/led";
+import { Marking } from "#/components/primitive/marking/marking";
 import { LocaleSwitcher } from "#/components/shared/locale-switcher/locale-switcher";
 import { ThemeToggle } from "#/components/shared/theme-toggle/theme-toggle";
 import { useLocaleLinks } from "#/hooks/use-locale-links";
 import { useSignOut } from "#/hooks/use-sign-out";
+import { cn } from "#/lib/utils";
 import type { Viewer } from "#/orpc/session/contract";
 import { m } from "#/paraglide/messages";
 
@@ -27,19 +31,21 @@ const NAV_ITEMS = [
   { label: m.nav_notes, to: "/notes" },
 ] as const;
 
-// The current page gets the primary underline; hover and focus tint the text.
-const navItemClasses =
-  "relative inline-flex h-16 items-center px-3 text-nav text-muted-foreground outline-none transition-colors duration-150 after:absolute after:inset-x-3 after:bottom-0 after:h-0.5 after:rounded-full after:bg-primary after:opacity-0 hover:text-foreground focus-visible:text-foreground focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring focus-visible:outline-solid aria-[current=page]:text-foreground aria-[current=page]:after:opacity-100 motion-reduce:transition-none";
+// Each link is a light key; the keys share one slot, so they drop their own cut. The current page's key stays sunk
+// (`aria-current="page"` latches it) and its LED lights blue, the selection signal.
+const navKeyClasses = cn(buttonVariants({ variant: "secondary", size: "sm" }), "gap-2 before:hidden");
 
 /*===== Account =====*/
 
+/** The viewer's keycap: their initial on a light key, opening the account menu. */
 function AccountMenu({ viewer }: { viewer: Viewer }) {
   const signOut = useSignOut();
+  const initial = Array.from(viewer.name.trim())[0] ?? "";
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger render={<Button variant="ghost" size="icon" aria-label={m.nav_account()} />}>
-        <UserIcon />
+      <DropdownMenuTrigger render={<Button variant="secondary" size="icon-sm" aria-label={m.nav_account()} />}>
+        {initial ? <span aria-hidden="true">{initial}</span> : <UserIcon />}
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="min-w-56">
         <DropdownMenuGroup>
@@ -62,32 +68,49 @@ function AccountMenu({ viewer }: { viewer: Viewer }) {
 
 /*===== Site Header =====*/
 
-/** Brand, main navigation, language switcher, theme toggle and the account menu (or a sign-in button for visitors). */
+/**
+ * The instrument's top panel: a housing strip across the desk with the model name, the main navigation as a row of keys,
+ * and the language, theme and account keys. On a phone the navigation drops to its own row.
+ */
 export function SiteHeader({ viewer }: { viewer: Viewer | null }) {
   const localeLinks = useLocaleLinks();
 
   return (
-    <header className="border-b bg-card">
-      <div className="mx-auto flex h-16 max-w-site items-center gap-4 px-4 sm:px-6">
+    <header className="relative z-10 bg-card shadow-housing">
+      <div className="mx-auto flex max-w-site flex-wrap items-center gap-x-6 gap-y-3 px-4 py-3 sm:px-6">
+        {/*------ Model Name ------*/}
         <Link
           to="/"
-          className="rounded-sm text-h4 text-foreground outline-none focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ring focus-visible:outline-solid"
+          className="flex items-baseline gap-2 rounded-chassis outline-none focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ring focus-visible:outline-solid"
         >
-          {m.site_name()}
+          <span className="font-heading text-h4 text-foreground">{m.site_name()}</span>
+          <Marking variant="code" aria-hidden="true">
+            TD
+          </Marking>
         </Link>
 
-        <nav aria-label={m.nav_main()} className="flex items-center">
-          {NAV_ITEMS.map((item) => (
-            // The active link gets `aria-current="page"`, which the classes style. `exact` keeps "/" from matching
-            // every page.
-            <Link key={item.to} to={item.to} activeOptions={{ exact: true }} className={navItemClasses}>
-              {item.label()}
-            </Link>
-          ))}
+        {/*------ Navigation ------*/}
+        <nav aria-label={m.nav_main()} className="order-last w-full sm:order-none sm:w-auto">
+          <ul className={slotClasses}>
+            {NAV_ITEMS.map((item) => (
+              <li key={item.to} className="flex">
+                {/* `exact` keeps "/" from matching every page */}
+                <Link to={item.to} activeOptions={{ exact: true }} className={navKeyClasses}>
+                  {({ isActive }) => (
+                    <>
+                      <Led signal="selection" state={isActive ? "on" : "off"} size="sm" />
+                      {item.label()}
+                    </>
+                  )}
+                </Link>
+              </li>
+            ))}
+          </ul>
         </nav>
 
-        <div className="ms-auto flex shrink-0 items-center gap-1">
-          <LocaleSwitcher links={localeLinks} />
+        {/*------ Device Keys ------*/}
+        <div className="ms-auto flex shrink-0 items-center gap-3">
+          <LocaleSwitcher links={localeLinks} variant="secondary" />
           <ThemeToggle />
           {viewer ? (
             <AccountMenu viewer={viewer} />
