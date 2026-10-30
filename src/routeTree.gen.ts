@@ -17,8 +17,12 @@ import { Route as app_layoutAppLayoutRouteImport } from './routes/app_layout/app
 import { Route as authAuthRouteImport } from './routes/auth/auth'
 import { Route as rpcRpcRouteImport } from './routes/rpc/rpc'
 import { Route as homeHomeRouteImport } from './routes/home/home'
+import { Route as admin_layoutAdminLayoutRouteImport } from './routes/admin_layout/admin-layout'
 import { Route as notesNotesRouteImport } from './routes/notes/notes'
 import { Route as api_authApiAuthRouteImport } from './routes/api_auth/api-auth'
+import { Route as teamTeamRouteImport } from './routes/team/team'
+import { Route as projects_projectKeyProjectsProjectKeyRouteImport } from './routes/projects_projectKey/projects-project-key'
+import { Route as projects_projectKey_settingsProjectsProjectKeySettingsRouteImport } from './routes/projects_projectKey_settings/projects-project-key-settings'
 
 const site_layoutSiteLayoutRoute = site_layoutSiteLayoutRouteImport.update({
   id: '/_site-layout',
@@ -58,6 +62,10 @@ const homeHomeRoute = homeHomeRouteImport.update({
   path: '/',
   getParentRoute: () => app_layoutAppLayoutRoute,
 } as any)
+const admin_layoutAdminLayoutRoute = admin_layoutAdminLayoutRouteImport.update({
+  id: '/_admin-layout',
+  getParentRoute: () => app_layoutAppLayoutRoute,
+} as any)
 const notesNotesRoute = notesNotesRouteImport.update({
   id: '/notes',
   path: '/notes',
@@ -68,6 +76,23 @@ const api_authApiAuthRoute = api_authApiAuthRouteImport.update({
   path: '/api/auth/$',
   getParentRoute: () => rootRouteImport,
 } as any)
+const teamTeamRoute = teamTeamRouteImport.update({
+  id: '/team',
+  path: '/team',
+  getParentRoute: () => admin_layoutAdminLayoutRoute,
+} as any)
+const projects_projectKeyProjectsProjectKeyRoute =
+  projects_projectKeyProjectsProjectKeyRouteImport.update({
+    id: '/projects/$projectKey',
+    path: '/projects/$projectKey',
+    getParentRoute: () => app_layoutAppLayoutRoute,
+  } as any)
+const projects_projectKey_settingsProjectsProjectKeySettingsRoute =
+  projects_projectKey_settingsProjectsProjectKeySettingsRouteImport.update({
+    id: '/projects/$projectKey/settings',
+    path: '/projects/$projectKey/settings',
+    getParentRoute: () => admin_layoutAdminLayoutRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof homeHomeRoute
@@ -78,6 +103,9 @@ export interface FileRoutesByFullPath {
   '/rpc/$': typeof rpcRpcRoute
   '/notes': typeof notesNotesRoute
   '/api/auth/$': typeof api_authApiAuthRoute
+  '/team': typeof teamTeamRoute
+  '/projects/$projectKey': typeof projects_projectKeyProjectsProjectKeyRoute
+  '/projects/$projectKey/settings': typeof projects_projectKey_settingsProjectsProjectKeySettingsRoute
 }
 export interface FileRoutesByTo {
   '/': typeof homeHomeRoute
@@ -88,6 +116,9 @@ export interface FileRoutesByTo {
   '/rpc/$': typeof rpcRpcRoute
   '/notes': typeof notesNotesRoute
   '/api/auth/$': typeof api_authApiAuthRoute
+  '/team': typeof teamTeamRoute
+  '/projects/$projectKey': typeof projects_projectKeyProjectsProjectKeyRoute
+  '/projects/$projectKey/settings': typeof projects_projectKey_settingsProjectsProjectKeySettingsRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -99,8 +130,12 @@ export interface FileRoutesById {
   '/_site-layout/auth': typeof authAuthRoute
   '/rpc/$': typeof rpcRpcRoute
   '/_site-layout/_app-layout/': typeof homeHomeRoute
+  '/_site-layout/_app-layout/_admin-layout': typeof admin_layoutAdminLayoutRouteWithChildren
   '/_site-layout/_app-layout/notes': typeof notesNotesRoute
   '/api/auth/$': typeof api_authApiAuthRoute
+  '/_site-layout/_app-layout/_admin-layout/team': typeof teamTeamRoute
+  '/_site-layout/_app-layout/projects/$projectKey': typeof projects_projectKeyProjectsProjectKeyRoute
+  '/_site-layout/_app-layout/_admin-layout/projects/$projectKey/settings': typeof projects_projectKey_settingsProjectsProjectKeySettingsRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -113,6 +148,9 @@ export interface FileRouteTypes {
     | '/rpc/$'
     | '/notes'
     | '/api/auth/$'
+    | '/team'
+    | '/projects/$projectKey'
+    | '/projects/$projectKey/settings'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -123,6 +161,9 @@ export interface FileRouteTypes {
     | '/rpc/$'
     | '/notes'
     | '/api/auth/$'
+    | '/team'
+    | '/projects/$projectKey'
+    | '/projects/$projectKey/settings'
   id:
     | '__root__'
     | '/_site-layout'
@@ -133,8 +174,12 @@ export interface FileRouteTypes {
     | '/_site-layout/auth'
     | '/rpc/$'
     | '/_site-layout/_app-layout/'
+    | '/_site-layout/_app-layout/_admin-layout'
     | '/_site-layout/_app-layout/notes'
     | '/api/auth/$'
+    | '/_site-layout/_app-layout/_admin-layout/team'
+    | '/_site-layout/_app-layout/projects/$projectKey'
+    | '/_site-layout/_app-layout/_admin-layout/projects/$projectKey/settings'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -204,6 +249,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof homeHomeRouteImport
       parentRoute: typeof app_layoutAppLayoutRoute
     }
+    '/_site-layout/_app-layout/_admin-layout': {
+      id: '/_site-layout/_app-layout/_admin-layout'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof admin_layoutAdminLayoutRouteImport
+      parentRoute: typeof app_layoutAppLayoutRoute
+    }
     '/_site-layout/_app-layout/notes': {
       id: '/_site-layout/_app-layout/notes'
       path: '/notes'
@@ -218,17 +270,60 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof api_authApiAuthRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_site-layout/_app-layout/_admin-layout/team': {
+      id: '/_site-layout/_app-layout/_admin-layout/team'
+      path: '/team'
+      fullPath: '/team'
+      preLoaderRoute: typeof teamTeamRouteImport
+      parentRoute: typeof admin_layoutAdminLayoutRoute
+    }
+    '/_site-layout/_app-layout/projects/$projectKey': {
+      id: '/_site-layout/_app-layout/projects/$projectKey'
+      path: '/projects/$projectKey'
+      fullPath: '/projects/$projectKey'
+      preLoaderRoute: typeof projects_projectKeyProjectsProjectKeyRouteImport
+      parentRoute: typeof app_layoutAppLayoutRoute
+    }
+    '/_site-layout/_app-layout/_admin-layout/projects/$projectKey/settings': {
+      id: '/_site-layout/_app-layout/_admin-layout/projects/$projectKey/settings'
+      path: '/projects/$projectKey/settings'
+      fullPath: '/projects/$projectKey/settings'
+      preLoaderRoute: typeof projects_projectKey_settingsProjectsProjectKeySettingsRouteImport
+      parentRoute: typeof admin_layoutAdminLayoutRoute
+    }
   }
 }
 
+interface admin_layoutAdminLayoutRouteChildren {
+  teamTeamRoute: typeof teamTeamRoute
+  projects_projectKey_settingsProjectsProjectKeySettingsRoute: typeof projects_projectKey_settingsProjectsProjectKeySettingsRoute
+}
+
+const admin_layoutAdminLayoutRouteChildren: admin_layoutAdminLayoutRouteChildren =
+  {
+    teamTeamRoute: teamTeamRoute,
+    projects_projectKey_settingsProjectsProjectKeySettingsRoute:
+      projects_projectKey_settingsProjectsProjectKeySettingsRoute,
+  }
+
+const admin_layoutAdminLayoutRouteWithChildren =
+  admin_layoutAdminLayoutRoute._addFileChildren(
+    admin_layoutAdminLayoutRouteChildren,
+  )
+
 interface app_layoutAppLayoutRouteChildren {
   homeHomeRoute: typeof homeHomeRoute
+  admin_layoutAdminLayoutRoute: typeof admin_layoutAdminLayoutRouteWithChildren
   notesNotesRoute: typeof notesNotesRoute
+  projects_projectKeyProjectsProjectKeyRoute: typeof projects_projectKeyProjectsProjectKeyRoute
 }
 
 const app_layoutAppLayoutRouteChildren: app_layoutAppLayoutRouteChildren = {
   homeHomeRoute: homeHomeRoute,
+  admin_layoutAdminLayoutRoute: admin_layoutAdminLayoutRouteWithChildren,
   notesNotesRoute: notesNotesRoute,
+  projects_projectKeyProjectsProjectKeyRoute:
+    projects_projectKeyProjectsProjectKeyRoute,
 }
 
 const app_layoutAppLayoutRouteWithChildren =

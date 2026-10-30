@@ -5,7 +5,15 @@ import { index, layout, rootRoute, route } from "@tanstack/virtual-file-routes";
 export const routes = rootRoute("__root.tsx", [
   layout("site_layout/site-layout.tsx", [
     route("/auth", "auth/auth.tsx"),
-    layout("app_layout/app-layout.tsx", [index("home/home.tsx"), route("/notes", "notes/notes.tsx")]),
+    layout("app_layout/app-layout.tsx", [
+      index("home/home.tsx"),
+      route("/notes", "notes/notes.tsx"),
+      route("/projects/$projectKey", "projects_projectKey/projects-project-key.tsx"),
+      layout("admin_layout/admin-layout.tsx", [
+        route("/team", "team/team.tsx"),
+        route("/projects/$projectKey/settings", "projects_projectKey_settings/projects-project-key-settings.tsx"),
+      ]),
+    ]),
   ]),
 
   /*===== Server Routes =====*/

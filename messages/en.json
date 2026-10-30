@@ -15,7 +15,7 @@
   "site_description": "Team task manager: board, time, dependencies and delegation.",
   "site_tagline": "Team task board",
   "nav_main": "Main menu",
-  "nav_home": "Board",
+  "nav_home": "Projects",
   "nav_notes": "Notes",
   "nav_sign_in": "Sign in",
   "nav_account": "Account",
@@ -26,7 +26,6 @@
   "root_error_details": "An unexpected error occurred. Refresh the page or try again in a moment.",
   "root_not_found_title": "Page not found",
   "root_not_found_details": "The page you're looking for doesn't exist or has moved.",
-  "board_title": "Team board",
   "board_columns": "Board columns",
   "board_column_backlog": "Backlog",
   "board_column_todo": "To do",
@@ -54,23 +53,10 @@
   "notes_image_remove": "Remove image",
   "notes_image_upload_failed": "The image wasn't uploaded.",
   "auth_title": "Sign in",
-  "auth_heading": "Sign in or sign up",
-  "auth_tab_sign_in": "Sign in",
-  "auth_tab_sign_up": "Sign up",
-  "auth_name_label": "Name",
+  "auth_heading": "Sign in to Tofang",
   "auth_email_label": "Email",
   "auth_password_label": "Password",
-  "auth_password_hint": [
-    {
-      "declarations": ["input min", "local minText = min: number"],
-      "match": {
-        "": "At least {minText} characters."
-      }
-    }
-  ],
   "auth_sign_in_submit": "Sign in",
-  "auth_sign_up_submit": "Create account",
-  "auth_captcha_unavailable": "The security check didn't complete. Reload the page.",
   "auth_form_email_invalid": "Enter a valid email address.",
   "auth_form_password_required": "Enter your password.",
   "auth_form_name_required": "Enter your name.",
@@ -82,27 +68,8 @@
       }
     }
   ],
-  "auth_form_password_too_short": [
-    {
-      "declarations": ["input min", "local minText = min: number"],
-      "match": {
-        "": "Your password must be at least {minText} characters."
-      }
-    }
-  ],
-  "auth_form_password_too_long": [
-    {
-      "declarations": ["input max", "local maxText = max: number"],
-      "match": {
-        "": "Your password can be at most {maxText} characters."
-      }
-    }
-  ],
   "auth_error_invalid_credentials": "The email or password is incorrect.",
-  "auth_error_user_exists": "An account with this email already exists. Sign in instead.",
-  "auth_error_password_too_short": "The password is too short.",
-  "auth_error_captcha_failed": "The security check didn't complete. Try again.",
-  "auth_error_account_blocked": "This account has been blocked.",
+  "auth_error_account_blocked": "This account has been deactivated. Ask an admin on your team.",
   "auth_error_unknown": "The request didn't go through. Check your internet connection and try again.",
   "note_error_title_required": "Enter a title for the note.",
   "note_error_title_too_long": [
@@ -132,5 +99,159 @@
   ],
   "media_error_too_many_pixels": "The image dimensions are too large. Choose a smaller image.",
   "media_error_unsupported": "This image format isn't supported. Upload a JPG or PNG image.",
-  "media_error_unreadable": "This file isn't a valid image. Try another one."
+  "media_error_unreadable": "This file isn't a valid image. Try another one.",
+  "team_error_name_required": "Enter a name.",
+  "team_error_name_too_long": [
+    {
+      "declarations": ["input max", "local maxText = max: number"],
+      "match": {
+        "": "A name can be at most {maxText} characters."
+      }
+    }
+  ],
+  "team_error_email_invalid": "Enter a valid email address.",
+  "team_error_email_taken": "Another account uses this email.",
+  "team_error_password_too_short": [
+    {
+      "declarations": ["input min", "local minText = min: number"],
+      "match": {
+        "": "A password must be at least {minText} characters."
+      }
+    }
+  ],
+  "team_error_password_too_long": [
+    {
+      "declarations": ["input max", "local maxText = max: number"],
+      "match": {
+        "": "A password can be at most {maxText} characters."
+      }
+    }
+  ],
+  "team_error_self": "You can't change your own role or status. Ask another admin.",
+  "team_error_last_admin": "The team needs at least one active admin. Make someone else admin first.",
+  "project_error_name_required": "Enter a project name.",
+  "project_error_name_too_long": [
+    {
+      "declarations": ["input max", "local maxText = max: number"],
+      "match": {
+        "": "A project name can be at most {maxText} characters."
+      }
+    }
+  ],
+  "project_error_key_invalid": "Use 2 to 5 Latin letters, like TD.",
+  "project_error_key_taken": "Another project uses this key.",
+  "project_error_member_unusable": "Only active teammates can join a project.",
+  "column_error_name_too_long": [
+    {
+      "declarations": ["input max", "local maxText = max: number"],
+      "match": {
+        "": "A column name can be at most {maxText} characters."
+      }
+    }
+  ],
+  "column_error_wip_invalid": [
+    {
+      "declarations": ["input max", "local maxText = max: number"],
+      "match": {
+        "": "Enter a limit from 1 to {maxText}, or leave it empty."
+      }
+    }
+  ],
+  "auth_no_account": "No account yet? Ask an admin on your team to make one for you.",
+  "nav_team": "Team",
+  "board_column_cancelled": "Cancelled",
+  "board_over_wip": "Over the WIP limit",
+  "board_wip_readout": [
+    {
+      "declarations": [
+        "input count",
+        "local countText = count: number",
+        "input limit",
+        "local limitText = limit: number"
+      ],
+      "match": {
+        "": "{countText} of {limitText} tasks"
+      }
+    }
+  ],
+  "projects_title": "Projects",
+  "projects_empty_admin": "No projects yet. Make the first one with “New project”.",
+  "projects_empty_member": "You aren't on any project yet. Ask an admin to add you.",
+  "projects_no_members": "No members",
+  "projects_new": "New project",
+  "projects_new_title": "New project",
+  "projects_new_description": "The board starts with its seven columns. You can rename them and set limits later.",
+  "projects_name_label": "Name",
+  "projects_key_label": "Key",
+  "projects_key_hint": "The task-code prefix, like TD in TD-42. It can't change later.",
+  "projects_members_label": "Members",
+  "projects_create_submit": "Create project",
+  "projects_save_failed": "The project wasn't created. Try again.",
+  "project_settings": "Settings",
+  "settings_title": [
+    {
+      "declarations": ["input project"],
+      "match": {
+        "": "{project} settings"
+      }
+    }
+  ],
+  "settings_heading": [
+    {
+      "declarations": ["input project"],
+      "match": {
+        "": "{project} settings"
+      }
+    }
+  ],
+  "settings_back_to_board": "Back to the board",
+  "settings_general": "General",
+  "settings_general_description": "The project's name. Its key stays as it is, so task codes never change.",
+  "settings_members": "Members",
+  "settings_members_description": "Members see this board and can be given its tasks. Admins see every project.",
+  "settings_columns": "Columns",
+  "settings_columns_description": "Rename a column or give it a WIP limit. What a column does follows its kind, whatever it is called.",
+  "settings_column_name_label": "Name",
+  "settings_column_wip_label": "WIP limit",
+  "settings_save": "Save",
+  "settings_saved": "Saved.",
+  "settings_save_failed": "The change wasn't saved. Try again.",
+  "team_title": "Team",
+  "team_description": "Everyone with an account. A deactivated teammate can't sign in; their name stays on their work.",
+  "team_new_heading": "New teammate",
+  "team_name_label": "Name",
+  "team_email_label": "Email",
+  "team_password_label": "Password",
+  "team_password_hint": [
+    {
+      "declarations": ["input min", "local minText = min: number"],
+      "match": {
+        "": "At least {minText} characters. Pass it on to them; they sign in with it."
+      }
+    }
+  ],
+  "team_role_label": "Role",
+  "team_role_user": "Member",
+  "team_role_admin": "Admin",
+  "team_role_of": [
+    {
+      "declarations": ["input name"],
+      "match": {
+        "": "Role of {name}"
+      }
+    }
+  ],
+  "team_status_active": "Active",
+  "team_status_blocked": "Deactivated",
+  "team_you": "You",
+  "team_create_submit": "Create account",
+  "team_created": [
+    {
+      "declarations": ["input name"],
+      "match": {
+        "": "{name}'s account is ready."
+      }
+    }
+  ],
+  "team_save_failed": "The change wasn't saved. Try again."
 }

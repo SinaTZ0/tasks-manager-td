@@ -15,7 +15,7 @@
   "site_description": "مدیریت کارهای تیم: تخته کار، زمان، وابستگی و واگذاری.",
   "site_tagline": "تخته کار تیم",
   "nav_main": "منوی اصلی",
-  "nav_home": "تخته",
+  "nav_home": "پروژه‌ها",
   "nav_notes": "یادداشت‌ها",
   "nav_sign_in": "ورود",
   "nav_account": "حساب کاربری",
@@ -26,7 +26,6 @@
   "root_error_details": "خطای غیرمنتظره‌ای رخ داد. صفحه را تازه کنید یا کمی بعد دوباره امتحان کنید.",
   "root_not_found_title": "صفحه پیدا نشد",
   "root_not_found_details": "صفحه‌ای که دنبالش هستید وجود ندارد یا جابه‌جا شده است.",
-  "board_title": "تخته تیم",
   "board_columns": "ستون‌های تخته",
   "board_column_backlog": "صف",
   "board_column_todo": "برای انجام",
@@ -54,23 +53,10 @@
   "notes_image_remove": "حذف عکس",
   "notes_image_upload_failed": "بارگذاری عکس انجام نشد.",
   "auth_title": "ورود",
-  "auth_heading": "ورود یا ثبت‌نام",
-  "auth_tab_sign_in": "ورود",
-  "auth_tab_sign_up": "ثبت‌نام",
-  "auth_name_label": "نام",
+  "auth_heading": "ورود به تفنگ",
   "auth_email_label": "ایمیل",
   "auth_password_label": "رمز عبور",
-  "auth_password_hint": [
-    {
-      "declarations": ["input min", "local minText = min: number"],
-      "match": {
-        "": "حداقل {minText} نویسه."
-      }
-    }
-  ],
   "auth_sign_in_submit": "ورود",
-  "auth_sign_up_submit": "ساخت حساب",
-  "auth_captcha_unavailable": "بررسی امنیتی انجام نشد. صفحه را دوباره بارگذاری کنید.",
   "auth_form_email_invalid": "ایمیل معتبر وارد کنید.",
   "auth_form_password_required": "رمز عبور را وارد کنید.",
   "auth_form_name_required": "نام خود را وارد کنید.",
@@ -82,27 +68,8 @@
       }
     }
   ],
-  "auth_form_password_too_short": [
-    {
-      "declarations": ["input min", "local minText = min: number"],
-      "match": {
-        "": "رمز عبور حداقل {minText} نویسه است."
-      }
-    }
-  ],
-  "auth_form_password_too_long": [
-    {
-      "declarations": ["input max", "local maxText = max: number"],
-      "match": {
-        "": "رمز عبور حداکثر {maxText} نویسه است."
-      }
-    }
-  ],
   "auth_error_invalid_credentials": "ایمیل یا رمز عبور درست نیست.",
-  "auth_error_user_exists": "با این ایمیل قبلاً حساب ساخته شده است. وارد شوید.",
-  "auth_error_password_too_short": "رمز عبور کوتاه است.",
-  "auth_error_captcha_failed": "بررسی امنیتی انجام نشد. دوباره امتحان کنید.",
-  "auth_error_account_blocked": "این حساب مسدود شده است.",
+  "auth_error_account_blocked": "این حساب غیرفعال شده است. با مدیر تیم صحبت کنید.",
   "auth_error_unknown": "درخواست انجام نشد. اتصال اینترنت را بررسی کنید و دوباره امتحان کنید.",
   "note_error_title_required": "عنوان یادداشت را وارد کنید.",
   "note_error_title_too_long": [
@@ -132,5 +99,159 @@
   ],
   "media_error_too_many_pixels": "ابعاد عکس خیلی بزرگ است. عکسی با ابعاد کوچک‌تر انتخاب کنید.",
   "media_error_unsupported": "فرمت عکس پشتیبانی نمی‌شود. لطفاً عکس را با فرمت JPG یا PNG بارگذاری کنید.",
-  "media_error_unreadable": "این فایل عکس سالمی نیست. عکس دیگری را امتحان کنید."
+  "media_error_unreadable": "این فایل عکس سالمی نیست. عکس دیگری را امتحان کنید.",
+  "team_error_name_required": "نام را وارد کنید.",
+  "team_error_name_too_long": [
+    {
+      "declarations": ["input max", "local maxText = max: number"],
+      "match": {
+        "": "نام حداکثر {maxText} حرف است."
+      }
+    }
+  ],
+  "team_error_email_invalid": "ایمیل معتبر وارد کنید.",
+  "team_error_email_taken": "حساب دیگری با این ایمیل هست.",
+  "team_error_password_too_short": [
+    {
+      "declarations": ["input min", "local minText = min: number"],
+      "match": {
+        "": "رمز عبور حداقل {minText} نویسه است."
+      }
+    }
+  ],
+  "team_error_password_too_long": [
+    {
+      "declarations": ["input max", "local maxText = max: number"],
+      "match": {
+        "": "رمز عبور حداکثر {maxText} نویسه است."
+      }
+    }
+  ],
+  "team_error_self": "نقش یا وضعیت خودتان را نمی‌توانید تغییر دهید. از مدیر دیگری بخواهید.",
+  "team_error_last_admin": "تیم دست‌کم یک مدیر فعال لازم دارد. اول کس دیگری را مدیر کنید.",
+  "project_error_name_required": "نام پروژه را وارد کنید.",
+  "project_error_name_too_long": [
+    {
+      "declarations": ["input max", "local maxText = max: number"],
+      "match": {
+        "": "نام پروژه حداکثر {maxText} حرف است."
+      }
+    }
+  ],
+  "project_error_key_invalid": "۲ تا ۵ حرف لاتین بنویسید، مثل TD.",
+  "project_error_key_taken": "پروژه دیگری این کلید را دارد.",
+  "project_error_member_unusable": "فقط هم‌تیمی‌های فعال می‌توانند عضو پروژه شوند.",
+  "column_error_name_too_long": [
+    {
+      "declarations": ["input max", "local maxText = max: number"],
+      "match": {
+        "": "نام ستون حداکثر {maxText} حرف است."
+      }
+    }
+  ],
+  "column_error_wip_invalid": [
+    {
+      "declarations": ["input max", "local maxText = max: number"],
+      "match": {
+        "": "سقفی از ۱ تا {maxText} بنویسید، یا خالی بگذارید."
+      }
+    }
+  ],
+  "auth_no_account": "حساب ندارید؟ از مدیر تیم بخواهید برایتان بسازد.",
+  "nav_team": "تیم",
+  "board_column_cancelled": "لغوشده",
+  "board_over_wip": "بیش از سقف کار",
+  "board_wip_readout": [
+    {
+      "declarations": [
+        "input count",
+        "local countText = count: number",
+        "input limit",
+        "local limitText = limit: number"
+      ],
+      "match": {
+        "": "{countText} از {limitText} کار"
+      }
+    }
+  ],
+  "projects_title": "پروژه‌ها",
+  "projects_empty_admin": "هنوز پروژه‌ای نیست. اولی را با «پروژه تازه» بسازید.",
+  "projects_empty_member": "هنوز عضو هیچ پروژه‌ای نیستید. از مدیر تیم بخواهید شما را اضافه کند.",
+  "projects_no_members": "بی‌عضو",
+  "projects_new": "پروژه تازه",
+  "projects_new_title": "پروژه تازه",
+  "projects_new_description": "تخته با هفت ستونش شروع می‌شود. نام و سقف ستون‌ها را بعداً می‌توانید عوض کنید.",
+  "projects_name_label": "نام",
+  "projects_key_label": "کلید",
+  "projects_key_hint": "پیشوند کد کارها، مثل TD در TD-42. بعداً عوض نمی‌شود.",
+  "projects_members_label": "اعضا",
+  "projects_create_submit": "ساخت پروژه",
+  "projects_save_failed": "پروژه ساخته نشد. دوباره امتحان کنید.",
+  "project_settings": "تنظیمات",
+  "settings_title": [
+    {
+      "declarations": ["input project"],
+      "match": {
+        "": "تنظیمات {project}"
+      }
+    }
+  ],
+  "settings_heading": [
+    {
+      "declarations": ["input project"],
+      "match": {
+        "": "تنظیمات {project}"
+      }
+    }
+  ],
+  "settings_back_to_board": "بازگشت به تخته",
+  "settings_general": "کلی",
+  "settings_general_description": "نام پروژه. کلید آن ثابت می‌ماند تا کد کارها عوض نشود.",
+  "settings_members": "اعضا",
+  "settings_members_description": "اعضا این تخته را می‌بینند و کارهایش به آن‌ها سپرده می‌شود. مدیران همه پروژه‌ها را می‌بینند.",
+  "settings_columns": "ستون‌ها",
+  "settings_columns_description": "نام ستون را عوض کنید یا برایش سقف کار بگذارید. کار هر ستون به نوع آن بستگی دارد، نه به نامش.",
+  "settings_column_name_label": "نام",
+  "settings_column_wip_label": "سقف کار",
+  "settings_save": "ذخیره",
+  "settings_saved": "ذخیره شد.",
+  "settings_save_failed": "تغییر ذخیره نشد. دوباره امتحان کنید.",
+  "team_title": "تیم",
+  "team_description": "همه کسانی که حساب دارند. هم‌تیمی غیرفعال نمی‌تواند وارد شود و نامش روی کارهایش می‌ماند.",
+  "team_new_heading": "هم‌تیمی تازه",
+  "team_name_label": "نام",
+  "team_email_label": "ایمیل",
+  "team_password_label": "رمز عبور",
+  "team_password_hint": [
+    {
+      "declarations": ["input min", "local minText = min: number"],
+      "match": {
+        "": "حداقل {minText} نویسه. آن را به هم‌تیمی بدهید تا با آن وارد شود."
+      }
+    }
+  ],
+  "team_role_label": "نقش",
+  "team_role_user": "عضو",
+  "team_role_admin": "مدیر",
+  "team_role_of": [
+    {
+      "declarations": ["input name"],
+      "match": {
+        "": "نقش {name}"
+      }
+    }
+  ],
+  "team_status_active": "فعال",
+  "team_status_blocked": "غیرفعال",
+  "team_you": "شما",
+  "team_create_submit": "ساخت حساب",
+  "team_created": [
+    {
+      "declarations": ["input name"],
+      "match": {
+        "": "حساب {name} آماده است."
+      }
+    }
+  ],
+  "team_save_failed": "تغییر ذخیره نشد. دوباره امتحان کنید."
 }

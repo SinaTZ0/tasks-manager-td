@@ -15,7 +15,7 @@ const MIN_COUNTER = 2_000;
 const MAX_COUNTER = 5_000;
 const CHALLENGE_TTL_MS = 10 * 60 * 1000;
 
-// Remembers solved challenge ids so one payload can't be replayed for many sign-ups.
+// Remembers solved challenge ids so one payload can't be replayed for many submissions.
 // In-memory and per process: enough for a single-instance demo, use a shared store when scaling out.
 const usedChallenges = new CappedMap<string, boolean>({ maxSize: 10_000 });
 

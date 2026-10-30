@@ -9,8 +9,8 @@ import { client } from "#/orpc/client";
 /*===== Captcha =====*/
 /**
  * Drives an invisible `<altcha-widget>`: on demand it fetches a signed challenge from `captcha.createChallenge`,
- * solves it in the browser and returns the payload: for sign-up's `x-altcha` header (`auth.server.ts` verifies it), or
- * for `input.captcha` on a public procedure that writes (`captchaMiddleware`).
+ * solves it in the browser and returns the payload, for `input.captcha` on a public procedure that writes
+ * (`captchaMiddleware`).
  *
  * The widget is a custom element that touches `window` when defined, so it is loaded after hydration.
  *

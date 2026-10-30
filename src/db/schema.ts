@@ -1,9 +1,28 @@
-import { boolean, index, integer, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
+import {
+  boolean,
+  customType,
+  index,
+  integer,
+  jsonb,
+  pgTable,
+  primaryKey,
+  text,
+  timestamp,
+  uniqueIndex,
+  uuid,
+} from "drizzle-orm/pg-core";
 
 /*===== Database Schema =====*/
 // Single source of truth for tables, read by Drizzle Kit (`drizzle.config.ts`) and the
 // runtime client (`client.server.ts`). Every change ships as a migration: `pnpm db:generate --name <what-changed>`, then
 // `pnpm db:migrate` (docs/backend/architecture.md, Database).
+
+/*===== Column Types =====*/
+/**
+ * A fractional-index position key (`fractional-indexing`). Its digits are ASCII and sort byte-wise, so the column uses
+ * the `C` collation: the database's default collation would sort `a` before `B` and scramble the order.
+ */
+const positionKey = customType<{ data: string }>({ dataType: () => 'text collate "C"' });
 
 /*===== Auth (Better-Auth) =====*/
 // Mirrors Better-Auth's core tables. Table and column names must match its model and field
@@ -112,8 +131,8 @@ export const media = pgTable(
   (table) => [index("media_attached_at_created_at_idx").on(table.attachedAt, table.createdAt)],
 );
 
-/*===== Notes (example feature) =====*/
-// The template's example of a full feature (`src/orpc/note/`, `src/routes/notes/`). Delete it when starting a project.
+/*===== Notes =====*/
+// Each person's own notebook (`src/orpc/note/`, `src/routes/notes/`): only its owner ever reads a note.
 
 export const note = pgTable(
   "note",
@@ -129,6 +148,91 @@ export const note = pgTable(
     createdAt: timestamp("created_at").notNull().defaultNow(),
   },
   (table) => [index("note_owner_id_created_at_idx").on(table.ownerId, table.createdAt)],
+);
+
+/*===== Projects =====*/
+// One board per project (docs/task-manager-plan.md → Decisions). Only an admin creates one and picks its members;
+// a member sees only their own projects, an admin every project. Projects are never deleted.
+
+export const project = pgTable("project", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  name: text("name").notNull(),
+  /** The task-code prefix (`TD` in `TD-42`). Never changes, so a code someone wrote down in chat keeps working. */
+  key: text("key").notNull().unique(),
+  /** The last task number handed out. Raised in the task's insert transaction, so a number is never reused. */
+  taskCounter: integer("task_counter").notNull().default(0),
+  createdBy: text("created_by")
+    .notNull()
+    .references(() => user.id, { onDelete: "restrict" }),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+export const projectMember = pgTable(
+  "project_member",
+  {
+    projectId: uuid("project_id")
+      .notNull()
+      .references(() => project.id, { onDelete: "cascade" }),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    addedAt: timestamp("added_at").notNull().defaultNow(),
+  },
+  // The primary key serves "is this user a member of this project"; the index serves "this user's projects".
+  (table) => [
+    primaryKey({ columns: [table.projectId, table.userId] }),
+    index("project_member_user_id_idx").on(table.userId),
+  ],
+);
+
+/*===== Board Columns =====*/
+// Every project has exactly one column of each kind (`COLUMN_KINDS` in `src/orpc/project/constants.ts`), created with
+// the project, so "pause → the paused column" always has one answer. Logic looks columns up by kind, never by name.
+
+export const boardColumn = pgTable(
+  "board_column",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    projectId: uuid("project_id")
+      .notNull()
+      .references(() => project.id, { onDelete: "cascade" }),
+    kind: text("kind").notNull(),
+    /** Null means the kind's own name, in the reader's language. Set when an admin renames the column. */
+    name: text("name"),
+    /** A reorder rewrites this one row. */
+    position: positionKey("position").notNull(),
+    wipLimit: integer("wip_limit"),
+  },
+  (table) => [uniqueIndex("board_column_project_id_kind_idx").on(table.projectId, table.kind)],
+);
+
+/*===== Activity =====*/
+// The history of every change (docs/app.md rule 7), written in the same transaction as the change by `recordActivity`
+// (`src/orpc/activity/service.ts`). Append-only: a trigger (drizzle/*_activity-append-only.sql) refuses updates and
+// deletes. `taskId` has no foreign key, so an archived task can be hard-deleted and its history stays; `snapshot`
+// keeps what the entry needs to read well later (a task's code and title, a column's name), since those change.
+
+export const activity = pgTable(
+  "activity",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    /** Null for changes to the team itself (accounts, roles). */
+    projectId: uuid("project_id").references(() => project.id, { onDelete: "restrict" }),
+    taskId: uuid("task_id"),
+    actorId: text("actor_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "restrict" }),
+    /** One of `ACTIVITY_ACTIONS` (`src/orpc/activity/constants.ts`). */
+    action: text("action").notNull(),
+    before: jsonb("before"),
+    after: jsonb("after"),
+    snapshot: jsonb("snapshot").notNull().default({}),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+  },
+  (table) => [
+    index("activity_project_id_created_at_idx").on(table.projectId, table.createdAt),
+    index("activity_task_id_created_at_idx").on(table.taskId, table.createdAt),
+  ],
 );
 
 /*===== Deploy Steps =====*/

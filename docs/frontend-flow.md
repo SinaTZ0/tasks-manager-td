@@ -1,7 +1,7 @@
 # Frontend Flow
 
 Start here for any frontend work. The steps are the technical path for a new page; the design itself is yours to
-decide. The `notes` route (`src/routes/notes/`) is the worked example.
+decide. The `notes` route (`src/routes/notes/`) is the smallest worked example.
 
 | Doc                                                            | Covers                                                     |
 | -------------------------------------------------------------- | ---------------------------------------------------------- |

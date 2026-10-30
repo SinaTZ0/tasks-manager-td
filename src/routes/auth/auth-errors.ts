@@ -1,10 +1,4 @@
-import {
-  ACCOUNT_BLOCKED_CODE,
-  CAPTCHA_FAILED_CODE,
-  NAME_MAX_LENGTH,
-  NAME_REQUIRED_CODE,
-  NAME_TOO_LONG_CODE,
-} from "#/lib/auth-constants";
+import { ACCOUNT_BLOCKED_CODE, NAME_MAX_LENGTH, NAME_REQUIRED_CODE, NAME_TOO_LONG_CODE } from "#/lib/auth-constants";
 import { m } from "#/paraglide/messages";
 
 /*===== Types =====*/
@@ -20,13 +14,6 @@ export function describeAuthError(error: AuthErrorLike): string {
   switch (error.code) {
     case "INVALID_EMAIL_OR_PASSWORD":
       return m.auth_error_invalid_credentials();
-    case "USER_ALREADY_EXISTS":
-    case "USER_ALREADY_EXISTS_USE_ANOTHER_EMAIL":
-      return m.auth_error_user_exists();
-    case "PASSWORD_TOO_SHORT":
-      return m.auth_error_password_too_short();
-    case CAPTCHA_FAILED_CODE:
-      return m.auth_error_captcha_failed();
     case ACCOUNT_BLOCKED_CODE:
       return m.auth_error_account_blocked();
     case NAME_REQUIRED_CODE:

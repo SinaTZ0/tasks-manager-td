@@ -1,3 +1,5 @@
+import { cva } from "class-variance-authority";
+
 import { twCut } from "../instrument.styles";
 import { defineStyles, joinStyles } from "../styles";
 
@@ -63,9 +65,23 @@ const nativeControlClasses = joinStyles(twNativeControl);
 const inputControlClasses = `${fieldPlateClasses} ${joinStyles(twInputControl)}`;
 const inputClasses = `${nativeControlClasses} ${joinStyles(twInputStyles)}`;
 
+// `code` is for values typed as codes or numbers (a project key, a limit, a password the admin passes on): the
+// instrument mono, so each character reads unambiguously. Set `dir="ltr"` with it.
+const twInputVariant = {
+  default: "",
+  code: "font-mono",
+};
+
+const inputVariants = cva(inputClasses, {
+  variants: { variant: twInputVariant },
+  defaultVariants: { variant: "default" },
+});
+
 export {
   fieldPlateClasses,
   inputClasses,
+  inputVariants,
+  twInputVariant,
   inputControlClasses,
   nativeControlClasses,
   twFieldPlate,

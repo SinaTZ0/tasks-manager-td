@@ -3,13 +3,11 @@ import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router";
 import { z } from "zod";
 
 import { Card, CardContent, CardHeader, CardTitle } from "#/components/primitive/card/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "#/components/primitive/tabs/tabs";
 import { redirectToParam } from "#/lib/search-params";
 import { pageMeta } from "#/lib/seo";
 import { orpc } from "#/orpc/client";
 import { m } from "#/paraglide/messages";
 import { SignInForm } from "#/routes/auth/components/sign-in-form";
-import { SignUpForm } from "#/routes/auth/components/sign-up-form";
 
 /** Where people land after signing in when nothing asked for a page. */
 const DEFAULT_REDIRECT = "/";
@@ -54,18 +52,9 @@ function AuthPage() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <Tabs defaultValue="sign-in">
-            <TabsList className="mb-6 w-full">
-              <TabsTrigger value="sign-in">{m.auth_tab_sign_in()}</TabsTrigger>
-              <TabsTrigger value="sign-up">{m.auth_tab_sign_up()}</TabsTrigger>
-            </TabsList>
-            <TabsContent value="sign-in">
-              <SignInForm onSuccess={() => void goOn()} />
-            </TabsContent>
-            <TabsContent value="sign-up">
-              <SignUpForm onSuccess={() => void goOn()} />
-            </TabsContent>
-          </Tabs>
+          <SignInForm onSuccess={() => void goOn()} />
+          {/* There is no sign-up: an admin makes every account. */}
+          <p className="mt-6 text-caption text-muted-foreground">{m.auth_no_account()}</p>
         </CardContent>
       </Card>
     </div>

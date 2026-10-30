@@ -1,0 +1,29 @@
+import { ORPCError } from "@orpc/client";
+import { notFound } from "@tanstack/react-router";
+import type { QueryClient } from "@tanstack/react-query";
+
+import { orpc } from "#/orpc/client";
+import type { Project } from "#/orpc/project/contract";
+
+/*===== Project =====*/
+/** The project's query, by its key as the URL has it (any case: the server matches capitals). */
+export const projectQuery = (projectKey: string) => orpc.project.get.queryOptions({ input: { key: projectKey } });
+
+/**
+ * Loads a project into the cache for a route's loader. A project the viewer can't open answers `NOT_FOUND`, the same
+ * as a missing one, and becomes the router's not-found page.
+ */
+export async function ensureProject({
+  queryClient,
+  projectKey,
+}: {
+  queryClient: QueryClient;
+  projectKey: string;
+}): Promise<Project> {
+  try {
+    return await queryClient.ensureQueryData(projectQuery(projectKey));
+  } catch (error) {
+    if (error instanceof ORPCError && error.code === "NOT_FOUND") throw notFound();
+    throw error;
+  }
+}

@@ -83,16 +83,17 @@ Built once, in the slice that first needs them, and used by every procedure afte
 
 ## Slices
 
-### 1. Team and Projects
+### 1. Team and Projects ✓
 
-- **Accounts**: close public sign-up (Better-Auth's sign-up and the sign-up tab go; the Altcha captcha goes with them
-  unless something else uses it). An admin page lists users and creates one (name, e-mail, password), promotes or
-  demotes, deactivates or reactivates, with the last-admin guard.
+- **Accounts**: close public sign-up (Better-Auth's sign-up and the sign-up tab go; the Altcha captcha stays for
+  public forms, as the template documents it). An admin page lists users and creates one (name, e-mail, password),
+  promotes or demotes, deactivates or reactivates, with the last-admin guard; nobody changes their own account.
 - **Projects**: an admin creates a project (name, key), which gets the seven default columns. A member list per
   project, edited by an admin.
 - **Activity**: the table, the trigger and the helper, recording project and membership changes from the start.
-- **Pages**: `/` becomes the projects list (a member with one project goes straight to it), `/projects/$projectId` the
-  board (today's empty columns, now the project's real ones), `/admin/users`, `/projects/$projectId/settings`.
+- **Pages**: `/` becomes the projects list (a member with one project goes straight to it), `/projects/$projectKey`
+  the board (today's empty columns, now the project's real ones), `/team`, `/projects/$projectKey/settings`. The URL
+  uses the project's key, which never changes.
 - **Tests**: a non-member can't read a project; the last admin can't be demoted; Activity can't be updated or deleted.
 
 ### 2. Tasks on the Board

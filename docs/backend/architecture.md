@@ -85,7 +85,7 @@ and comparisons match what the user sees. The checks chained after it (`.min()`,
 
 - Never use it on emails, passwords, IDs, tokens, URLs or captcha payloads: those must stay byte-exact.
 - A search normalizes its input with `normalizePersianText`, so it matches the stored text.
-- The sign-up name goes through Better-Auth, not a service schema; `databaseHooks` in `src/lib/auth.server.ts`
+- A name changed through Better-Auth (`update-user`) skips the service schemas; `databaseHooks` in `src/lib/auth.server.ts`
   normalize it on create and update.
 
 ### Services return outcomes, procedures throw errors
@@ -156,8 +156,9 @@ return { id: result.id };
 
 ### Auth
 
-- Better-Auth (`src/lib/auth.server.ts`) owns sign-up, sign-in and sessions at `/api/auth/*`. The sign-up captcha
-  (Altcha) is a `before` hook there; the browser gets its challenge from `captcha.createChallenge`.
+- Better-Auth (`src/lib/auth.server.ts`) owns sign-in and sessions at `/api/auth/*`. Public sign-up is off
+  (`disableSignUp`): an admin creates every account through `team.create`, which writes the user and its password
+  hash in the same transaction as the history entry.
 - A public procedure that writes (a contact form, a comment, a signup for news) takes a solved challenge too, so
   scripts can't fill its tables. Its input has `captcha: z.string()`, its contract declares `captchaErrors`, and the
   procedure applies `captchaMiddleware` right after its own rate limit, so a flood is turned away before any
@@ -171,7 +172,7 @@ return { id: result.id };
     .handler(/* … */);
   ```
 
-  The browser solves it with `useCaptcha` (`src/hooks/use-captcha.ts`), the same hook sign-up uses. For a visible
+  The browser solves it with `useCaptcha` (`src/hooks/use-captcha.ts`). For a visible
   «I'm not a robot» check beside the submit button, `useCaptchaCheck` solves in the background from the form's first
   focus, so the answer is usually ready when the visitor sends. A payload works once and expires after 10 minutes, so
   a failed send needs a new solve (`start` again).

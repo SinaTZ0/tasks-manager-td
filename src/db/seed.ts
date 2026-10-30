@@ -16,7 +16,7 @@ if (!email || !password) {
 }
 
 /*------ Account ------*/
-// Through the internal adapter rather than `auth.api.signUpEmail`, which would require a solved captcha.
+// Through the internal adapter: public sign-up is disabled (`auth.server.ts`).
 const context = await auth.$context;
 const existing = await context.internalAdapter.findUserByEmail(email);
 

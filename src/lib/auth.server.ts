@@ -6,15 +6,7 @@ import { and, eq } from "drizzle-orm";
 import { db } from "#/db/client.server";
 import * as schema from "#/db/schema";
 import { env } from "#/env.server";
-import { verifyAltchaPayload } from "#/lib/altcha.server";
-import {
-  ACCOUNT_BLOCKED_CODE,
-  ALTCHA_HEADER,
-  CAPTCHA_FAILED_CODE,
-  NAME_MAX_LENGTH,
-  NAME_REQUIRED_CODE,
-  NAME_TOO_LONG_CODE,
-} from "#/lib/auth-constants";
+import { ACCOUNT_BLOCKED_CODE, NAME_MAX_LENGTH, NAME_REQUIRED_CODE, NAME_TOO_LONG_CODE } from "#/lib/auth-constants";
 import { createLogger } from "#/lib/logger.server";
 import { normalizePersianText } from "#/lib/persian-text";
 import { CLIENT_ADDRESS_HEADER } from "#/lib/rate-limit.server";
@@ -24,7 +16,8 @@ const log = createLogger("auth");
 
 /*===== Auth Instance =====*/
 /**
- * Better-Auth server instance: email + password accounts with database sessions.
+ * Better-Auth server instance: email + password accounts with database sessions. There is no public sign-up: an admin
+ * creates every account (`src/orpc/team/`), so Better-Auth only signs people in and out.
  *
  * Mounted at `/api/auth/*` (see `src/routes/api_auth/`). Server code reads the session with `getRequestSession`.
  */
@@ -51,15 +44,14 @@ export const auth = betterAuth({
   advanced: { ipAddress: { ipAddressHeaders: [CLIENT_ADDRESS_HEADER] } },
   emailAndPassword: {
     enabled: true,
-    // No mail provider in the template: accounts work immediately, and sign-up signs the user in. Turn verification
-    // on once the project can send email.
+    // Accounts are made by an admin (`team.create`), who vouches for the address, so there is nothing to verify.
+    disableSignUp: true,
     requireEmailVerification: false,
-    autoSignIn: true,
   },
 
   user: {
     additionalFields: {
-      // Never from the client: everyone signs up as `user`; only server code promotes or blocks (`user-constants.ts`).
+      // Never from the client: only server code sets a role or blocks an account (`user-constants.ts`).
       role: { type: "string", required: false, defaultValue: "user", input: false },
       status: { type: "string", required: false, defaultValue: "active", input: false },
     },
@@ -67,7 +59,7 @@ export const auth = betterAuth({
 
   /*------ Display Name ------*/
   // The name is the account's one free-text field, so it is normalized like the app's other free text
-  // (`src/lib/persian-text.ts`), on sign-up and on every update. The email and password are left exactly as sent.
+  // (`src/lib/persian-text.ts`), on create and on every update. The email and password are left exactly as sent.
   databaseHooks: {
     user: {
       create: {
@@ -85,8 +77,8 @@ export const auth = betterAuth({
     before: createAuthMiddleware(async (ctx) => {
       /*------ Display Name ------*/
       // Better-Auth only checks that the name is a string, so without this the request body limit would be its only
-      // bound. Measured as it is stored, after normalization. First, so a rejected name doesn't use up a captcha.
-      if (ctx.path === "/sign-up/email" || ctx.path === "/update-user") {
+      // bound. Measured as it is stored, after normalization.
+      if (ctx.path === "/update-user") {
         const name: unknown = ctx.body?.name;
         if (typeof name === "string") {
           const length = normalizePersianText(name).length;
@@ -96,16 +88,6 @@ export const auth = betterAuth({
           if (length > NAME_MAX_LENGTH) {
             throw new APIError("BAD_REQUEST", { code: NAME_TOO_LONG_CODE, message: "Name is too long." });
           }
-        }
-      }
-
-      /*------ Sign-up Captcha ------*/
-      // Better-Auth has no built-in Altcha provider, so the check runs here. The payload travels in a header because
-      // the sign-up body only accepts user fields.
-      if (ctx.path === "/sign-up/email") {
-        const verified = await verifyAltchaPayload(ctx.headers?.get(ALTCHA_HEADER));
-        if (!verified) {
-          throw new APIError("BAD_REQUEST", { code: CAPTCHA_FAILED_CODE, message: "Captcha verification failed." });
         }
       }
 

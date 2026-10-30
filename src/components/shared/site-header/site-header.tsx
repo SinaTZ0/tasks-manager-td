@@ -25,10 +25,12 @@ import { m } from "#/paraglide/messages";
 
 /*===== Navigation =====*/
 
-// Message functions, not their text: called in render, so each request gets its own locale's labels.
+// Message functions, not their text: called in render, so each request gets its own locale's labels. The team page
+// is only listed for admins; its route checks too.
 const NAV_ITEMS = [
-  { label: m.nav_home, to: "/" },
-  { label: m.nav_notes, to: "/notes" },
+  { label: m.nav_home, to: "/", adminOnly: false },
+  { label: m.nav_notes, to: "/notes", adminOnly: false },
+  { label: m.nav_team, to: "/team", adminOnly: true },
 ] as const;
 
 // Each link is a light key; the keys share one slot, so they drop their own cut. The current page's key stays sunk
@@ -97,7 +99,7 @@ export function SiteHeader({ viewer }: { viewer: Viewer | null }) {
         {/*------ Navigation ------*/}
         <nav aria-label={m.nav_main()} className="order-last w-full sm:order-none sm:w-auto">
           <ul className={slotClasses}>
-            {NAV_ITEMS.map((item) => (
+            {NAV_ITEMS.filter((item) => !item.adminOnly || viewer?.role === "admin").map((item) => (
               <li key={item.to} className="flex">
                 {/* `exact` keeps "/" from matching every page */}
                 <Link to={item.to} activeOptions={{ exact: true }} className={navKeyClasses}>

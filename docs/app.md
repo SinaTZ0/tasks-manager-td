@@ -167,8 +167,7 @@ What each thing is and how it relates. How to store it = implementer decides.
 
 ## Open Questions
 
-- One board for everything, or board per project?
-- Delegation = auto-accept, or assignee must accept?
-- Blocked card: warn only, or hard block?
-- Email/Slack notifications needed, or in-app enough?
-- Self-host or cloud?
+Answered on 2026-10-30; the decisions, and the rules that follow from them, are in
+[task-manager-plan.md](./task-manager-plan.md) → Decisions. Where they differ from this spec, they win: one board per
+project, delegation accepted automatically, a blocked card refused (unless forced with a comment), in-app
+notifications only, self-hosted, and rich text (Tiptap) in place of Markdown.

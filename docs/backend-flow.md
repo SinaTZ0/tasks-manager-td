@@ -10,7 +10,9 @@ step links to the doc that holds its rules. Read that doc when you reach the ste
 | [backend/media.md](./backend/media.md)               | Image uploads, processing, storage and rendering                                     |
 | [deployment.md](./deployment.md)                     | Production stack, deploying, migrations in production, health check, backups         |
 
-The `note` feature (`src/orpc/note/`) is the worked example. Copy its shape.
+The `note` feature (`src/orpc/note/`) is the smallest worked example. Copy its shape. A feature that changes a project
+or a task also records the change with `recordActivity` (`src/orpc/activity/service.ts`) in the same transaction
+([task-manager-plan.md](./task-manager-plan.md) → Cross-Cutting Rules).
 
 ## Define
 

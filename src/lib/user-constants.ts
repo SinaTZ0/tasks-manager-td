@@ -2,7 +2,7 @@
 // Browser-safe values shared by auth, the seed and the route guards. Stored as plain text (see `src/db/schema.ts`), so
 // adding a role is a code change, not a migration.
 
-/** Everyone who signs up is a `user`; `admin` is only ever set on the server (the seed, or an admin screen). */
+/** `admin` manages the team and its projects; it is only ever set on the server (the seed, or the team page). */
 export const USER_ROLES = ["user", "admin"] as const;
 
 export type UserRole = (typeof USER_ROLES)[number];

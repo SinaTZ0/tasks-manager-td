@@ -15,6 +15,20 @@
       "when": 1793317635718,
       "tag": "0001_deploy-steps",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1793374273653,
+      "tag": "0002_projects",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1793374283336,
+      "tag": "0003_activity-append-only",
+      "breakpoints": true
     }
   ]
 }
