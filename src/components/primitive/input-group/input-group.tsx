@@ -1,9 +1,8 @@
 import { type VariantProps } from "class-variance-authority";
 import { cn } from "#/lib/utils";
 import type { ComponentProps } from "react";
+import { Input as InputPrimitive } from "@base-ui/react/input";
 import { Button, type ButtonProps } from "#/components/primitive/button/button";
-import { Input } from "#/components/primitive/input/input";
-import { Textarea } from "#/components/primitive/textarea/textarea";
 import {
   inputGroupAddonVariants,
   inputGroupButtonVariants,
@@ -21,7 +20,10 @@ export type InputGroupButtonProps = Omit<ButtonProps, "size" | "type"> &
     type?: "button" | "submit" | "reset";
   };
 
-/** A field frame that holds one control plus addons; it draws focus and invalid states for the control. */
+/**
+ * A field plate that holds one control plus addons. The group draws the cut and plate, and shows focus, invalid and
+ * disabled states for the control inside it.
+ */
 function InputGroup({ className, ...props }: ComponentProps<"div">) {
   // A fieldset would add form-grouping semantics and UA styles; this only groups one control with its addons.
   // oxlint-disable-next-line jsx-a11y/prefer-tag-over-role
@@ -55,7 +57,10 @@ function InputGroupAddon({ className, align = "inline-start", ...props }: InputG
   );
 }
 
-/** A compact Button sized for addons; defaults to `type="button"` so it never submits the form by accident. */
+/**
+ * A compact Button for addons; defaults to `type="button"` so it never submits the form by accident. The default
+ * `ghost` is printed on the plate; pass a keycap variant (`secondary`, `default`) for a small key seated in it.
+ */
 function InputGroupButton({
   className,
   type = "button",
@@ -68,6 +73,7 @@ function InputGroupButton({
       type={type}
       data-size={size}
       variant={variant}
+      size={size ?? "xs"}
       className={cn(inputGroupButtonVariants({ size }), className)}
       {...props}
     />
@@ -80,12 +86,17 @@ function InputGroupText({ className, ...props }: ComponentProps<"span">) {
 
 /*===== Controls =====*/
 
+// The controls are bare native elements, not Input and Textarea: those bring their own cut and plate, and here the
+// group draws them.
+
 function InputGroupInput({ className, ...props }: ComponentProps<"input">) {
-  return <Input data-slot="input-group-control" {...props} className={cn(inputGroupInputClasses, className)} />;
+  return (
+    <InputPrimitive data-slot="input-group-control" {...props} className={cn(inputGroupInputClasses, className)} />
+  );
 }
 
 function InputGroupTextarea({ className, ...props }: ComponentProps<"textarea">) {
-  return <Textarea data-slot="input-group-control" {...props} className={cn(inputGroupTextareaClasses, className)} />;
+  return <textarea data-slot="input-group-control" {...props} className={cn(inputGroupTextareaClasses, className)} />;
 }
 
 export { InputGroup, InputGroupAddon, InputGroupButton, InputGroupText, InputGroupInput, InputGroupTextarea };

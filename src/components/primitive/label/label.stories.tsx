@@ -7,7 +7,7 @@ import { Label } from "./label";
 const meta = {
   title: "Primitive/Label",
   component: Label,
-  args: { children: "نام و نام خانوادگی" },
+  args: { children: "عنوان کار" },
 } satisfies Meta<typeof Label>;
 
 export default meta;
@@ -19,8 +19,8 @@ export const Playground: Story = {};
 export const WithInput: Story = {
   render: (args) => (
     <div className="flex max-w-sm flex-col gap-2">
-      <Label {...args} htmlFor="full-name" />
-      <Input id="full-name" placeholder="مثال: سارا احمدی" />
+      <Label {...args} htmlFor="task-title" />
+      <Input id="task-title" placeholder="مثال: بازبینی طرح صفحه ورود" />
     </div>
   ),
 };
@@ -29,9 +29,9 @@ export const WithInput: Story = {
 export const Disabled: Story = {
   render: (args) => (
     <div className="flex items-center gap-2">
-      <input id="terms" type="checkbox" className="peer" disabled />
-      <Label {...args} htmlFor="terms">
-        قوانین را می‌پذیرم
+      <input id="watch" type="checkbox" className="peer" disabled />
+      <Label {...args} htmlFor="watch">
+        دنبال کردن این کار
       </Label>
     </div>
   ),

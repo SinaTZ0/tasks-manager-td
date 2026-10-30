@@ -15,12 +15,12 @@ import { twTriggerSize } from "./select.styles";
 const sizeOptions = Object.keys(twTriggerSize) as Array<keyof typeof twTriggerSize>;
 
 /*===== Data =====*/
-const species = [
-  { value: "engineering", label: "فنی و مهندسی" },
-  { value: "science", label: "علوم پایه" },
-  { value: "humanities", label: "علوم انسانی" },
-  { value: "arts", label: "هنر و معماری" },
-  { value: "other", label: "سایر دانشکده‌ها" },
+const statuses = [
+  { value: "backlog", label: "انباشته" },
+  { value: "todo", label: "برای انجام" },
+  { value: "doing", label: "در حال انجام" },
+  { value: "review", label: "بازبینی" },
+  { value: "done", label: "انجام‌شده" },
 ];
 
 /*===== Meta =====*/
@@ -32,12 +32,12 @@ const meta = {
   },
   args: { size: "default" },
   render: (args) => (
-    <Select items={species}>
-      <SelectTrigger {...args} className="w-full max-w-sm" aria-label="دانشکده">
-        <SelectValue placeholder="دانشکده" />
+    <Select items={statuses}>
+      <SelectTrigger {...args} className="w-full max-w-sm" aria-label="وضعیت">
+        <SelectValue placeholder="وضعیت" />
       </SelectTrigger>
       <SelectContent>
-        {species.map((item) => (
+        {statuses.map((item) => (
           <SelectItem key={item.value} value={item.value}>
             {item.label}
           </SelectItem>
@@ -53,20 +53,39 @@ type Story = StoryObj<typeof meta>;
 /*===== Stories =====*/
 export const Playground: Story = {};
 
+// A chosen value; open it to see the lit selection LED on the chosen item.
+export const Selected: Story = {
+  render: (args) => (
+    <Select items={statuses} defaultValue="doing">
+      <SelectTrigger {...args} className="w-full max-w-sm" aria-label="وضعیت">
+        <SelectValue />
+      </SelectTrigger>
+      <SelectContent>
+        {statuses.map((item) => (
+          <SelectItem key={item.value} value={item.value}>
+            {item.label}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
+  ),
+};
+
+// `sm` is a compact part: a smaller radius and a narrower cut.
 export const Small: Story = {
   args: { size: "sm" },
 };
 
 export const Grouped: Story = {
   render: (args) => (
-    <Select items={species}>
-      <SelectTrigger {...args} className="w-full max-w-sm" aria-label="دانشکده">
-        <SelectValue placeholder="دانشکده" />
+    <Select items={statuses}>
+      <SelectTrigger {...args} className="w-full max-w-sm" aria-label="وضعیت">
+        <SelectValue placeholder="وضعیت" />
       </SelectTrigger>
       <SelectContent>
         <SelectGroup>
-          <SelectLabel>دانشکده‌های اصلی</SelectLabel>
-          {species.slice(0, 2).map((item) => (
+          <SelectLabel>باز</SelectLabel>
+          {statuses.slice(0, 4).map((item) => (
             <SelectItem key={item.value} value={item.value}>
               {item.label}
             </SelectItem>
@@ -74,8 +93,8 @@ export const Grouped: Story = {
         </SelectGroup>
         <SelectSeparator />
         <SelectGroup>
-          <SelectLabel>سایر</SelectLabel>
-          {species.slice(2).map((item) => (
+          <SelectLabel>بسته</SelectLabel>
+          {statuses.slice(4).map((item) => (
             <SelectItem key={item.value} value={item.value}>
               {item.label}
             </SelectItem>

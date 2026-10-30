@@ -1,8 +1,9 @@
 import { Select as SelectPrimitive } from "@base-ui/react/select";
 import { type VariantProps } from "class-variance-authority";
 import { cn } from "#/lib/utils";
-import { CheckIcon, ChevronDownIcon, ChevronUpIcon } from "lucide-react";
+import { ChevronDownIcon, ChevronUpIcon } from "lucide-react";
 import type { ComponentProps } from "react";
+import { Led } from "../led/led";
 import {
   selectGroupClasses,
   selectItemClasses,
@@ -127,8 +128,9 @@ function SelectItem({ className, children, ...props }: SelectPrimitive.Item.Prop
   return (
     <SelectPrimitive.Item data-slot="select-item" className={cn(selectItemClasses, className)} {...props}>
       <SelectPrimitive.ItemText className={selectItemTextClasses}>{children}</SelectPrimitive.ItemText>
+      {/* A lit selection LED marks the chosen item; `aria-selected` already tells assistive tech */}
       <SelectPrimitive.ItemIndicator render={<span className={selectItemIndicatorClasses} />}>
-        <CheckIcon className="pointer-events-none" />
+        <Led signal="selection" />
       </SelectPrimitive.ItemIndicator>
     </SelectPrimitive.Item>
   );

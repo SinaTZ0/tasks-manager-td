@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { MapPinIcon, SearchIcon, XIcon } from "lucide-react";
+import { ClockIcon, SearchIcon, SendIcon, XIcon } from "lucide-react";
 
 import {
   InputGroup,
@@ -27,24 +27,26 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 /*===== Stories =====*/
+// Addons are printed on the plate; the one cut wraps the control and its addons.
 export const WithIcon: Story = {
   render: () => (
     <InputGroup>
       <InputGroupAddon>
         <SearchIcon />
       </InputGroupAddon>
-      <InputGroupInput placeholder="جستجو در سایت" aria-label="جستجو در سایت" />
+      <InputGroupInput placeholder="جست‌وجو در کارها" aria-label="جست‌وجو در کارها" />
     </InputGroup>
   ),
 };
 
+// The default addon button is printed on the plate (ghost).
 export const WithButton: Story = {
   render: () => (
     <InputGroup>
       <InputGroupAddon>
-        <MapPinIcon />
+        <SearchIcon />
       </InputGroupAddon>
-      <InputGroupInput defaultValue="ساختمان مرکزی، طبقه دوم" aria-label="محل برگزاری" />
+      <InputGroupInput defaultValue="طرح صفحه ورود" aria-label="جست‌وجو در کارها" />
       <InputGroupAddon align="inline-end">
         <InputGroupButton size="icon-xs" aria-label="پاک کردن">
           <XIcon />
@@ -54,23 +56,34 @@ export const WithButton: Story = {
   ),
 };
 
+// A unit printed in the instrument mono at the end of the plate.
 export const WithText: Story = {
   render: () => (
     <InputGroup>
-      <InputGroupInput dir="ltr" placeholder="۰۹۱۲ ۳۴۵ ۶۷۸۹" aria-label="شماره موبایل" />
+      <InputGroupAddon>
+        <ClockIcon />
+      </InputGroupAddon>
+      <InputGroupInput dir="ltr" inputMode="numeric" defaultValue="90" aria-label="برآورد زمان" />
       <InputGroupAddon align="inline-end">
-        <InputGroupText dir="ltr">+۹۸</InputGroupText>
+        <InputGroupText>دقیقه</InputGroupText>
       </InputGroupAddon>
     </InputGroup>
   ),
 };
 
+// A comment box: the send key is a small graphite keycap seated in the plate.
 export const WithTextarea: Story = {
   render: () => (
     <InputGroup>
-      <InputGroupTextarea placeholder="شرح درخواست" aria-label="شرح درخواست" />
-      <InputGroupAddon align="block-end">
-        <InputGroupText>۰ / ۳۰۰</InputGroupText>
+      <InputGroupTextarea placeholder="نظر خود را بنویسید…" aria-label="نظر" />
+      <InputGroupAddon align="block-end" className="justify-between">
+        <InputGroupText>
+          <bdi dir="ltr">0 / 300</bdi>
+        </InputGroupText>
+        <InputGroupButton variant="default" size="xs">
+          <SendIcon data-icon="inline-start" />
+          ارسال
+        </InputGroupButton>
       </InputGroupAddon>
     </InputGroup>
   ),
@@ -82,7 +95,18 @@ export const Invalid: Story = {
       <InputGroupAddon>
         <SearchIcon />
       </InputGroupAddon>
-      <InputGroupInput aria-invalid defaultValue="؟" aria-label="جستجو در سایت" />
+      <InputGroupInput aria-invalid defaultValue="؟" aria-label="جست‌وجو در کارها" />
+    </InputGroup>
+  ),
+};
+
+export const Disabled: Story = {
+  render: () => (
+    <InputGroup>
+      <InputGroupAddon>
+        <SearchIcon />
+      </InputGroupAddon>
+      <InputGroupInput disabled defaultValue="طرح صفحه ورود" aria-label="جست‌وجو در کارها" />
     </InputGroup>
   ),
 };

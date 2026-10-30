@@ -7,18 +7,22 @@ const twSetStyles = defineStyles({
   layout: "flex flex-col gap-4 has-[>[data-slot=checkbox-group]]:gap-3 has-[>[data-slot=radio-group]]:gap-3",
 });
 
+// A legend is the printed name of a group of parts. `legend` heads a section of a form; `label` is the smaller
+// marking that names one row of choices.
 const twLegendStyles = defineStyles({
   geometry: "mb-1.5",
-  typography: "font-bold",
+  typography: "font-heading tracking-marking",
 });
 
 // `data-variant` stays on the legend as well, because FieldDescription tightens its spacing after a legend.
 const twLegendVariant = defineStyles({
   legend: {
     typography: "text-h4",
+    appearance: "text-foreground",
   },
   label: {
-    typography: "text-body-sm",
+    typography: "text-marking",
+    appearance: "text-muted-foreground",
   },
 });
 
@@ -30,9 +34,10 @@ const twGroupStyles = defineStyles({
 
 /*===== Field Styles =====*/
 
+// An invalid field prints its label in the danger ink too; the control's cut turns yellow and FieldError says why.
 const twFieldStyles = defineStyles({
   layout: "group/field flex w-full gap-2",
-  invalid: "data-[invalid=true]:text-destructive",
+  invalid: "data-[invalid=true]:*:data-[slot=field-label]:text-destructive",
 });
 
 const twOrientation = defineStyles({
@@ -58,16 +63,18 @@ const twContentStyles = defineStyles({
   typography: "leading-snug",
 });
 
-// A label that wraps a whole Field becomes a selectable card, as in a choice list.
+// A label that wraps a whole Field becomes a selectable card, as in a choice list: a flat plate with a printed edge.
+// The chosen card takes the selection wash and the selection-blue edge; its control (checkbox, radio) shows the state
+// too, so the choice never rests on colour alone.
 const twLabelStyles = defineStyles({
   layout: "group/field-label peer/field-label flex w-fit gap-2",
   typography: "leading-snug",
   disabled: "group-data-[disabled=true]/field:opacity-45",
   // A checked choice card takes the selected-row wash and a primary edge.
-  state: "has-data-checked:border-primary has-data-checked:bg-accent",
+  state: "has-data-checked:border-signal-selection has-data-checked:bg-accent",
   layoutCard: "has-[>[data-slot=field]]:w-full has-[>[data-slot=field]]:flex-col",
   geometryCard:
-    "has-[>[data-slot=field]]:rounded-md has-[>[data-slot=field]]:border-[1.5px] *:data-[slot=field]:px-4 *:data-[slot=field]:py-3",
+    "has-[>[data-slot=field]]:rounded-housing has-[>[data-slot=field]]:border-[1.5px] *:data-[slot=field]:px-4 *:data-[slot=field]:py-3",
   hoverCard: "has-[>[data-slot=field]]:not-has-[:disabled,[data-disabled]]:hover:bg-accent",
   // The card draws the ring for the control inside it.
   focusCard:
@@ -76,7 +83,7 @@ const twLabelStyles = defineStyles({
 
 const twTitleStyles = defineStyles({
   layout: "flex w-fit items-center gap-2",
-  typography: "text-body-sm font-semibold",
+  typography: "font-heading text-body-sm font-semibold",
   disabled: "group-data-[disabled=true]/field:opacity-45",
 });
 
@@ -99,7 +106,8 @@ const twSeparatorStyles = defineStyles({
 const twSeparatorContentStyles = defineStyles({
   layout: "relative mx-auto block w-fit",
   geometry: "px-2",
-  appearance: "bg-background text-muted-foreground",
+  // Forms sit on a housing, so the label masks the rule with the housing colour
+  appearance: "bg-card text-muted-foreground",
 });
 
 // The error line: `caption` in the danger colour, always led by the circle-alert icon (FieldError adds it).

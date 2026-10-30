@@ -8,8 +8,8 @@ const meta = {
   title: "Primitive/Textarea",
   component: Textarea,
   args: {
-    placeholder: "مثال: درخواست تمدید مهلت تحویل پایان‌نامه…",
-    "aria-label": "شرح درخواست",
+    placeholder: "نظر خود را بنویسید…",
+    "aria-label": "نظر",
   },
   decorators: [
     (Story) => (
@@ -29,15 +29,16 @@ export const Playground: Story = {};
 export const WithLabel: Story = {
   render: (args) => (
     <div className="flex flex-col gap-2">
-      <Label htmlFor="request">شرح درخواست</Label>
-      <Textarea {...args} id="request" aria-label={undefined} />
+      <Label htmlFor="comment">نظر</Label>
+      <Textarea {...args} id="comment" aria-label={undefined} />
     </div>
   ),
 };
 
+// The field grows with its content.
 export const Filled: Story = {
   args: {
-    defaultValue: "به دلیل بیماری در امتحان میان‌ترم شرکت نکردم و درخواست امتحان مجدد دارم.",
+    defaultValue: "طرح جدید را دیدم. دکمه ورود در موبایل کمی پایین افتاده؛ قبل از ادغام درستش کنیم.",
   },
 };
 
@@ -46,5 +47,5 @@ export const Invalid: Story = {
 };
 
 export const Disabled: Story = {
-  args: { disabled: true },
+  args: { disabled: true, defaultValue: "این کار بسته شده و نظر تازه نمی‌پذیرد." },
 };
