@@ -7,7 +7,7 @@ import type { AssignedTaskRow, LabelRecord, TaskRecord } from "#/orpc/task/repos
 import type { TimeTotals } from "#/orpc/time/repository";
 
 /*===== Public Shapes =====*/
-const NO_COUNTS: TaskCard["counts"] = { comments: 0, checklistDone: 0, checklistTotal: 0 };
+const NO_COUNTS: TaskCard["counts"] = { comments: 0, attachments: 0, checklistDone: 0, checklistTotal: 0 };
 
 export function toTaskCard({
   record,
@@ -61,6 +61,7 @@ export function toTaskDetail({
   statusNote,
   handoffs,
   checklist,
+  attachments,
   comments,
 }: {
   record: TaskRecord;
@@ -70,11 +71,13 @@ export function toTaskDetail({
   statusNote: TaskDetail["statusNote"];
   handoffs: TaskDetail["handoffs"];
   checklist: TaskDetail["checklist"];
+  attachments: TaskDetail["attachments"];
   /** How many comments it has, deleted ones left out. */
   comments: number;
 }): TaskDetail {
   const counts = {
     comments,
+    attachments: attachments.length,
     checklistDone: checklist.filter((item) => item.doneAt !== null).length,
     checklistTotal: checklist.length,
   };
@@ -88,6 +91,7 @@ export function toTaskDetail({
     statusNote,
     handoffs,
     checklist,
+    attachments,
   };
 }
 

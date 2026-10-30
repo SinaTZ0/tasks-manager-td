@@ -1,4 +1,5 @@
 import { activityContract } from "#/orpc/activity/contract";
+import { attachmentContract } from "#/orpc/attachment/contract";
 import { captchaContract } from "#/orpc/captcha/contract";
 import { checklistContract } from "#/orpc/checklist/contract";
 import { commentContract } from "#/orpc/comment/contract";
@@ -20,6 +21,7 @@ import { timeContract } from "#/orpc/time/contract";
 // Source of truth for the API. The browser client is typed from this, never from the router.
 export const contract = {
   activity: activityContract,
+  attachment: attachmentContract,
   captcha: captchaContract,
   checklist: checklistContract,
   comment: commentContract,

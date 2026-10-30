@@ -1453,5 +1453,130 @@
         "": "Checklist: {doneText} of {totalText} done"
       }
     }
+  ],
+  "attachment_title": "Attachments",
+  "attachment_empty": "No files or links yet.",
+  "attachment_add_files": "Add files",
+  "attachment_drop_hint": "Drop files anywhere on the card, or paste a screenshot.",
+  "attachment_drop_here": "Drop to attach",
+  "attachment_add_link": "Add a link",
+  "attachment_link_url": "Address",
+  "attachment_link_title": "Title (optional)",
+  "attachment_link_save": "Add link",
+  "attachment_uploading": [
+    {
+      "declarations": ["input name"],
+      "match": {
+        "": "Uploading {name}…"
+      }
+    }
+  ],
+  "attachment_remove": [
+    {
+      "declarations": ["input name"],
+      "match": {
+        "": "Remove {name}"
+      }
+    }
+  ],
+  "attachment_open": [
+    {
+      "declarations": ["input name"],
+      "match": {
+        "": "Open {name}"
+      }
+    }
+  ],
+  "attachment_download": [
+    {
+      "declarations": ["input name"],
+      "match": {
+        "": "Download {name}"
+      }
+    }
+  ],
+  "attachment_added_by": [
+    {
+      "declarations": ["input name", "input date"],
+      "match": {
+        "": "{name}, {date}"
+      }
+    }
+  ],
+  "attachment_size_bytes": [
+    {
+      "declarations": ["input size", "local sizeText = size: number"],
+      "match": {
+        "": "{sizeText} B"
+      }
+    }
+  ],
+  "attachment_size_kb": [
+    {
+      "declarations": ["input size", "local sizeText = size: number"],
+      "match": {
+        "": "{sizeText} KB"
+      }
+    }
+  ],
+  "attachment_size_mb": [
+    {
+      "declarations": ["input size", "local sizeText = size: number"],
+      "match": {
+        "": "{sizeText} MB"
+      }
+    }
+  ],
+  "attachment_save_failed": "The attachment couldn't be saved.",
+  "attachment_error_too_big": [
+    {
+      "declarations": ["input max", "local maxText = max: number"],
+      "match": {
+        "": "A file can be at most {maxText} MB."
+      }
+    }
+  ],
+  "attachment_error_empty": "The file is empty.",
+  "attachment_error_full": [
+    {
+      "declarations": ["input max", "local maxText = max: number"],
+      "match": {
+        "": "A card holds at most {maxText} attachments."
+      }
+    }
+  ],
+  "attachment_error_url": "Write a web address that starts with http:// or https://.",
+  "attachment_error_title_too_long": [
+    {
+      "declarations": ["input max", "local maxText = max: number"],
+      "match": {
+        "": "A title can be at most {maxText} characters."
+      }
+    }
+  ],
+  "attachment_error_not_yours": "Only whoever added it, or an admin, can remove it.",
+  "activity_attachment_added": [
+    {
+      "declarations": ["input name"],
+      "match": {
+        "": "attached {name}"
+      }
+    }
+  ],
+  "activity_attachment_removed": [
+    {
+      "declarations": ["input name"],
+      "match": {
+        "": "removed the attachment {name}"
+      }
+    }
+  ],
+  "card_attachment_count": [
+    {
+      "declarations": ["input count", "local countText = count: number"],
+      "match": {
+        "": "Attachments: {countText}"
+      }
+    }
   ]
 }

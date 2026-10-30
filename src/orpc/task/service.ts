@@ -7,6 +7,9 @@ import { issuesToErrorData } from "#/lib/schema-issues";
 import type { ActivityAction } from "#/orpc/activity/constants";
 import { findTaskActivities } from "#/orpc/activity/repository";
 import { recordActivity } from "#/orpc/activity/service";
+import { discardFiles } from "#/orpc/attachment/files.server";
+import { toAttachment } from "#/orpc/attachment/mapper";
+import { countAttachments, findAttachments } from "#/orpc/attachment/repository";
 import { toChecklistItem } from "#/orpc/checklist/mapper";
 import { countChecklists, findChecklistItems } from "#/orpc/checklist/repository";
 import { countComments } from "#/orpc/comment/repository";
@@ -85,6 +88,7 @@ async function toCards({ db, records }: { db: Database; records: TaskRecord[] })
   const totals = await findTimeTotals({ db, taskIds });
   const waitsFor = await findWaitsFor({ db, taskIds });
   const comments = await countComments({ db, taskIds });
+  const attachments = await countAttachments({ db, taskIds });
   const checklists = await countChecklists({ db, taskIds });
   return records.map((record) => {
     const checklist = checklists.get(record.id);
@@ -95,6 +99,7 @@ async function toCards({ db, records }: { db: Database; records: TaskRecord[] })
       waitsFor: waitsFor.get(record.id) ?? [],
       counts: {
         comments: comments.get(record.id) ?? 0,
+        attachments: attachments.get(record.id) ?? 0,
         checklistDone: checklist?.done ?? 0,
         checklistTotal: checklist?.total ?? 0,
       },
@@ -139,6 +144,7 @@ async function toDetail({
   const handoffs = await getHandoffs({ db, taskId: record.id });
   const checklist = await findChecklistItems({ db, taskIds: [record.id] });
   const comments = await countComments({ db, taskIds: [record.id] });
+  const attachments = await findAttachments({ db, taskIds: [record.id] });
   const last = entries.at(-1);
   const noted =
     (column?.kind === "paused" && last?.action === "task.paused") ||
@@ -160,6 +166,7 @@ async function toDetail({
     statusNote,
     handoffs,
     checklist: checklist.map(toChecklistItem),
+    attachments: attachments.map(toAttachment),
     comments: comments.get(record.id) ?? 0,
   });
 }
@@ -863,7 +870,8 @@ export async function restoreTask({
 /*===== Delete =====*/
 /**
  * Deletes an archived task for good: only an admin, and only from the archive (rule 10). Its comments, time logs,
- * links, hand-offs and notifications go with it; its history stays, with one more entry saying it was deleted, since
+ * links, checklist, hand-offs, notifications and attachments go with it, the attachments' files from the bucket too;
+ * its history stays, with one more entry saying it was deleted, since
  * the history is never edited (rule 7). The code (`TD-42`) is never handed out again.
  *
  * @returns `not-found` for a task the project doesn't have; `invalid` for a live task or an actor who isn't an admin.
@@ -882,10 +890,14 @@ export async function deleteTask({
   if (!isUuid(taskId)) return { kind: "not-found" };
   if (actor.role !== "admin") return { kind: "invalid", fields: {}, errors: [m.task_error_delete_admin_only()] };
 
-  return db.transaction(async (tx): Promise<{ kind: "ok" } | NotFound | Invalid> => {
+  const result = await db.transaction(async (tx): Promise<{ kind: "ok"; files: string[] } | NotFound | Invalid> => {
     const current = await lockTask({ db: tx, projectId, id: taskId });
     if (!current) return { kind: "not-found" };
     if (!current.archivedAt) return { kind: "invalid", fields: {}, errors: [m.task_error_delete_archived_only()] };
+    // Its attachments' rows go with it (cascade); their files are deleted once that has committed.
+    const files = (await findAttachments({ db: tx, taskIds: [taskId] }))
+      .filter((item) => item.kind === "file")
+      .map((item) => item.id);
 
     const code = taskCode({ key: await findProjectKey({ db: tx, projectId }), number: current.number });
     await recordActivity({
@@ -894,8 +906,11 @@ export async function deleteTask({
       entries: [{ action: "task.deleted", projectId, taskId, snapshot: { code, title: current.title } }],
     });
     await deleteTaskRow({ db: tx, id: taskId });
-    return { kind: "ok" };
+    return { kind: "ok", files };
   });
+  if (result.kind !== "ok") return result;
+  await discardFiles(result.files);
+  return { kind: "ok" };
 }
 
 /*===== Labels =====*/

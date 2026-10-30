@@ -7,6 +7,7 @@ How the app runs in production: one server, Docker Compose, Caddy in front. Ever
 
 ```text
 internet ──80/443──▶ caddy ──┬── /media/<kind>/<id>/<variant>.webp ──▶ seaweedfs (anonymous read only)
+                             │   /media/attachment/<id>/file
                              ├── everything else ──────────────────▶ app:3000 ──▶ db (Postgres)
                              │                                            └─────▶ seaweedfs (app identity)
                              └── $ERRORS_DOMAIN ───────────────────▶ error-viewer:8000 ──▶ SQLite (its own volume)

@@ -1,5 +1,12 @@
 import { Link } from "@tanstack/react-router";
-import { AlignStartVerticalIcon, ListChecksIcon, LockIcon, MessageSquareIcon, type LucideIcon } from "lucide-react";
+import {
+  AlignStartVerticalIcon,
+  ListChecksIcon,
+  LockIcon,
+  MessageSquareIcon,
+  PaperclipIcon,
+  type LucideIcon,
+} from "lucide-react";
 import type { PointerEventHandler, ReactNode } from "react";
 
 import { Led } from "#/components/primitive/led/led";
@@ -119,7 +126,7 @@ export function TaskCard({
   const owner = people.get(task.ownerId);
   const assignee = task.assigneeId ? people.get(task.assigneeId) : undefined;
   const taskLabels = task.labelIds.map((id) => labels.get(id)).filter((label) => label !== undefined);
-  const { comments, checklistDone, checklistTotal } = task.counts;
+  const { comments, attachments, checklistDone, checklistTotal } = task.counts;
 
   return (
     <article
@@ -199,6 +206,13 @@ export function TaskCard({
               icon={MessageSquareIcon}
               label={m.card_comment_count({ count: comments })}
               value={formatNumber(comments)}
+            />
+          )}
+          {attachments > 0 && (
+            <CountBadge
+              icon={PaperclipIcon}
+              label={m.card_attachment_count({ count: attachments })}
+              value={formatNumber(attachments)}
             />
           )}
           {checklistTotal > 0 && (

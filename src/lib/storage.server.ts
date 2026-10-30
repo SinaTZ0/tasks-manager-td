@@ -44,22 +44,31 @@ export function mediaUrl({ kind, mediaId, variant }: { kind: MediaKind; mediaId:
   return `${env.MEDIA_PUBLIC_URL.replace(/\/+$/, "")}/${mediaKey({ kind, mediaId, variant })}`;
 }
 
+/** The public URL of any key in the bucket, such as an attachment's file. */
+export function objectUrl(key: string): string {
+  return `${env.MEDIA_PUBLIC_URL.replace(/\/+$/, "")}/${key}`;
+}
+
 /*===== Writes =====*/
 /**
  * Puts one object into the bucket.
  *
  * @param cacheControl Defaults to forever: a media key never changes content (a replaced image gets a new ID).
+ * @param contentDisposition Stored with the object and sent back on every read: an attachment's file name, and whether
+ * the browser shows it or downloads it.
  */
 export async function putObject({
   key,
   body,
   contentType,
   cacheControl = "public, max-age=31536000, immutable",
+  contentDisposition,
 }: {
   key: string;
   body: Buffer;
   contentType: string;
   cacheControl?: string;
+  contentDisposition?: string;
 }): Promise<void> {
   await getClient().send(
     new PutObjectCommand({
@@ -68,6 +77,7 @@ export async function putObject({
       Body: body,
       ContentType: contentType,
       CacheControl: cacheControl,
+      ...(contentDisposition ? { ContentDisposition: contentDisposition } : {}),
     }),
   );
 }

@@ -2,6 +2,7 @@ import { oc } from "@orpc/contract";
 import { z } from "zod";
 
 import type { RichTextDoc } from "#/lib/rich-text";
+import { attachmentSchema } from "#/orpc/attachment/contract";
 import { checklistItemSchema } from "#/orpc/checklist/contract";
 import { handoffSchema } from "#/orpc/delegation/contract";
 import { commonErrors } from "#/orpc/errors";
@@ -46,9 +47,10 @@ export const taskCardSchema = z.object({
   runningSince: z.array(z.date()),
   /** The live tasks it waits for (done ones too): it is blocked while any of them is not done or cancelled. */
   waitsFor: z.array(z.string()),
-  /** What the card's badges count: its comments (deleted ones left out) and its checklist's steps. */
+  /** What the card's badges count: its comments (deleted ones left out), its checklist's steps and its attachments. */
   counts: z.object({
     comments: z.number().int(),
+    attachments: z.number().int(),
     checklistDone: z.number().int(),
     checklistTotal: z.number().int(),
   }),
@@ -76,6 +78,8 @@ export const taskDetailSchema = taskCardSchema.extend({
   handoffs: z.array(handoffSchema),
   /** Its checklist, in order. */
   checklist: z.array(checklistItemSchema),
+  /** Its files and links, oldest first. */
+  attachments: z.array(attachmentSchema),
 });
 
 export type TaskDetail = z.infer<typeof taskDetailSchema>;

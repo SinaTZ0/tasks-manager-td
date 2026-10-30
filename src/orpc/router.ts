@@ -1,4 +1,9 @@
 import { projectActivityProcedure, taskActivityProcedure } from "#/orpc/activity/procedure";
+import {
+  addFileAttachmentProcedure,
+  addLinkAttachmentProcedure,
+  removeAttachmentProcedure,
+} from "#/orpc/attachment/procedure";
 import { createCaptchaChallengeProcedure } from "#/orpc/captcha/procedure";
 import {
   addChecklistItemProcedure,
@@ -65,6 +70,11 @@ export const router = implementer.router({
   activity: {
     forTask: taskActivityProcedure,
     forProject: projectActivityProcedure,
+  },
+  attachment: {
+    addFile: addFileAttachmentProcedure,
+    addLink: addLinkAttachmentProcedure,
+    remove: removeAttachmentProcedure,
   },
   captcha: {
     createChallenge: createCaptchaChallengeProcedure,

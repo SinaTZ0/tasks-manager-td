@@ -285,6 +285,12 @@ function describe({ item, people }: { item: ActivityItem; people: Map<string, Pe
       return { clauses: [m.activity_checklist_unticked({ item: isolate(textOf(after, "text") ?? "?") })] };
     case "checklist.removed":
       return { clauses: [m.activity_checklist_removed({ item: isolate(textOf(before, "text") ?? "?") })] };
+
+    /*------ Attachments ------*/
+    case "attachment.added":
+      return { clauses: [m.activity_attachment_added({ name: isolate(textOf(after, "name") ?? "?") })] };
+    case "attachment.removed":
+      return { clauses: [m.activity_attachment_removed({ name: isolate(textOf(before, "name") ?? "?") })] };
   }
 }
 

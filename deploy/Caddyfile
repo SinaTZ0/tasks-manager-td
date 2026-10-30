@@ -17,9 +17,10 @@
 	import tls-{$TLS_MODE:auto}
 	encode zstd gzip
 
-	# Above the app's 10 MB image limit (`MEDIA_MAX_BYTES`), plus room for the multipart encoding.
+	# Above the app's 20 MB attachment limit (`ATTACHMENT_MAX_BYTES`; pictures stop at 10 MB), plus room for the
+	# multipart encoding.
 	request_body {
-		max_size 12MB
+		max_size 22MB
 	}
 
 	# CSP stays in the app, which knows its inline scripts. `-Server` hides the proxy's name and version.
@@ -33,17 +34,21 @@
 	}
 
 	# The S3 store publishes no ports; this is its only public path, and only for image variants
-	# (`{kind}/{mediaId}/{variant}.webp`, see `mediaKey` in `src/lib/storage.server.ts`). The fixed shape is what blocks
+	# (`{kind}/{mediaId}/{variant}.webp`, see `mediaKey` in `src/lib/storage.server.ts`) and attachments' files
+	# (`attachment/{id}/file`, see `fileKey` in `src/orpc/attachment/files.server.ts`). The fixed shape is what blocks
 	# listing and every other S3 operation, so new media kinds need no change here.
 	@media path /media /media/*
 	handle @media {
-		@image {
+		@object {
 			method GET HEAD
-			path_regexp image ^/media/([a-z][a-z0-9-]*/[0-9a-f-]{36}/[a-z][a-z0-9-]*\.webp)$
+			path_regexp object ^/media/([a-z][a-z0-9-]*/[0-9a-f-]{36}/(?:[a-z][a-z0-9-]*\.webp|file))$
 		}
-		handle @image {
+		handle @object {
+			# An attachment can be any file a member uploaded. The app stores anything but a plain image as a download,
+			# and this sandbox keeps one opened anyway from running script on the app's origin.
+			header Content-Security-Policy "sandbox"
 			# The trailing `?` drops the query string, so callers can't pick S3 operations (`?acl`, `?list-type`, ...).
-			rewrite * /{$S3_BUCKET_NAME}/{re.image.1}?
+			rewrite * /{$S3_BUCKET_NAME}/{re.object.1}?
 			reverse_proxy seaweedfs:8333 {
 				# Reads go through the store's anonymous identity: never forward the visitor's credentials or cookies.
 				header_up Host seaweedfs:8333

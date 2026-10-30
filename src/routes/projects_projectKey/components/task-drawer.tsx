@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
+import { PaperclipIcon } from "lucide-react";
 
 import { Marking } from "#/components/primitive/marking/marking";
 import { Separator } from "#/components/primitive/separator/separator";
@@ -25,6 +26,11 @@ import {
 } from "#/routes/projects_projectKey/components/task-meta-fields";
 import { TaskDescriptionField } from "#/routes/projects_projectKey/components/task-description-field";
 import { TaskComments } from "#/routes/projects_projectKey/components/task-comments";
+import {
+  TaskAttachments,
+  useAttachmentDrop,
+  useAttachmentUpload,
+} from "#/routes/projects_projectKey/components/task-attachments";
 import { TaskChecklist } from "#/routes/projects_projectKey/components/task-checklist";
 import { TaskDelegation } from "#/routes/projects_projectKey/components/task-delegation";
 import { TaskDependencies } from "#/routes/projects_projectKey/components/task-dependencies";
@@ -103,12 +109,25 @@ function TaskDetails({
   const canHandOver = canEdit && (isAdmin || viewerId === task.ownerId);
   const archived = task.archivedAt !== null;
   const kinds = kindsOf(project);
+  const uploads = useAttachmentUpload({ projectId: project.id, task });
+  const drop = useAttachmentDrop({ upload: uploads.upload, enabled: canEdit && !archived });
   const blockers = blockersOf({ task, tasks: new Map(board.tasks.map((item) => [item.id, item])), kinds }).map(
     (blocker) => taskCode({ key: project.key, number: blocker.number }),
   );
 
   return (
-    <>
+    // Files dropped or pasted anywhere on the card become its attachments.
+    <div {...drop.props} className="relative flex flex-col gap-4">
+      {drop.over && (
+        <div className="pointer-events-none absolute inset-2 z-20 rounded-housing border-2 border-dashed border-ring bg-background/90">
+          {/* Sticky, so the label stays in view however far the drawer is scrolled. */}
+          <p className="sticky top-1/3 mx-auto mt-48 flex w-fit items-center gap-2 rounded-housing border border-border bg-card px-6 py-4 font-heading text-h4 shadow-housing">
+            <PaperclipIcon aria-hidden="true" className="size-5" />
+            {m.attachment_drop_here()}
+          </p>
+        </div>
+      )}
+
       {/*------ Header ------*/}
       <SheetHeader>
         <div className="flex items-center gap-3">
@@ -139,6 +158,8 @@ function TaskDetails({
             <TaskDescriptionField task={task} update={update} readOnly={readOnly} />
             <Separator />
             <TaskChecklist task={task} projectId={project.id} people={people} readOnly={readOnly} />
+            <Separator />
+            <TaskAttachments task={task} projectId={project.id} people={people} uploads={uploads} readOnly={readOnly} />
             <Separator />
             <LabelPicker task={task} update={update} projectId={project.id} labels={board.labels} readOnly={readOnly} />
             <Separator />
@@ -185,7 +206,7 @@ function TaskDetails({
           </div>
         </div>
       )}
-    </>
+    </div>
   );
 }
 

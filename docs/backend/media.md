@@ -89,12 +89,37 @@ One `media` table records every upload (`src/db/schema.ts`). Entities point to i
 intrinsic `width` and `height` (no layout shift), `loading="lazy"` unless `priority`, and the blurred placeholder as
 its background. `alt` text is required.
 
+## Attachments
+
+A card's files (`src/orpc/attachment/`, docs/task-manager-plan.md → slice 15) use the same bucket, the same upload
+through the server and the same public reads, with their own table (`attachment`) instead of `media`: any file type,
+kept as it was uploaded, up to **20 MB** (`ATTACHMENT_MAX_BYTES`).
+
+```text
+attachment/{id}/file           the file itself
+attachment/{id}/preview.webp   images only: fitted in 640 × 640, no metadata
+```
+
+- **Shown or downloaded.** sharp reads the real format. A JPEG, PNG, WebP, GIF or AVIF is stored as its type with
+  `Content-Disposition: inline`; anything else (SVG and HTML included) as `application/octet-stream` with
+  `Content-Disposition: attachment`. Both carry the original name (RFC 6266, UTF-8). Caddy adds
+  `Content-Security-Policy: sandbox` on every `/media` read, so even a file opened in the browser runs no script.
+- **The original is kept.** Unlike a picture, a file is the member's document, so an image's own metadata stays in
+  `file`; only the preview is stripped.
+- **Added in one step.** The file goes to the bucket first, then the row and its history entry in one transaction; if
+  that doesn't save it (the task was archived meanwhile, or is full), the files are deleted again. There is no attach
+  window and no orphan cleanup.
+- **Removed after the row.** Removing an attachment, or deleting its task for good, deletes the rows first and the
+  files once that has committed (`discardFiles`). A failing bucket is logged and leaves the files unreachable from the
+  app.
+
 ## Production
 
 `compose.prod.yaml` runs SeaweedFS with no published ports and serves the bucket read-only behind the app's own origin
 through Caddy (`deploy/Caddyfile`, docs/deployment.md):
 
-- Only `GET`/`HEAD` of a path shaped like `/media/{kind}/{mediaId}/{variant}.webp` reaches the store. That shape blocks
+- Only `GET`/`HEAD` of a path shaped like `/media/{kind}/{mediaId}/{variant}.webp` or `/media/attachment/{id}/file`
+  reaches the store. That shape blocks
   bucket listing and every other S3 operation, and the query string is dropped. Anything else under `/media` is a 404.
 - Visitors' `Authorization` and `Cookie` headers are never forwarded. Reads use the store's `anonymous` identity, which
   may only read the bucket.

@@ -347,6 +347,38 @@ export const checklistItem = pgTable(
   (table) => [index("checklist_item_task_id_position_idx").on(table.taskId, table.position)],
 );
 
+/*===== Attachments =====*/
+// Files and links on a card (docs/task-manager-plan.md → slice 15). A file goes to the media bucket under
+// `attachment/{id}/file`, and an image also gets `attachment/{id}/preview.webp` (`src/orpc/attachment/`). Goes with
+// its task: deleting the task deletes its files from the bucket too.
+
+export const attachment = pgTable(
+  "attachment",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    taskId: uuid("task_id")
+      .notNull()
+      .references(() => task.id, { onDelete: "cascade" }),
+    /** `file` or `link` (`ATTACHMENT_KINDS`). */
+    kind: text("kind").notNull(),
+    /** A file's name as it was uploaded, or a link's title (its address when none was given). */
+    name: text("name").notNull(),
+    /** A link's address; null for a file. */
+    url: text("url"),
+    /** A file's type as stored, and its size in bytes; null for a link. */
+    contentType: text("content_type"),
+    size: integer("size"),
+    /** The preview's pixel size, for an image file; null when there is no preview. */
+    previewWidth: integer("preview_width"),
+    previewHeight: integer("preview_height"),
+    addedBy: text("added_by")
+      .notNull()
+      .references(() => user.id, { onDelete: "restrict" }),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+  },
+  (table) => [index("attachment_task_id_created_at_idx").on(table.taskId, table.createdAt)],
+);
+
 /*===== Delegations =====*/
 // "You do this now" (docs/app.md → Delegation): a task handed from one person to another, with a note. The assignee
 // changes; the owner never does (rule 6). A task's delegations in order are its hand-off chain (Sina → Ali → Reza).

@@ -249,7 +249,7 @@ follows the backend flow, then the frontend flow; desktop first (the phone layou
   attachments (once slice 15 lands), each with an accessible label. The board query returns the counts with the cards,
   in one query, not one per card.
 
-### 15. Attachments
+### 15. Attachments ✓
 
 - Files and links on a card: drag a file onto the drawer, paste a screenshot, or pick files; any type up to a size
   limit (20 MB), stored like pictures (`docs/backend/media.md`) under a new `attachment` kind. Images get a preview

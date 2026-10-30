@@ -1453,5 +1453,130 @@
         "": "چک‌لیست: {doneText} از {totalText} انجام شده"
       }
     }
+  ],
+  "attachment_title": "پیوست‌ها",
+  "attachment_empty": "هنوز فایل یا پیوندی ندارد.",
+  "attachment_add_files": "افزودن فایل",
+  "attachment_drop_hint": "فایل‌ها را روی کارت رها کنید، یا عکس صفحه را بچسبانید.",
+  "attachment_drop_here": "برای پیوست رها کنید",
+  "attachment_add_link": "افزودن پیوند",
+  "attachment_link_url": "نشانی",
+  "attachment_link_title": "عنوان (اختیاری)",
+  "attachment_link_save": "افزودن پیوند",
+  "attachment_uploading": [
+    {
+      "declarations": ["input name"],
+      "match": {
+        "": "در حال بارگذاری {name}…"
+      }
+    }
+  ],
+  "attachment_remove": [
+    {
+      "declarations": ["input name"],
+      "match": {
+        "": "حذف {name}"
+      }
+    }
+  ],
+  "attachment_open": [
+    {
+      "declarations": ["input name"],
+      "match": {
+        "": "باز کردن {name}"
+      }
+    }
+  ],
+  "attachment_download": [
+    {
+      "declarations": ["input name"],
+      "match": {
+        "": "دریافت {name}"
+      }
+    }
+  ],
+  "attachment_added_by": [
+    {
+      "declarations": ["input name", "input date"],
+      "match": {
+        "": "{name}، {date}"
+      }
+    }
+  ],
+  "attachment_size_bytes": [
+    {
+      "declarations": ["input size", "local sizeText = size: number"],
+      "match": {
+        "": "{sizeText} بایت"
+      }
+    }
+  ],
+  "attachment_size_kb": [
+    {
+      "declarations": ["input size", "local sizeText = size: number"],
+      "match": {
+        "": "{sizeText} کیلوبایت"
+      }
+    }
+  ],
+  "attachment_size_mb": [
+    {
+      "declarations": ["input size", "local sizeText = size: number"],
+      "match": {
+        "": "{sizeText} مگابایت"
+      }
+    }
+  ],
+  "attachment_save_failed": "پیوست ذخیره نشد.",
+  "attachment_error_too_big": [
+    {
+      "declarations": ["input max", "local maxText = max: number"],
+      "match": {
+        "": "حجم هر فایل حداکثر {maxText} مگابایت است."
+      }
+    }
+  ],
+  "attachment_error_empty": "فایل خالی است.",
+  "attachment_error_full": [
+    {
+      "declarations": ["input max", "local maxText = max: number"],
+      "match": {
+        "": "هر کارت حداکثر {maxText} پیوست دارد."
+      }
+    }
+  ],
+  "attachment_error_url": "نشانی وبی بنویسید که با http:// یا https:// شروع شود.",
+  "attachment_error_title_too_long": [
+    {
+      "declarations": ["input max", "local maxText = max: number"],
+      "match": {
+        "": "عنوان حداکثر {maxText} حرف است."
+      }
+    }
+  ],
+  "attachment_error_not_yours": "فقط کسی که آن را افزوده، یا مدیر، می‌تواند حذفش کند.",
+  "activity_attachment_added": [
+    {
+      "declarations": ["input name"],
+      "match": {
+        "": "{name} را پیوست کرد"
+      }
+    }
+  ],
+  "activity_attachment_removed": [
+    {
+      "declarations": ["input name"],
+      "match": {
+        "": "پیوست {name} را حذف کرد"
+      }
+    }
+  ],
+  "card_attachment_count": [
+    {
+      "declarations": ["input count", "local countText = count: number"],
+      "match": {
+        "": "پیوست‌ها: {countText}"
+      }
+    }
   ]
 }
