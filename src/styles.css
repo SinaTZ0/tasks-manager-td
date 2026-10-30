@@ -232,6 +232,8 @@
   --radius-keycap: 6px;
   --radius-keycap-compact: 4px;
   --radius-housing: 4px;
+  /* A board card is a part you pick up and move, not a panel, so it gets a softer corner (Trello's 8px) */
+  --radius-card: 8px;
   /* shadcn's scale, kept for parts that aren't keys or cuts (popups, thumbnails) */
   --radius-sm: 4px;
   --radius-md: var(--radius);

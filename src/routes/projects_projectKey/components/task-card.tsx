@@ -153,7 +153,7 @@ export function TaskCard({
       onPointerDown={onPointerDown}
       inert={state === "overlay" || undefined}
       className={cn(
-        "group/task-card relative flex flex-col rounded-housing border border-border bg-card surface-grain shadow-housing transition-colors duration-150 select-none",
+        "group/task-card relative flex flex-col rounded-card border border-border bg-card surface-grain shadow-housing transition-colors duration-150 select-none",
         "focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-ring hover:bg-accent",
         state === "placeholder" && "opacity-40",
         state === "overlay" && "cursor-grabbing bg-accent",
