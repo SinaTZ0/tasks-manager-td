@@ -23,7 +23,8 @@ steps below were applied to it. The languages stay Persian and English.
       slider, progress, avatar, kbd, dialog, popover, plus the atoms led, display, marking), stories updated.
 - [x] 5. Header and footer rebuilt as housing strips: model name, the navigation as keys in one slot, language,
       theme and account keys.
-- [ ] 6. Home route: replace the template's homepage with the board entry (or a redirect to it).
+- [x] 6. Home route: `/` is the board, behind sign-in (`app_layout`); visitors go to sign-in. Its columns are empty
+      until the task feature fills them.
 - [ ] 7. Sign-in and notes pages restyled; favicon and the 1200×630 preview image; `site_name` is set.
 - [ ] 8. The full check (both themes, both directions, phone width, keyboard, reduced motion, lint, typecheck,
       build).

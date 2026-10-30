@@ -70,14 +70,15 @@ function AccountMenu({ viewer }: { viewer: Viewer }) {
 
 /**
  * The instrument's top panel: a housing strip across the desk with the model name, the main navigation as a row of keys,
- * and the language, theme and account keys. On a phone the navigation drops to its own row.
+ * and the language, theme and account keys. On a phone the navigation drops to its own row. It spans the whole window,
+ * not the content width, so its edges line up with the board, which needs every column it can get.
  */
 export function SiteHeader({ viewer }: { viewer: Viewer | null }) {
   const localeLinks = useLocaleLinks();
 
   return (
     <header className="relative z-10 bg-card shadow-housing">
-      <div className="mx-auto flex max-w-site flex-wrap items-center gap-x-6 gap-y-3 px-4 py-3 sm:px-6">
+      <div className="flex flex-wrap items-center gap-x-6 gap-y-3 px-4 py-3 sm:px-6">
         {/*------ Model Name ------*/}
         <Link
           to="/"

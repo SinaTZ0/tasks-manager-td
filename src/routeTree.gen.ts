@@ -13,10 +13,10 @@ import { Route as site_layoutSiteLayoutRouteImport } from './routes/site_layout/
 import { Route as healthzHealthzRouteImport } from './routes/healthz/healthz'
 import { Route as robotsRobotsRouteImport } from './routes/robots/robots'
 import { Route as sitemapSitemapRouteImport } from './routes/sitemap/sitemap'
-import { Route as homeHomeRouteImport } from './routes/home/home'
-import { Route as notes_layoutNotesLayoutRouteImport } from './routes/notes_layout/notes-layout'
+import { Route as app_layoutAppLayoutRouteImport } from './routes/app_layout/app-layout'
 import { Route as authAuthRouteImport } from './routes/auth/auth'
 import { Route as rpcRpcRouteImport } from './routes/rpc/rpc'
+import { Route as homeHomeRouteImport } from './routes/home/home'
 import { Route as notesNotesRouteImport } from './routes/notes/notes'
 import { Route as api_authApiAuthRouteImport } from './routes/api_auth/api-auth'
 
@@ -39,13 +39,8 @@ const sitemapSitemapRoute = sitemapSitemapRouteImport.update({
   path: '/sitemap.xml',
   getParentRoute: () => rootRouteImport,
 } as any)
-const homeHomeRoute = homeHomeRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => site_layoutSiteLayoutRoute,
-} as any)
-const notes_layoutNotesLayoutRoute = notes_layoutNotesLayoutRouteImport.update({
-  id: '/_notes-layout',
+const app_layoutAppLayoutRoute = app_layoutAppLayoutRouteImport.update({
+  id: '/_app-layout',
   getParentRoute: () => site_layoutSiteLayoutRoute,
 } as any)
 const authAuthRoute = authAuthRouteImport.update({
@@ -58,10 +53,15 @@ const rpcRpcRoute = rpcRpcRouteImport.update({
   path: '/rpc/$',
   getParentRoute: () => rootRouteImport,
 } as any)
+const homeHomeRoute = homeHomeRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => app_layoutAppLayoutRoute,
+} as any)
 const notesNotesRoute = notesNotesRouteImport.update({
   id: '/notes',
   path: '/notes',
-  getParentRoute: () => notes_layoutNotesLayoutRoute,
+  getParentRoute: () => app_layoutAppLayoutRoute,
 } as any)
 const api_authApiAuthRoute = api_authApiAuthRouteImport.update({
   id: '/api/auth/$',
@@ -80,10 +80,10 @@ export interface FileRoutesByFullPath {
   '/api/auth/$': typeof api_authApiAuthRoute
 }
 export interface FileRoutesByTo {
+  '/': typeof homeHomeRoute
   '/healthz': typeof healthzHealthzRoute
   '/robots.txt': typeof robotsRobotsRoute
   '/sitemap.xml': typeof sitemapSitemapRoute
-  '/': typeof homeHomeRoute
   '/auth': typeof authAuthRoute
   '/rpc/$': typeof rpcRpcRoute
   '/notes': typeof notesNotesRoute
@@ -95,11 +95,11 @@ export interface FileRoutesById {
   '/healthz': typeof healthzHealthzRoute
   '/robots.txt': typeof robotsRobotsRoute
   '/sitemap.xml': typeof sitemapSitemapRoute
-  '/_site-layout/': typeof homeHomeRoute
-  '/_site-layout/_notes-layout': typeof notes_layoutNotesLayoutRouteWithChildren
+  '/_site-layout/_app-layout': typeof app_layoutAppLayoutRouteWithChildren
   '/_site-layout/auth': typeof authAuthRoute
   '/rpc/$': typeof rpcRpcRoute
-  '/_site-layout/_notes-layout/notes': typeof notesNotesRoute
+  '/_site-layout/_app-layout/': typeof homeHomeRoute
+  '/_site-layout/_app-layout/notes': typeof notesNotesRoute
   '/api/auth/$': typeof api_authApiAuthRoute
 }
 export interface FileRouteTypes {
@@ -115,10 +115,10 @@ export interface FileRouteTypes {
     | '/api/auth/$'
   fileRoutesByTo: FileRoutesByTo
   to:
+    | '/'
     | '/healthz'
     | '/robots.txt'
     | '/sitemap.xml'
-    | '/'
     | '/auth'
     | '/rpc/$'
     | '/notes'
@@ -129,11 +129,11 @@ export interface FileRouteTypes {
     | '/healthz'
     | '/robots.txt'
     | '/sitemap.xml'
-    | '/_site-layout/'
-    | '/_site-layout/_notes-layout'
+    | '/_site-layout/_app-layout'
     | '/_site-layout/auth'
     | '/rpc/$'
-    | '/_site-layout/_notes-layout/notes'
+    | '/_site-layout/_app-layout/'
+    | '/_site-layout/_app-layout/notes'
     | '/api/auth/$'
   fileRoutesById: FileRoutesById
 }
@@ -176,18 +176,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof sitemapSitemapRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/_site-layout/': {
-      id: '/_site-layout/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof homeHomeRouteImport
-      parentRoute: typeof site_layoutSiteLayoutRoute
-    }
-    '/_site-layout/_notes-layout': {
-      id: '/_site-layout/_notes-layout'
+    '/_site-layout/_app-layout': {
+      id: '/_site-layout/_app-layout'
       path: ''
       fullPath: '/'
-      preLoaderRoute: typeof notes_layoutNotesLayoutRouteImport
+      preLoaderRoute: typeof app_layoutAppLayoutRouteImport
       parentRoute: typeof site_layoutSiteLayoutRoute
     }
     '/_site-layout/auth': {
@@ -204,12 +197,19 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof rpcRpcRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/_site-layout/_notes-layout/notes': {
-      id: '/_site-layout/_notes-layout/notes'
+    '/_site-layout/_app-layout/': {
+      id: '/_site-layout/_app-layout/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof homeHomeRouteImport
+      parentRoute: typeof app_layoutAppLayoutRoute
+    }
+    '/_site-layout/_app-layout/notes': {
+      id: '/_site-layout/_app-layout/notes'
       path: '/notes'
       fullPath: '/notes'
       preLoaderRoute: typeof notesNotesRouteImport
-      parentRoute: typeof notes_layoutNotesLayoutRoute
+      parentRoute: typeof app_layoutAppLayoutRoute
     }
     '/api/auth/$': {
       id: '/api/auth/$'
@@ -221,29 +221,26 @@ declare module '@tanstack/react-router' {
   }
 }
 
-interface notes_layoutNotesLayoutRouteChildren {
+interface app_layoutAppLayoutRouteChildren {
+  homeHomeRoute: typeof homeHomeRoute
   notesNotesRoute: typeof notesNotesRoute
 }
 
-const notes_layoutNotesLayoutRouteChildren: notes_layoutNotesLayoutRouteChildren =
-  {
-    notesNotesRoute: notesNotesRoute,
-  }
+const app_layoutAppLayoutRouteChildren: app_layoutAppLayoutRouteChildren = {
+  homeHomeRoute: homeHomeRoute,
+  notesNotesRoute: notesNotesRoute,
+}
 
-const notes_layoutNotesLayoutRouteWithChildren =
-  notes_layoutNotesLayoutRoute._addFileChildren(
-    notes_layoutNotesLayoutRouteChildren,
-  )
+const app_layoutAppLayoutRouteWithChildren =
+  app_layoutAppLayoutRoute._addFileChildren(app_layoutAppLayoutRouteChildren)
 
 interface site_layoutSiteLayoutRouteChildren {
-  homeHomeRoute: typeof homeHomeRoute
-  notes_layoutNotesLayoutRoute: typeof notes_layoutNotesLayoutRouteWithChildren
+  app_layoutAppLayoutRoute: typeof app_layoutAppLayoutRouteWithChildren
   authAuthRoute: typeof authAuthRoute
 }
 
 const site_layoutSiteLayoutRouteChildren: site_layoutSiteLayoutRouteChildren = {
-  homeHomeRoute: homeHomeRoute,
-  notes_layoutNotesLayoutRoute: notes_layoutNotesLayoutRouteWithChildren,
+  app_layoutAppLayoutRoute: app_layoutAppLayoutRouteWithChildren,
   authAuthRoute: authAuthRoute,
 }
 

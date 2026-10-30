@@ -10,7 +10,7 @@ import { m } from "#/paraglide/messages";
 export function SiteFooter() {
   return (
     <footer className="bg-card shadow-housing">
-      <div className="mx-auto flex max-w-site items-center justify-between gap-4 px-4 py-4 sm:px-6">
+      <div className="flex items-center justify-between gap-4 px-4 py-4 sm:px-6">
         <Marking>
           {m.site_name()} · {m.site_tagline()}
         </Marking>

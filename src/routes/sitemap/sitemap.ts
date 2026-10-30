@@ -6,8 +6,8 @@ import { type Locale, localizeHref, locales } from "#/paraglide/runtime";
 type SitemapEntry = { path: string; lastModified?: Date };
 
 // Every public page meant for search results, by its plain path (no locale prefix). Pages with
-// `pageMeta({ index: false })` stay out.
-const STATIC_ENTRIES: SitemapEntry[] = [{ path: "/" }];
+// `pageMeta({ index: false })` stay out. Tofang is an internal tool: every page is behind sign-in, so none are listed.
+const STATIC_ENTRIES: SitemapEntry[] = [];
 
 /*===== sitemap.xml =====*/
 /**

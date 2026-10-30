@@ -1,39 +1,55 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowLeftIcon } from "lucide-react";
+import { createFileRoute } from "@tanstack/react-router";
 
-import { buttonVariants } from "#/components/primitive/button/button.styles";
-import { absoluteUrl, jsonLd, pageMeta } from "#/lib/seo";
+import { Card, CardContent } from "#/components/primitive/card/card";
+import { pageMeta } from "#/lib/seo";
 import { m } from "#/paraglide/messages";
-import { localizeHref } from "#/paraglide/runtime";
+import { BoardColumn } from "#/routes/home/components/board-column";
+
+/*===== Columns =====*/
+
+// The column kinds a board starts with, in order (docs/app.md → Column). Cancelled cards stay off the board, so the
+// cancelled column isn't drawn. Message functions, not their text, so each request gets its own locale.
+const COLUMNS = [
+  { kind: "backlog", title: m.board_column_backlog },
+  { kind: "todo", title: m.board_column_todo },
+  { kind: "doing", title: m.board_column_doing },
+  { kind: "paused", title: m.board_column_paused },
+  { kind: "review", title: m.board_column_review },
+  { kind: "done", title: m.board_column_done },
+] as const;
 
 /*===== Route =====*/
-export const Route = createFileRoute("/_site-layout/")({
-  // A public page: the full set of tags, plus structured data that tells search engines the site's name.
-  head: (args) => ({
-    ...pageMeta({ args }),
-    scripts: [
-      jsonLd({
-        "@context": "https://schema.org",
-        "@type": "WebSite",
-        name: m.site_name(),
-        url: absoluteUrl({ matches: args.matches, path: localizeHref("/") }),
-      }),
-    ],
-  }),
-  component: Home,
+export const Route = createFileRoute("/_site-layout/_app-layout/")({
+  // The board is behind sign-in, so it stays out of search results (docs/frontend/seo.md).
+  head: (args) => pageMeta({ args, title: m.board_title(), index: false }),
+  component: Board,
 });
 
-/*===== Home =====*/
-function Home() {
+/*===== Board =====*/
+
+/**
+ * The team board: every column in one housing, side by side. Until tasks exist the columns are empty bays; the task
+ * feature fills them from its query.
+ */
+function Board() {
   return (
-    <section className="mx-auto flex max-w-site flex-col items-start gap-6 px-4 py-20 sm:px-6">
-      <h1 className="text-display">{m.site_name()}</h1>
-      <p className="max-w-xl text-body-lg text-muted-foreground">{m.home_intro()}</p>
-      <Link to="/notes" className={buttonVariants({ variant: "highlight", size: "lg" })}>
-        {m.home_go_to_notes()}
-        {/* Points forward: left in Persian, flipped to point right in English. */}
-        <ArrowLeftIcon data-icon="inline-end" className="ltr:-scale-x-100" />
-      </Link>
-    </section>
+    <div className="flex flex-col gap-6 px-4 py-8 sm:px-6">
+      <h1 className="font-heading text-h2">{m.board_title()}</h1>
+
+      <Card>
+        <CardContent>
+          {/* Wider than most screens, so the row scrolls. Browsers make a scrolling box keyboard-focusable themselves,
+              so it gets the focus ring but no `tabIndex`. */}
+          <section
+            aria-label={m.board_columns()}
+            className="-m-2 flex gap-6 overflow-x-auto p-2 outline-none focus-visible:outline-2 focus-visible:outline-ring focus-visible:outline-solid"
+          >
+            {COLUMNS.map((column) => (
+              <BoardColumn key={column.kind} title={column.title()} count={0} />
+            ))}
+          </section>
+        </CardContent>
+      </Card>
+    </div>
   );
 }

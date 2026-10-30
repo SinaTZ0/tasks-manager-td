@@ -17,7 +17,7 @@ const ROLES: readonly UserRole[] = ["user", "admin"];
  * This guard only shapes navigation. The data is protected where it is served: oRPC procedures check the session and
  * role again (`requireUserMiddleware`, `requireRoleMiddleware`).
  */
-export const Route = createFileRoute("/_site-layout/_notes-layout")({
+export const Route = createFileRoute("/_site-layout/_app-layout")({
   beforeLoad: async ({ context, location }) => {
     const viewer = await context.queryClient.ensureQueryData(orpc.session.viewer.queryOptions());
     if (!viewer) throw redirect({ to: "/auth", search: { redirectTo: location.href } });

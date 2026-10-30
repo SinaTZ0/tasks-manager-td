@@ -10,7 +10,7 @@ import { NoteCard } from "#/routes/notes/components/note-card";
 import { NoteForm } from "#/routes/notes/components/note-form";
 
 /*===== Route =====*/
-export const Route = createFileRoute("/_site-layout/_notes-layout/notes")({
+export const Route = createFileRoute("/_site-layout/_app-layout/notes")({
   // Fills the Query cache on the server, on preload and on navigation; the page reads the same query.
   loader: ({ context }) => context.queryClient.ensureQueryData(orpc.note.list.queryOptions()),
   // Behind a sign-in, so search engines shouldn't list it.

@@ -23,7 +23,7 @@ decide. The `notes` route (`src/routes/notes/`) is the worked example.
    a starting point, not a template to repeat: if the design needs something they don't do, change them.
 2. **Route and data**: register the route in `routes.ts` and create its flat slice folder with a `createFileRoute`
    file ([architecture.md](./frontend/architecture.md) → Route Slices). If it needs a signed-in user, put it under a
-   guarded layout (`notes_layout`), and read the viewer from route context with `Route.useRouteContext()`. Fill the
+   guarded layout (`app_layout`), and read the viewer from route context with `Route.useRouteContext()`. Fill the
    Query cache in the `loader` with `context.queryClient.ensureQueryData(orpc.<feature>.<procedure>.queryOptions())`,
    and read the same options in the component with `useSuspenseQuery` ([data-loading.md](./frontend/data-loading.md)).
    Set the page's tags in `head` with `pageMeta(...)` ([seo.md](./frontend/seo.md)), with its title and description

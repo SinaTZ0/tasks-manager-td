@@ -34,7 +34,7 @@ only run in the browser uses `createClientOnlyFn` (see `src/lib/error-reporting.
 The loader puts the query in the cache; the component reads the same options:
 
 ```tsx
-export const Route = createFileRoute("/_site-layout/_notes-layout/notes")({
+export const Route = createFileRoute("/_site-layout/_app-layout/notes")({
   loader: ({ context }) => context.queryClient.ensureQueryData(orpc.note.list.queryOptions()),
   component: NotesPage,
 });
@@ -56,7 +56,7 @@ function NotesPage() {
 - **Independent queries load in parallel**: `await Promise.all([ensureQueryData(a), ensureQueryData(b)])`.
 - **Data that only some interactions need** (a dialog's details, the next page of results) can use `useQuery` or
   `queryClient.prefetchQuery` from an event handler. It isn't part of the server render.
-- **Route context** passes what a guard already loaded to the routes below it: `notes_layout` returns `{ viewer }`
+- **Route context** passes what a guard already loaded to the routes below it: `app_layout` returns `{ viewer }`
   from `beforeLoad`, and the notes page reads it with `Route.useRouteContext()`.
 
 ### Search-Driven Data
@@ -154,7 +154,7 @@ The session isn't an oRPC mutation, so the auth flows update the cache themselve
 
 ## Guards
 
-A layout's `beforeLoad` loads the viewer and redirects when the page isn't for them (`src/routes/notes_layout/`):
+A layout's `beforeLoad` loads the viewer and redirects when the page isn't for them (`src/routes/app_layout/`):
 
 ```tsx
 beforeLoad: async ({ context, location }) => {

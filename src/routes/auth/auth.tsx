@@ -12,7 +12,7 @@ import { SignInForm } from "#/routes/auth/components/sign-in-form";
 import { SignUpForm } from "#/routes/auth/components/sign-up-form";
 
 /** Where people land after signing in when nothing asked for a page. */
-const DEFAULT_REDIRECT = "/notes";
+const DEFAULT_REDIRECT = "/";
 
 const searchSchema = z.object({
   redirectTo: redirectToParam,

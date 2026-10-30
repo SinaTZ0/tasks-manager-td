@@ -4,9 +4,8 @@ import { index, layout, rootRoute, route } from "@tanstack/virtual-file-routes";
 // File paths are relative to `src/routes/`. The TanStack Start plugin turns this into `src/routeTree.gen.ts`.
 export const routes = rootRoute("__root.tsx", [
   layout("site_layout/site-layout.tsx", [
-    index("home/home.tsx"),
     route("/auth", "auth/auth.tsx"),
-    layout("notes_layout/notes-layout.tsx", [route("/notes", "notes/notes.tsx")]),
+    layout("app_layout/app-layout.tsx", [index("home/home.tsx"), route("/notes", "notes/notes.tsx")]),
   ]),
 
   /*===== Server Routes =====*/

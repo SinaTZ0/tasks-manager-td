@@ -46,7 +46,7 @@ wins. The root sets no title, so a page with no `head` has none. Give every page
 ## What to Index
 
 - **Index:** public pages people should find: home, content pages (articles, products), about, contact.
-- **`index: false`:** sign-in and sign-up, every page under a guarded layout (`notes_layout`), search and filter
+- **`index: false`:** sign-in and sign-up, every page under a guarded layout (`app_layout`), search and filter
   results, and anything personal. These pages also stay out of the sitemap.
 - Don't block private pages in `robots.txt`. A blocked page can't be crawled, so its `noindex` is never read, and the
   file would publish its path.
@@ -54,7 +54,8 @@ wins. The root sets no title, so a page with no `head` has none. Give every page
 ## Page-Specific Tags
 
 Spread `pageMeta`'s result and add to it. `absoluteUrl` builds any URL from the site's public origin, and `jsonLd`
-turns structured data into a `<script type="application/ld+json">` for `scripts`. The home page does this:
+turns structured data into a `<script type="application/ld+json">` for `scripts`. A public home page would do this
+(Tofang has none: every page, the board at `/` included, is behind sign-in):
 
 ```ts
 head: (args) => ({
