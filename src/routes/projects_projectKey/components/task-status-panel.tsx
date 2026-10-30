@@ -1,8 +1,16 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { TimerOffIcon } from "lucide-react";
-import { useState } from "react";
+import { TimerOffIcon, type LucideProps } from "lucide-react";
+import { createElement, useState } from "react";
 
 import { Button } from "#/components/primitive/button/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "#/components/primitive/dialog/dialog";
 import { Display, DisplayLabel, DisplayValue } from "#/components/primitive/display/display";
 import { Led } from "#/components/primitive/led/led";
 import { Progress, ProgressLabel, ProgressValue } from "#/components/primitive/progress/progress";
@@ -14,7 +22,7 @@ import { formatClock, formatDuration, liveSeconds } from "#/lib/duration";
 import { formatDate } from "#/lib/locale";
 import { orpc } from "#/orpc/client";
 import type { ColumnKind } from "#/orpc/project/constants";
-import type { Person, Project } from "#/orpc/project/contract";
+import type { Column, Person, Project } from "#/orpc/project/contract";
 import { STATUS_ACTION_RULES, type TaskStatusAction } from "#/orpc/task/constants";
 import type { TaskDetail } from "#/orpc/task/contract";
 import { m } from "#/paraglide/messages";
@@ -45,7 +53,9 @@ function stateWord({ kind, running }: { kind: ColumnKind; running: boolean }): s
  * The drawer's transport: a display window with the task's state and its time spent, ticking while a timer runs; the
  * estimate meter under it; and keys for the status actions its column allows (docs/app.md → Status / Pause / Stop).
  * Start stops whatever else the viewer was timing (rule 2). While the viewer's own timer runs here, its key stops just
- * that timer instead and leaves the card in doing. A paused or stopped task prints who did it and why.
+ * that timer instead and leaves the card in doing. A paused or stopped task prints who did it and why. A key that would
+ * move the card to another column asks first: pause and stop through their reason dialog, the others through a plain
+ * confirmation, so a stray click can't shift the card.
  */
 export function TaskStatusPanel({
   task,
@@ -71,6 +81,14 @@ export function TaskStatusPanel({
   const [asking, setAsking] = useState<{
     request: ReasonRequest;
     run: (reason: string) => void;
+    open: boolean;
+  } | null>(null);
+  // Kept after closing for the same reason.
+  const [confirming, setConfirming] = useState<{
+    action: TaskStatusAction;
+    kind: ColumnKind;
+    from: Column;
+    to: Column;
     open: boolean;
   } | null>(null);
   const now = useNow();
@@ -110,6 +128,10 @@ export function TaskStatusPanel({
         run: (forceComment) => transition({ taskId: task.id, action, forceComment }),
         open: true,
       });
+    }
+    const target = project.columns.find((item) => item.kind === STATUS_ACTION_RULES[action].to);
+    if (column && target && target.id !== column.id) {
+      return setConfirming({ action, kind, from: column, to: target, open: true });
     }
     transition({ taskId: task.id, action });
   };
@@ -188,7 +210,67 @@ export function TaskStatusPanel({
           onConfirm={asking.run}
         />
       )}
+      {confirming && (
+        <MoveConfirmDialog
+          code={code}
+          {...confirming}
+          onOpenChange={(open) => setConfirming({ ...confirming, open })}
+          onConfirm={() => transition({ taskId: task.id, action: confirming.action })}
+        />
+      )}
     </section>
+  );
+}
+
+/*===== Move Confirm Dialog =====*/
+
+// The icon is looked up by action, so it is made with `createElement`: JSX would read it as a component made during
+// render. `data-*` isn't among an icon's typed props outside JSX, hence the props object.
+const INLINE_START_ICON = { "data-icon": "inline-start" } as LucideProps;
+
+/** Names the column the card leaves and the one it goes to; the confirm key carries the action's own name and icon. */
+function MoveConfirmDialog({
+  code,
+  kind,
+  action,
+  from,
+  to,
+  open,
+  onOpenChange,
+  onConfirm,
+}: {
+  code: string;
+  /** The card's column kind when asked, which names the action (start reads "resume" on a paused task). */
+  kind: ColumnKind;
+  action: TaskStatusAction;
+  from: Column;
+  to: Column;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onConfirm: () => void;
+}) {
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>{m.task_move_title({ code })}</DialogTitle>
+          <DialogDescription>
+            {m.task_move_description({ from: columnTitle(from), to: columnTitle(to) })}
+          </DialogDescription>
+        </DialogHeader>
+        <DialogFooter showCloseButton>
+          <Button
+            onClick={() => {
+              onConfirm();
+              onOpenChange(false);
+            }}
+          >
+            {createElement(statusActionIcon(action), INLINE_START_ICON)}
+            {statusActionLabel({ action, kind })}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
 

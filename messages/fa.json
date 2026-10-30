@@ -567,6 +567,22 @@
     }
   ],
   "task_stop_description": "کار متوقف‌شده به ستون لغوشده می‌رود و بعداً دوباره باز می‌شود.",
+  "task_move_title": [
+    {
+      "declarations": ["input code"],
+      "match": {
+        "": "{code} جابه‌جا شود؟"
+      }
+    }
+  ],
+  "task_move_description": [
+    {
+      "declarations": ["input from", "input to"],
+      "match": {
+        "": "کار از ستون «{from}» به ستون «{to}» می‌رود."
+      }
+    }
+  ],
   "task_reason_label": "چرا متوقف می‌شود؟",
   "task_reason_optional_label": "چرا مکث؟ (اختیاری)",
   "task_reason_hint": "در تاریخچه کار ثبت می‌شود.",

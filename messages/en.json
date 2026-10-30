@@ -567,6 +567,22 @@
     }
   ],
   "task_stop_description": "A stopped task moves to the cancelled column. It can be reopened later.",
+  "task_move_title": [
+    {
+      "declarations": ["input code"],
+      "match": {
+        "": "Move {code}?"
+      }
+    }
+  ],
+  "task_move_description": [
+    {
+      "declarations": ["input from", "input to"],
+      "match": {
+        "": "The task leaves {from} for {to}."
+      }
+    }
+  ],
   "task_reason_label": "Why is it stopped?",
   "task_reason_optional_label": "Why pause? (optional)",
   "task_reason_hint": "Saved in the task's history.",
