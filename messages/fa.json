@@ -186,6 +186,7 @@
   "projects_title": "پروژه‌ها",
   "projects_empty_admin": "هنوز پروژه‌ای نیست. اولی را با «پروژه تازه» بسازید.",
   "projects_empty_member": "هنوز عضو هیچ پروژه‌ای نیستید. از مدیر تیم بخواهید شما را اضافه کند.",
+  "projects_reading_open": "باز",
   "projects_no_members": "بی‌عضو",
   "projects_new": "پروژه تازه",
   "projects_new_title": "پروژه تازه",
@@ -205,15 +206,6 @@
       }
     }
   ],
-  "settings_heading": [
-    {
-      "declarations": ["input project"],
-      "match": {
-        "": "تنظیمات {project}"
-      }
-    }
-  ],
-  "settings_back_to_board": "بازگشت به تخته",
   "settings_general": "کلی",
   "settings_general_description": "نام پروژه. کلید آن ثابت می‌ماند تا کد کارها عوض نشود.",
   "settings_members": "اعضا",
@@ -836,7 +828,6 @@
     }
   ],
   "activity_description": "همه تغییرهای این پروژه، از تازه‌ترین.",
-  "activity_back_to_board": "بازگشت به تخته",
   "activity_empty": "هنوز اتفاقی نیفتاده است.",
   "activity_load_more": "موارد قدیمی‌تر",
   "activity_load_failed": "موارد قدیمی‌تر بارگذاری نشد. دوباره امتحان کنید.",
@@ -1240,6 +1231,7 @@
   "board_filter_any": "همه",
   "board_panel_filter": "پالایه",
   "board_panel_view": "نما",
+  "calendar_panel_month": "ماه",
   "board_mark_layout": "چیدمان",
   "board_mark_cancelled": "لغوشده‌ها",
   "board_display_now": "اکنون",

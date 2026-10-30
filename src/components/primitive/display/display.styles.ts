@@ -12,9 +12,11 @@ const twDisplayStyles = defineStyles({
   typography: "font-mono",
 });
 
-// `inline` is a one-line window the height of a compact key, for a live value in a row of keys (the header's timer).
+// `inline` is a one-line window the height of a compact key, for a live value in a row of keys (the header's timer);
+// `row` is one the height of a 40px key, for a value between keys that step it (the calendar's month).
 const twSize = defineStyles({
   inline: { layout: "flex-row items-center gap-3", geometry: "h-8 px-3" },
+  row: { layout: "flex-row items-center justify-center gap-3", geometry: "h-10 px-4" },
   sm: { layout: "flex-col gap-1", geometry: "px-3 py-2" },
   default: { layout: "flex-col gap-2", geometry: "p-4" },
   lg: { layout: "flex-col gap-3", geometry: "p-5" },
@@ -40,7 +42,7 @@ const displayLabelClasses = joinStyles(
 const displayValueClasses = joinStyles(
   defineStyles({
     typography:
-      "font-mono text-stat tracking-readout tabular-nums group-data-[size=inline]/display:text-body-sm group-data-[size=lg]/display:text-display group-data-[size=sm]/display:text-h3",
+      "font-mono text-stat tracking-readout tabular-nums group-data-[size=inline]/display:text-body-sm group-data-[size=lg]/display:text-display group-data-[size=row]/display:text-h4 group-data-[size=sm]/display:text-h3",
     appearance: "text-glass-foreground",
   }),
 );

@@ -6,6 +6,7 @@ import { useCallback } from "react";
 import { Card, CardContent } from "#/components/primitive/card/card";
 import { InputGroup, InputGroupAddon, InputGroupInput } from "#/components/primitive/input-group/input-group";
 import { Marking } from "#/components/primitive/marking/marking";
+import { PageHead } from "#/components/shared/page-head/page-head";
 import { useSearchText } from "#/hooks/use-search-text";
 import { columnTitle } from "#/lib/column-title";
 import { pageMeta } from "#/lib/seo";
@@ -58,10 +59,7 @@ function SearchPage() {
 
   return (
     <div className="flex flex-col gap-6 px-6 py-8">
-      <div className="flex flex-col gap-1">
-        <h1 className="font-heading text-h2">{m.search_title()}</h1>
-        <p className="text-muted-foreground">{m.search_description()}</p>
-      </div>
+      <PageHead title={m.search_title()} description={m.search_description()} />
 
       <search className="max-w-xl">
         <form onSubmit={(event) => event.preventDefault()}>

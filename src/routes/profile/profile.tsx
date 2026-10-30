@@ -8,6 +8,7 @@ import { Field, FieldError, FieldLabel } from "#/components/primitive/field/fiel
 import { Input } from "#/components/primitive/input/input";
 import { toast } from "#/components/primitive/toast/toast";
 import { FormAlert } from "#/components/shared/form-alert/form-alert";
+import { PageHead } from "#/components/shared/page-head/page-head";
 import { describeApiFailure } from "#/lib/api-error";
 import { NAME_MAX_LENGTH } from "#/lib/auth-constants";
 import { pageMeta } from "#/lib/seo";
@@ -36,10 +37,7 @@ function ProfilePage() {
 
   return (
     <div className="mx-auto flex w-full max-w-2xl flex-col gap-6 px-6 py-8">
-      <div className="flex flex-col gap-1">
-        <h1 className="font-heading text-h2">{m.profile_title()}</h1>
-        <p className="text-muted-foreground">{m.profile_description()}</p>
-      </div>
+      <PageHead title={m.profile_title()} description={m.profile_description()} />
       <Card>
         <CardContent>
           {/* Keyed by what was saved, so a save that comes back changed starts the form from it. */}

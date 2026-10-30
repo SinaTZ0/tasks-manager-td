@@ -333,5 +333,5 @@ function TaskActivity({ task, project, people }: { task: TaskDetail; project: Pr
     orpc.activity.forTask.queryOptions({ input: { projectId: project.id, taskId: task.id } }),
   );
   if (!items) return <Spinner aria-label={m.common_loading()} />;
-  return <ActivityFeed items={items} people={people} />;
+  return <ActivityFeed items={items} people={people} dayHeading="h3" />;
 }

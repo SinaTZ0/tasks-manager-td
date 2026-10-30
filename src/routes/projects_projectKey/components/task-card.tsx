@@ -87,7 +87,7 @@ function CountBadge({
 
 /** Handles on a card that wait out of sight until the card is pointed at or focused, and never hide on touch. */
 const PARTS_ON_HOVER =
-  "opacity-0 transition-opacity group-focus-within/card:opacity-100 group-hover/card:opacity-100 pointer-coarse:opacity-100";
+  "opacity-0 transition-opacity group-focus-within/task-card:opacity-100 group-hover/task-card:opacity-100 pointer-coarse:opacity-100";
 
 /**
  * A card on the board, as a small housing module (the approved design, docs/frontend/reference/…/task-card.tsx): the
@@ -141,7 +141,7 @@ export function TaskCard({
       onPointerDown={onPointerDown}
       inert={state === "overlay" || undefined}
       className={cn(
-        "group/card relative flex flex-col rounded-housing border border-border bg-card surface-grain shadow-housing transition-colors duration-150 select-none",
+        "group/task-card relative flex flex-col rounded-housing border border-border bg-card surface-grain shadow-housing transition-colors duration-150 select-none",
         "focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-ring hover:bg-accent",
         state === "placeholder" && "opacity-40",
         state === "overlay" && "cursor-grabbing bg-accent",

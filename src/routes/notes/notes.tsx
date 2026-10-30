@@ -3,6 +3,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { NotebookPenIcon } from "lucide-react";
 
 import { Card, CardContent, CardHeader, CardTitle } from "#/components/primitive/card/card";
+import { PageHead } from "#/components/shared/page-head/page-head";
 import { pageMeta } from "#/lib/seo";
 import { orpc } from "#/orpc/client";
 import { m } from "#/paraglide/messages";
@@ -27,41 +28,45 @@ function NotesPage() {
   const refresh = () => void queryClient.invalidateQueries({ queryKey: orpc.note.list.key() });
 
   return (
-    <div className="mx-auto grid max-w-site gap-8 px-4 py-10 sm:px-6 lg:flex">
-      {/*===== New Note =====*/}
-      <Card className="self-start lg:w-88 lg:shrink-0">
-        <CardHeader>
-          <CardTitle>
-            <h1 className="text-h3">{m.notes_new_heading({ name: viewer.name })}</h1>
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <NoteForm onCreated={refresh} />
-        </CardContent>
-      </Card>
+    <div className="mx-auto flex max-w-site flex-col gap-6 px-6 py-8">
+      <PageHead title={m.notes_title()} />
 
-      {/*===== List =====*/}
-      <section aria-label={m.notes_list_label()} className="min-w-0 flex-1">
-        {notes.length === 0 ? (
-          // An empty bay in a housing, like an empty board column: grey print is only legible on a housing
-          <Card>
-            <CardContent>
-              <div className="flex flex-col items-center gap-3 rounded-chassis border border-dashed border-border px-6 py-16 text-center text-muted-foreground">
-                <NotebookPenIcon className="size-8" />
-                <p>{m.notes_empty()}</p>
-              </div>
-            </CardContent>
-          </Card>
-        ) : (
-          <ul className="grid gap-5 sm:grid-cols-2">
-            {notes.map((note) => (
-              <li key={note.id}>
-                <NoteCard note={note} onDeleted={refresh} />
-              </li>
-            ))}
-          </ul>
-        )}
-      </section>
+      <div className="grid gap-8 lg:flex">
+        {/*===== New Note =====*/}
+        <Card className="self-start lg:w-88 lg:shrink-0">
+          <CardHeader>
+            <CardTitle>
+              <h2 className="text-h3">{m.notes_new_heading({ name: viewer.name })}</h2>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <NoteForm onCreated={refresh} />
+          </CardContent>
+        </Card>
+
+        {/*===== List =====*/}
+        <section aria-label={m.notes_list_label()} className="min-w-0 flex-1">
+          {notes.length === 0 ? (
+            // An empty bay in a housing, like an empty board column: grey print is only legible on a housing
+            <Card>
+              <CardContent>
+                <div className="flex flex-col items-center gap-3 rounded-chassis border border-dashed border-border px-6 py-16 text-center text-muted-foreground">
+                  <NotebookPenIcon className="size-8" />
+                  <p>{m.notes_empty()}</p>
+                </div>
+              </CardContent>
+            </Card>
+          ) : (
+            <ul className="grid gap-5 sm:grid-cols-2">
+              {notes.map((note) => (
+                <li key={note.id}>
+                  <NoteCard note={note} onDeleted={refresh} />
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
+      </div>
     </div>
   );
 }

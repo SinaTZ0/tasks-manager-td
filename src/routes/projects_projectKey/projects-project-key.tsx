@@ -1,11 +1,9 @@
 import { ORPCError } from "@orpc/client";
 import { useSuspenseQuery } from "@tanstack/react-query";
-import { createFileRoute, Link, redirect, useNavigate } from "@tanstack/react-router";
-import { ArchiveIcon, CalendarDaysIcon, HistoryIcon, SettingsIcon } from "lucide-react";
+import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router";
 import { useMemo } from "react";
 
 import { AvatarGroup } from "#/components/primitive/avatar/avatar";
-import { buttonVariants } from "#/components/primitive/button/button.styles";
 import { Card, CardContent } from "#/components/primitive/card/card";
 import { Marking } from "#/components/primitive/marking/marking";
 import { Toggle } from "#/components/primitive/toggle/toggle";
@@ -22,6 +20,7 @@ import { BoardFilters } from "#/routes/projects_projectKey/components/board-filt
 import { BoardLayoutPicker } from "#/routes/projects_projectKey/components/board-layout-picker";
 import { NewTaskDialog } from "#/routes/projects_projectKey/components/new-task-dialog";
 import { PanelGroup } from "#/routes/projects_projectKey/components/panel-group";
+import { ProjectPages } from "#/routes/projects_projectKey/components/project-pages";
 import { Board, SHOW_CANCELLED_ID } from "#/routes/projects_projectKey/components/board";
 import { useBoardAccess } from "#/routes/projects_projectKey/access";
 import { TaskDrawer } from "#/routes/projects_projectKey/components/task-drawer";
@@ -152,43 +151,13 @@ function BoardPage() {
                     </AvatarGroup>
                   </span>
                 </div>
-                <nav aria-label={m.board_project_pages()} className="grid grid-cols-2 gap-2">
-                  <Link
-                    to="/projects/$projectKey/calendar"
-                    params={{ projectKey: project.key }}
-                    search={{ assignee, label, priority, due, blocked }}
-                    className={buttonVariants({ variant: "secondary", size: "sm" })}
-                  >
-                    <CalendarDaysIcon data-icon="inline-start" />
-                    {m.calendar_link()}
-                  </Link>
-                  <Link
-                    to="/projects/$projectKey/activity"
-                    params={{ projectKey: project.key }}
-                    className={buttonVariants({ variant: "secondary", size: "sm" })}
-                  >
-                    <HistoryIcon data-icon="inline-start" />
-                    {m.activity_link()}
-                  </Link>
-                  <Link
-                    to="/projects/$projectKey/archive"
-                    params={{ projectKey: project.key }}
-                    className={buttonVariants({ variant: "secondary", size: "sm" })}
-                  >
-                    <ArchiveIcon data-icon="inline-start" />
-                    {m.archive_link()}
-                  </Link>
-                  {isAdmin && (
-                    <Link
-                      to="/projects/$projectKey/settings"
-                      params={{ projectKey: project.key }}
-                      className={buttonVariants({ variant: "secondary", size: "sm" })}
-                    >
-                      <SettingsIcon data-icon="inline-start" />
-                      {m.project_settings()}
-                    </Link>
-                  )}
-                </nav>
+                <ProjectPages
+                  projectKey={project.key}
+                  current="board"
+                  isAdmin={isAdmin}
+                  filter={{ assignee, label, priority, due, blocked }}
+                  layout="grid"
+                />
               </div>
               <BoardDisplay project={project} board={board} hidden={hidden} onHiddenChange={setHidden} />
             </div>

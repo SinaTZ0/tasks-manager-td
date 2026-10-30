@@ -4,8 +4,9 @@ import { z } from "zod";
 import type { Database } from "#/db/client.server";
 import { isPositionKey, resolvePosition } from "#/lib/position";
 import { issuesToErrorData } from "#/lib/schema-issues";
+import { teamToday } from "#/lib/team-day";
 import { recordActivity } from "#/orpc/activity/service";
-import type { Column, Project, ProjectSummary } from "#/orpc/project/contract";
+import type { Column, Project, ProjectListItem, ProjectSummary } from "#/orpc/project/contract";
 import { COLUMN_KINDS } from "#/orpc/project/constants";
 import { toColumn, toProjectSummary } from "#/orpc/project/mapper";
 import {
@@ -17,6 +18,7 @@ import {
   findMembersOfProjects,
   findProjectById,
   findProjectByKey,
+  findProjectReadings,
   findProjectsOfMember,
   insertColumns,
   insertMembers,
@@ -63,11 +65,26 @@ async function summarize({ db, record }: { db: Database; record: ProjectRecord }
 }
 
 /*===== List =====*/
-export async function listProjects({ db, viewer }: { db: Database; viewer: ProjectViewer }): Promise<ProjectSummary[]> {
+/** The projects the viewer can open (all of them for an admin), each with its board's readings. */
+export async function listProjects({
+  db,
+  viewer,
+}: {
+  db: Database;
+  viewer: ProjectViewer;
+}): Promise<ProjectListItem[]> {
   const records =
     viewer.role === "admin" ? await findAllProjects({ db }) : await findProjectsOfMember({ db, userId: viewer.id });
-  const members = await findMembersOfProjects({ db, projectIds: records.map((record) => record.id) });
-  return records.map((record) => toProjectSummary({ record, members }));
+  const projectIds = records.map((record) => record.id);
+  const [members, readings] = await Promise.all([
+    findMembersOfProjects({ db, projectIds }),
+    findProjectReadings({ db, projectIds, today: teamToday() }),
+  ]);
+  const byProject = new Map(readings.map(({ projectId, ...counts }) => [projectId, counts]));
+  return records.map((record) => ({
+    ...toProjectSummary({ record, members }),
+    readings: byProject.get(record.id) ?? { open: 0, doing: 0, running: 0, late: 0 },
+  }));
 }
 
 /*===== Get =====*/

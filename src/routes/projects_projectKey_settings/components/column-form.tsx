@@ -3,7 +3,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 
 import { Button } from "#/components/primitive/button/button";
-import { Field, FieldError, FieldLabel } from "#/components/primitive/field/field";
+import { Field, FieldError } from "#/components/primitive/field/field";
 import { Input } from "#/components/primitive/input/input";
 import { Marking } from "#/components/primitive/marking/marking";
 import { Spinner } from "#/components/primitive/spinner/spinner";
@@ -21,11 +21,23 @@ import {
 
 /*===== Column =====*/
 
+/** The ids of the headings printed once above the rows, which name each row's fields together with its kind. */
+export type ColumnFormHeadings = { name: string; wip: string };
+
 /**
- * One column's name and WIP limit. The kind is printed beside it and never changes: it is what the app's logic
- * follows, whatever the column is called.
+ * One column's name and WIP limit, as a row under headings printed once (`headings`): each field is named by its
+ * heading and the row's kind ("Name, Backlog"), so the rows don't repeat a label each. The kind is printed at the
+ * start and never changes: it is what the app's logic follows, whatever the column is called.
  */
-export function ColumnForm({ projectId, column }: { projectId: string; column: Column }) {
+export function ColumnForm({
+  projectId,
+  column,
+  headings,
+}: {
+  projectId: string;
+  column: Column;
+  headings: ColumnFormHeadings;
+}) {
   const queryClient = useQueryClient();
   const kindTitle = columnKindTitle(column.kind);
   const form = useForm<ColumnFormValues, unknown, ColumnFormOutput>({
@@ -33,7 +45,7 @@ export function ColumnForm({ projectId, column }: { projectId: string; column: C
     defaultValues: { name: column.name ?? "", wipLimit: column.wipLimit === null ? "" : String(column.wipLimit) },
   });
   const { errors, isDirty } = form.formState;
-  const ids = { name: `column-${column.id}-name`, wip: `column-${column.id}-wip` };
+  const kindId = `column-${column.id}-kind`;
 
   const update = useMutation(
     orpc.project.updateColumn.mutationOptions({
@@ -62,19 +74,24 @@ export function ColumnForm({ projectId, column }: { projectId: string; column: C
   );
 
   return (
-    <form onSubmit={onSubmit} noValidate aria-label={kindTitle} className="flex items-start gap-4">
-      <Marking className="mt-9 w-32 shrink-0">{kindTitle}</Marking>
+    <form onSubmit={onSubmit} noValidate aria-labelledby={kindId} className="flex items-start gap-4">
+      <Marking id={kindId} className="mt-3 w-32 shrink-0">
+        {kindTitle}
+      </Marking>
 
       <Field data-invalid={!!(errors.name ?? serverFields.name) || undefined} className="flex-1">
-        <FieldLabel htmlFor={ids.name}>{m.settings_column_name_label()}</FieldLabel>
-        <Input id={ids.name} placeholder={kindTitle} aria-invalid={!!errors.name} {...form.register("name")} />
+        <Input
+          aria-labelledby={`${headings.name} ${kindId}`}
+          placeholder={kindTitle}
+          aria-invalid={!!errors.name}
+          {...form.register("name")}
+        />
         <FieldError>{errors.name?.message ?? serverFields.name}</FieldError>
       </Field>
 
       <Field data-invalid={!!(errors.wipLimit ?? serverFields.wipLimit) || undefined} className="w-32 shrink-0">
-        <FieldLabel htmlFor={ids.wip}>{m.settings_column_wip_label()}</FieldLabel>
         <Input
-          id={ids.wip}
+          aria-labelledby={`${headings.wip} ${kindId}`}
           dir="ltr"
           inputMode="numeric"
           autoComplete="off"
@@ -85,7 +102,7 @@ export function ColumnForm({ projectId, column }: { projectId: string; column: C
         <FieldError>{errors.wipLimit?.message ?? serverFields.wipLimit}</FieldError>
       </Field>
 
-      <Button type="submit" variant="secondary" className="mt-7" disabled={!isDirty || update.isPending}>
+      <Button type="submit" variant="secondary" disabled={!isDirty || update.isPending}>
         {update.isPending && <Spinner data-icon="inline-start" />}
         {m.settings_save()}
       </Button>

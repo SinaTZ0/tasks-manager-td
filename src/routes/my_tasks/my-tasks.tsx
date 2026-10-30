@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "#/components/primitive
 import { Led } from "#/components/primitive/led/led";
 import { Marking } from "#/components/primitive/marking/marking";
 import { DueMark } from "#/components/shared/due-mark/due-mark";
+import { PageHead } from "#/components/shared/page-head/page-head";
 import { useNow } from "#/hooks/use-now";
 import { columnTitle } from "#/lib/column-title";
 import { formatClock, liveSeconds } from "#/lib/duration";
@@ -38,10 +39,7 @@ function MyTasksPage() {
 
   return (
     <div className="flex flex-col gap-6 px-6 py-8">
-      <div className="flex flex-col gap-1">
-        <h1 className="font-heading text-h2">{m.my_tasks_title()}</h1>
-        <p className="text-muted-foreground">{m.my_tasks_description()}</p>
-      </div>
+      <PageHead title={m.my_tasks_title()} description={m.my_tasks_description()} />
 
       {groups.size === 0 ? (
         <Card>

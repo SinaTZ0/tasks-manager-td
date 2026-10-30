@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, Link, useRouteContext } from "@tanstack/react-router";
-import { ArchiveIcon, ArrowLeftIcon, ArchiveRestoreIcon, Trash2Icon } from "lucide-react";
+import { ArchiveIcon, ArchiveRestoreIcon, Trash2Icon } from "lucide-react";
 import { useState } from "react";
 
 import { Button } from "#/components/primitive/button/button";
@@ -15,7 +15,7 @@ import {
 } from "#/components/primitive/dialog/dialog";
 import { Marking } from "#/components/primitive/marking/marking";
 import { toast } from "#/components/primitive/toast/toast";
-import { isolate } from "#/lib/bidi";
+import { PageHead } from "#/components/shared/page-head/page-head";
 import { describeApiFailure } from "#/lib/api-error";
 import { columnTitle } from "#/lib/column-title";
 import { formatDate } from "#/lib/locale";
@@ -25,6 +25,7 @@ import type { Project } from "#/orpc/project/contract";
 import { taskCode } from "#/orpc/task/constants";
 import type { ArchivedTask } from "#/orpc/task/contract";
 import { m } from "#/paraglide/messages";
+import { ProjectPages } from "#/routes/projects_projectKey/components/project-pages";
 import { ensureProject, projectQuery } from "#/routes/projects_projectKey/queries";
 
 /*===== Queries =====*/
@@ -59,24 +60,13 @@ function ArchivePage() {
   return (
     <div className="mx-auto flex w-full max-w-site flex-col gap-6 px-6 py-8">
       {/*------ Header ------*/}
-      <div className="flex flex-col gap-2">
-        <Link
-          to="/projects/$projectKey"
-          params={{ projectKey: project.key }}
-          className="flex w-fit items-center gap-1.5 rounded-chassis text-caption text-muted-foreground hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
-        >
-          {/* "Back" points against the reading direction. */}
-          <ArrowLeftIcon className="size-4 rtl:rotate-180" />
-          {m.activity_back_to_board()}
-        </Link>
-        <div className="flex items-center gap-3">
-          <h1 className="font-heading text-h2">{m.archive_heading({ project: isolate(project.name) })}</h1>
-          <Marking variant="code">{project.key}</Marking>
-        </div>
-        <p className="text-muted-foreground">
-          {viewer.role === "admin" ? m.archive_description() : m.archive_description_member()}
-        </p>
-      </div>
+      <PageHead
+        code={project.key}
+        kicker={project.name}
+        title={m.archive_link()}
+        description={viewer.role === "admin" ? m.archive_description() : m.archive_description_member()}
+        actions={<ProjectPages projectKey={project.key} current="archive" isAdmin={viewer.role === "admin"} />}
+      />
 
       {/*------ List ------*/}
       <Card>

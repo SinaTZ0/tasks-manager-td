@@ -1,7 +1,7 @@
-import { and, asc, eq, inArray } from "drizzle-orm";
+import { and, asc, count, eq, inArray, isNull, sql } from "drizzle-orm";
 
 import type { Database } from "#/db/client.server";
-import { boardColumn, project, projectMember, user } from "#/db/schema";
+import { boardColumn, project, projectMember, task, timeLog, user } from "#/db/schema";
 
 /*===== Types =====*/
 export type ProjectRecord = typeof project.$inferSelect;
@@ -196,4 +196,50 @@ export async function updateColumnRow({
   const [row] = await db.update(boardColumn).set(values).where(eq(boardColumn.id, id)).returning();
   if (!row) throw new Error("updateColumnRow: update returned no row");
   return row;
+}
+
+/*===== Readings =====*/
+/** A project's live task counts, as `findProjectReadings` returns them. */
+export type ReadingsRow = { projectId: string; open: number; doing: number; running: number; late: number };
+
+// Finished tasks never count as open or late, whatever their due date.
+const OPEN = sql`${boardColumn.kind} not in ('done', 'cancelled')`;
+
+/**
+ * Each project's live (unarchived) task counts: open, in the doing column, open and past `today`, and the timers
+ * running on its tasks. Two grouped reads, whatever the number of projects; a project with no tasks has no row.
+ */
+export async function findProjectReadings({
+  db,
+  projectIds,
+  today,
+}: {
+  db: Database;
+  projectIds: string[];
+  /** The team's date (ISO): a task due before it is late. */
+  today: string;
+}): Promise<ReadingsRow[]> {
+  if (projectIds.length === 0) return [];
+  const live = and(inArray(task.projectId, projectIds), isNull(task.archivedAt));
+  const [tasks, timers] = await Promise.all([
+    db
+      .select({
+        projectId: task.projectId,
+        open: sql<number>`count(*) filter (where ${OPEN})`.mapWith(Number),
+        doing: sql<number>`count(*) filter (where ${boardColumn.kind} = 'doing')`.mapWith(Number),
+        late: sql<number>`count(*) filter (where ${OPEN} and ${task.dueDate} < ${today})`.mapWith(Number),
+      })
+      .from(task)
+      .innerJoin(boardColumn, eq(boardColumn.id, task.columnId))
+      .where(live)
+      .groupBy(task.projectId),
+    db
+      .select({ projectId: task.projectId, running: count() })
+      .from(timeLog)
+      .innerJoin(task, eq(task.id, timeLog.taskId))
+      .where(and(live, isNull(timeLog.endedAt)))
+      .groupBy(task.projectId),
+  ]);
+  const running = new Map(timers.map((row) => [row.projectId, row.running]));
+  return tasks.map((row) => ({ ...row, running: running.get(row.projectId) ?? 0 }));
 }

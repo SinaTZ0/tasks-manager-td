@@ -1,19 +1,20 @@
 import { useSuspenseInfiniteQuery, useSuspenseQuery } from "@tanstack/react-query";
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowLeftIcon, HistoryIcon } from "lucide-react";
+import { createFileRoute } from "@tanstack/react-router";
+import { HistoryIcon } from "lucide-react";
 import { useMemo } from "react";
 
 import { Button } from "#/components/primitive/button/button";
 import { Card, CardContent } from "#/components/primitive/card/card";
-import { Marking } from "#/components/primitive/marking/marking";
 import { Spinner } from "#/components/primitive/spinner/spinner";
 import { ActivityFeed } from "#/components/shared/activity-feed/activity-feed";
+import { PageHead } from "#/components/shared/page-head/page-head";
 import { FormAlert } from "#/components/shared/form-alert/form-alert";
-import { isolate } from "#/lib/bidi";
 import { pageMeta } from "#/lib/seo";
 import { orpc } from "#/orpc/client";
 import type { Person } from "#/orpc/project/contract";
 import { m } from "#/paraglide/messages";
+import { useBoardAccess } from "#/routes/projects_projectKey/access";
+import { ProjectPages } from "#/routes/projects_projectKey/components/project-pages";
 import { ensureProject, projectQuery } from "#/routes/projects_projectKey/queries";
 
 /*===== Queries =====*/
@@ -51,6 +52,7 @@ export const Route = createFileRoute("/_site-layout/_app-layout/projects/$projec
  */
 function ActivityPage() {
   const { projectKey } = Route.useParams();
+  const { isAdmin } = useBoardAccess();
   const { data: project } = useSuspenseQuery(projectQuery(projectKey));
   const { data, hasNextPage, fetchNextPage, isFetchingNextPage, isFetchNextPageError } = useSuspenseInfiniteQuery(
     activityQuery(project.id),
@@ -66,22 +68,13 @@ function ActivityPage() {
   return (
     <div className="mx-auto flex w-full max-w-site flex-col gap-6 px-6 py-8">
       {/*------ Header ------*/}
-      <div className="flex flex-col gap-2">
-        <Link
-          to="/projects/$projectKey"
-          params={{ projectKey: project.key }}
-          className="flex w-fit items-center gap-1.5 rounded-chassis text-caption text-muted-foreground hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
-        >
-          {/* "Back" points against the reading direction. */}
-          <ArrowLeftIcon className="size-4 rtl:rotate-180" />
-          {m.activity_back_to_board()}
-        </Link>
-        <div className="flex items-center gap-3">
-          <h1 className="font-heading text-h2">{m.activity_heading({ project: isolate(project.name) })}</h1>
-          <Marking variant="code">{project.key}</Marking>
-        </div>
-        <p className="text-muted-foreground">{m.activity_description()}</p>
-      </div>
+      <PageHead
+        code={project.key}
+        kicker={project.name}
+        title={m.activity_link()}
+        description={m.activity_description()}
+        actions={<ProjectPages projectKey={project.key} current="activity" isAdmin={isAdmin} />}
+      />
 
       {/*------ Feed ------*/}
       <Card>

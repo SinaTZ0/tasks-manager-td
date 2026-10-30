@@ -5,7 +5,8 @@ import { PersonAvatar } from "#/components/shared/person-avatar/person-avatar";
 import { isolate } from "#/lib/bidi";
 import { columnKindTitle, columnTitle } from "#/lib/column-title";
 import { formatClock, formatDuration } from "#/lib/duration";
-import { formatDate, formatList, isoToDate } from "#/lib/locale";
+import { formatDate, formatList, formatRelativeDays, isoToDate } from "#/lib/locale";
+import { daysBetween, TEAM_TIME_ZONE, teamToday } from "#/lib/team-day";
 import { priorityName } from "#/lib/priority-name";
 import type { ActivityItem } from "#/orpc/activity/contract";
 import { COLUMN_KINDS, type ColumnKind } from "#/orpc/project/constants";
@@ -318,24 +319,60 @@ export function ActivityFeed({
   people,
   showTask = false,
   projectKey,
+  dayHeading: DayHeading = "h2",
 }: {
   items: ActivityItem[];
   people: Map<string, Person>;
   showTask?: boolean;
   projectKey?: string;
+  /** The level of the day headings, one below the heading the feed sits under. */
+  dayHeading?: "h2" | "h3";
 }) {
+  const today = teamToday();
+  const days = groupByDay(items);
+
   return (
-    <ol className="flex flex-col striped">
-      {items.map((item) => (
-        <ActivityEntry
-          key={item.id}
-          item={item}
-          people={people}
-          taskKey={showTask && item.taskCode ? projectKey : undefined}
-        />
-      ))}
-    </ol>
+    <div className="flex flex-col gap-5">
+      {days.map(({ day, entries }) => {
+        const ago = daysBetween({ from: day, to: today });
+        return (
+          <section key={day} className="flex flex-col gap-1">
+            {/* The day printed over its entries, with a rule running from it, so a long feed reads in days. */}
+            <DayHeading className="flex items-center gap-3">
+              <Marking>
+                {ago <= 1
+                  ? formatRelativeDays(-ago)
+                  : formatDate(isoToDate(day), { weekday: "long", day: "numeric", month: "long" })}
+              </Marking>
+              <span aria-hidden="true" className="h-px flex-1 bg-border" />
+            </DayHeading>
+            <ol className="flex flex-col striped">
+              {entries.map((item) => (
+                <ActivityEntry
+                  key={item.id}
+                  item={item}
+                  people={people}
+                  taskKey={showTask && item.taskCode ? projectKey : undefined}
+                />
+              ))}
+            </ol>
+          </section>
+        );
+      })}
+    </div>
   );
+}
+
+/** Consecutive entries of the same team day (the feed is newest first), so each day is one run. */
+function groupByDay(items: ActivityItem[]): { day: string; entries: ActivityItem[] }[] {
+  const days: { day: string; entries: ActivityItem[] }[] = [];
+  for (const item of items) {
+    const day = teamToday(item.createdAt);
+    const last = days.at(-1);
+    if (last?.day === day) last.entries.push(item);
+    else days.push({ day, entries: [item] });
+  }
+  return days;
 }
 
 /*===== Entry =====*/
@@ -386,8 +423,9 @@ function ActivityEntry({
       </div>
 
       {/*------ When ------*/}
+      {/* The day is the heading's; the entry keeps the time, in the team's zone like the day it is grouped under. */}
       <time dateTime={item.createdAt.toISOString()} className="shrink-0 text-caption text-muted-foreground">
-        {formatDate(item.createdAt, { dateStyle: "medium", timeStyle: "short" })}
+        {formatDate(item.createdAt, { timeStyle: "short", timeZone: TEAM_TIME_ZONE })}
       </time>
     </li>
   );

@@ -40,6 +40,25 @@ export const projectSummarySchema = z.object({
 
 export type ProjectSummary = z.infer<typeof projectSummarySchema>;
 
+/**
+ * What a project's board holds right now, as the project list shows it. Only live tasks count (archived ones are off
+ * the board): `open` is every task not done or cancelled, `doing` those in the doing column, `running` the timers
+ * running on its tasks, and `late` the open tasks past their due date in the team's today.
+ */
+export const projectReadingsSchema = z.object({
+  open: z.number(),
+  doing: z.number(),
+  running: z.number(),
+  late: z.number(),
+});
+
+export type ProjectReadings = z.infer<typeof projectReadingsSchema>;
+
+/** A project in the list: its summary and its board's readings. */
+export const projectListItemSchema = projectSummarySchema.extend({ readings: projectReadingsSchema });
+
+export type ProjectListItem = z.infer<typeof projectListItemSchema>;
+
 export const projectSchema = projectSummarySchema.extend({
   /** In board order, the cancelled column included. */
   columns: z.array(columnSchema),
@@ -83,7 +102,7 @@ const moveColumnInputSchema = z.strictObject({
 
 export const projectContract = {
   /** The viewer's projects; an admin's are all of them. */
-  list: oc.errors({ ...commonErrors, ...authErrors }).output(z.array(projectSummarySchema)),
+  list: oc.errors({ ...commonErrors, ...authErrors }).output(z.array(projectListItemSchema)),
   get: oc
     .errors({ ...commonErrors, ...authErrors, ...notFoundErrors })
     .input(z.strictObject({ key: z.string() }))

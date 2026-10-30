@@ -1,23 +1,34 @@
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, Link, redirect } from "@tanstack/react-router";
 import { FolderKanbanIcon } from "lucide-react";
+import type { ReactNode } from "react";
 
 import { AvatarGroup } from "#/components/primitive/avatar/avatar";
 import { Card, CardContent, CardHeader, CardTitle } from "#/components/primitive/card/card";
+import { Display, DisplayLabel, DisplayValue } from "#/components/primitive/display/display";
+import { Led } from "#/components/primitive/led/led";
 import { Marking } from "#/components/primitive/marking/marking";
+import { PageHead } from "#/components/shared/page-head/page-head";
 import { PersonAvatar } from "#/components/shared/person-avatar/person-avatar";
+import { columnKindTitle } from "#/lib/column-title";
+import { formatNumber } from "#/lib/locale";
 import { pageMeta } from "#/lib/seo";
 import { orpc } from "#/orpc/client";
-import type { ProjectSummary } from "#/orpc/project/contract";
+import type { ProjectListItem } from "#/orpc/project/contract";
 import { m } from "#/paraglide/messages";
 import { NewProjectDialog } from "#/routes/home/components/new-project-dialog";
 
 /*===== Route =====*/
+
+// The cards show each board's live counts, which others change all day: they go stale after half a minute rather than
+// the usual five, so coming back here refetches them.
+const projectsQuery = () => orpc.project.list.queryOptions({ staleTime: 30_000 });
+
 export const Route = createFileRoute("/_site-layout/_app-layout/")({
   loader: async ({ context }) => {
     const isAdmin = context.viewer.role === "admin";
     const [projects] = await Promise.all([
-      context.queryClient.ensureQueryData(orpc.project.list.queryOptions()),
+      context.queryClient.ensureQueryData(projectsQuery()),
       // The new-project form picks members from the whole team.
       isAdmin ? context.queryClient.ensureQueryData(orpc.team.list.queryOptions()) : null,
     ]);
@@ -39,15 +50,12 @@ export const Route = createFileRoute("/_site-layout/_app-layout/")({
 /** The projects the viewer can open, one housing module each. Admins also make new projects here. */
 function ProjectsPage() {
   const { viewer } = Route.useRouteContext();
-  const { data: projects } = useSuspenseQuery(orpc.project.list.queryOptions());
+  const { data: projects } = useSuspenseQuery(projectsQuery());
   const isAdmin = viewer.role === "admin";
 
   return (
     <div className="flex flex-col gap-6 px-6 py-8">
-      <div className="flex items-center justify-between gap-4">
-        <h1 className="font-heading text-h2">{m.projects_title()}</h1>
-        {isAdmin && <NewProjectDialog viewerId={viewer.id} />}
-      </div>
+      <PageHead title={m.projects_title()} actions={isAdmin && <NewProjectDialog viewerId={viewer.id} />} />
 
       {projects.length === 0 ? (
         <Card>
@@ -73,8 +81,13 @@ function ProjectsPage() {
 
 /*===== Project Card =====*/
 
-/** A whole-card link to the project's board: its name, its key as a printed code, and its members' caps. */
-function ProjectCard({ project }: { project: ProjectSummary }) {
+/**
+ * A whole-card link to the project's board, as a small module: its name and key, a display of what its board holds
+ * right now (open tasks, those in progress, timers running, tasks late; an LED lights beside the last two when they
+ * aren't zero), and its members' caps.
+ */
+function ProjectCard({ project }: { project: ProjectListItem }) {
+  const { open, doing, running, late } = project.readings;
   return (
     <Card className="flex-1" render={<Link to="/projects/$projectKey" params={{ projectKey: project.key }} />}>
       <CardHeader>
@@ -86,16 +99,49 @@ function ProjectCard({ project }: { project: ProjectSummary }) {
         </CardTitle>
       </CardHeader>
       <CardContent>
-        {project.members.length === 0 ? (
-          <Marking>{m.projects_no_members()}</Marking>
-        ) : (
-          <AvatarGroup>
-            {project.members.map((member) => (
-              <PersonAvatar key={member.id} name={member.name} src={member.avatarUrl} />
-            ))}
-          </AvatarGroup>
-        )}
+        <div className="flex flex-col gap-4">
+          <Display size="sm">
+            <dl className="grid grid-cols-4 gap-3">
+              <Reading label={m.projects_reading_open()} value={open} />
+              <Reading label={columnKindTitle("doing")} value={doing} />
+              <Reading
+                label={m.task_run_running()}
+                value={running}
+                led={<Led signal="positive" state={running > 0 ? "blink" : "off"} size="sm" />}
+              />
+              <Reading
+                label={m.board_stat_late()}
+                value={late}
+                led={<Led signal="action" state={late > 0 ? "on" : "off"} size="sm" />}
+              />
+            </dl>
+          </Display>
+          {project.members.length === 0 ? (
+            <Marking>{m.projects_no_members()}</Marking>
+          ) : (
+            <AvatarGroup>
+              {project.members.map((member) => (
+                <PersonAvatar key={member.id} name={member.name} src={member.avatarUrl} />
+              ))}
+            </AvatarGroup>
+          )}
+        </div>
       </CardContent>
     </Card>
+  );
+}
+
+/** One count on a project's display: its name over the value, with an LED beside the name when it can need someone. */
+function Reading({ label, value, led }: { label: string; value: number; led?: ReactNode }) {
+  return (
+    <div className="flex min-w-0 flex-col gap-1">
+      <dt className="flex items-center gap-1.5">
+        {led}
+        <DisplayLabel>{label}</DisplayLabel>
+      </dt>
+      <dd>
+        <DisplayValue>{formatNumber(value)}</DisplayValue>
+      </dd>
+    </div>
   );
 }

@@ -1,16 +1,16 @@
 import { ORPCError } from "@orpc/client";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { ChevronLeftIcon, ChevronRightIcon, KanbanIcon } from "lucide-react";
+import { ChevronLeftIcon, ChevronRightIcon } from "lucide-react";
 import { useMemo } from "react";
 
 import { Button } from "#/components/primitive/button/button";
-import { buttonVariants } from "#/components/primitive/button/button.styles";
-import { Marking } from "#/components/primitive/marking/marking";
+import { Card, CardContent } from "#/components/primitive/card/card";
+import { Display } from "#/components/primitive/display/display";
+import { PageHead } from "#/components/shared/page-head/page-head";
 import { formatDate, isoToDate } from "#/lib/locale";
 import { pageMeta } from "#/lib/seo";
 import { teamToday } from "#/lib/team-day";
-import { cn } from "#/lib/utils";
 import type { Person } from "#/orpc/project/contract";
 import type { TaskCard } from "#/orpc/task/contract";
 import { m } from "#/paraglide/messages";
@@ -18,6 +18,8 @@ import { getLocale } from "#/paraglide/runtime";
 import { useBoardAccess } from "#/routes/projects_projectKey/access";
 import { cardFilter, isFiltering, type BoardFilter } from "#/routes/projects_projectKey/board-filter";
 import { BoardFilters } from "#/routes/projects_projectKey/components/board-filters";
+import { PanelGroup } from "#/routes/projects_projectKey/components/panel-group";
+import { ProjectPages } from "#/routes/projects_projectKey/components/project-pages";
 import { TaskDrawer } from "#/routes/projects_projectKey/components/task-drawer";
 import { blockersOf, kindsOf } from "#/routes/projects_projectKey/dependencies";
 import { boardQuery, ensureProject, projectQuery, taskQuery } from "#/routes/projects_projectKey/queries";
@@ -64,7 +66,7 @@ function CalendarPage() {
   const { projectKey } = Route.useParams();
   const search = Route.useSearch();
   const navigate = useNavigate({ from: Route.fullPath });
-  const { viewerId, canEdit } = useBoardAccess();
+  const { viewerId, canEdit, isAdmin } = useBoardAccess();
   const { data: project } = useSuspenseQuery(projectQuery(projectKey));
   const { data: board } = useSuspenseQuery(boardQuery(project.id));
 
@@ -108,60 +110,75 @@ function CalendarPage() {
   return (
     <div className="flex flex-col gap-6 px-6 py-8">
       {/*------ Header ------*/}
-      <div className="flex items-center gap-4">
-        <h1 className="font-heading text-h2">{m.calendar_heading({ project: project.name })}</h1>
-        <Marking variant="code">{project.key}</Marking>
-        <Link
-          to="/projects/$projectKey"
-          params={{ projectKey: project.key }}
-          search={{ assignee, label, priority, due, blocked }}
-          className={cn(buttonVariants({ variant: "secondary", size: "sm" }), "ms-auto")}
-        >
-          <KanbanIcon data-icon="inline-start" />
-          {m.board_link()}
-        </Link>
-      </div>
-
-      {/*------ Filters ------*/}
-      <BoardFilters
-        filter={{ assignee, label, priority, due, blocked }}
-        people={assignable}
-        labels={board.labels}
-        onChange={setFilter}
+      <PageHead
+        code={project.key}
+        kicker={project.name}
+        title={m.calendar_link()}
+        actions={
+          <ProjectPages
+            projectKey={project.key}
+            current="calendar"
+            isAdmin={isAdmin}
+            filter={{ assignee, label, priority, due, blocked }}
+          />
+        }
       />
 
-      {/*------ Month ------*/}
-      <div className="flex items-center gap-3">
-        <Button
-          variant="secondary"
-          size="icon-sm"
-          aria-label={m.calendar_previous()}
-          onClick={() => showMonth(month.previous)}
-        >
-          <ChevronRightIcon className="ltr:-scale-x-100" />
-        </Button>
-        <h2 className="min-w-44 text-center font-heading text-h4" aria-live="polite">
-          {formatDate(isoToDate(month.first), { month: "long", year: "numeric" })}
-        </h2>
-        <Button variant="secondary" size="icon-sm" aria-label={m.calendar_next()} onClick={() => showMonth(month.next)}>
-          <ChevronLeftIcon className="ltr:-scale-x-100" />
-        </Button>
-        {month.first !== thisMonth && (
-          <Button variant="ghost" size="sm" onClick={() => showMonth(undefined)}>
-            {m.calendar_this_month()}
-          </Button>
-        )}
-        {undated > 0 && (
-          <Link
-            to="/projects/$projectKey"
-            params={{ projectKey: project.key }}
-            search={{ assignee, label, priority, blocked, due: "none" }}
-            className="ms-auto text-body-sm font-semibold underline-offset-4 hover:underline"
-          >
-            {m.calendar_no_due({ count: undated })}
-          </Link>
-        )}
-      </div>
+      {/*------ Month and Filters ------*/}
+      {/* One panel, like the board's: the month in a display window between the keys that step it, then the same
+          filter keys as the board. */}
+      <Card>
+        <CardContent>
+          <div className="flex flex-wrap items-start gap-x-6 gap-y-4">
+            <PanelGroup label={m.calendar_panel_month()}>
+              <Button
+                variant="secondary"
+                size="icon-sm"
+                aria-label={m.calendar_previous()}
+                onClick={() => showMonth(month.previous)}
+              >
+                <ChevronRightIcon className="ltr:-scale-x-100" />
+              </Button>
+              <Display size="row" className="min-w-40">
+                <h2 className="font-heading text-h4" aria-live="polite">
+                  {formatDate(isoToDate(month.first), { month: "long", year: "numeric" })}
+                </h2>
+              </Display>
+              <Button
+                variant="secondary"
+                size="icon-sm"
+                aria-label={m.calendar_next()}
+                onClick={() => showMonth(month.next)}
+              >
+                <ChevronLeftIcon className="ltr:-scale-x-100" />
+              </Button>
+              {month.first !== thisMonth && (
+                <Button variant="ghost" size="sm" onClick={() => showMonth(undefined)}>
+                  {m.calendar_this_month()}
+                </Button>
+              )}
+            </PanelGroup>
+            <PanelGroup label={m.board_panel_filter()}>
+              <BoardFilters
+                filter={{ assignee, label, priority, due, blocked }}
+                people={assignable}
+                labels={board.labels}
+                onChange={setFilter}
+              />
+            </PanelGroup>
+            {undated > 0 && (
+              <Link
+                to="/projects/$projectKey"
+                params={{ projectKey: project.key }}
+                search={{ assignee, label, priority, blocked, due: "none" }}
+                className="ms-auto self-end py-2 text-body-sm font-semibold underline-offset-4 hover:underline"
+              >
+                {m.calendar_no_due({ count: undated })}
+              </Link>
+            )}
+          </div>
+        </CardContent>
+      </Card>
 
       <MonthGrid
         month={month}

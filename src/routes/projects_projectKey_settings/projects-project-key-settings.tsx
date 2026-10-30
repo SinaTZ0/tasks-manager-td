@@ -1,18 +1,24 @@
 import { useSuspenseQuery } from "@tanstack/react-query";
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowLeftIcon } from "lucide-react";
+import { createFileRoute } from "@tanstack/react-router";
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "#/components/primitive/card/card";
+import { buttonVariants } from "#/components/primitive/button/button.styles";
 import { Marking } from "#/components/primitive/marking/marking";
+import { PageHead } from "#/components/shared/page-head/page-head";
 import { pageMeta } from "#/lib/seo";
+import { cn } from "#/lib/utils";
 import { orpc } from "#/orpc/client";
 import { m } from "#/paraglide/messages";
+import { ProjectPages } from "#/routes/projects_projectKey/components/project-pages";
 import { ensureProject, projectQuery } from "#/routes/projects_projectKey/queries";
 import { ColumnForm } from "#/routes/projects_projectKey_settings/components/column-form";
 import { MembersForm } from "#/routes/projects_projectKey_settings/components/members-form";
 import { ProjectNameForm } from "#/routes/projects_projectKey_settings/components/project-name-form";
 
 /*===== Route =====*/
+
+/** The ids of the column list's headings, which name every row's fields. */
+const COLUMN_HEADINGS = { name: "column-heading-name", wip: "column-heading-wip" };
 export const Route = createFileRoute("/_site-layout/_app-layout/_admin-layout/projects/$projectKey/settings")({
   loader: async ({ context, params }) => {
     const [project] = await Promise.all([
@@ -34,21 +40,12 @@ function SettingsPage() {
 
   return (
     <div className="mx-auto flex max-w-site flex-col gap-6 px-6 py-8">
-      <div className="flex flex-col gap-2">
-        <Link
-          to="/projects/$projectKey"
-          params={{ projectKey: project.key }}
-          className="flex w-fit items-center gap-1.5 rounded-chassis text-caption text-muted-foreground hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
-        >
-          {/* "Back" points against the reading direction. */}
-          <ArrowLeftIcon className="size-4 rtl:rotate-180" />
-          {m.settings_back_to_board()}
-        </Link>
-        <div className="flex items-center gap-3">
-          <h1 className="font-heading text-h2">{m.settings_heading({ project: project.name })}</h1>
-          <Marking variant="code">{project.key}</Marking>
-        </div>
-      </div>
+      <PageHead
+        code={project.key}
+        kicker={project.name}
+        title={m.project_settings()}
+        actions={<ProjectPages projectKey={project.key} current="settings" isAdmin />}
+      />
 
       <Card>
         <CardHeader>
@@ -82,9 +79,23 @@ function SettingsPage() {
           <CardDescription>{m.settings_columns_description()}</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="flex flex-col gap-4">
+          <div className="flex flex-col gap-3">
+            {/* Printed once over the rows; each row's fields are named by these and the row's kind. */}
+            <div className="flex items-end gap-4">
+              <span className="w-32 shrink-0" />
+              <Marking id={COLUMN_HEADINGS.name} className="flex-1">
+                {m.settings_column_name_label()}
+              </Marking>
+              <Marking id={COLUMN_HEADINGS.wip} className="w-32 shrink-0">
+                {m.settings_column_wip_label()}
+              </Marking>
+              {/* Keeps the headings over their fields: the row's save key sits here. */}
+              <span className={cn(buttonVariants({ variant: "secondary" }), "invisible")} aria-hidden="true">
+                {m.settings_save()}
+              </span>
+            </div>
             {project.columns.map((column) => (
-              <ColumnForm key={column.id} projectId={project.id} column={column} />
+              <ColumnForm key={column.id} projectId={project.id} column={column} headings={COLUMN_HEADINGS} />
             ))}
           </div>
         </CardContent>
