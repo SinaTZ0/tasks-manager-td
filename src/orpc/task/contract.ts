@@ -7,6 +7,7 @@ import { commonErrors } from "#/orpc/errors";
 import { authErrors, roleErrors } from "#/orpc/middleware/auth/auth.errors";
 import { projectAccessErrors } from "#/orpc/middleware/project-access/project-access.errors";
 import { personSchema } from "#/orpc/project/contract";
+import { COLUMN_KINDS } from "#/orpc/project/constants";
 import { LABEL_COLORS, TASK_PRIORITIES, TASK_STATUS_ACTIONS } from "#/orpc/task/constants";
 
 /*===== Schemas =====*/
@@ -103,6 +104,25 @@ const createTaskInputSchema = taskFieldsSchema
 
 const updateTaskInputSchema = taskFieldsSchema.partial().extend({ projectId: z.string(), taskId: z.string() });
 
+/** An open task assigned to the viewer, as "My Tasks" lists it: what it is, where it sits, and its time. */
+export const myTaskSchema = z.object({
+  id: z.string(),
+  projectKey: z.string(),
+  projectName: z.string(),
+  number: z.number().int(),
+  title: z.string(),
+  priority: z.enum(TASK_PRIORITIES),
+  /** ISO date (`2026-11-04`). */
+  dueDate: z.string().nullable(),
+  columnKind: z.enum(COLUMN_KINDS),
+  /** Null until an admin renames the column: the page prints the kind's own name. */
+  columnName: z.string().nullable(),
+  spentSeconds: z.number().int(),
+  runningSince: z.array(z.date()),
+});
+
+export type MyTask = z.infer<typeof myTaskSchema>;
+
 /*===== Procedures =====*/
 // `projectAccessErrors` carries NOT_FOUND, which also answers a task or label the project doesn't have.
 const errors = { ...commonErrors, ...authErrors, ...roleErrors, ...projectAccessErrors };
@@ -176,6 +196,11 @@ export const taskContract = {
     .errors(errors)
     .input(z.strictObject({ projectId: z.string(), taskId: z.string() }))
     .output(z.void()),
+  /**
+   * The open tasks assigned to the viewer across the projects they are on, grouped by project (by name), the ones in
+   * doing first, then by due date.
+   */
+  mine: oc.errors({ ...commonErrors, ...authErrors }).output(z.array(myTaskSchema)),
   createLabel: oc
     .errors(errors)
     .input(z.strictObject({ projectId: z.string(), name: z.string(), color: z.enum(LABEL_COLORS) }))

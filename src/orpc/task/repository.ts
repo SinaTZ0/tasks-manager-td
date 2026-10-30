@@ -1,4 +1,4 @@
-import { and, asc, desc, eq, inArray, isNotNull, isNull, ne, sql } from "drizzle-orm";
+import { and, asc, desc, eq, inArray, isNotNull, isNull, ne, notInArray, sql } from "drizzle-orm";
 
 import type { Database } from "#/db/client.server";
 import { boardColumn, label, project, projectMember, task, taskLabel, user } from "#/db/schema";
@@ -212,6 +212,45 @@ export function findArchivedTasks({ db, projectId }: { db: Database; projectId: 
     .from(task)
     .where(and(eq(task.projectId, projectId), isNotNull(task.archivedAt)))
     .orderBy(desc(task.archivedAt));
+}
+
+/** A task assigned to someone, with where it sits, as "My Tasks" lists it. */
+export type AssignedTaskRow = {
+  id: string;
+  projectKey: string;
+  projectName: string;
+  number: number;
+  title: string;
+  priority: string;
+  dueDate: string | null;
+  columnKind: string;
+  columnName: string | null;
+};
+
+/**
+ * The open tasks assigned to a person: live, not in a done or cancelled column, and only from projects they are a
+ * member of, so a project they have left drops out (an admin included: an assignee is always a member).
+ */
+export function findOpenTasksAssignedTo({ db, userId }: { db: Database; userId: string }): Promise<AssignedTaskRow[]> {
+  return db
+    .select({
+      id: task.id,
+      projectKey: project.key,
+      projectName: project.name,
+      number: task.number,
+      title: task.title,
+      priority: task.priority,
+      dueDate: task.dueDate,
+      columnKind: boardColumn.kind,
+      columnName: boardColumn.name,
+    })
+    .from(task)
+    .innerJoin(project, eq(project.id, task.projectId))
+    .innerJoin(boardColumn, eq(boardColumn.id, task.columnId))
+    .innerJoin(projectMember, and(eq(projectMember.projectId, task.projectId), eq(projectMember.userId, userId)))
+    .where(
+      and(eq(task.assigneeId, userId), isNull(task.archivedAt), notInArray(boardColumn.kind, ["done", "cancelled"])),
+    );
 }
 
 /*===== Labels =====*/

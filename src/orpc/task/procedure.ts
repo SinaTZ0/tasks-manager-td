@@ -14,6 +14,7 @@ import {
   getBoard,
   getTask,
   listArchivedTasks,
+  listMyTasks,
   moveTask,
   restoreTask,
   transitionTask,
@@ -133,6 +134,13 @@ export const deleteTaskProcedure = base.task.delete
       throw errors.INVALID_INPUT({ data: { errors: result.errors ?? [], fields: result.fields } });
     }
   });
+
+/*===== Mine =====*/
+// No project in the input: the query itself keeps to the projects the viewer is on.
+export const myTasksProcedure = base.task.mine
+  .use(requireUserMiddleware)
+  .use(provideDbMiddleware)
+  .handler(({ context }) => listMyTasks({ db: context.db, userId: context.user.id }));
 
 /*===== Labels =====*/
 export const createLabelProcedure = base.task.createLabel

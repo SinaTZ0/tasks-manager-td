@@ -28,9 +28,11 @@ import { m } from "#/paraglide/messages";
 /*===== Navigation =====*/
 
 // Message functions, not their text: called in render, so each request gets its own locale's labels. Who sees each
-// link: everyone, editors (not viewers, who hand nothing on) or admins only; the team page's route checks too.
+// link: everyone, editors (not viewers, who are never assigned or hand anything on) or admins only; the team page's
+// route checks too.
 const NAV_ITEMS = [
   { label: m.nav_home, to: "/", audience: "everyone" },
+  { label: m.nav_my_tasks, to: "/my-tasks", audience: "editors" },
   { label: m.nav_delegated, to: "/delegated", audience: "editors" },
   { label: m.nav_notes, to: "/notes", audience: "everyone" },
   { label: m.nav_team, to: "/team", audience: "admins" },

@@ -32,6 +32,7 @@ import {
   deleteTaskProcedure,
   getTaskProcedure,
   moveTaskProcedure,
+  myTasksProcedure,
   restoreTaskProcedure,
   taskBoardProcedure,
   transitionTaskProcedure,
@@ -117,6 +118,7 @@ export const router = implementer.router({
     restore: restoreTaskProcedure,
     delete: deleteTaskProcedure,
     transition: transitionTaskProcedure,
+    mine: myTasksProcedure,
     createLabel: createLabelProcedure,
   },
   team: {

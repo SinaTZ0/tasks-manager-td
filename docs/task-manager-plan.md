@@ -207,7 +207,7 @@ follows the backend flow, then the frontend flow; desktop first (the phone layou
 - **Tests**: a viewer can't change anything (one mutation of each feature is enough); a user can't create or archive a
   task; a viewer can't be assigned.
 
-### 10. My Tasks
+### 10. My Tasks ✓
 
 - `/my-tasks` (a nav item, not for viewers): every live task assigned to me across my projects, grouped by project,
   the ones in doing first, then by due date. Each row shows the code, title, column, due date and running timer, and

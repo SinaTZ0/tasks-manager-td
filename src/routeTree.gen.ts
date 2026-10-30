@@ -19,6 +19,7 @@ import { Route as rpcRpcRouteImport } from './routes/rpc/rpc'
 import { Route as homeHomeRouteImport } from './routes/home/home'
 import { Route as admin_layoutAdminLayoutRouteImport } from './routes/admin_layout/admin-layout'
 import { Route as delegatedDelegatedRouteImport } from './routes/delegated/delegated'
+import { Route as my_tasksMyTasksRouteImport } from './routes/my_tasks/my-tasks'
 import { Route as notesNotesRouteImport } from './routes/notes/notes'
 import { Route as profileProfileRouteImport } from './routes/profile/profile'
 import { Route as api_authApiAuthRouteImport } from './routes/api_auth/api-auth'
@@ -75,6 +76,11 @@ const delegatedDelegatedRoute = delegatedDelegatedRouteImport.update({
   path: '/delegated',
   getParentRoute: () => app_layoutAppLayoutRoute,
 } as any)
+const my_tasksMyTasksRoute = my_tasksMyTasksRouteImport.update({
+  id: '/my-tasks',
+  path: '/my-tasks',
+  getParentRoute: () => app_layoutAppLayoutRoute,
+} as any)
 const notesNotesRoute = notesNotesRouteImport.update({
   id: '/notes',
   path: '/notes',
@@ -128,6 +134,7 @@ export interface FileRoutesByFullPath {
   '/auth': typeof authAuthRoute
   '/rpc/$': typeof rpcRpcRoute
   '/delegated': typeof delegatedDelegatedRoute
+  '/my-tasks': typeof my_tasksMyTasksRoute
   '/notes': typeof notesNotesRoute
   '/profile': typeof profileProfileRoute
   '/api/auth/$': typeof api_authApiAuthRoute
@@ -145,6 +152,7 @@ export interface FileRoutesByTo {
   '/auth': typeof authAuthRoute
   '/rpc/$': typeof rpcRpcRoute
   '/delegated': typeof delegatedDelegatedRoute
+  '/my-tasks': typeof my_tasksMyTasksRoute
   '/notes': typeof notesNotesRoute
   '/profile': typeof profileProfileRoute
   '/api/auth/$': typeof api_authApiAuthRoute
@@ -166,6 +174,7 @@ export interface FileRoutesById {
   '/_site-layout/_app-layout/': typeof homeHomeRoute
   '/_site-layout/_app-layout/_admin-layout': typeof admin_layoutAdminLayoutRouteWithChildren
   '/_site-layout/_app-layout/delegated': typeof delegatedDelegatedRoute
+  '/_site-layout/_app-layout/my-tasks': typeof my_tasksMyTasksRoute
   '/_site-layout/_app-layout/notes': typeof notesNotesRoute
   '/_site-layout/_app-layout/profile': typeof profileProfileRoute
   '/api/auth/$': typeof api_authApiAuthRoute
@@ -185,6 +194,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/rpc/$'
     | '/delegated'
+    | '/my-tasks'
     | '/notes'
     | '/profile'
     | '/api/auth/$'
@@ -202,6 +212,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/rpc/$'
     | '/delegated'
+    | '/my-tasks'
     | '/notes'
     | '/profile'
     | '/api/auth/$'
@@ -222,6 +233,7 @@ export interface FileRouteTypes {
     | '/_site-layout/_app-layout/'
     | '/_site-layout/_app-layout/_admin-layout'
     | '/_site-layout/_app-layout/delegated'
+    | '/_site-layout/_app-layout/my-tasks'
     | '/_site-layout/_app-layout/notes'
     | '/_site-layout/_app-layout/profile'
     | '/api/auth/$'
@@ -313,6 +325,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof delegatedDelegatedRouteImport
       parentRoute: typeof app_layoutAppLayoutRoute
     }
+    '/_site-layout/_app-layout/my-tasks': {
+      id: '/_site-layout/_app-layout/my-tasks'
+      path: '/my-tasks'
+      fullPath: '/my-tasks'
+      preLoaderRoute: typeof my_tasksMyTasksRouteImport
+      parentRoute: typeof app_layoutAppLayoutRoute
+    }
     '/_site-layout/_app-layout/notes': {
       id: '/_site-layout/_app-layout/notes'
       path: '/notes'
@@ -393,6 +412,7 @@ interface app_layoutAppLayoutRouteChildren {
   homeHomeRoute: typeof homeHomeRoute
   admin_layoutAdminLayoutRoute: typeof admin_layoutAdminLayoutRouteWithChildren
   delegatedDelegatedRoute: typeof delegatedDelegatedRoute
+  my_tasksMyTasksRoute: typeof my_tasksMyTasksRoute
   notesNotesRoute: typeof notesNotesRoute
   profileProfileRoute: typeof profileProfileRoute
   projects_projectKeyProjectsProjectKeyRoute: typeof projects_projectKeyProjectsProjectKeyRoute
@@ -404,6 +424,7 @@ const app_layoutAppLayoutRouteChildren: app_layoutAppLayoutRouteChildren = {
   homeHomeRoute: homeHomeRoute,
   admin_layoutAdminLayoutRoute: admin_layoutAdminLayoutRouteWithChildren,
   delegatedDelegatedRoute: delegatedDelegatedRoute,
+  my_tasksMyTasksRoute: my_tasksMyTasksRoute,
   notesNotesRoute: notesNotesRoute,
   profileProfileRoute: profileProfileRoute,
   projects_projectKeyProjectsProjectKeyRoute:

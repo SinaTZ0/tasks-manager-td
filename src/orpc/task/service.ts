@@ -22,12 +22,13 @@ import {
   taskCode,
   type TaskStatusAction,
 } from "#/orpc/task/constants";
-import type { ArchivedTask, Board, Label, TaskCard, TaskDetail } from "#/orpc/task/contract";
-import { toLabel, toTaskCard, toTaskDetail } from "#/orpc/task/mapper";
+import type { ArchivedTask, Board, Label, MyTask, TaskCard, TaskDetail } from "#/orpc/task/contract";
+import { toLabel, toMyTask, toTaskCard, toTaskDetail } from "#/orpc/task/mapper";
 import {
   deleteTaskRow,
   findActiveMemberIds,
   findArchivedTasks,
+  findOpenTasksAssignedTo,
   findColumn,
   findColumnByKind,
   findColumnPositions,
@@ -713,6 +714,35 @@ export async function transitionTask({
     if (action === "start") await startTimer({ db: tx, actorId, task: record });
     return { kind: "success", task: await toCard({ db: tx, record }) };
   });
+}
+
+/*===== Mine =====*/
+/** Column kinds in the order "My Tasks" lists them: work under way first. */
+const MINE_KIND_ORDER: ColumnKind[] = ["doing", "paused", "review", "todo", "backlog"];
+
+const mineRank = (kind: string) => {
+  const index = MINE_KIND_ORDER.indexOf(kind as ColumnKind);
+  return index === -1 ? MINE_KIND_ORDER.length : index;
+};
+
+/**
+ * The open tasks assigned to someone, across the projects they are on (`findOpenTasksAssignedTo`), with their time.
+ * Ordered for the page: by project name, then the ones in doing first, then by due date (none last), then by code.
+ */
+export async function listMyTasks({ db, userId }: { db: Database; userId: string }): Promise<MyTask[]> {
+  const rows = await findOpenTasksAssignedTo({ db, userId });
+  const totals = await findTimeTotals({ db, taskIds: rows.map((row) => row.id) });
+  return rows
+    .toSorted(
+      (a, b) =>
+        a.projectName.localeCompare(b.projectName) ||
+        a.projectKey.localeCompare(b.projectKey) ||
+        Number(b.columnKind === "doing") - Number(a.columnKind === "doing") ||
+        (a.dueDate ?? "9999").localeCompare(b.dueDate ?? "9999") ||
+        mineRank(a.columnKind) - mineRank(b.columnKind) ||
+        a.number - b.number,
+    )
+    .map((row) => toMyTask({ row, time: totals.get(row.id) }));
 }
 
 /*===== Archive =====*/

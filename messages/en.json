@@ -1203,5 +1203,10 @@
         "": "Open tasks still assigned: {countText}"
       }
     }
-  ]
+  ],
+  "nav_my_tasks": "My tasks",
+  "my_tasks_title": "My tasks",
+  "my_tasks_description": "Open tasks assigned to you, across your projects. Work under way first, then by due date.",
+  "my_tasks_empty": "Nothing is assigned to you right now.",
+  "my_tasks_no_due": "No due date"
 }

@@ -5,12 +5,14 @@ import { db } from "#/db/client.server";
 import { activity } from "#/db/schema";
 import { createTestProject, deleteTestProject } from "#/db/test-fixtures.server";
 import { findColumns } from "#/orpc/project/repository";
+import { setProjectMember } from "#/orpc/project/service";
 import {
   archiveTask,
   createTask,
   deleteTask,
   getBoard,
   getTask,
+  listMyTasks,
   moveTask,
   restoreTask,
   updateTask,
@@ -176,5 +178,22 @@ describe("tasks", () => {
     expect(await remove(users.admin, "admin")).toEqual({ kind: "ok" });
     expect(await getTask({ db, projectId, number: created.task.number })).toBeNull();
     expect((await historyOf(taskId)).map((entry) => entry.action)).toContain("task.deleted");
+  });
+
+  it("lists my open tasks only from projects I'm still on", async () => {
+    const { projectId, users } = fixture;
+    const created = await createTask({
+      db,
+      actorId: users.admin,
+      projectId,
+      input: { title: "مال رضا", assigneeId: users.reza },
+    });
+    if (created.kind !== "success") throw new Error("setup failed");
+    const mine = async () => (await listMyTasks({ db, userId: users.reza })).map((task) => task.id);
+    expect(await mine()).toContain(created.task.id);
+
+    await setProjectMember({ db, actorId: users.admin, projectId, userId: users.reza, member: false });
+    expect(await mine()).not.toContain(created.task.id);
+    await setProjectMember({ db, actorId: users.admin, projectId, userId: users.reza, member: true });
   });
 });
