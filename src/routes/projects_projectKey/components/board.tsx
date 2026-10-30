@@ -41,7 +41,6 @@ import {
 
 import { Button } from "#/components/primitive/button/button";
 import { toast } from "#/components/primitive/toast/toast";
-import { useShortcuts } from "#/hooks/use-shortcuts";
 import { columnTitle } from "#/lib/column-title";
 import { cn } from "#/lib/utils";
 import { positionBetween } from "#/lib/position";
@@ -50,7 +49,6 @@ import { STATUS_ACTION_RULES, taskCode, type TaskStatusAction } from "#/orpc/tas
 import type { Board as BoardData, Label, TaskCard as TaskCardData } from "#/orpc/task/contract";
 import { m } from "#/paraglide/messages";
 import { BoardColumn } from "#/routes/projects_projectKey/components/board-column";
-import { FIRST_QUICK_ADD_ID, QuickAdd } from "#/routes/projects_projectKey/components/quick-add";
 import { CardGrip, cardGripId, SortableTaskCard } from "#/routes/projects_projectKey/components/sortable-task-card";
 import { ReasonDialog, type ReasonRequest } from "#/routes/projects_projectKey/components/reason-dialog";
 import { TaskCard } from "#/routes/projects_projectKey/components/task-card";
@@ -191,7 +189,6 @@ function SortableColumn({
   count,
   total,
   movable,
-  footer,
   children,
 }: {
   column: Column;
@@ -199,7 +196,6 @@ function SortableColumn({
   /** While filtering, how many cards the column holds in all. */
   total: number | undefined;
   movable: boolean;
-  footer: ReactNode;
   children: ReactNode;
 }) {
   const title = columnTitle(column);
@@ -226,7 +222,6 @@ function SortableColumn({
       count={count}
       total={total}
       wipLimit={column.wipLimit}
-      footer={footer}
       grip={
         movable && (
           <Button
@@ -272,7 +267,7 @@ export function Board({
   people,
   canMoveColumns,
   canMoveCards,
-  canCreate,
+  canTransfer,
   filter,
   showCancelled,
   hiddenColumns,
@@ -286,8 +281,8 @@ export function Board({
   canMoveColumns: boolean;
   /** Drag cards and use their menus: everyone but a viewer. */
   canMoveCards: boolean;
-  /** Quick add under each column: admins only. */
-  canCreate: boolean;
+  /** Move or copy a card to another project: admins only. */
+  canTransfer: boolean;
   /**
    * The cards a filter keeps, or null for all. While filtering, cards don't drag (a position between the cards shown
    * could land between hidden ones); their menus still move them.
@@ -302,22 +297,6 @@ export function Board({
   const watching = useMemo(() => new Set(board.watching), [board.watching]);
   // Kept after the dialog closes, so it plays its way out showing what it asked.
   const [transfer, setTransfer] = useState<(TransferRequest & { open: boolean }) | null>(null);
-  // `n`: a new card in the first column (slice 18). Admins only, like the quick add it focuses; not while a card's
-  // drawer covers the board.
-  useShortcuts(
-    canCreate
-      ? [
-          {
-            code: "KeyN",
-            run: () => {
-              if (!document.querySelector("[data-slot=sheet-content]")) {
-                document.getElementById(FIRST_QUICK_ADD_ID)?.focus();
-              }
-            },
-          },
-        ]
-      : [],
-  );
   // Kept after the dialog closes, so it can play its way out showing what it asked. `run` takes the action with the
   // reason given.
   const [asking, setAsking] = useState<{
@@ -678,7 +657,7 @@ export function Board({
         )}
       >
         <SortableContext items={columns.map((column) => column.id)} strategy={rectSortingStrategy}>
-          {columns.map((column, index) => {
+          {columns.map((column) => {
             const ids = lanes[column.id] ?? [];
             return (
               <SortableColumn
@@ -687,16 +666,6 @@ export function Board({
                 count={ids.length}
                 total={filter ? (totals.get(column.id) ?? 0) : undefined}
                 movable={canMoveColumns}
-                footer={
-                  canCreate && (
-                    <QuickAdd
-                      projectId={project.id}
-                      columnId={column.id}
-                      columnTitle={columnTitle(column)}
-                      inputId={index === 0 ? FIRST_QUICK_ADD_ID : undefined}
-                    />
-                  )
-                }
               >
                 <SortableContext id={column.id} items={ids} strategy={verticalListSortingStrategy}>
                   <ol className="flex flex-col gap-3">
@@ -725,7 +694,7 @@ export function Board({
                                 onMove={(target) => moveToEnd({ task, columnId: target })}
                                 onAction={(action) => takeAction({ task, action })}
                                 onTransfer={
-                                  canCreate
+                                  canTransfer
                                     ? (mode) =>
                                         setTransfer({
                                           taskId: task.id,
@@ -778,7 +747,7 @@ export function Board({
                           onMove={() => {}}
                           onAction={(action) => takeAction({ task, action })}
                           onTransfer={
-                            canCreate
+                            canTransfer
                               ? (mode) =>
                                   setTransfer({
                                     taskId: task.id,

@@ -20,6 +20,7 @@ import { cardFilter, isFiltering, type BoardFilter } from "#/routes/projects_pro
 import { BoardColumnToggles } from "#/routes/projects_projectKey/components/board-column-toggles";
 import { BoardFilters } from "#/routes/projects_projectKey/components/board-filters";
 import { BoardLayoutPicker } from "#/routes/projects_projectKey/components/board-layout-picker";
+import { NewTaskDialog } from "#/routes/projects_projectKey/components/new-task-dialog";
 import { Board, SHOW_CANCELLED_ID } from "#/routes/projects_projectKey/components/board";
 import { useBoardAccess } from "#/routes/projects_projectKey/access";
 import { TaskDrawer } from "#/routes/projects_projectKey/components/task-drawer";
@@ -187,14 +188,24 @@ function BoardPage() {
         )}
       </div>
 
-      {/*------ Filters and Columns Shown ------*/}
+      {/*------ New Task, Filters and Columns Shown ------*/}
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <BoardFilters
-          filter={{ assignee, label, priority, due, blocked }}
-          people={assignable}
-          labels={board.labels}
-          onChange={setFilter}
-        />
+        <div className="flex flex-wrap items-center gap-3">
+          {isAdmin && (
+            <NewTaskDialog
+              projectId={project.id}
+              projectKey={project.key}
+              columns={columns}
+              defaultColumnId={columns.find((column) => !hidden.has(column.id))?.id}
+            />
+          )}
+          <BoardFilters
+            filter={{ assignee, label, priority, due, blocked }}
+            people={assignable}
+            labels={board.labels}
+            onChange={setFilter}
+          />
+        </div>
         <BoardColumnToggles columns={columns} hidden={hidden} onChange={setHidden} />
       </div>
 
@@ -209,7 +220,7 @@ function BoardPage() {
             people={people}
             canMoveColumns={isAdmin}
             canMoveCards={canEdit}
-            canCreate={isAdmin}
+            canTransfer={isAdmin}
             filter={filter}
             showCancelled={showCancelled}
             hiddenColumns={hidden}

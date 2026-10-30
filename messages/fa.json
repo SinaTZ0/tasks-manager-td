@@ -340,15 +340,11 @@
   "task_unassigned": "بی‌مسئول",
   "task_has_description": "توضیح دارد",
   "task_due_label": "سررسید",
-  "task_quick_add_placeholder": "افزودن کار…",
-  "task_quick_add_label": [
-    {
-      "declarations": ["input column"],
-      "match": {
-        "": "کار تازه در {column}"
-      }
-    }
-  ],
+  "task_new": "کار تازه",
+  "task_new_title": "کار تازه",
+  "task_new_description": "عنوانی بنویسید و ستونش را انتخاب کنید. بعد کار باز می‌شود تا بقیه‌اش را پر کنید.",
+  "task_new_column": "ستون",
+  "task_new_submit": "ساخت کار",
   "task_save_failed": "تغییر ذخیره نشد. دوباره امتحان کنید.",
   "task_title_label": "عنوان",
   "task_description_label": "توضیح",
@@ -1682,7 +1678,7 @@
   "shortcut_go_delegated": "رفتن به واگذارشده‌ها",
   "shortcut_search": "جست‌وجو",
   "shortcut_help": "این فهرست",
-  "shortcut_new_card": "کارت تازه در ستون اول",
+  "shortcut_new_card": "کار تازه",
   "shortcut_edit_title": "ویرایش عنوان",
   "shortcut_comment": "نوشتن نظر",
   "shortcut_assign_me": "سپردن به خودم",

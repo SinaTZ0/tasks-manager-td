@@ -340,15 +340,11 @@
   "task_unassigned": "Unassigned",
   "task_has_description": "Has a description",
   "task_due_label": "Due",
-  "task_quick_add_placeholder": "Add a task…",
-  "task_quick_add_label": [
-    {
-      "declarations": ["input column"],
-      "match": {
-        "": "New task in {column}"
-      }
-    }
-  ],
+  "task_new": "New task",
+  "task_new_title": "New task",
+  "task_new_description": "Give it a title and pick its column. The task opens next, so you can fill in the rest.",
+  "task_new_column": "Column",
+  "task_new_submit": "Create task",
   "task_save_failed": "The change wasn't saved. Try again.",
   "task_title_label": "Title",
   "task_description_label": "Description",
@@ -1682,7 +1678,7 @@
   "shortcut_go_delegated": "Go to Delegated",
   "shortcut_search": "Search",
   "shortcut_help": "This list",
-  "shortcut_new_card": "New card in the first column",
+  "shortcut_new_card": "New task",
   "shortcut_edit_title": "Edit the title",
   "shortcut_comment": "Write a comment",
   "shortcut_assign_me": "Assign to me",

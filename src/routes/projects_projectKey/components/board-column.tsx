@@ -14,8 +14,8 @@ const pad = (value: number) => formatNumber(value, { minimumIntegerDigits: 2 });
 /**
  * One column of the board: its name printed over a heavy rule, the card count in the instrument mono (`count/limit`
  * when it has a WIP limit, with a yellow LED once the count passes it), and the cards below. With no cards it shows an
- * empty bay, so the column keeps its shape and still reads as a place to drop work. The footer (quick add) sits under
- * the cards. While the board is filtered (`total` set) the count reads "3 of 9", and the limit is checked against all.
+ * empty bay, so the column keeps its shape and still reads as a place to drop work. While the board is filtered
+ * (`total` set) the count reads "3 of 9", and the limit is checked against all.
  *
  * On the board a column is also a drop target and, for an admin, something to pick up: `bodyRef` marks the area that
  * takes cards (the empty bay too), `grip` sits before the name, and `ref`, `style` and `dragging` belong to the drag.
@@ -25,7 +25,6 @@ export function BoardColumn({
   count,
   total,
   wipLimit,
-  footer,
   children,
   ref,
   bodyRef,
@@ -39,8 +38,6 @@ export function BoardColumn({
   /** While filtered, the cards the column holds in all; undefined when nothing is filtered. */
   total?: number | undefined;
   wipLimit: number | null;
-  /** Below the cards: the quick-add field. */
-  footer?: ReactNode;
   children?: ReactNode;
   ref?: Ref<HTMLElement>;
   bodyRef?: Ref<HTMLDivElement>;
@@ -105,7 +102,6 @@ export function BoardColumn({
           </p>
         )}
       </div>
-      {footer}
     </section>
   );
 }

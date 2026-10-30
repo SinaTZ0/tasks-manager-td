@@ -105,7 +105,8 @@ Built once, in the slice that first needs them, and used by every procedure afte
 ### 2. Tasks on the Board ✓
 
 - Create, edit and archive a task: title, description (rich text), priority, due date, estimate, labels, owner, assignee.
-- Quick add at the bottom of a column: type a title, press Enter.
+- Quick add at the bottom of a column: type a title, press Enter. (Later replaced by one "new task" key above the
+  board: a title and a column, then the task opens.)
 - Task codes (`TD-42`) from the project's counter.
 - The card, from the approved design (`docs/frontend/reference/rr8-showcase/components/task-card.tsx`): title, code,
   assignee avatar, priority, due date, labels; the blocked and timer marks arrive with their slices.
@@ -292,7 +293,7 @@ ask the user before building that slice.
 ### 18. Keyboard Shortcuts ✓
 
 - Single keys, read by `event.code` so they work on a Persian keyboard layout too, and ignored while typing in a field,
-  an editor or with a menu open: `n` new card (admins: opens quick add in the first column), `e` edit the open card's
+  an editor or with a menu open: `n` new card (admins: opens the "new task" form), `e` edit the open card's
   title, `c` focus its comment editor, `m` assign it to me (editors), `g` then `b` / `m` / `d` to the board, My Tasks,
   Delegated, and `?` a dialog listing them all (with the `kbd` primitive). `/` (search) and `Esc` stay as they are.
 - A key that the viewer's role can't use does nothing, and isn't listed for them.
