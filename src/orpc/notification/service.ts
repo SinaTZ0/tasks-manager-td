@@ -19,6 +19,7 @@ import {
   insertDueReminders,
   insertNotifications,
   markRead,
+  type NotificationRow,
 } from "#/orpc/notification/repository";
 import { COLUMN_KINDS, type ColumnKind } from "#/orpc/project/constants";
 import { taskCode } from "#/orpc/task/constants";
@@ -101,6 +102,25 @@ export async function remindDue({
 }
 
 /*===== Read =====*/
+/** A stored notification as the bell (and a push notification) reads it. */
+export function toNotification(row: NotificationRow): Notification {
+  const data = row.data as Partial<NotificationData>;
+  return {
+    id: row.id,
+    kind: oneOf({ allowed: NOTIFICATION_KINDS, value: row.kind, what: "notification kind" }),
+    actorName: row.actorName,
+    projectKey: data.projectKey ?? "",
+    taskCode: data.taskCode ?? "",
+    taskTitle: data.taskTitle ?? "",
+    event: data.event ? oneOf({ allowed: WATCHED_EVENTS, value: data.event, what: "watched event" }) : null,
+    columnKind: data.columnKind ? oneOf({ allowed: COLUMN_KINDS, value: data.columnKind, what: "column kind" }) : null,
+    note: data.note ?? null,
+    dueDate: row.dueDate,
+    read: row.readAt !== null,
+    createdAt: row.createdAt,
+  };
+}
+
 /** The person's latest notifications, and how many they haven't read. Only ever their own. */
 export async function listNotifications({
   db,
@@ -112,25 +132,7 @@ export async function listNotifications({
   const rows = await findNotifications({ db, userId, limit: NOTIFICATION_LIST_LIMIT });
   const unread = await countUnread({ db, userId });
   return {
-    items: rows.map((row) => {
-      const data = row.data as Partial<NotificationData>;
-      return {
-        id: row.id,
-        kind: oneOf({ allowed: NOTIFICATION_KINDS, value: row.kind, what: "notification kind" }),
-        actorName: row.actorName,
-        projectKey: data.projectKey ?? "",
-        taskCode: data.taskCode ?? "",
-        taskTitle: data.taskTitle ?? "",
-        event: data.event ? oneOf({ allowed: WATCHED_EVENTS, value: data.event, what: "watched event" }) : null,
-        columnKind: data.columnKind
-          ? oneOf({ allowed: COLUMN_KINDS, value: data.columnKind, what: "column kind" })
-          : null,
-        note: data.note ?? null,
-        dueDate: row.dueDate,
-        read: row.readAt !== null,
-        createdAt: row.createdAt,
-      };
-    }),
+    items: rows.map(toNotification),
     unread,
   };
 }

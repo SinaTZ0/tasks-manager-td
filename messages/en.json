@@ -1669,5 +1669,9 @@
   "shortcut_edit_title": "Edit the title",
   "shortcut_comment": "Write a comment",
   "shortcut_assign_me": "Assign to me",
-  "shortcut_close": "Close the card"
+  "shortcut_close": "Close the card",
+  "push_toggle": "Notify me on this computer",
+  "push_toggle_hint": "Shows your notifications even when Tofang isn't open.",
+  "push_blocked": "Your browser blocks Tofang's notifications. Allow them in the browser's site settings.",
+  "push_failed": "Couldn't change notifications on this computer. Try again."
 }

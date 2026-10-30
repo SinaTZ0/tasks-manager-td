@@ -454,10 +454,16 @@ export const notification = pgTable(
     dueDate: date("due_date", { mode: "string" }),
     data: jsonb("data").notNull().default({}),
     readAt: timestamp("read_at"),
+    /** When it was handed to the person's push subscriptions, or claimed to be; null until then (slice 19). */
+    pushedAt: timestamp("pushed_at"),
     createdAt: timestamp("created_at").notNull().defaultNow(),
   },
   (table) => [
     index("notification_user_id_created_at_idx").on(table.userId, table.createdAt),
+    // Serves the push delivery's "not pushed yet" claim.
+    index("notification_unpushed_idx")
+      .on(table.userId)
+      .where(sql`${table.pushedAt} is null`),
     // Serves the bell's unread count.
     index("notification_unread_idx")
       .on(table.userId)
@@ -466,6 +472,31 @@ export const notification = pgTable(
     uniqueIndex("notification_due_once_idx")
       .on(table.userId, table.taskId, table.kind, table.dueDate)
       .where(sql`${table.dueDate} is not null`),
+  ],
+);
+
+/*===== Push Subscriptions =====*/
+// One browser that asked to show this person's notifications when no Tofang tab has them (docs/task-manager-plan.md →
+// slice 19). The endpoint is the push service's address for that browser; `p256dh` and `auth` encrypt what is sent.
+// The browser's language at the time names the notification's sentence.
+
+export const pushSubscription = pgTable(
+  "push_subscription",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    endpoint: text("endpoint").notNull(),
+    p256dh: text("p256dh").notNull(),
+    auth: text("auth").notNull(),
+    locale: text("locale").notNull(),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+  },
+  // A browser has one endpoint; whoever turned it on last in that browser owns it.
+  (table) => [
+    uniqueIndex("push_subscription_endpoint_idx").on(table.endpoint),
+    index("push_subscription_user_id_idx").on(table.userId),
   ],
 );
 

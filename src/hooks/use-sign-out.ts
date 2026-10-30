@@ -2,6 +2,7 @@ import { hashKey, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 
 import { toast } from "#/components/primitive/toast/toast";
+import { forgetPushSubscription } from "#/hooks/use-push";
 import { authClient } from "#/lib/auth-client";
 import { setReportedUser } from "#/lib/error-reporting.browser";
 import { orpc } from "#/orpc/client";
@@ -15,6 +16,7 @@ export function useSignOut() {
 
   return useMutation({
     mutationFn: async () => {
+      await forgetPushSubscription();
       const { error } = await authClient.signOut();
       if (error) throw new Error(error.message ?? "Sign-out failed");
     },

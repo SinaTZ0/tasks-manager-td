@@ -75,6 +75,7 @@ export function findNotifications({
       dueDate: notification.dueDate,
       data: notification.data,
       readAt: notification.readAt,
+      pushedAt: notification.pushedAt,
       createdAt: notification.createdAt,
       actorName: user.name,
     })

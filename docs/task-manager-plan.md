@@ -298,16 +298,16 @@ ask the user before building that slice.
 - A key that the viewer's role can't use does nothing, and isn't listed for them.
 - **Tests**: none beyond the browser check (no server change).
 
-### 19. Browser Notifications
+### 19. Browser Notifications ✓
 
-- An opt-in key in the bell: "Notify me on this computer", which asks the browser's permission. The choice is kept
-  per browser (localStorage), and the key says when the browser blocks them.
+- An opt-in switch in the bell: "Notify me on this computer", which asks the browser's permission. The browser's push
+  subscription is the setting, and the switch says when the browser blocks Tofang's notifications.
 - Decided: Web Push, so a notification reaches a browser with no Tofang tab open. A service worker (`/sw.js`) shows
   it and, on a click, focuses an open tab or opens one on the card. Turning the key on stores the browser's push
   subscription (a `push_subscription` row per browser, removed on sign-out, when turned off, or when the push service
   answers 404/410); every new notification is sent to each of the person's subscriptions after its transaction
-  commits, through the VAPID keys in `.env` (`VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT`; without them
-  the key is hidden). A tab that is open and visible shows nothing extra: the bell already lights.
+  commits, signed with a VAPID key pair derived from `BETTER_AUTH_SECRET` (nothing new in `.env`). A focused Tofang
+  window shows nothing extra: the bell already lights (docs/backend/architecture.md → Push notifications).
 - **Tests**: a notification is sent to the person's subscriptions and not to anyone else's; a gone subscription is
   removed.
 

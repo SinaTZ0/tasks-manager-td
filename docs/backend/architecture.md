@@ -246,6 +246,22 @@ notification"); the page refetches those queries through the usual procedures an
   page refetches everything it shows on any `ready` after the first. While the stream is closed, the bell polls.
 - Caddy leaves `/rpc/live/*` uncompressed and doesn't buffer `text/event-stream` (`deploy/Caddyfile`).
 
+### Push notifications
+
+A browser that turned on "Notify me on this computer" (the bell) gets each new notification as a Web Push message,
+shown by the service worker `public/sw.js` even with no Tofang tab open (`src/orpc/push/`).
+
+- **Sent after the commit.** `startPushDelivery` (started in `src/server.ts`) keeps a subscriber on the live listener,
+  so it hears each person's `notification` signal once the change has committed. `deliverPush` claims the person's
+  unpushed notifications (`notification.pushed_at`) before sending, so with several processes each one is sent once.
+  After a restart or a lost listener it catches up on the last ten minutes; older ones are never pushed.
+- **No keys to keep.** The VAPID key pair is derived from `BETTER_AUTH_SECRET` (`vapid.server.ts`). Rotating the secret
+  changes it; each browser's subscription is then made again on its next visit (`src/hooks/use-push.ts`).
+- **In the browser's language.** A subscription keeps the language of the page that saved it (saved again on every
+  visit), and the message is the bell's sentence in that language (`src/lib/notification-text.ts`).
+- **Gone subscriptions go.** A 404 or 410 from the push service deletes the subscription; signing out deletes the
+  browser's own first.
+
 ### Testing
 
 - Test consequential behavior against the real database (`DATABASE_URL`): a representative success case and the

@@ -13,85 +13,67 @@ import {
   PopoverTitle,
   PopoverTrigger,
 } from "#/components/primitive/popover/popover";
+import { Switch } from "#/components/primitive/switch/switch";
 import { toast } from "#/components/primitive/toast/toast";
 import { describeApiFailure } from "#/lib/api-error";
-import { columnTitle } from "#/lib/column-title";
-import { formatDate, formatNumber, isoToDate } from "#/lib/locale";
+import { formatDate, formatNumber } from "#/lib/locale";
+import { notificationDetail, notificationSentence } from "#/lib/notification-text";
 import { orpc } from "#/orpc/client";
 import { useLiveConnected } from "#/hooks/use-live-updates";
+import { usePush } from "#/hooks/use-push";
 import { NOTIFICATION_POLL_MS } from "#/orpc/notification/constants";
-import type { Notification } from "#/orpc/notification/contract";
 import { m } from "#/paraglide/messages";
-
-/*===== Wording =====*/
-
-/** What happened to a watched card, as a sentence. */
-function watchedSentenceOf(item: Notification): string {
-  const code = item.taskCode;
-  const name = item.actorName ?? "";
-  switch (item.event) {
-    case "commented":
-      return m.notification_watched_commented({ name, code });
-    case "started":
-      return m.notification_watched_started({ name, code });
-    case "paused":
-      return m.notification_watched_paused({ name, code });
-    case "completed":
-      return m.notification_watched_completed({ name, code });
-    case "stopped":
-      return m.notification_watched_stopped({ name, code });
-    case "reopened":
-      return m.notification_watched_reopened({ name, code });
-    case "moved":
-      return m.notification_watched_moved({
-        name,
-        code,
-        column: item.columnKind ? columnTitle({ kind: item.columnKind, name: item.note }) : (item.note ?? ""),
-      });
-    case "delegated":
-      return m.notification_watched_delegated({ name, code, to: item.note ?? "" });
-    case "archived":
-    case null:
-      return m.notification_watched_archived({ name, code });
-  }
-}
-
-/** The extra line a notification shows under its title: a hand-off's note, a comment's excerpt, a pause's reason. */
-function detailOf(item: Notification): string | null {
-  if (item.kind === "delegated") return item.note;
-  if (item.kind === "watched" && (item.event === "commented" || item.event === "paused" || item.event === "stopped")) {
-    return item.note;
-  }
-  return null;
-}
-
-/** The notification as a sentence: who did what to which task, or which task's due date came. */
-function sentenceOf(item: Notification): string {
-  const code = item.taskCode;
-  const name = item.actorName ?? "";
-  switch (item.kind) {
-    case "assigned":
-      return m.notification_assigned({ name, code });
-    case "delegated":
-      return m.notification_delegated({ name, code });
-    case "mentioned":
-      return m.notification_mentioned({ name, code });
-    case "unblocked":
-      return m.notification_unblocked({ code, blocker: item.note ?? "" });
-    case "due_soon":
-      return m.notification_due_soon({ code, date: item.dueDate ? formatDate(isoToDate(item.dueDate)) : "" });
-    case "overdue":
-      return m.notification_overdue({ code, date: item.dueDate ? formatDate(isoToDate(item.dueDate)) : "" });
-    case "watched":
-      return watchedSentenceOf(item);
-  }
-}
 
 /**
  * The bell's polling query: the site layout loads it first, and it asks again every half minute. The bell itself stops
  * asking while the live stream is open, which tells it about new ones.
  */
 export const notificationsQuery = () => orpc.notification.list.queryOptions({ refetchInterval: NOTIFICATION_POLL_MS });
+
+/*===== Push Switch =====*/
+
+const PUSH_SWITCH_ID = "push-switch";
+
+/**
+ * "Notify me on this computer": turns this browser's push subscription on or off (`usePush`). Hidden where the browser
+ * can't; says so where it blocks Tofang's notifications.
+ */
+function PushSwitch() {
+  const { state, enable, disable } = usePush();
+  const [busy, setBusy] = useState(false);
+  if (state === null || state === "unsupported") return null;
+
+  const change = async (on: boolean) => {
+    setBusy(true);
+    try {
+      await (on ? enable() : disable());
+    } catch {
+      toast.add({ title: m.push_failed(), type: "error" });
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <div className="flex flex-col gap-1.5 border-t border-border pt-3">
+      {/* The label wraps the switch, so the whole row is its tap target. */}
+      <label htmlFor={PUSH_SWITCH_ID} className="flex cursor-pointer items-center justify-between gap-3">
+        <span className="text-body-sm font-semibold">{m.push_toggle()}</span>
+        <Switch
+          id={PUSH_SWITCH_ID}
+          size="sm"
+          checked={state === "on"}
+          disabled={busy || state === "blocked"}
+          onCheckedChange={(checked) => void change(checked)}
+          aria-describedby={`${PUSH_SWITCH_ID}-hint`}
+        />
+      </label>
+      <p id={`${PUSH_SWITCH_ID}-hint`} className="text-caption text-muted-foreground">
+        {state === "blocked" ? m.push_blocked() : m.push_toggle_hint()}
+      </p>
+    </div>
+  );
+}
 
 /*===== Notification Bell =====*/
 
@@ -171,10 +153,12 @@ export function NotificationBell() {
                     className="mt-1.5 shrink-0"
                   />
                   <span className="flex min-w-0 flex-col gap-0.5">
-                    <span className="text-body-sm">{sentenceOf(item)}</span>
+                    <span className="text-body-sm">{notificationSentence(item)}</span>
                     <span className="truncate text-body-sm text-muted-foreground">{item.taskTitle}</span>
-                    {detailOf(item) && (
-                      <span className="line-clamp-2 text-caption text-muted-foreground">{detailOf(item)}</span>
+                    {notificationDetail(item) && (
+                      <span className="line-clamp-2 text-caption text-muted-foreground">
+                        {notificationDetail(item)}
+                      </span>
                     )}
                     <Marking>{formatDate(item.createdAt, { dateStyle: "medium", timeStyle: "short" })}</Marking>
                   </span>
@@ -185,6 +169,9 @@ export function NotificationBell() {
         ) : (
           <p className="text-muted-foreground">{m.notification_empty()}</p>
         )}
+
+        {/*------ This Computer ------*/}
+        <PushSwitch />
       </PopoverContent>
     </Popover>
   );
