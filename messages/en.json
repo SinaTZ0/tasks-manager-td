@@ -1655,5 +1655,19 @@
   "watcher_watching_hint": "You'll hear about its comments and status changes.",
   "watcher_failed": "Couldn't change watching. Try again.",
   "watcher_list": "Watchers",
-  "watcher_card_watching": "You watch this"
+  "watcher_card_watching": "You watch this",
+  "shortcut_title": "Keyboard shortcuts",
+  "shortcut_group_anywhere": "Anywhere",
+  "shortcut_group_board": "On a board",
+  "shortcut_group_card": "In an open card",
+  "shortcut_go_board": "Go to the board",
+  "shortcut_go_mine": "Go to My tasks",
+  "shortcut_go_delegated": "Go to Delegated",
+  "shortcut_search": "Search",
+  "shortcut_help": "This list",
+  "shortcut_new_card": "New card in the first column",
+  "shortcut_edit_title": "Edit the title",
+  "shortcut_comment": "Write a comment",
+  "shortcut_assign_me": "Assign to me",
+  "shortcut_close": "Close the card"
 }

@@ -41,6 +41,7 @@ import {
 
 import { Button } from "#/components/primitive/button/button";
 import { toast } from "#/components/primitive/toast/toast";
+import { useShortcuts } from "#/hooks/use-shortcuts";
 import { columnTitle } from "#/lib/column-title";
 import { cn } from "#/lib/utils";
 import { positionBetween } from "#/lib/position";
@@ -49,7 +50,7 @@ import { STATUS_ACTION_RULES, taskCode, type TaskStatusAction } from "#/orpc/tas
 import type { Board as BoardData, Label, TaskCard as TaskCardData } from "#/orpc/task/contract";
 import { m } from "#/paraglide/messages";
 import { BoardColumn } from "#/routes/projects_projectKey/components/board-column";
-import { QuickAdd } from "#/routes/projects_projectKey/components/quick-add";
+import { FIRST_QUICK_ADD_ID, QuickAdd } from "#/routes/projects_projectKey/components/quick-add";
 import { CardGrip, cardGripId, SortableTaskCard } from "#/routes/projects_projectKey/components/sortable-task-card";
 import { ReasonDialog, type ReasonRequest } from "#/routes/projects_projectKey/components/reason-dialog";
 import { TaskCard } from "#/routes/projects_projectKey/components/task-card";
@@ -294,6 +295,22 @@ export function Board({
   const moveTask = useTaskMove(project.id);
   const transition = useTaskTransition(project);
   const watching = useMemo(() => new Set(board.watching), [board.watching]);
+  // `n`: a new card in the first column (slice 18). Admins only, like the quick add it focuses; not while a card's
+  // drawer covers the board.
+  useShortcuts(
+    canCreate
+      ? [
+          {
+            code: "KeyN",
+            run: () => {
+              if (!document.querySelector("[data-slot=sheet-content]")) {
+                document.getElementById(FIRST_QUICK_ADD_ID)?.focus();
+              }
+            },
+          },
+        ]
+      : [],
+  );
   // Kept after the dialog closes, so it can play its way out showing what it asked. `run` takes the action with the
   // reason given.
   const [asking, setAsking] = useState<{
@@ -651,7 +668,7 @@ export function Board({
         )}
       >
         <SortableContext items={columns.map((column) => column.id)} strategy={rectSortingStrategy}>
-          {columns.map((column) => {
+          {columns.map((column, index) => {
             const ids = lanes[column.id] ?? [];
             return (
               <SortableColumn
@@ -662,7 +679,12 @@ export function Board({
                 movable={canMoveColumns}
                 footer={
                   canCreate && (
-                    <QuickAdd projectId={project.id} columnId={column.id} columnTitle={columnTitle(column)} />
+                    <QuickAdd
+                      projectId={project.id}
+                      columnId={column.id}
+                      columnTitle={columnTitle(column)}
+                      inputId={index === 0 ? FIRST_QUICK_ADD_ID : undefined}
+                    />
                   )
                 }
               >

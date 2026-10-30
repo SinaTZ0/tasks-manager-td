@@ -10,6 +10,9 @@ import type { useTaskUpdate } from "#/routes/projects_projectKey/use-task-update
 
 /*===== Title =====*/
 
+/** The title field, which the `e` shortcut selects. */
+export const TITLE_FIELD_ID = "task-title";
+
 /** The task's title, saved when the field loses focus or on Enter. Escape puts the saved title back. */
 export function TaskTitleField({
   task,
@@ -48,9 +51,9 @@ export function TaskTitleField({
 
   return (
     <Field data-invalid={!!error || undefined}>
-      <FieldLabel htmlFor="task-title">{m.task_title_label()}</FieldLabel>
+      <FieldLabel htmlFor={TITLE_FIELD_ID}>{m.task_title_label()}</FieldLabel>
       <Input
-        id="task-title"
+        id={TITLE_FIELD_ID}
         value={draft}
         disabled={readOnly}
         onChange={(event) => setDraft(event.target.value)}

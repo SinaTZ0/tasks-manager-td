@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { PencilIcon, SendIcon, Trash2Icon } from "lucide-react";
-import { useId, useState } from "react";
+import { useState } from "react";
 
 import { Button } from "#/components/primitive/button/button";
 import { FieldError } from "#/components/primitive/field/field";
@@ -206,8 +206,11 @@ function CommentEditForm({
 
 /*===== Composer =====*/
 
+/** The new comment's writing surface, which the `c` shortcut focuses. One drawer is open at a time. */
+export const COMMENT_COMPOSER_ID = "task-new-comment";
+
 function CommentComposer({ task, project }: { task: TaskDetail; project: Project }) {
-  const id = useId();
+  const id = COMMENT_COMPOSER_ID;
   const [doc, setDoc] = useState<RichTextDoc | null>(null);
   const [error, setError] = useState<string>();
   const changed = useThreadChanged();

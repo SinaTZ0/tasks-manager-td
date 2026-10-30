@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 import { PaperclipIcon } from "lucide-react";
+import { useState } from "react";
 
 import { Marking } from "#/components/primitive/marking/marking";
 import { Separator } from "#/components/primitive/separator/separator";
@@ -8,6 +9,7 @@ import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "
 import { Spinner } from "#/components/primitive/spinner/spinner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "#/components/primitive/tabs/tabs";
 import { ActivityFeed } from "#/components/shared/activity-feed/activity-feed";
+import { useShortcuts } from "#/hooks/use-shortcuts";
 import { columnTitle } from "#/lib/column-title";
 import { formatDate } from "#/lib/locale";
 import { orpc } from "#/orpc/client";
@@ -25,7 +27,7 @@ import {
   PriorityField,
 } from "#/routes/projects_projectKey/components/task-meta-fields";
 import { TaskDescriptionField } from "#/routes/projects_projectKey/components/task-description-field";
-import { TaskComments } from "#/routes/projects_projectKey/components/task-comments";
+import { COMMENT_COMPOSER_ID, TaskComments } from "#/routes/projects_projectKey/components/task-comments";
 import {
   TaskAttachments,
   useAttachmentDrop,
@@ -37,7 +39,7 @@ import { TaskDependencies } from "#/routes/projects_projectKey/components/task-d
 import { TaskStatusPanel } from "#/routes/projects_projectKey/components/task-status-panel";
 import { TaskTimeSection } from "#/routes/projects_projectKey/components/task-time-section";
 import { TaskWatchers } from "#/routes/projects_projectKey/components/task-watchers";
-import { TaskTitleField } from "#/routes/projects_projectKey/components/task-title-field";
+import { TaskTitleField, TITLE_FIELD_ID } from "#/routes/projects_projectKey/components/task-title-field";
 import { blockersOf, kindsOf } from "#/routes/projects_projectKey/dependencies";
 import { taskQuery } from "#/routes/projects_projectKey/queries";
 import { taskNumberOf } from "#/routes/projects_projectKey/search-params";
@@ -115,6 +117,32 @@ function TaskDetails({
   const blockers = blockersOf({ task, tasks: new Map(board.tasks.map((item) => [item.id, item])), kinds }).map(
     (blocker) => taskCode({ key: project.key, number: blocker.number }),
   );
+  const [tab, setTab] = useState<TaskTab>("comments");
+
+  /*------ Shortcuts ------*/
+  // Slice 18: `e` edits the title, `c` writes a comment, `m` takes the card. Only for editors, on a live card.
+  useShortcuts(
+    readOnly || archived
+      ? []
+      : [
+          {
+            code: "KeyE",
+            run: () => {
+              const field = document.getElementById(TITLE_FIELD_ID);
+              if (field instanceof HTMLInputElement) field.select();
+            },
+          },
+          {
+            code: "KeyC",
+            run: () => {
+              setTab("comments");
+              // The comments panel mounts with the tab; its editor is there on the next frame.
+              requestAnimationFrame(() => document.getElementById(COMMENT_COMPOSER_ID)?.focus());
+            },
+          },
+          { code: "KeyM", run: () => task.assigneeId !== viewerId && update.save({ assigneeId: viewerId }) },
+        ],
+  );
 
   return (
     // Files dropped or pasted anywhere on the card become its attachments.
@@ -166,7 +194,15 @@ function TaskDetails({
             <Separator />
             <TaskDependencies task={task} project={project} board={board} kinds={kinds} readOnly={readOnly} />
             <Separator />
-            <TaskTabs task={task} project={project} people={people} viewerId={viewerId} readOnly={readOnly} />
+            <TaskTabs
+              task={task}
+              project={project}
+              people={people}
+              viewerId={viewerId}
+              readOnly={readOnly}
+              tab={tab}
+              onTabChange={setTab}
+            />
           </div>
 
           {/*------ Side ------*/}
@@ -219,21 +255,27 @@ function TaskDetails({
  * The drawer's lower half: the comment thread, the task's history, and its time, one at a time. Comments come first:
  * they are what people come back to a card for.
  */
+type TaskTab = "comments" | "activity" | "time";
+
 function TaskTabs({
   task,
   project,
   people,
   viewerId,
   readOnly,
+  tab,
+  onTabChange,
 }: {
   task: TaskDetail;
   project: Project;
   people: Map<string, Person>;
   viewerId: string;
   readOnly: boolean;
+  tab: TaskTab;
+  onTabChange: (tab: TaskTab) => void;
 }) {
   return (
-    <Tabs defaultValue="comments">
+    <Tabs value={tab} onValueChange={(value) => onTabChange(value as TaskTab)}>
       <TabsList aria-label={m.task_tabs()}>
         <TabsTrigger value="comments">{m.task_tab_comments()}</TabsTrigger>
         <TabsTrigger value="activity">{m.task_tab_activity()}</TabsTrigger>

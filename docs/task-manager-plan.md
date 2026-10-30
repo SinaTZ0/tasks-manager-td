@@ -289,7 +289,7 @@ ask the user before building that slice.
   assignee are not added, since they are told already.
 - **Tests**: a watcher is told about a comment, not about their own; unwatching stops it.
 
-### 18. Keyboard Shortcuts
+### 18. Keyboard Shortcuts ✓
 
 - Single keys, read by `event.code` so they work on a Persian keyboard layout too, and ignored while typing in a field,
   an editor or with a menu open: `n` new card (admins: opens quick add in the first column), `e` edit the open card's

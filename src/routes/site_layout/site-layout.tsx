@@ -6,6 +6,7 @@ import { HeaderSearch } from "#/components/shared/header-search/header-search";
 import { NotificationBell, notificationsQuery } from "#/components/shared/notification-bell/notification-bell";
 import { SiteFooter } from "#/components/shared/site-footer/site-footer";
 import { RunningTimer } from "#/components/shared/running-timer/running-timer";
+import { ShortcutHelp } from "#/components/shared/shortcut-help/shortcut-help";
 import { SiteHeader } from "#/components/shared/site-header/site-header";
 import { useLiveUpdates } from "#/hooks/use-live-updates";
 import { setReportedUser } from "#/lib/error-reporting.browser";
@@ -63,6 +64,7 @@ function SiteLayout() {
         <Outlet />
       </main>
       <SiteFooter />
+      {viewer && <ShortcutHelp role={viewer.role} />}
     </div>
   );
 }

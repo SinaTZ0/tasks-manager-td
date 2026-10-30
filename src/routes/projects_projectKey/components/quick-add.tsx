@@ -11,6 +11,9 @@ import { m } from "#/paraglide/messages";
 
 /*===== Quick Add =====*/
 
+/** The first column's field, which the `n` shortcut focuses. */
+export const FIRST_QUICK_ADD_ID = "quick-add-first";
+
 /**
  * The field at the bottom of a column: type a title, press Enter, and the task is on the board (docs/app.md → Quick
  * add). The field stays focused and empties, so several tasks go in one after another. Escape clears it.
@@ -19,14 +22,18 @@ export function QuickAdd({
   projectId,
   columnId,
   columnTitle,
+  inputId,
 }: {
   projectId: string;
   columnId: string;
   columnTitle: string;
+  /** A fixed id for the field, for a shortcut to focus it. */
+  inputId?: string | undefined;
 }) {
   const queryClient = useQueryClient();
   const [title, setTitle] = useState("");
-  const id = useId();
+  const generatedId = useId();
+  const id = inputId ?? generatedId;
 
   const create = useMutation(
     orpc.task.create.mutationOptions({
