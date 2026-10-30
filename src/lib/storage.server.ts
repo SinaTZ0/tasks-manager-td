@@ -1,4 +1,4 @@
-import { DeleteObjectsCommand, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
+import { CopyObjectCommand, DeleteObjectsCommand, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 
 import { env } from "#/env.server";
 import { span } from "#/lib/trace.server";
@@ -78,6 +78,23 @@ export async function putObject({
       ContentType: contentType,
       CacheControl: cacheControl,
       ...(contentDisposition ? { ContentDisposition: contentDisposition } : {}),
+    }),
+  );
+}
+
+/**
+ * Copies an object within the bucket, with its type, caching and disposition (`MetadataDirective: COPY`).
+ *
+ * @throws When the store fails, or `from` doesn't exist.
+ */
+export async function copyObject({ from, to }: { from: string; to: string }): Promise<void> {
+  await getClient().send(
+    new CopyObjectCommand({
+      Bucket: env.S3_BUCKET_NAME,
+      // `CopySource` is `bucket/key`, URL-encoded; keys here are plain ASCII paths, but encoding keeps that true.
+      CopySource: `${env.S3_BUCKET_NAME}/${from.split("/").map(encodeURIComponent).join("/")}`,
+      Key: to,
+      MetadataDirective: "COPY",
     }),
   );
 }

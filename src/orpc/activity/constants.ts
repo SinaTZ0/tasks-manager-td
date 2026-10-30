@@ -25,6 +25,8 @@ export const ACTIVITY_ACTIONS = [
   "task.restored",
   "task.deleted",
   "task.delegated",
+  "task.transferred",
+  "task.copied",
   /*------ Status ------*/
   "task.started",
   "task.paused",

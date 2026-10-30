@@ -311,7 +311,7 @@ ask the user before building that slice.
 - **Tests**: a notification is sent to the person's subscriptions and not to anyone else's; a gone subscription is
   removed.
 
-### 20. Move or Copy a Card to Another Project
+### 20. Move or Copy a Card to Another Project ✓
 
 - Admins only, like creating a card: "Move to project…" and "Copy to project…" in the card's menu and the drawer,
   picking a project and a column kind (the same kind by default).

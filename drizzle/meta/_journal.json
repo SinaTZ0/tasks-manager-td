@@ -43,6 +43,13 @@
       "when": 1793390743278,
       "tag": "0005_push",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1793391510136,
+      "tag": "0006_task-aliases",
+      "breakpoints": true
     }
   ]
 }

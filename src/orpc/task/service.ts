@@ -232,7 +232,7 @@ async function releaseDependents({
  *
  * @returns The task fields to write with the move.
  */
-async function columnEffects({
+export async function columnEffects({
   db,
   actorId,
   task,

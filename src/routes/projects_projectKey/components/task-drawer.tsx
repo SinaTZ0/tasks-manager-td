@@ -1,8 +1,9 @@
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
-import { PaperclipIcon } from "lucide-react";
+import { CopyIcon, FolderInputIcon, PaperclipIcon } from "lucide-react";
 import { useState } from "react";
 
+import { Button } from "#/components/primitive/button/button";
 import { Marking } from "#/components/primitive/marking/marking";
 import { Separator } from "#/components/primitive/separator/separator";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "#/components/primitive/sheet/sheet";
@@ -40,6 +41,7 @@ import { TaskStatusPanel } from "#/routes/projects_projectKey/components/task-st
 import { TaskTimeSection } from "#/routes/projects_projectKey/components/task-time-section";
 import { TaskWatchers } from "#/routes/projects_projectKey/components/task-watchers";
 import { TaskTitleField, TITLE_FIELD_ID } from "#/routes/projects_projectKey/components/task-title-field";
+import { TransferDialog, type TransferMode } from "#/routes/projects_projectKey/components/transfer-dialog";
 import { blockersOf, kindsOf } from "#/routes/projects_projectKey/dependencies";
 import { taskQuery } from "#/routes/projects_projectKey/queries";
 import { taskNumberOf } from "#/routes/projects_projectKey/search-params";
@@ -118,6 +120,7 @@ function TaskDetails({
     (blocker) => taskCode({ key: project.key, number: blocker.number }),
   );
   const [tab, setTab] = useState<TaskTab>("comments");
+  const [transfer, setTransfer] = useState<{ mode: TransferMode; open: boolean } | null>(null);
 
   /*------ Shortcuts ------*/
   // Slice 18: `e` edits the title, `c` writes a comment, `m` takes the card. Only for editors, on a live card.
@@ -238,6 +241,29 @@ function TaskDetails({
             <TaskWatchers task={task} projectId={project.id} viewerId={viewerId} />
             {isAdmin && (
               <>
+                <Separator />
+                {/*------ Other Projects ------*/}
+                <div className="flex flex-col items-start gap-2">
+                  <Button variant="secondary" size="sm" onClick={() => setTransfer({ mode: "move", open: true })}>
+                    <FolderInputIcon data-icon="inline-start" />
+                    {m.transfer_move()}
+                  </Button>
+                  <Button variant="secondary" size="sm" onClick={() => setTransfer({ mode: "copy", open: true })}>
+                    <CopyIcon data-icon="inline-start" />
+                    {m.transfer_copy()}
+                  </Button>
+                </div>
+                {transfer && column && (
+                  <TransferDialog
+                    key={transfer.mode}
+                    projectId={project.id}
+                    request={{ taskId: task.id, code, kind: column.kind, mode: transfer.mode }}
+                    open={transfer.open}
+                    onOpenChange={(open) => setTransfer({ ...transfer, open })}
+                    // The moved card has left this board: its drawer closes.
+                    onMoved={onArchived}
+                  />
+                )}
                 <Separator />
                 <ArchiveTaskButton projectId={project.id} task={task} code={code} onArchived={onArchived} />
               </>

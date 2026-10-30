@@ -5,7 +5,7 @@ import { oneOf } from "#/orpc/allowed-values";
 import { COLUMN_KINDS } from "#/orpc/project/constants";
 import { SEARCH_QUERY_MAX_LENGTH, SEARCH_RESULT_LIMIT, type SearchMatch } from "#/orpc/search/constants";
 import type { SearchResult } from "#/orpc/search/contract";
-import { findTaskByCode, findTasksContaining, type SearchRow } from "#/orpc/search/repository";
+import { findTaskByCode, findTaskByOldCode, findTasksContaining, type SearchRow } from "#/orpc/search/repository";
 
 /*===== Search =====*/
 /** A whole task code, in either digit set: `TGQ-12`, `tgq-۱۲`. */
@@ -67,7 +67,9 @@ export async function searchTasks({
 
   const code = TASK_CODE.exec(toLatinDigits(query));
   if (code?.[1] && code[2]) {
-    const row = await findTaskByCode({ ...access, key: code[1].toUpperCase(), number: Number(code[2]) });
+    const byCode = { ...access, key: code[1].toUpperCase(), number: Number(code[2]) };
+    // A code a card had before it moved to another project finds it where it is now.
+    const row = (await findTaskByCode(byCode)) ?? (await findTaskByOldCode(byCode));
     if (row) return [toResult({ row, query, code: true })];
   }
 

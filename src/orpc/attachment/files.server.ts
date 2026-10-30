@@ -1,7 +1,7 @@
 import sharp from "sharp";
 
 import { createLogger } from "#/lib/logger.server";
-import { deleteObjects, putObject } from "#/lib/storage.server";
+import { copyObject, deleteObjects, putObject } from "#/lib/storage.server";
 import { span } from "#/lib/trace.server";
 import { ATTACHMENT_NAME_MAX_LENGTH } from "#/orpc/attachment/constants";
 
@@ -106,6 +106,23 @@ export async function storeFile({ id, file }: { id: string; file: File }): Promi
     size: body.length,
     preview: image ? { width: image.preview.width, height: image.preview.height } : null,
   };
+}
+
+/**
+ * Copies attachments' files to new ids (a copied card's, slice 20): the file, and the preview where there is one.
+ *
+ * @throws When the bucket fails. Whatever was copied is deleted first.
+ */
+export async function copyFiles(copies: { fromId: string; toId: string; preview: boolean }[]): Promise<void> {
+  try {
+    for (const { fromId, toId, preview } of copies) {
+      await copyObject({ from: fileKey(fromId), to: fileKey(toId) });
+      if (preview) await copyObject({ from: previewKey(fromId), to: previewKey(toId) });
+    }
+  } catch (error) {
+    await discardFiles(copies.map((copy) => copy.toId));
+    throw error;
+  }
 }
 
 /**

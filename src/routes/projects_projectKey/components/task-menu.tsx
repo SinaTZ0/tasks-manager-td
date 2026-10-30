@@ -1,4 +1,4 @@
-import { EllipsisIcon } from "lucide-react";
+import { CopyIcon, EllipsisIcon, FolderInputIcon } from "lucide-react";
 
 import { Button } from "#/components/primitive/button/button";
 import {
@@ -15,6 +15,7 @@ import type { ColumnKind } from "#/orpc/project/constants";
 import type { Column } from "#/orpc/project/contract";
 import type { TaskStatusAction } from "#/orpc/task/constants";
 import { m } from "#/paraglide/messages";
+import type { TransferMode } from "#/routes/projects_projectKey/components/transfer-dialog";
 import { availableActions, statusActionIcon, statusActionLabel } from "#/routes/projects_projectKey/task-status";
 
 /*===== Task Menu =====*/
@@ -42,7 +43,7 @@ export function restoreTaskMenuFocus(taskId: string) {
  * The card's menu key: the status actions its column allows (start, pause, done, stop, reopen), then "move to…" every
  * other column, so changing a card never depends on dragging it (docs/app.md → Board & Drag). The board takes the
  * action, asking for a reason first where one is due. A moved card goes to the bottom of its new column. A cancelled
- * card only reopens: `columns` is empty there.
+ * card only reopens: `columns` is empty there. For an admin, `onTransfer` adds moving or copying it to another project.
  */
 export function TaskMenu({
   taskId,
@@ -52,6 +53,7 @@ export function TaskMenu({
   currentColumnId,
   onMove,
   onAction,
+  onTransfer,
 }: {
   taskId: string;
   code: string;
@@ -62,6 +64,7 @@ export function TaskMenu({
   currentColumnId: string;
   onMove: (columnId: string) => void;
   onAction: (action: TaskStatusAction) => void;
+  onTransfer?: ((mode: TransferMode) => void) | undefined;
 }) {
   const actions = availableActions(kind);
   const targets = columns.filter((column) => column.id !== currentColumnId);
@@ -108,6 +111,23 @@ export function TaskMenu({
                   {columnTitle(column)}
                 </DropdownMenuItem>
               ))}
+            </DropdownMenuGroup>
+          </>
+        )}
+
+        {/*------ Other Projects ------*/}
+        {onTransfer && (
+          <>
+            <DropdownMenuSeparator />
+            <DropdownMenuGroup>
+              <DropdownMenuItem onClick={() => onTransfer("move")}>
+                <FolderInputIcon />
+                {m.transfer_move()}
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => onTransfer("copy")}>
+                <CopyIcon />
+                {m.transfer_copy()}
+              </DropdownMenuItem>
             </DropdownMenuGroup>
           </>
         )}

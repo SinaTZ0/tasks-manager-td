@@ -270,6 +270,30 @@ export const task = pgTable(
   ],
 );
 
+/*===== Task Aliases =====*/
+// The codes a task had before it was moved to another project (docs/task-manager-plan.md → slice 20): `TGQ-12` stays
+// a working link to the task now called `WEB-31`. A project never hands a number out twice, so an alias never names
+// another task of its project.
+
+export const taskAlias = pgTable(
+  "task_alias",
+  {
+    /** The project the task was in, and its number there. */
+    projectId: uuid("project_id")
+      .notNull()
+      .references(() => project.id, { onDelete: "cascade" }),
+    number: integer("number").notNull(),
+    taskId: uuid("task_id")
+      .notNull()
+      .references(() => task.id, { onDelete: "cascade" }),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+  },
+  (table) => [
+    primaryKey({ columns: [table.projectId, table.number] }),
+    index("task_alias_task_id_idx").on(table.taskId),
+  ],
+);
+
 /*===== Dependencies =====*/
 // "This task waits for that one" (docs/app.md → Dependency), between tasks of one project. A task is blocked while any
 // task it waits for is still live and not done or cancelled. The service refuses a link that would close a loop.

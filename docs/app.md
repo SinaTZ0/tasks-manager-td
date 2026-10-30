@@ -55,6 +55,8 @@ What each thing is and how it relates. How to store it = implementer decides.
 - Create / edit / archive task
 - Title, description (markdown), priority, due date, labels
 - Quick add: type title at column bottom, press Enter, done
+- Admin moves a card to another project (new number there; the old code still opens it; dependencies dropped; refused
+  while its owner or assignee isn't on that project) or copies it there (no comments, time or history)
 - Card shows: title, assignee avatar, priority color, due date, labels, blocked icon, timer icon
 
 **Status / Pause / Stop**

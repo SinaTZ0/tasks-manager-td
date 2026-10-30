@@ -55,6 +55,7 @@ import { CardGrip, cardGripId, SortableTaskCard } from "#/routes/projects_projec
 import { ReasonDialog, type ReasonRequest } from "#/routes/projects_projectKey/components/reason-dialog";
 import { TaskCard } from "#/routes/projects_projectKey/components/task-card";
 import { restoreTaskMenuFocus, TaskMenu, taskMenuKey } from "#/routes/projects_projectKey/components/task-menu";
+import { TransferDialog, type TransferRequest } from "#/routes/projects_projectKey/components/transfer-dialog";
 import { blockersOf, entersGuardedColumn, kindsOf } from "#/routes/projects_projectKey/dependencies";
 import { asksReason } from "#/routes/projects_projectKey/task-status";
 import { useColumnMove, useTaskMove, useTaskTransition } from "#/routes/projects_projectKey/use-board-moves";
@@ -295,6 +296,8 @@ export function Board({
   const moveTask = useTaskMove(project.id);
   const transition = useTaskTransition(project);
   const watching = useMemo(() => new Set(board.watching), [board.watching]);
+  // Kept after the dialog closes, so it plays its way out showing what it asked.
+  const [transfer, setTransfer] = useState<(TransferRequest & { open: boolean }) | null>(null);
   // `n`: a new card in the first column (slice 18). Admins only, like the quick add it focuses; not while a card's
   // drawer covers the board.
   useShortcuts(
@@ -714,6 +717,18 @@ export function Board({
                                 currentColumnId={column.id}
                                 onMove={(target) => moveToEnd({ task, columnId: target })}
                                 onAction={(action) => takeAction({ task, action })}
+                                onTransfer={
+                                  canCreate
+                                    ? (mode) =>
+                                        setTransfer({
+                                          taskId: task.id,
+                                          code: codeOf(task.id),
+                                          kind: column.kind,
+                                          mode,
+                                          open: true,
+                                        })
+                                    : undefined
+                                }
                               />
                             )
                           }
@@ -755,6 +770,18 @@ export function Board({
                           currentColumnId={cancelled.id}
                           onMove={() => {}}
                           onAction={(action) => takeAction({ task, action })}
+                          onTransfer={
+                            canCreate
+                              ? (mode) =>
+                                  setTransfer({
+                                    taskId: task.id,
+                                    code: codeOf(task.id),
+                                    kind: "cancelled",
+                                    mode,
+                                    open: true,
+                                  })
+                              : undefined
+                          }
                         />
                       )
                     }
@@ -777,6 +804,19 @@ export function Board({
             const key = taskMenuKey(asking.taskId)();
             return key === true ? (document.getElementById(SHOW_CANCELLED_ID) ?? true) : key;
           }}
+        />
+      )}
+
+      {/*------ Other Projects ------*/}
+      {transfer && (
+        <TransferDialog
+          // A fresh form for each card and mode.
+          key={`${transfer.taskId}-${transfer.mode}`}
+          projectId={project.id}
+          request={transfer}
+          open={transfer.open}
+          onOpenChange={(open) => setTransfer({ ...transfer, open })}
+          finalFocus={taskMenuKey(transfer.taskId)}
         />
       )}
 

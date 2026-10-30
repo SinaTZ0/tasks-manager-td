@@ -1,7 +1,8 @@
 import { and, desc, eq, exists, isNull, or, sql } from "drizzle-orm";
+import { alias } from "drizzle-orm/pg-core";
 
 import type { Database } from "#/db/client.server";
-import { boardColumn, comment, project, projectMember, task } from "#/db/schema";
+import { boardColumn, comment, project, projectMember, task, taskAlias } from "#/db/schema";
 
 /*===== Types =====*/
 export type SearchRow = {
@@ -67,6 +68,33 @@ export async function findTaskByCode({
     .innerJoin(project, eq(project.id, task.projectId))
     .innerJoin(boardColumn, eq(boardColumn.id, task.columnId))
     .where(and(eq(project.key, key), eq(task.number, number), visibleTo({ db, userId, admin })))
+    .limit(1);
+  return row;
+}
+
+/** The task an old code named before it moved to another project (slice 20), where it is now. */
+export async function findTaskByOldCode({
+  db,
+  userId,
+  admin,
+  key,
+  number,
+}: {
+  db: Database;
+  userId: string;
+  admin: boolean;
+  key: string;
+  number: number;
+}): Promise<SearchRow | undefined> {
+  const oldProject = alias(project, "old_project");
+  const [row] = await db
+    .select({ ...columns, commentText: sql<string | null>`null` })
+    .from(taskAlias)
+    .innerJoin(oldProject, eq(oldProject.id, taskAlias.projectId))
+    .innerJoin(task, eq(task.id, taskAlias.taskId))
+    .innerJoin(project, eq(project.id, task.projectId))
+    .innerJoin(boardColumn, eq(boardColumn.id, task.columnId))
+    .where(and(eq(oldProject.key, key), eq(taskAlias.number, number), visibleTo({ db, userId, admin })))
     .limit(1);
   return row;
 }

@@ -65,6 +65,11 @@ import {
   stopTimerProcedure,
   taskTimeProcedure,
 } from "#/orpc/time/procedure";
+import {
+  copyTaskToProjectProcedure,
+  moveTaskToProjectProcedure,
+  resolveOldCodeProcedure,
+} from "#/orpc/transfer/procedure";
 import { unwatchTaskProcedure, watchTaskProcedure } from "#/orpc/watcher/procedure";
 
 /*===== API Router =====*/
@@ -170,6 +175,11 @@ export const router = implementer.router({
     forTask: taskTimeProcedure,
     add: addTimeEntryProcedure,
     remove: removeTimeEntryProcedure,
+  },
+  transfer: {
+    move: moveTaskToProjectProcedure,
+    copy: copyTaskToProjectProcedure,
+    resolve: resolveOldCodeProcedure,
   },
   watcher: {
     watch: watchTaskProcedure,

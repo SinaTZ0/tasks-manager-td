@@ -209,6 +209,17 @@ function describe({ item, people }: { item: ActivityItem; people: Map<string, Pe
         clauses: [m.activity_task_delegated({ name: nameOf(after?.assigneeId) })],
         quote: textOf(after, "note"),
       };
+    case "task.transferred":
+      return {
+        clauses: [
+          m.activity_task_transferred({
+            from: isolate(textOf(before, "code") ?? "?"),
+            to: isolate(textOf(after, "code") ?? "?"),
+          }),
+        ],
+      };
+    case "task.copied":
+      return { clauses: [m.activity_task_copied({ from: isolate(textOf(before, "code") ?? "?") })] };
 
     /*------ Status ------*/
     case "task.started":

@@ -1,6 +1,6 @@
 import { ORPCError } from "@orpc/client";
 import { useSuspenseQuery } from "@tanstack/react-query";
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, redirect, useNavigate } from "@tanstack/react-router";
 import { ArchiveIcon, HistoryIcon, SettingsIcon } from "lucide-react";
 import { useMemo } from "react";
 
@@ -11,7 +11,9 @@ import { Marking } from "#/components/primitive/marking/marking";
 import { Switch } from "#/components/primitive/switch/switch";
 import { PersonAvatar } from "#/components/shared/person-avatar/person-avatar";
 import { pageMeta } from "#/lib/seo";
+import { orpc } from "#/orpc/client";
 import type { Person } from "#/orpc/project/contract";
+import { taskCode } from "#/orpc/task/constants";
 import { m } from "#/paraglide/messages";
 import { teamToday } from "#/lib/team-day";
 import { cardFilter, isFiltering, type BoardFilter } from "#/routes/projects_projectKey/board-filter";
@@ -39,11 +41,26 @@ export const Route = createFileRoute("/_site-layout/_app-layout/projects/$projec
     const project = await ensureProject({ queryClient, projectKey: params.projectKey });
     await Promise.all([
       queryClient.ensureQueryData(boardQuery(project.id)),
-      // A link to a card opens with its drawer filled.
+      // A link to a card opens with its drawer filled. A code the card had before it moved to another project goes
+      // to where it is now (slice 20).
       deps.task
         ? queryClient
             .ensureQueryData(taskQuery({ projectId: project.id, number: taskNumberOf(deps.task) }))
-            .catch(ignoreMissing)
+            .catch(async (error: unknown) => {
+              ignoreMissing(error);
+              const placed = await queryClient.fetchQuery(
+                orpc.transfer.resolve.queryOptions({
+                  input: { projectId: project.id, number: taskNumberOf(deps.task ?? "") },
+                }),
+              );
+              if (placed) {
+                throw redirect({
+                  to: "/projects/$projectKey",
+                  params: { projectKey: placed.projectKey },
+                  search: { task: taskCode({ key: placed.projectKey, number: placed.number }) },
+                });
+              }
+            })
         : null,
       deps.task
         ? queryClient

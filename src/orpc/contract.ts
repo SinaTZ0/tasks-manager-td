@@ -18,6 +18,7 @@ import { siteContract } from "#/orpc/site/contract";
 import { taskContract } from "#/orpc/task/contract";
 import { teamContract } from "#/orpc/team/contract";
 import { timeContract } from "#/orpc/time/contract";
+import { transferContract } from "#/orpc/transfer/contract";
 import { watcherContract } from "#/orpc/watcher/contract";
 
 /*===== API Contract =====*/
@@ -43,5 +44,6 @@ export const contract = {
   task: taskContract,
   team: teamContract,
   time: timeContract,
+  transfer: transferContract,
   watcher: watcherContract,
 };

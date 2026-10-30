@@ -1673,5 +1673,59 @@
   "push_toggle": "Notify me on this computer",
   "push_toggle_hint": "Shows your notifications even when Tofang isn't open.",
   "push_blocked": "Your browser blocks Tofang's notifications. Allow them in the browser's site settings.",
-  "push_failed": "Couldn't change notifications on this computer. Try again."
+  "push_failed": "Couldn't change notifications on this computer. Try again.",
+  "transfer_error_not_member": [
+    {
+      "declarations": ["input names"],
+      "match": {
+        "": "{names} isn't an editor on that project. Add them first, or change the card's owner or assignee."
+      }
+    }
+  ],
+  "activity_task_transferred": [
+    {
+      "declarations": ["input from", "input to"],
+      "match": {
+        "": "moved the task from {from} to {to}"
+      }
+    }
+  ],
+  "activity_task_copied": [
+    {
+      "declarations": ["input from"],
+      "match": {
+        "": "made the task as a copy of {from}"
+      }
+    }
+  ],
+  "transfer_moved": [
+    {
+      "declarations": ["input code"],
+      "match": {
+        "": "The card is now {code}"
+      }
+    }
+  ],
+  "transfer_copied": [
+    {
+      "declarations": ["input code"],
+      "match": {
+        "": "Copied as {code}"
+      }
+    }
+  ],
+  "transfer_error_project": "Pick a project.",
+  "transfer_error_same_project": "The card is in this project already.",
+  "transfer_error_cancelled": "A copy can't start in the cancelled column.",
+  "transfer_failed": "Couldn't do that. Try again.",
+  "transfer_move": "Move to project…",
+  "transfer_copy": "Copy to project…",
+  "transfer_move_title": "Move the card",
+  "transfer_copy_title": "Copy the card",
+  "transfer_move_description": "The card goes to the other project with its comments, time, checklist, attachments and history, and takes a new number there. Links to its old code still open it. Its dependencies in this project are removed.",
+  "transfer_copy_description": "A new card is made there with the title, description, priority, due date, estimate, labels, the checklist unticked and the attachments; you own it and nobody is assigned.",
+  "transfer_project": "Project",
+  "transfer_column": "Column",
+  "transfer_confirm_move": "Move",
+  "transfer_confirm_copy": "Copy"
 }

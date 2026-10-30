@@ -1673,5 +1673,59 @@
   "push_toggle": "روی این رایانه خبرم کن",
   "push_toggle_hint": "اعلان‌ها را حتی وقتی تفنگ باز نیست نشان می‌دهد.",
   "push_blocked": "مرورگر اعلان‌های تفنگ را مسدود کرده است. در تنظیمات سایتِ مرورگر اجازه دهید.",
-  "push_failed": "اعلان‌های این رایانه تغییر نکرد. دوباره امتحان کنید."
+  "push_failed": "اعلان‌های این رایانه تغییر نکرد. دوباره امتحان کنید.",
+  "transfer_error_not_member": [
+    {
+      "declarations": ["input names"],
+      "match": {
+        "": "{names} عضو ویرایشگر آن پروژه نیست. اول عضوش کنید، یا مالک یا مسئول کارت را عوض کنید."
+      }
+    }
+  ],
+  "activity_task_transferred": [
+    {
+      "declarations": ["input from", "input to"],
+      "match": {
+        "": "کار را از {from} به {to} برد"
+      }
+    }
+  ],
+  "activity_task_copied": [
+    {
+      "declarations": ["input from"],
+      "match": {
+        "": "کار را از روی {from} ساخت"
+      }
+    }
+  ],
+  "transfer_moved": [
+    {
+      "declarations": ["input code"],
+      "match": {
+        "": "کارت به {code} منتقل شد"
+      }
+    }
+  ],
+  "transfer_copied": [
+    {
+      "declarations": ["input code"],
+      "match": {
+        "": "رونوشت {code} ساخته شد"
+      }
+    }
+  ],
+  "transfer_error_project": "پروژه‌ای انتخاب کنید.",
+  "transfer_error_same_project": "کارت همین حالا در این پروژه است.",
+  "transfer_error_cancelled": "رونوشت نمی‌تواند در ستون لغوشده شروع شود.",
+  "transfer_failed": "کارت جابه‌جا نشد. دوباره امتحان کنید.",
+  "transfer_move": "انتقال به پروژه…",
+  "transfer_copy": "رونوشت در پروژه…",
+  "transfer_move_title": "انتقال کارت",
+  "transfer_copy_title": "رونوشت کارت",
+  "transfer_move_description": "کارت با نظرها، زمان، چک‌لیست، پیوست‌ها و تاریخچه‌اش به پروژه‌ی دیگر می‌رود و شماره‌ی تازه می‌گیرد. پیوند کد قدیمی همچنان کار می‌کند. وابستگی‌هایش در این پروژه حذف می‌شوند.",
+  "transfer_copy_description": "کارت تازه‌ای با عنوان، توضیح، اولویت، سررسید، برآورد، برچسب‌ها، چک‌لیست تیک‌نخورده و پیوست‌ها ساخته می‌شود؛ مالکش شما هستید و مسئولی ندارد.",
+  "transfer_project": "پروژه",
+  "transfer_column": "ستون",
+  "transfer_confirm_move": "انتقال بده",
+  "transfer_confirm_copy": "رونوشت بساز"
 }
