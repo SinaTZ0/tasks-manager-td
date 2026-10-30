@@ -1,0 +1,500 @@
+import {
+  closestCenter,
+  closestCorners,
+  DndContext,
+  DragOverlay,
+  KeyboardSensor,
+  PointerSensor,
+  pointerWithin,
+  useDroppable,
+  useSensor,
+  useSensors,
+  type Active,
+  type Announcements,
+  type CollisionDetection,
+  type DragEndEvent,
+  type DragOverEvent,
+  type DragStartEvent,
+  type Over,
+  type UniqueIdentifier,
+} from "@dnd-kit/core";
+import {
+  arrayMove,
+  horizontalListSortingStrategy,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
+import { GripVerticalIcon } from "lucide-react";
+import {
+  useId,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+  type CSSProperties,
+  type KeyboardEventHandler,
+  type ReactNode,
+} from "react";
+
+import { Button } from "#/components/primitive/button/button";
+import { columnTitle } from "#/lib/column-title";
+import { positionBetween } from "#/lib/position";
+import type { Column, Person, Project } from "#/orpc/project/contract";
+import { taskCode } from "#/orpc/task/constants";
+import type { Board as BoardData, Label, TaskCard as TaskCardData } from "#/orpc/task/contract";
+import { m } from "#/paraglide/messages";
+import { BoardColumn } from "#/routes/projects_projectKey/components/board-column";
+import { MoveToMenu } from "#/routes/projects_projectKey/components/move-to-menu";
+import { QuickAdd } from "#/routes/projects_projectKey/components/quick-add";
+import { CardGrip, cardGripId, SortableTaskCard } from "#/routes/projects_projectKey/components/sortable-task-card";
+import { TaskCard } from "#/routes/projects_projectKey/components/task-card";
+import { useColumnMove, useTaskMove } from "#/routes/projects_projectKey/use-board-moves";
+
+/*===== Drag State =====*/
+
+/** Card ids per column id, in the order the board shows them. */
+type Lanes = Record<string, string[]>;
+
+/**
+ * What is being dragged. A card's lanes are the board's own copy while it moves: crossing into another column moves
+ * its id there at once (so that column opens a gap for it), and the drop turns the final place into a position key.
+ * A column needs no copy; the sortable list shifts the others under it.
+ *
+ * After a drop the board keeps showing the dropped layout (`dropped-*`) until its data changes. The move writes the
+ * cache at once, but the query tells the page a tick later: without this the card would render back in its old
+ * column for that tick, flash, and re-mount (losing keyboard focus) on the way to its new one.
+ */
+type Drag =
+  | { type: "task"; id: string; lanes: Lanes }
+  | { type: "column"; id: string }
+  | { type: "dropped-task"; lanes: Lanes; until: TaskCardData[] }
+  | { type: "dropped-column"; order: string[]; until: Column[] };
+
+const zoneId = (columnId: string) => `zone:${columnId}`;
+
+/** What a dragged or targeted item is: a `task`, a `column`, or a column's card `zone`. */
+const typeOf = (item: { data: { current?: unknown } }) => (item.data.current as { type?: string } | undefined)?.type;
+
+const laneOf = ({ lanes, id }: { lanes: Lanes; id: string }) =>
+  Object.keys(lanes).find((columnId) => lanes[columnId]?.includes(id));
+
+/** The key between two neighbours. Two neighbours with the same key (from before the server resolved them) can't
+ * have one between them, so the card goes just after the first. */
+function keyBetween(before: string | null, after: string | null): string {
+  return before !== null && after !== null && before >= after
+    ? positionBetween(before, null)
+    : positionBetween(before, after);
+}
+
+/**
+ * Swallows the click a pointer drag ends with. Dropping a card where it started would otherwise land the click on its
+ * title link and open the drawer.
+ */
+const stopClick = (event: MouseEvent) => {
+  event.preventDefault();
+  event.stopPropagation();
+};
+
+function swallowNextClick() {
+  const stop = stopClick;
+  window.addEventListener("click", stop, { capture: true, once: true });
+  setTimeout(() => window.removeEventListener("click", stop, { capture: true }), 0);
+}
+
+/*===== Sortable Column =====*/
+
+/**
+ * A column that takes cards (its body is a drop zone, so an empty column takes them too) and that an admin can move
+ * by its grip.
+ */
+function SortableColumn({
+  column,
+  count,
+  movable,
+  footer,
+  children,
+}: {
+  column: Column;
+  count: number;
+  movable: boolean;
+  footer: ReactNode;
+  children: ReactNode;
+}) {
+  const title = columnTitle(column);
+  const { setNodeRef, setActivatorNodeRef, attributes, listeners, transform, transition, isDragging } = useSortable({
+    id: column.id,
+    data: { type: "column" },
+    disabled: !movable,
+    attributes: { roleDescription: m.board_drag_role_column() },
+  });
+  const zone = useDroppable({ id: zoneId(column.id), data: { type: "zone", columnId: column.id } });
+
+  return (
+    <BoardColumn
+      ref={setNodeRef}
+      bodyRef={zone.setNodeRef}
+      style={
+        {
+          "--drag-transform": CSS.Translate.toString(transform) ?? "none",
+          "--drag-transition": transition ?? "none",
+        } as CSSProperties
+      }
+      dragging={isDragging}
+      title={title}
+      count={count}
+      wipLimit={column.wipLimit}
+      footer={footer}
+      grip={
+        movable && (
+          <Button
+            ref={setActivatorNodeRef}
+            variant="ghost"
+            size="icon-xs"
+            aria-label={m.board_column_grip({ column: title })}
+            {...attributes}
+            {...(listeners as Record<string, KeyboardEventHandler<HTMLButtonElement>> | undefined)}
+          >
+            <GripVerticalIcon />
+          </Button>
+        )
+      }
+    >
+      {children}
+    </BoardColumn>
+  );
+}
+
+/*===== Board =====*/
+
+/**
+ * The board's columns and cards, and every way of moving them (docs/app.md → Board & Drag): drag a card within its
+ * column or to another, by pointer or keyboard; send it to the bottom of another column from its menu; and, for an
+ * admin, drag a column by its grip. A move shows at once and is saved behind it (`use-board-moves.ts`). The cancelled
+ * column isn't on the board, so nothing is dropped into it: stopping a task has its own action.
+ */
+export function Board({
+  project,
+  projectKey,
+  board,
+  labels,
+  people,
+  canMoveColumns,
+}: {
+  project: Project;
+  /** The key as the URL has it, which names the project's cached query. */
+  projectKey: string;
+  board: BoardData;
+  labels: Map<string, Label>;
+  people: Map<string, Person>;
+  canMoveColumns: boolean;
+}) {
+  const moveTask = useTaskMove(project.id);
+  const moveColumn = useColumnMove({ projectId: project.id, projectKey });
+  const [drag, setDrag] = useState<Drag | null>(null);
+  const droppedOrder = drag?.type === "dropped-column" && drag.until === project.columns ? drag.order : null;
+  const columns = useMemo(() => {
+    const shown = project.columns.filter((column) => column.kind !== "cancelled");
+    return droppedOrder ? shown.toSorted((a, b) => droppedOrder.indexOf(a.id) - droppedOrder.indexOf(b.id)) : shown;
+  }, [project.columns, droppedOrder]);
+  // dnd-kit numbers its accessibility ids from a counter of its own, which differs between server and browser.
+  const contextId = useId();
+
+  /*------ Lookups ------*/
+  const tasks = useMemo(() => new Map(board.tasks.map((task) => [task.id, task])), [board.tasks]);
+  const settled = useMemo<Lanes>(
+    () =>
+      Object.fromEntries(
+        columns.map((column) => [
+          column.id,
+          board.tasks.filter((task) => task.columnId === column.id).map((task) => task.id),
+        ]),
+      ),
+    [columns, board.tasks],
+  );
+  const lanes =
+    drag?.type === "task" || (drag?.type === "dropped-task" && drag.until === board.tasks) ? drag.lanes : settled;
+  const titles = useMemo(() => new Map(columns.map((column) => [column.id, columnTitle(column)])), [columns]);
+  const codeOf = (id: UniqueIdentifier) => {
+    const task = tasks.get(String(id));
+    return task ? taskCode({ key: project.key, number: task.number }) : "";
+  };
+
+  /*------ Collisions ------*/
+  // Collision detection and announcements run inside dnd-kit, between renders: they read the latest lanes from a ref.
+  const lanesRef = useRef(lanes);
+  // Right after a card crosses into another column, the lanes re-render under the pointer and the closest target can
+  // flip back to the column it left. Holding the last target for a frame stops that flicker (dnd-kit's
+  // multiple-containers recipe).
+  const lastOverId = useRef<UniqueIdentifier | null>(null);
+  const justCrossed = useRef(false);
+  useLayoutEffect(() => {
+    lanesRef.current = lanes;
+    requestAnimationFrame(() => {
+      justCrossed.current = false;
+    });
+  }, [lanes]);
+
+  const collisionDetection = useMemo<CollisionDetection>(
+    () => (args) => {
+      if (typeOf(args.active) === "column") {
+        return closestCenter({
+          ...args,
+          droppableContainers: args.droppableContainers.filter((target) => typeOf(target) === "column"),
+        });
+      }
+
+      const targets = args.droppableContainers.filter((target) => typeOf(target) !== "column");
+      // A pointer picks the column it is over, then the closest card in it; the keyboard has no pointer, so it takes
+      // the closest target in the direction it moved.
+      const pointerHits = pointerWithin({ ...args, droppableContainers: targets });
+      let hits = pointerHits.length > 0 ? pointerHits : closestCorners({ ...args, droppableContainers: targets });
+      const zone = hits.find((hit) => String(hit.id).startsWith("zone:"));
+      if (pointerHits.length > 0 && zone) {
+        const lane = lanesRef.current[String(zone.id).slice("zone:".length)] ?? [];
+        const cards = targets.filter((target) => lane.includes(String(target.id)));
+        hits = cards.length > 0 ? closestCenter({ ...args, droppableContainers: cards }) : [zone];
+      }
+
+      const overId = hits[0]?.id ?? null;
+      if (overId !== null) {
+        lastOverId.current = overId;
+        return [{ id: overId }];
+      }
+      if (justCrossed.current) lastOverId.current = args.active.id;
+      return lastOverId.current === null ? [] : [{ id: lastOverId.current }];
+    },
+    [],
+  );
+
+  /*------ Drag Handlers ------*/
+  const sensors = useSensors(
+    // A few pixels of travel before a drag starts, so a click on the card still opens it.
+    useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
+  );
+
+  // A card dragged by keyboard into another column re-mounts there, so dnd-kit can't hand focus back to its grip.
+  const byKeyboard = useRef(false);
+  const refocus = (id: string) => {
+    if (!byKeyboard.current) return;
+    requestAnimationFrame(() => document.getElementById(cardGripId(id))?.focus());
+  };
+
+  const onDragStart = ({ active, activatorEvent }: DragStartEvent) => {
+    byKeyboard.current = activatorEvent instanceof KeyboardEvent;
+    const id = String(active.id);
+    setDrag(typeOf(active) === "column" ? { type: "column", id } : { type: "task", id, lanes: settled });
+  };
+
+  const onDragOver = ({ active, over }: DragOverEvent) => {
+    if (!over || typeOf(active) !== "task") return;
+    const id = String(active.id);
+    const overId = String(over.id);
+    const overZone = typeOf(over) === "zone";
+
+    setDrag((current) => {
+      if (current?.type !== "task") return current;
+      const from = laneOf({ lanes: current.lanes, id });
+      const to = overZone
+        ? (over.data.current as { columnId: string }).columnId
+        : laneOf({ lanes: current.lanes, id: overId });
+      if (!from || !to || from === to) return current;
+
+      // Within the new column, the card goes before the card it's over, or after it once past that card's middle.
+      const target = current.lanes[to] ?? [];
+      const translated = active.rect.current.translated;
+      const below = translated !== null && translated.top > over.rect.top + over.rect.height / 2;
+      const index = overZone ? target.length : target.indexOf(overId) + (below ? 1 : 0);
+      justCrossed.current = true;
+      return {
+        ...current,
+        lanes: {
+          ...current.lanes,
+          [from]: (current.lanes[from] ?? []).filter((item) => item !== id),
+          [to]: [...target.slice(0, index), id, ...target.slice(index)],
+        },
+      };
+    });
+  };
+
+  const onDragEnd = ({ active, over }: DragEndEvent) => {
+    const current = drag;
+    const id = String(active.id);
+    setDrag(null);
+    swallowNextClick();
+    if (current?.type === "task") refocus(id);
+    if (!over || (current?.type !== "task" && current?.type !== "column")) return;
+
+    /*------ Column ------*/
+    if (current.type === "column") {
+      const from = columns.findIndex((column) => column.id === id);
+      const to = columns.findIndex((column) => column.id === over.id);
+      if (from === to || to < 0) return;
+      const order = arrayMove(columns, from, to);
+      setDrag({ type: "dropped-column", order: order.map((column) => column.id), until: project.columns });
+      // Between its new neighbours on the board. The cancelled column isn't shown, so where the moved column falls
+      // against it doesn't matter.
+      moveColumn({
+        columnId: id,
+        position: keyBetween(order[to - 1]?.position ?? null, order[to + 1]?.position ?? null),
+      });
+      return;
+    }
+
+    /*------ Card ------*/
+    const columnId = laneOf({ lanes: current.lanes, id });
+    const task = tasks.get(id);
+    if (!columnId || !task) return;
+    let lane = current.lanes[columnId] ?? [];
+    const overId = String(over.id);
+    if (typeOf(over) === "task" && overId !== id && lane.includes(overId)) {
+      lane = arrayMove(lane, lane.indexOf(id), lane.indexOf(overId));
+    }
+    const unchanged = (settled[columnId] ?? []).join() === lane.join();
+    if (task.columnId === columnId && unchanged) return;
+
+    setDrag({ type: "dropped-task", lanes: { ...current.lanes, [columnId]: lane }, until: board.tasks });
+    const index = lane.indexOf(id);
+    const positionOf = (neighbour: string | undefined) =>
+      neighbour === undefined ? null : (tasks.get(neighbour)?.position ?? null);
+    moveTask({ taskId: id, columnId, position: keyBetween(positionOf(lane[index - 1]), positionOf(lane[index + 1])) });
+  };
+
+  /*------ Move To ------*/
+  const moveToEnd = ({ task, columnId }: { task: TaskCardData; columnId: string }) => {
+    const last = board.tasks.findLast((item) => item.columnId === columnId && item.id !== task.id);
+    moveTask({ taskId: task.id, columnId, position: positionBetween(last?.position ?? null, null) });
+  };
+
+  /*------ Announcements ------*/
+  // Where a card would land: its column, its place there, and how many cards the column would hold.
+  const placeOf = ({ active, over }: { active: Active; over: Over }) => {
+    const id = String(active.id);
+    const overId = String(over.id);
+    const columnId =
+      typeOf(over) === "zone"
+        ? (over.data.current as { columnId: string }).columnId
+        : laneOf({ lanes: lanesRef.current, id: overId });
+    const lane = columnId ? (lanesRef.current[columnId] ?? []) : [];
+    const others = lane.filter((item) => item !== id);
+    const position =
+      typeOf(over) === "zone" ? others.length + 1 : overId === id ? lane.indexOf(id) + 1 : others.indexOf(overId) + 1;
+    return { code: codeOf(id), column: (columnId && titles.get(columnId)) || "", position, total: others.length + 1 };
+  };
+  const columnPlaceOf = ({ active, over }: { active: Active; over: Over }) => ({
+    column: titles.get(String(active.id)) ?? "",
+    position: columns.findIndex((column) => column.id === over.id) + 1,
+    total: columns.length,
+  });
+
+  const announcements: Announcements = {
+    onDragStart: ({ active }) =>
+      typeOf(active) === "column"
+        ? m.board_column_picked({ column: titles.get(String(active.id)) ?? "" })
+        : m.board_card_picked({ code: codeOf(active.id) }),
+    onDragOver: ({ active, over }) => {
+      if (!over) return undefined;
+      return typeOf(active) === "column"
+        ? m.board_column_over(columnPlaceOf({ active, over }))
+        : m.board_card_over(placeOf({ active, over }));
+    },
+    onDragEnd: ({ active, over }) => {
+      if (typeOf(active) === "column") {
+        const column = titles.get(String(active.id)) ?? "";
+        return over ? m.board_column_dropped(columnPlaceOf({ active, over })) : m.board_column_returned({ column });
+      }
+      return over
+        ? m.board_card_dropped(placeOf({ active, over }))
+        : m.board_card_returned({ code: codeOf(active.id) });
+    },
+    onDragCancel: ({ active }) =>
+      typeOf(active) === "column"
+        ? m.board_column_returned({ column: titles.get(String(active.id)) ?? "" })
+        : m.board_card_returned({ code: codeOf(active.id) }),
+  };
+
+  /*------ Render ------*/
+  const dragged = drag?.type === "task" ? tasks.get(drag.id) : undefined;
+
+  return (
+    <DndContext
+      id={contextId}
+      sensors={sensors}
+      collisionDetection={collisionDetection}
+      onDragStart={onDragStart}
+      onDragOver={onDragOver}
+      onDragEnd={onDragEnd}
+      onDragCancel={({ active }) => {
+        setDrag(null);
+        refocus(String(active.id));
+      }}
+      accessibility={{ announcements, screenReaderInstructions: { draggable: m.board_drag_instructions() } }}
+    >
+      {/* Browsers make a scrolling box keyboard-focusable themselves, so it gets the focus ring but no `tabIndex`. */}
+      <section
+        aria-label={m.board_columns()}
+        className="-m-2 flex items-start gap-6 overflow-x-auto p-2 outline-none focus-visible:outline-2 focus-visible:outline-ring focus-visible:outline-solid"
+      >
+        <SortableContext items={columns.map((column) => column.id)} strategy={horizontalListSortingStrategy}>
+          {columns.map((column) => {
+            const ids = lanes[column.id] ?? [];
+            return (
+              <SortableColumn
+                key={column.id}
+                column={column}
+                count={ids.length}
+                movable={canMoveColumns}
+                footer={<QuickAdd projectId={project.id} columnId={column.id} columnTitle={columnTitle(column)} />}
+              >
+                <SortableContext id={column.id} items={ids} strategy={verticalListSortingStrategy}>
+                  <ol className="flex flex-col gap-3">
+                    {ids.map((id) => {
+                      const task = tasks.get(id);
+                      if (!task) return null;
+                      return (
+                        <SortableTaskCard
+                          key={id}
+                          task={task}
+                          columnId={column.id}
+                          projectKey={project.key}
+                          labels={labels}
+                          people={people}
+                          menu={
+                            <MoveToMenu
+                              taskId={task.id}
+                              code={codeOf(task.id)}
+                              columns={columns}
+                              currentColumnId={column.id}
+                              onMove={(target) => moveToEnd({ task, columnId: target })}
+                            />
+                          }
+                        />
+                      );
+                    })}
+                  </ol>
+                </SortableContext>
+              </SortableColumn>
+            );
+          })}
+        </SortableContext>
+      </section>
+
+      {/*------ Moving Copy ------*/}
+      <DragOverlay>
+        {dragged && (
+          <TaskCard
+            task={dragged}
+            projectKey={project.key}
+            labels={labels}
+            people={people}
+            state="overlay"
+            grip={<CardGrip code={codeOf(dragged.id)} />}
+          />
+        )}
+      </DragOverlay>
+    </DndContext>
+  );
+}

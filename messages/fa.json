@@ -159,6 +159,14 @@
   ],
   "auth_no_account": "حساب ندارید؟ از مدیر تیم بخواهید برایتان بسازد.",
   "nav_team": "تیم",
+  "board_column_returned": [
+    {
+      "declarations": ["input column"],
+      "match": {
+        "": "ستون {column} سر جایش برگشت."
+      }
+    }
+  ],
   "board_column_cancelled": "لغوشده",
   "board_over_wip": "بیش از سقف کار",
   "board_wip_readout": [
@@ -382,5 +390,117 @@
       }
     }
   ],
-  "task_error_position_invalid": "تخته به‌روز نبود. تازه شد؛ دوباره امتحان کنید."
+  "task_error_position_invalid": "تخته به‌روز نبود. تازه شد؛ دوباره امتحان کنید.",
+  "board_drag_instructions": "برای برداشتن کارت یا ستون، روی دستگیره‌اش Space یا Enter را بزنید. با کلیدهای جهت جابه‌جایش کنید، با Space یا Enter رهایش کنید، یا با Escape آن را سر جایش برگردانید.",
+  "board_drag_role_card": "کارت جابه‌جاشدنی",
+  "board_drag_role_column": "ستون جابه‌جاشدنی",
+  "board_card_grip": [
+    {
+      "declarations": ["input code"],
+      "match": {
+        "": "جابه‌جایی کارت {code}"
+      }
+    }
+  ],
+  "board_column_grip": [
+    {
+      "declarations": ["input column"],
+      "match": {
+        "": "جابه‌جایی ستون {column}"
+      }
+    }
+  ],
+  "board_card_picked": [
+    {
+      "declarations": ["input code"],
+      "match": {
+        "": "کارت {code} برداشته شد."
+      }
+    }
+  ],
+  "board_card_over": [
+    {
+      "declarations": [
+        "input code",
+        "input column",
+        "input position",
+        "local positionText = position: number",
+        "input total",
+        "local totalText = total: number"
+      ],
+      "match": {
+        "": "کارت {code}: {column}، جایگاه {positionText} از {totalText}."
+      }
+    }
+  ],
+  "board_card_dropped": [
+    {
+      "declarations": [
+        "input code",
+        "input column",
+        "input position",
+        "local positionText = position: number",
+        "input total",
+        "local totalText = total: number"
+      ],
+      "match": {
+        "": "کارت {code} در {column} رها شد، جایگاه {positionText} از {totalText}."
+      }
+    }
+  ],
+  "board_card_returned": [
+    {
+      "declarations": ["input code"],
+      "match": {
+        "": "کارت {code} سر جایش برگشت."
+      }
+    }
+  ],
+  "board_column_picked": [
+    {
+      "declarations": ["input column"],
+      "match": {
+        "": "ستون {column} برداشته شد."
+      }
+    }
+  ],
+  "board_column_over": [
+    {
+      "declarations": [
+        "input column",
+        "input position",
+        "local positionText = position: number",
+        "input total",
+        "local totalText = total: number"
+      ],
+      "match": {
+        "": "ستون {column}: جایگاه {positionText} از {totalText}."
+      }
+    }
+  ],
+  "board_column_dropped": [
+    {
+      "declarations": [
+        "input column",
+        "input position",
+        "local positionText = position: number",
+        "input total",
+        "local totalText = total: number"
+      ],
+      "match": {
+        "": "ستون {column} در جایگاه {positionText} از {totalText} رها شد."
+      }
+    }
+  ],
+  "task_actions": [
+    {
+      "declarations": ["input code"],
+      "match": {
+        "": "کارهای {code}"
+      }
+    }
+  ],
+  "task_move_to": "انتقال به",
+  "task_move_failed": "کارت جابه‌جا نشد. دوباره امتحان کنید.",
+  "column_move_failed": "ستون جابه‌جا نشد. دوباره امتحان کنید."
 }

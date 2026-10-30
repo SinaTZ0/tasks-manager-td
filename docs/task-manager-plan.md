@@ -109,7 +109,7 @@ Built once, in the slice that first needs them, and used by every procedure afte
   restyled as instrument parts (the editor is a field plate in a cut, its toolbar a row of compact keys).
 - **Tests**: every task change writes Activity; archived tasks leave the board but keep their history.
 
-### 3. Drag
+### 3. Drag ✓
 
 - Move cards between and within columns, reorder columns (admin), with optimistic moves and rollback.
 - A "move to…" menu on every card, so moving never depends on dragging.

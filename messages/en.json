@@ -159,6 +159,14 @@
   ],
   "auth_no_account": "No account yet? Ask an admin on your team to make one for you.",
   "nav_team": "Team",
+  "board_column_returned": [
+    {
+      "declarations": ["input column"],
+      "match": {
+        "": "Column {column} went back to its place."
+      }
+    }
+  ],
   "board_column_cancelled": "Cancelled",
   "board_over_wip": "Over the WIP limit",
   "board_wip_readout": [
@@ -382,5 +390,117 @@
       }
     }
   ],
-  "task_error_position_invalid": "The board was out of date. It has been refreshed; try again."
+  "task_error_position_invalid": "The board was out of date. It has been refreshed; try again.",
+  "board_drag_instructions": "To pick up a card or a column, press Space or Enter on its grip. Move it with the arrow keys, press Space or Enter to drop it, or Escape to put it back.",
+  "board_drag_role_card": "movable card",
+  "board_drag_role_column": "movable column",
+  "board_card_grip": [
+    {
+      "declarations": ["input code"],
+      "match": {
+        "": "Move card {code}"
+      }
+    }
+  ],
+  "board_column_grip": [
+    {
+      "declarations": ["input column"],
+      "match": {
+        "": "Move column {column}"
+      }
+    }
+  ],
+  "board_card_picked": [
+    {
+      "declarations": ["input code"],
+      "match": {
+        "": "Picked up card {code}."
+      }
+    }
+  ],
+  "board_card_over": [
+    {
+      "declarations": [
+        "input code",
+        "input column",
+        "input position",
+        "local positionText = position: number",
+        "input total",
+        "local totalText = total: number"
+      ],
+      "match": {
+        "": "Card {code}: {column}, place {positionText} of {totalText}."
+      }
+    }
+  ],
+  "board_card_dropped": [
+    {
+      "declarations": [
+        "input code",
+        "input column",
+        "input position",
+        "local positionText = position: number",
+        "input total",
+        "local totalText = total: number"
+      ],
+      "match": {
+        "": "Card {code} dropped in {column}, place {positionText} of {totalText}."
+      }
+    }
+  ],
+  "board_card_returned": [
+    {
+      "declarations": ["input code"],
+      "match": {
+        "": "Card {code} went back to its place."
+      }
+    }
+  ],
+  "board_column_picked": [
+    {
+      "declarations": ["input column"],
+      "match": {
+        "": "Picked up column {column}."
+      }
+    }
+  ],
+  "board_column_over": [
+    {
+      "declarations": [
+        "input column",
+        "input position",
+        "local positionText = position: number",
+        "input total",
+        "local totalText = total: number"
+      ],
+      "match": {
+        "": "Column {column}: place {positionText} of {totalText}."
+      }
+    }
+  ],
+  "board_column_dropped": [
+    {
+      "declarations": [
+        "input column",
+        "input position",
+        "local positionText = position: number",
+        "input total",
+        "local totalText = total: number"
+      ],
+      "match": {
+        "": "Column {column} dropped at place {positionText} of {totalText}."
+      }
+    }
+  ],
+  "task_actions": [
+    {
+      "declarations": ["input code"],
+      "match": {
+        "": "Actions for {code}"
+      }
+    }
+  ],
+  "task_move_to": "Move to",
+  "task_move_failed": "The card wasn't moved. Try again.",
+  "column_move_failed": "The column wasn't moved. Try again."
 }

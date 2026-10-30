@@ -9,13 +9,10 @@ import { buttonVariants } from "#/components/primitive/button/button.styles";
 import { Card, CardContent } from "#/components/primitive/card/card";
 import { Marking } from "#/components/primitive/marking/marking";
 import { PersonAvatar } from "#/components/shared/person-avatar/person-avatar";
-import { columnTitle } from "#/lib/column-title";
 import { pageMeta } from "#/lib/seo";
 import type { Person } from "#/orpc/project/contract";
 import { m } from "#/paraglide/messages";
-import { BoardColumn } from "#/routes/projects_projectKey/components/board-column";
-import { QuickAdd } from "#/routes/projects_projectKey/components/quick-add";
-import { TaskCard } from "#/routes/projects_projectKey/components/task-card";
+import { Board } from "#/routes/projects_projectKey/components/board";
 import { TaskDrawer } from "#/routes/projects_projectKey/components/task-drawer";
 import { boardQuery, ensureProject, projectQuery, taskQuery } from "#/routes/projects_projectKey/queries";
 import { boardSearchSchema, taskNumberOf } from "#/routes/projects_projectKey/search-params";
@@ -49,7 +46,7 @@ export const Route = createFileRoute("/_site-layout/_app-layout/projects/$projec
 
 /**
  * A project's board: every column but the cancelled one in one housing, side by side, wider than the window, so the
- * row scrolls. A card's drawer opens over it from `?task=`.
+ * row scrolls (`Board` holds them and the dragging). A card's drawer opens over it from `?task=`.
  */
 function BoardPage() {
   const { projectKey } = Route.useParams();
@@ -57,7 +54,6 @@ function BoardPage() {
   const { viewer } = Route.useRouteContext();
   const { data: project } = useSuspenseQuery(projectQuery(projectKey));
   const { data: board } = useSuspenseQuery(boardQuery(project.id));
-  const columns = project.columns.filter((column) => column.kind !== "cancelled");
 
   /*------ Lookups ------*/
   // Cards name people by id: the project's members, and anyone the board still mentions who has left it.
@@ -93,33 +89,14 @@ function BoardPage() {
       {/*------ Columns ------*/}
       <Card>
         <CardContent>
-          {/* Browsers make a scrolling box keyboard-focusable themselves, so it gets the focus ring but no `tabIndex`. */}
-          <section
-            aria-label={m.board_columns()}
-            className="-m-2 flex items-start gap-6 overflow-x-auto p-2 outline-none focus-visible:outline-2 focus-visible:outline-ring focus-visible:outline-solid"
-          >
-            {columns.map((column) => {
-              const title = columnTitle(column);
-              const tasks = board.tasks.filter((task) => task.columnId === column.id);
-              return (
-                <BoardColumn
-                  key={column.id}
-                  title={title}
-                  count={tasks.length}
-                  wipLimit={column.wipLimit}
-                  footer={<QuickAdd projectId={project.id} columnId={column.id} columnTitle={title} />}
-                >
-                  <ol className="flex flex-col gap-3">
-                    {tasks.map((task) => (
-                      <li key={task.id}>
-                        <TaskCard task={task} projectKey={project.key} labels={labels} people={people} />
-                      </li>
-                    ))}
-                  </ol>
-                </BoardColumn>
-              );
-            })}
-          </section>
+          <Board
+            project={project}
+            projectKey={projectKey}
+            board={board}
+            labels={labels}
+            people={people}
+            canMoveColumns={viewer.role === "admin"}
+          />
         </CardContent>
       </Card>
 

@@ -554,6 +554,12 @@
   }
 }
 
+/* A part being dragged on the board (dnd-kit): where it is and how it slides come in as custom properties. */
+@utility drag-motion {
+  transform: var(--drag-transform, none);
+  transition: var(--drag-transition, none);
+}
+
 @media (prefers-reduced-motion: reduce) {
   /* Colour transitions and hover lifts are removed entirely */
   *,

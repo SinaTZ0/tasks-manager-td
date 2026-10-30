@@ -1,5 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { AlignStartVerticalIcon } from "lucide-react";
+import type { PointerEventHandler, ReactNode } from "react";
 
 import { Marking } from "#/components/primitive/marking/marking";
 import { PersonAvatar } from "#/components/shared/person-avatar/person-avatar";
@@ -19,17 +20,30 @@ import { PriorityMark } from "#/routes/projects_projectKey/components/priority-m
  * code and priority on a printed strip, the title and labels on the face, people and dates on the footer. The title is
  * the link that opens the card's drawer; its hit area covers the whole card. The owner's cap shows beside the
  * assignee's only when they differ, since delegation never changes the owner.
+ *
+ * On the board the card is also something to pick up (`SortableTaskCard` passes the drag props): `grip` and `menu` sit
+ * on the header strip, above the stretched link. `state` dims the card left behind while
+ * its copy is dragged (`placeholder`) and makes that copy inert (`overlay`).
  */
 export function TaskCard({
   task,
   projectKey,
   labels,
   people,
+  onPointerDown,
+  grip,
+  menu,
+  state = "idle",
 }: {
   task: TaskCardData;
   projectKey: string;
   labels: Map<string, Label>;
   people: Map<string, Person>;
+  /** Starts a pointer drag anywhere on the card; the keyboard drag lives on `grip`. */
+  onPointerDown?: PointerEventHandler<HTMLElement>;
+  grip?: ReactNode;
+  menu?: ReactNode;
+  state?: "idle" | "placeholder" | "overlay";
 }) {
   const code = taskCode({ key: projectKey, number: task.number });
   const owner = people.get(task.ownerId);
@@ -38,15 +52,25 @@ export function TaskCard({
 
   return (
     <article
+      onPointerDown={onPointerDown}
+      inert={state === "overlay" || undefined}
       className={cn(
-        "relative flex flex-col rounded-housing border border-border bg-card shadow-housing transition-colors duration-150",
+        "group/card relative flex flex-col rounded-housing border border-border bg-card shadow-housing transition-colors duration-150 select-none",
         "focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-ring hover:bg-accent",
+        state === "placeholder" && "opacity-40",
+        state === "overlay" && "cursor-grabbing bg-accent",
       )}
     >
       {/*------ Header Strip ------*/}
-      <header className="flex items-center justify-between gap-3 border-b border-border px-3 py-2">
-        <Marking variant="code">{code}</Marking>
-        <PriorityMark priority={task.priority} />
+      <header className="flex min-h-12 items-center justify-between gap-3 border-b border-border px-3 py-2">
+        <span className="flex items-center gap-2">
+          {grip && <span className="relative z-10 flex">{grip}</span>}
+          <Marking variant="code">{code}</Marking>
+        </span>
+        <span className="flex items-center gap-2">
+          <PriorityMark priority={task.priority} />
+          {menu && <span className="relative z-10 flex">{menu}</span>}
+        </span>
       </header>
 
       {/*------ Face ------*/}
@@ -56,6 +80,8 @@ export function TaskCard({
           <Link
             from="/projects/$projectKey"
             search={(previous) => ({ ...previous, task: code })}
+            // A link is natively draggable, which would steal the pointer from the card's own drag.
+            draggable={false}
             className="outline-none after:absolute after:inset-0"
           >
             {task.title}
