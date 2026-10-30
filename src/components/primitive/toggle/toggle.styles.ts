@@ -1,0 +1,65 @@
+import { cva } from "class-variance-authority";
+import { keycapVariants, twKeycapTone } from "../instrument.styles";
+import { composeStyles, defineStyles, joinStyles } from "../styles";
+
+/*===== Shared Styles =====*/
+
+const twSharedStyles = defineStyles({
+  // `group/toggle` lets the LED and legend react to the latched state
+  layout: "group/toggle",
+  icon: "[&_svg:not([class*='size-'])]:size-4",
+});
+
+/*===== Appearance =====*/
+
+// A toggle is a latch key: the same keycap as a button, but it stays sunk while on (the recipe's `data-pressed`
+// state) and lights its LED. `default` is the light key; `outline` the flat plate for quieter toolbars.
+const twVariant = defineStyles({
+  default: { appearance: joinStyles(twKeycapTone.light) },
+  outline: { appearance: joinStyles(twKeycapTone.flat) },
+});
+
+/*===== Geometry =====*/
+
+// `sm` is the compact scale (32px) for dense toolbars and lives beside a label; `default` and `lg` keep the 40px+
+// tap target. Every key's cut sits 2–3px outside its box, so neighbours need at least `gap-2`.
+const twSize = defineStyles({
+  sm: {
+    layout: "gap-1.5",
+    geometry: "h-8 min-w-8 px-3",
+    geometryIcon: "has-data-[icon=inline-end]:pe-2 has-data-[icon=inline-start]:ps-2",
+    typography: "text-caption font-semibold",
+  },
+  default: {
+    layout: "gap-2",
+    geometry: "h-11 min-w-11 px-4",
+    geometryIcon: "has-data-[icon=inline-end]:pe-3 has-data-[icon=inline-start]:ps-3",
+  },
+  lg: {
+    layout: "gap-2",
+    geometry: "h-12 min-w-12 px-5",
+    geometryIcon: "has-data-[icon=inline-end]:pe-4 has-data-[icon=inline-start]:ps-4",
+  },
+});
+
+/*===== Class Composition =====*/
+
+const toggleVariants = cva(joinStyles(twSharedStyles), {
+  variants: {
+    variant: composeStyles(twVariant),
+    size: composeStyles(twSize),
+  },
+  // Scale (radius, bevel, cut width, press depth) follows the size, as on Button
+  compoundVariants: [
+    { size: ["default", "lg"], className: keycapVariants({ tone: null, scale: "regular" }) },
+    { size: "sm", className: keycapVariants({ tone: null, scale: "compact" }) },
+    { variant: "default", size: ["default", "lg"], className: "after:shadow-keycap" },
+    { variant: "default", size: "sm", className: "after:shadow-keycap-compact" },
+  ],
+  defaultVariants: {
+    variant: "default",
+    size: "default",
+  },
+});
+
+export { toggleVariants, twVariant, twSize };
