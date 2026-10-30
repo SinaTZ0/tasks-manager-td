@@ -42,6 +42,7 @@ export function SortableTaskCard({
   labels,
   people,
   blockedBy,
+  movable,
   menu,
 }: {
   task: TaskCardData;
@@ -52,12 +53,15 @@ export function SortableTaskCard({
   people: Map<string, Person>;
   /** The codes of the tasks still holding it up. */
   blockedBy: string[];
+  /** False for a viewer: the card stays put, with no grip to pick it up. */
+  movable: boolean;
   menu: ReactNode;
 }) {
   const code = taskCode({ key: projectKey, number: task.number });
   const { setNodeRef, setActivatorNodeRef, attributes, listeners, transform, transition, isDragging } = useSortable({
     id: task.id,
     data: { type: "task", columnId },
+    disabled: !movable,
     attributes: { roleDescription: m.board_drag_role_card() },
   });
 
@@ -81,12 +85,14 @@ export function SortableTaskCard({
         onPointerDown={listeners?.onPointerDown as PointerEventHandler<HTMLElement> | undefined}
         state={isDragging ? "placeholder" : "idle"}
         grip={
-          <CardGrip
-            ref={setActivatorNodeRef}
-            code={code}
-            {...attributes}
-            onKeyDown={listeners?.onKeyDown as KeyboardEventHandler<HTMLButtonElement> | undefined}
-          />
+          movable && (
+            <CardGrip
+              ref={setActivatorNodeRef}
+              code={code}
+              {...attributes}
+              onKeyDown={listeners?.onKeyDown as KeyboardEventHandler<HTMLButtonElement> | undefined}
+            />
+          )
         }
         menu={menu}
       />

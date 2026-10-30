@@ -54,7 +54,7 @@ export async function delegateTask({
   if (!parsed.success) return { kind: "invalid", fields: { note: parsed.error.issues[0]?.message ?? "" } };
   const note = parsed.data;
   if (!isUuid(taskId)) return { kind: "not-found" };
-  const active = await findActiveMemberIds({ db, projectId, ids: [toId] });
+  const active = await findActiveMemberIds({ db, projectId, ids: [toId], editorsOnly: true });
   if (!active.has(toId)) return { kind: "invalid", fields: { toId: m.task_error_person_unusable() } };
 
   return db.transaction(async (tx): Promise<Result> => {

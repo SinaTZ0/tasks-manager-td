@@ -31,11 +31,14 @@ export function TaskDependencies({
   project,
   board,
   kinds,
+  readOnly,
 }: {
   task: TaskDetail;
   project: Project;
   board: Board;
   kinds: Map<string, ColumnKind>;
+  /** A viewer sees the links, and neither adds nor removes one. */
+  readOnly: boolean;
 }) {
   const queryClient = useQueryClient();
   const pickerId = useId();
@@ -85,15 +88,17 @@ export function TaskDependencies({
                   <Marking className="ms-auto">
                     {holding ? m.dependency_state_waiting() : m.dependency_state_released()}
                   </Marking>
-                  <Button
-                    variant="ghost"
-                    size="icon-xs"
-                    aria-label={m.dependency_remove({ code })}
-                    disabled={remove.isPending}
-                    onClick={() => remove.mutate({ projectId: project.id, taskId: task.id, blockerId: blocker.id })}
-                  >
-                    <XIcon />
-                  </Button>
+                  {!readOnly && (
+                    <Button
+                      variant="ghost"
+                      size="icon-xs"
+                      aria-label={m.dependency_remove({ code })}
+                      disabled={remove.isPending}
+                      onClick={() => remove.mutate({ projectId: project.id, taskId: task.id, blockerId: blocker.id })}
+                    >
+                      <XIcon />
+                    </Button>
+                  )}
                 </li>
               );
             })}
@@ -104,7 +109,7 @@ export function TaskDependencies({
       </div>
 
       {/*------ Add ------*/}
-      {candidates.length > 0 && (
+      {candidates.length > 0 && !readOnly && (
         <Field>
           <FieldLabel htmlFor={pickerId}>{m.dependency_add_label()}</FieldLabel>
           {/* Picking a task adds it at once; the picker then goes back to empty. */}

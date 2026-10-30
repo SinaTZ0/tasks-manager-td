@@ -1,5 +1,5 @@
 import { base } from "#/orpc/implementer.server";
-import { requireUserMiddleware } from "#/orpc/middleware/auth/auth.middleware";
+import { requireEditorMiddleware, requireUserMiddleware } from "#/orpc/middleware/auth/auth.middleware";
 import { provideDbMiddleware } from "#/orpc/middleware/db/db.middleware";
 import { requireProjectMemberMiddleware } from "#/orpc/middleware/project-access/project-access.middleware";
 import { addTimeEntry, getRunningTimer, getTaskTime, removeTimeEntry, stopRunningTimer } from "#/orpc/time/service";
@@ -13,7 +13,7 @@ export const currentTimerProcedure = base.time.current
   .handler(({ context }) => getRunningTimer({ db: context.db, userId: context.user.id }));
 
 export const stopTimerProcedure = base.time.stop
-  .use(requireUserMiddleware)
+  .use(requireEditorMiddleware)
   .use(provideDbMiddleware)
   .handler(({ context }) => stopRunningTimer({ db: context.db, actorId: context.user.id }));
 
@@ -30,7 +30,7 @@ export const taskTimeProcedure = base.time.forTask
 
 /*===== Manual Entries =====*/
 export const addTimeEntryProcedure = base.time.add
-  .use(requireUserMiddleware)
+  .use(requireEditorMiddleware)
   .use(provideDbMiddleware)
   .use(requireProjectMemberMiddleware)
   .handler(async ({ context, input, errors }) => {
@@ -42,7 +42,7 @@ export const addTimeEntryProcedure = base.time.add
   });
 
 export const removeTimeEntryProcedure = base.time.remove
-  .use(requireUserMiddleware)
+  .use(requireEditorMiddleware)
   .use(provideDbMiddleware)
   .use(requireProjectMemberMiddleware)
   .handler(async ({ context, input, errors }) => {

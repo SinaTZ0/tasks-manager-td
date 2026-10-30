@@ -1190,5 +1190,18 @@
   ],
   "archive_delete_failed": "کار حذف نشد. دوباره امتحان کنید.",
   "task_error_restore_admin_only": "فقط مدیر می‌تواند کاری را از بایگانی برگرداند.",
-  "archive_description_member": "کارهایی که از تخته برداشته شده‌اند. مدیر می‌تواند هر کدام را به ستونش برگرداند."
+  "archive_description_member": "کارهایی که از تخته برداشته شده‌اند. مدیر می‌تواند هر کدام را به ستونش برگرداند.",
+  "common_error_forbidden": "نقش شما اجازه این کار را نمی‌دهد. اگر لازم دارید از مدیر بخواهید.",
+  "team_role_viewer": "بیننده",
+  "team_role_admin_hint": "همه‌چیز: تیم، پروژه‌ها، و ساختن و بایگانی کارها.",
+  "team_role_user_hint": "روی کارهای پروژه‌هایش کار می‌کند: جابه‌جایی، ویرایش، زمان، نظر.",
+  "team_role_viewer_hint": "پروژه‌هایش را می‌بیند و می‌شود نامش را آورد؛ چیزی را تغییر نمی‌دهد.",
+  "team_open_tasks": [
+    {
+      "declarations": ["input count", "local countText = count: number"],
+      "match": {
+        "": "کارهای باز سپرده‌شده: {countText}"
+      }
+    }
+  ]
 }

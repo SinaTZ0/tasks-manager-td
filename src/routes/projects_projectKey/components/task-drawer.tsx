@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { useNavigate, useRouteContext } from "@tanstack/react-router";
+import { useNavigate } from "@tanstack/react-router";
 
 import { Marking } from "#/components/primitive/marking/marking";
 import { Separator } from "#/components/primitive/separator/separator";
@@ -14,6 +14,7 @@ import type { Person, Project } from "#/orpc/project/contract";
 import { taskCode } from "#/orpc/task/constants";
 import type { Board, TaskDetail } from "#/orpc/task/contract";
 import { m } from "#/paraglide/messages";
+import { useBoardAccess } from "#/routes/projects_projectKey/access";
 import { ArchiveTaskButton } from "#/routes/projects_projectKey/components/archive-task-button";
 import { LabelPicker } from "#/routes/projects_projectKey/components/label-picker";
 import {
@@ -91,12 +92,14 @@ function TaskDetails({
   people: Map<string, Person>;
   onArchived: () => void;
 }) {
-  const { viewer } = useRouteContext({ from: "/_site-layout/_app-layout" });
+  const { viewerId, canEdit, isAdmin } = useBoardAccess();
+  // A viewer reads the drawer: every field shows its value, and no key changes anything.
+  const readOnly = !canEdit;
   const update = useTaskUpdate({ projectId: project.id, task });
   const code = taskCode({ key: project.key, number: task.number });
   const column = project.columns.find((item) => item.id === task.columnId);
   const creator = people.get(task.createdBy);
-  const canHandOver = viewer.role === "admin" || viewer.id === task.ownerId;
+  const canHandOver = canEdit && (isAdmin || viewerId === task.ownerId);
   const archived = task.archivedAt !== null;
   const kinds = kindsOf(project);
   const blockers = blockersOf({ task, tasks: new Map(board.tasks.map((item) => [item.id, item])), kinds }).map(
@@ -123,21 +126,35 @@ function TaskDetails({
         <div className="grid grid-cols-3 gap-8 px-6 pb-6">
           {/*------ Main ------*/}
           <div className="col-span-2 flex min-w-0 flex-col gap-6">
-            <TaskStatusPanel task={task} project={project} code={code} people={people} blockers={blockers} />
-            <TaskTitleField key={task.title} task={task} update={update} />
-            <TaskDescriptionField task={task} update={update} />
+            <TaskStatusPanel
+              task={task}
+              project={project}
+              code={code}
+              people={people}
+              blockers={blockers}
+              readOnly={readOnly}
+            />
+            <TaskTitleField key={task.title} task={task} update={update} readOnly={readOnly} />
+            <TaskDescriptionField task={task} update={update} readOnly={readOnly} />
             <Separator />
-            <LabelPicker task={task} update={update} projectId={project.id} labels={board.labels} />
+            <LabelPicker task={task} update={update} projectId={project.id} labels={board.labels} readOnly={readOnly} />
             <Separator />
-            <TaskDependencies task={task} project={project} board={board} kinds={kinds} />
+            <TaskDependencies task={task} project={project} board={board} kinds={kinds} readOnly={readOnly} />
             <Separator />
-            <TaskTabs task={task} project={project} people={people} viewerId={viewer.id} />
+            <TaskTabs task={task} project={project} people={people} viewerId={viewerId} readOnly={readOnly} />
           </div>
 
           {/*------ Side ------*/}
           <div className="flex flex-col gap-5">
-            <PriorityField task={task} update={update} />
-            <PersonField task={task} update={update} field="assignee" members={project.members} people={people} />
+            <PriorityField task={task} update={update} readOnly={readOnly} />
+            <PersonField
+              task={task}
+              update={update}
+              field="assignee"
+              members={project.members}
+              people={people}
+              canEdit={canEdit}
+            />
             <PersonField
               task={task}
               update={update}
@@ -145,13 +162,18 @@ function TaskDetails({
               members={project.members}
               people={people}
               canEdit={canHandOver}
+              explainLock={canEdit}
             />
-            <DueDateField task={task} update={update} />
-            <EstimateField key={task.estimateMinutes} task={task} update={update} />
+            <DueDateField task={task} update={update} readOnly={readOnly} />
+            <EstimateField key={task.estimateMinutes} task={task} update={update} readOnly={readOnly} />
             <Separator />
-            <TaskDelegation task={task} project={project} code={code} />
-            <Separator />
-            <ArchiveTaskButton projectId={project.id} task={task} code={code} onArchived={onArchived} />
+            <TaskDelegation task={task} project={project} code={code} readOnly={readOnly} />
+            {isAdmin && (
+              <>
+                <Separator />
+                <ArchiveTaskButton projectId={project.id} task={task} code={code} onArchived={onArchived} />
+              </>
+            )}
           </div>
         </div>
       )}
@@ -170,11 +192,13 @@ function TaskTabs({
   project,
   people,
   viewerId,
+  readOnly,
 }: {
   task: TaskDetail;
   project: Project;
   people: Map<string, Person>;
   viewerId: string;
+  readOnly: boolean;
 }) {
   return (
     <Tabs defaultValue="comments">
@@ -184,13 +208,13 @@ function TaskTabs({
         <TabsTrigger value="time">{m.task_tab_time()}</TabsTrigger>
       </TabsList>
       <TabsContent value="comments">
-        <TaskComments task={task} project={project} viewerId={viewerId} />
+        <TaskComments task={task} project={project} viewerId={viewerId} readOnly={readOnly} />
       </TabsContent>
       <TabsContent value="activity">
         <TaskActivity task={task} project={project} people={people} />
       </TabsContent>
       <TabsContent value="time">
-        <TaskTimeSection task={task} project={project} people={people} viewerId={viewerId} />
+        <TaskTimeSection task={task} project={project} people={people} viewerId={viewerId} readOnly={readOnly} />
       </TabsContent>
     </Tabs>
   );

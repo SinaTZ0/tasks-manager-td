@@ -1190,5 +1190,18 @@
   ],
   "archive_delete_failed": "Couldn't delete the task. Try again.",
   "task_error_restore_admin_only": "Only an admin can bring a task back from the archive.",
-  "archive_description_member": "Tasks taken off the board. An admin can restore one to its column."
+  "archive_description_member": "Tasks taken off the board. An admin can restore one to its column.",
+  "common_error_forbidden": "Your role can't do this. Ask an admin if you need it.",
+  "team_role_viewer": "Viewer",
+  "team_role_admin_hint": "Everything: the team, projects, and creating and archiving tasks.",
+  "team_role_user_hint": "Works on the tasks of their projects: moves, edits, time, comments.",
+  "team_role_viewer_hint": "Reads their projects and can be mentioned; changes nothing.",
+  "team_open_tasks": [
+    {
+      "declarations": ["input count", "local countText = count: number"],
+      "match": {
+        "": "Open tasks still assigned: {countText}"
+      }
+    }
+  ]
 }

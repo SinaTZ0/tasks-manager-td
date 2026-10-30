@@ -4,7 +4,7 @@ import { z } from "zod";
 import type { RichTextDoc } from "#/lib/rich-text";
 import { handoffSchema } from "#/orpc/delegation/contract";
 import { commonErrors } from "#/orpc/errors";
-import { authErrors } from "#/orpc/middleware/auth/auth.errors";
+import { authErrors, roleErrors } from "#/orpc/middleware/auth/auth.errors";
 import { projectAccessErrors } from "#/orpc/middleware/project-access/project-access.errors";
 import { personSchema } from "#/orpc/project/contract";
 import { LABEL_COLORS, TASK_PRIORITIES, TASK_STATUS_ACTIONS } from "#/orpc/task/constants";
@@ -105,7 +105,7 @@ const updateTaskInputSchema = taskFieldsSchema.partial().extend({ projectId: z.s
 
 /*===== Procedures =====*/
 // `projectAccessErrors` carries NOT_FOUND, which also answers a task or label the project doesn't have.
-const errors = { ...commonErrors, ...authErrors, ...projectAccessErrors };
+const errors = { ...commonErrors, ...authErrors, ...roleErrors, ...projectAccessErrors };
 
 /**
  * A move into doing or done refused because the task still waits for others (rule 4). The board asks for a comment and
@@ -166,12 +166,12 @@ export const taskContract = {
     .errors(errors)
     .input(z.strictObject({ projectId: z.string() }))
     .output(z.object({ tasks: z.array(archivedTaskSchema), people: z.array(personSchema) })),
-  /** Puts an archived task back on the board, at the bottom of its column. Admins only: anyone else gets `INVALID_INPUT`. */
+  /** Puts an archived task back on the board, at the bottom of its column. Admins only: anyone else gets `FORBIDDEN`. */
   restore: oc
     .errors(errors)
     .input(z.strictObject({ projectId: z.string(), taskId: z.string() }))
     .output(z.void()),
-  /** Deletes an archived task for good. Admins only (rule 10): anyone else, or a live task, gets `INVALID_INPUT`. */
+  /** Deletes an archived task for good. Admins only (rule 10): anyone else gets `FORBIDDEN`, a live task `INVALID_INPUT`. */
   delete: oc
     .errors(errors)
     .input(z.strictObject({ projectId: z.string(), taskId: z.string() }))

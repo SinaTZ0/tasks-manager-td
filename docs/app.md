@@ -21,7 +21,7 @@ How it looks: [frontend/app-identity.md](./frontend/app-identity.md). How it's b
 
 What each thing is and how it relates. How to store it = implementer decides.
 
-- **User** — Team member. Admin or member. User leaves team → deactivate, never delete.
+- **User** — Team member. Admin, user or viewer (task-manager-plan.md → Decisions → Roles). User leaves team → deactivate, never delete.
 - **Board** — One project (or one for everything). Has many Columns, many Tasks, many members.
 - **Column** — Status column on board. Has order, optional WIP limit. Each column has a _kind_ (backlog, todo, doing, paused, review, done, cancelled) separate from its name. Name can change freely, kind keeps logic working.
 - **Task** — The card. Lives in one Column. Has one **owner** (responsible for it) and one **assignee** (doing the work), can be same user. Has priority, due date, estimate, labels. Can have parent Task (sub-task).

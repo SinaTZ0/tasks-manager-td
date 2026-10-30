@@ -19,7 +19,7 @@ type Update = ReturnType<typeof useTaskUpdate>;
 const NOBODY = "none";
 
 /*===== Priority =====*/
-export function PriorityField({ task, update }: { task: TaskDetail; update: Update }) {
+export function PriorityField({ task, update, readOnly }: { task: TaskDetail; update: Update; readOnly: boolean }) {
   const items = TASK_PRIORITIES.map((value) => ({ value, label: priorityName(value) }));
 
   return (
@@ -28,6 +28,7 @@ export function PriorityField({ task, update }: { task: TaskDetail; update: Upda
       <Select
         items={items}
         value={task.priority}
+        disabled={readOnly}
         onValueChange={(value) => value && value !== task.priority && update.save({ priority: value as TaskPriority })}
       >
         <SelectTrigger id="task-priority" className="w-full">
@@ -48,9 +49,9 @@ export function PriorityField({ task, update }: { task: TaskDetail; update: Upda
 /*===== People =====*/
 
 /**
- * Picks the assignee or the owner from the project's active members. Someone who has left stays shown as the current
- * value until it changes. The owner can only be handed over by the owner or an admin (rule 6), so for anyone else the
- * owner's select is read-only.
+ * Picks the assignee or the owner from the project's active members, viewers left out (they only read). Someone who
+ * has left stays shown as the current value until it changes. The owner can only be handed over by the owner or an
+ * admin (rule 6), so for anyone else the owner's select is read-only.
  */
 export function PersonField({
   task,
@@ -59,6 +60,7 @@ export function PersonField({
   members,
   people,
   canEdit = true,
+  explainLock = true,
 }: {
   task: TaskDetail;
   update: Update;
@@ -66,9 +68,11 @@ export function PersonField({
   members: Person[];
   people: Map<string, Person>;
   canEdit?: boolean;
+  /** Say why a locked owner can't be changed; not for a viewer, who changes nothing anyway. */
+  explainLock?: boolean;
 }) {
   const current = field === "owner" ? task.ownerId : task.assigneeId;
-  const choices = members.filter((member) => member.status === "active");
+  const choices = members.filter((member) => member.status === "active" && member.role !== "viewer");
   const currentPerson = current ? people.get(current) : undefined;
   if (currentPerson && !choices.some((member) => member.id === currentPerson.id)) choices.push(currentPerson);
 
@@ -99,19 +103,20 @@ export function PersonField({
           ))}
         </SelectContent>
       </Select>
-      {field === "owner" && !canEdit && <FieldDescription>{m.task_owner_locked()}</FieldDescription>}
+      {field === "owner" && !canEdit && explainLock && <FieldDescription>{m.task_owner_locked()}</FieldDescription>}
     </Field>
   );
 }
 
 /*===== Due Date =====*/
-export function DueDateField({ task, update }: { task: TaskDetail; update: Update }) {
+export function DueDateField({ task, update, readOnly }: { task: TaskDetail; update: Update; readOnly: boolean }) {
   return (
     <Field>
       <FieldLabel htmlFor="task-due">{m.task_due_label()}</FieldLabel>
       <DatePicker
         id="task-due"
         value={task.dueDate}
+        disabled={readOnly}
         onChange={(dueDate) => dueDate !== task.dueDate && update.save({ dueDate })}
       />
     </Field>
@@ -121,7 +126,7 @@ export function DueDateField({ task, update }: { task: TaskDetail; update: Updat
 /*===== Estimate =====*/
 
 /** The estimate, typed as `1:30`, `2` or `45m` and saved when the field loses focus or on Enter. */
-export function EstimateField({ task, update }: { task: TaskDetail; update: Update }) {
+export function EstimateField({ task, update, readOnly }: { task: TaskDetail; update: Update; readOnly: boolean }) {
   const saved = task.estimateMinutes === null ? "" : formatDuration(task.estimateMinutes);
   const [draft, setDraft] = useState(saved);
   const [error, setError] = useState<string>();
@@ -153,13 +158,14 @@ export function EstimateField({ task, update }: { task: TaskDetail; update: Upda
         inputMode="decimal"
         autoComplete="off"
         value={draft}
+        disabled={readOnly}
         onChange={(event) => setDraft(event.target.value)}
         onBlur={commit}
         onKeyDown={onKeyDown}
         aria-invalid={!!error}
-        aria-describedby="task-estimate-hint"
+        aria-describedby={readOnly ? undefined : "task-estimate-hint"}
       />
-      <FieldDescription id="task-estimate-hint">{m.task_estimate_hint()}</FieldDescription>
+      {!readOnly && <FieldDescription id="task-estimate-hint">{m.task_estimate_hint()}</FieldDescription>}
       <FieldError>{error}</FieldError>
     </Field>
   );

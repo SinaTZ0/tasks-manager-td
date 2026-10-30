@@ -17,7 +17,15 @@ import type { useTaskUpdate } from "#/routes/projects_projectKey/use-task-update
  * The task's description: read as rich text, edited in the rich-text editor on demand. A draft is saved only with
  * "Save" (or Ctrl+Enter), so half-written notes don't land in the history one keystroke at a time.
  */
-export function TaskDescriptionField({ task, update }: { task: TaskDetail; update: ReturnType<typeof useTaskUpdate> }) {
+export function TaskDescriptionField({
+  task,
+  update,
+  readOnly,
+}: {
+  task: TaskDetail;
+  update: ReturnType<typeof useTaskUpdate>;
+  readOnly: boolean;
+}) {
   const [draft, setDraft] = useState<RichTextDoc | null>(null);
   const editing = draft !== null;
 
@@ -33,7 +41,7 @@ export function TaskDescriptionField({ task, update }: { task: TaskDetail; updat
         <FieldLabel id="task-description-label" htmlFor={editing ? "task-description" : undefined}>
           {m.task_description_label()}
         </FieldLabel>
-        {!editing && (
+        {!editing && !readOnly && (
           <Button variant="secondary" size="sm" onClick={() => setDraft(task.description ?? { type: "doc" })}>
             <PencilIcon data-icon="inline-start" />
             {m.task_description_edit()}

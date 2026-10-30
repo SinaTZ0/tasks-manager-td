@@ -76,4 +76,6 @@ export const MEDIA_ACCEPTED_TYPES = "image/jpeg,image/png,image/webp";
 export const MEDIA_UPLOAD_KINDS_BY_ROLE: Record<UserRole, readonly MediaKind[]> = {
   user: ["avatar", "image"],
   admin: MEDIA_KINDS,
+  // Their own picture only: a viewer changes nothing in the projects.
+  viewer: ["avatar"],
 };

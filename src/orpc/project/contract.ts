@@ -1,7 +1,7 @@
 import { oc } from "@orpc/contract";
 import { z } from "zod";
 
-import { USER_STATUSES } from "#/lib/user-constants";
+import { USER_ROLES, USER_STATUSES } from "#/lib/user-constants";
 import { commonErrors, errorDataSchema } from "#/orpc/errors";
 import { authErrors, roleErrors } from "#/orpc/middleware/auth/auth.errors";
 import { COLUMN_KINDS } from "#/orpc/project/constants";
@@ -22,6 +22,8 @@ export type Column = z.infer<typeof columnSchema>;
 export const personSchema = z.object({
   id: z.string(),
   name: z.string(),
+  /** A viewer is left out of the owner, assignee and delegate pickers, but can still be @mentioned. */
+  role: z.enum(USER_ROLES),
   status: z.enum(USER_STATUSES),
   /** Their picture's small variant, or null for none: the cap then shows their initial. */
   avatarUrl: z.string().nullable(),

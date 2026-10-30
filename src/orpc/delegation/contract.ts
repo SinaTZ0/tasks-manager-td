@@ -2,7 +2,7 @@ import { oc } from "@orpc/contract";
 import { z } from "zod";
 
 import { commonErrors } from "#/orpc/errors";
-import { authErrors } from "#/orpc/middleware/auth/auth.errors";
+import { authErrors, roleErrors } from "#/orpc/middleware/auth/auth.errors";
 import { projectAccessErrors } from "#/orpc/middleware/project-access/project-access.errors";
 import { COLUMN_KINDS } from "#/orpc/project/constants";
 import { TASK_PRIORITIES } from "#/orpc/task/constants";
@@ -42,7 +42,7 @@ export type DelegatedTask = z.infer<typeof delegatedTaskSchema>;
 
 /*===== Procedures =====*/
 // `projectAccessErrors` carries NOT_FOUND, which also answers a task the project doesn't have.
-const errors = { ...commonErrors, ...authErrors, ...projectAccessErrors };
+const errors = { ...commonErrors, ...authErrors, ...roleErrors, ...projectAccessErrors };
 
 export const delegationContract = {
   /**

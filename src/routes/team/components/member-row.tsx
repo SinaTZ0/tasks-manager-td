@@ -17,9 +17,10 @@ import { roleItems } from "#/routes/team/role-labels";
 
 /**
  * One teammate: who they are, their role, and whether their account is active. An admin's own row is read-only: the
- * server refuses changes to one's own account, so the team can't lose its last admin by accident.
+ * server refuses changes to one's own account, so the team can't lose its last admin by accident. A viewer who still
+ * has open tasks says how many, so the admin can hand them on.
  */
-export function MemberRow({ member, isViewer }: { member: TeamMember; isViewer: boolean }) {
+export function MemberRow({ member, isSelf }: { member: TeamMember; isSelf: boolean }) {
   const queryClient = useQueryClient();
   const roles = roleItems();
   const ids = { role: useId(), status: useId() };
@@ -45,11 +46,17 @@ export function MemberRow({ member, isViewer }: { member: TeamMember; isViewer: 
         <div className="min-w-0">
           <p className="flex items-center gap-2 truncate font-medium">
             {member.name}
-            {isViewer && <Marking>{m.team_you()}</Marking>}
+            {isSelf && <Marking>{m.team_you()}</Marking>}
           </p>
           <p dir="ltr" className="truncate text-start text-caption text-muted-foreground">
             {member.email}
           </p>
+          {role === "viewer" && member.openTasks > 0 && (
+            <p className="flex items-center gap-2 text-caption">
+              <Led signal="attention" state="on" size="sm" />
+              {m.team_open_tasks({ count: member.openTasks })}
+            </p>
+          )}
         </div>
       </div>
 
@@ -57,16 +64,20 @@ export function MemberRow({ member, isViewer }: { member: TeamMember; isViewer: 
       <Select
         items={roles}
         value={role}
-        disabled={isViewer || setRole.isPending}
+        disabled={isSelf || setRole.isPending}
         onValueChange={(value) => value && setRole.mutate({ userId: member.id, role: value })}
       >
         <SelectTrigger id={ids.role} aria-label={m.team_role_of({ name: member.name })} className="w-44">
           <SelectValue />
         </SelectTrigger>
-        <SelectContent>
+        {/* Wider than the key, so each role's line about what it may do fits; it opens below rather than over it. */}
+        <SelectContent alignItemWithTrigger={false} align="start" className="w-80">
           {roles.map((item) => (
             <SelectItem key={item.value} value={item.value}>
-              {item.label}
+              <span className="flex flex-col">
+                {item.label}
+                <span className="text-caption whitespace-normal text-muted-foreground">{item.hint}</span>
+              </span>
             </SelectItem>
           ))}
         </SelectContent>
@@ -77,7 +88,7 @@ export function MemberRow({ member, isViewer }: { member: TeamMember; isViewer: 
         <Switch
           id={ids.status}
           checked={checked}
-          disabled={isViewer || setStatus.isPending}
+          disabled={isSelf || setStatus.isPending}
           onCheckedChange={(next) => setStatus.mutate({ userId: member.id, status: next ? "active" : "blocked" })}
         />
         <span className="flex items-center gap-2">

@@ -14,6 +14,8 @@ export const teamMemberSchema = z.object({
   role: z.enum(USER_ROLES),
   status: z.enum(USER_STATUSES),
   createdAt: z.date(),
+  /** Open tasks assigned to them (live, not done or cancelled). */
+  openTasks: z.number().int(),
 });
 
 export type TeamMember = z.infer<typeof teamMemberSchema>;

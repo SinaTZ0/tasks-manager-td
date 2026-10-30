@@ -5,7 +5,7 @@ import type { UserRecord } from "#/orpc/team/repository";
 
 /*===== Public Member =====*/
 /** Converts an account row into the admin list's shape, without its auth fields. */
-export function toTeamMember(record: UserRecord): TeamMember {
+export function toTeamMember({ record, openTasks }: { record: UserRecord; openTasks: number }): TeamMember {
   return {
     id: record.id,
     name: record.name,
@@ -13,5 +13,6 @@ export function toTeamMember(record: UserRecord): TeamMember {
     role: oneOf({ allowed: USER_ROLES, value: record.role, what: "user role" }),
     status: oneOf({ allowed: USER_STATUSES, value: record.status, what: "user status" }),
     createdAt: record.createdAt,
+    openTasks,
   };
 }

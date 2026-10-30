@@ -1,5 +1,5 @@
 import { mediaUrl } from "#/lib/storage.server";
-import { USER_STATUSES } from "#/lib/user-constants";
+import { USER_ROLES, USER_STATUSES } from "#/lib/user-constants";
 import { oneOf } from "#/orpc/allowed-values";
 import type { Column, Person, ProjectSummary } from "#/orpc/project/contract";
 import { COLUMN_KINDS } from "#/orpc/project/constants";
@@ -11,10 +11,11 @@ export function avatarUrlOf(mediaId: string | null | undefined): string | null {
   return mediaId ? mediaUrl({ kind: "avatar", mediaId, variant: "thumb" }) : null;
 }
 
-export function toPerson(row: Pick<MemberRow, "id" | "name" | "status" | "avatarMediaId">): Person {
+export function toPerson(row: Pick<MemberRow, "id" | "name" | "role" | "status" | "avatarMediaId">): Person {
   return {
     id: row.id,
     name: row.name,
+    role: oneOf({ allowed: USER_ROLES, value: row.role, what: "user role" }),
     status: oneOf({ allowed: USER_STATUSES, value: row.status, what: "user status" }),
     avatarUrl: avatarUrlOf(row.avatarMediaId),
   };

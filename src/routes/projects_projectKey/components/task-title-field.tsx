@@ -11,7 +11,15 @@ import type { useTaskUpdate } from "#/routes/projects_projectKey/use-task-update
 /*===== Title =====*/
 
 /** The task's title, saved when the field loses focus or on Enter. Escape puts the saved title back. */
-export function TaskTitleField({ task, update }: { task: TaskDetail; update: ReturnType<typeof useTaskUpdate> }) {
+export function TaskTitleField({
+  task,
+  update,
+  readOnly,
+}: {
+  task: TaskDetail;
+  update: ReturnType<typeof useTaskUpdate>;
+  readOnly: boolean;
+}) {
   const [draft, setDraft] = useState(task.title);
   const [error, setError] = useState<string>();
 
@@ -44,6 +52,7 @@ export function TaskTitleField({ task, update }: { task: TaskDetail; update: Ret
       <Input
         id="task-title"
         value={draft}
+        disabled={readOnly}
         onChange={(event) => setDraft(event.target.value)}
         onBlur={commit}
         onKeyDown={onKeyDown}

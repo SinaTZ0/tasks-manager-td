@@ -2,7 +2,7 @@ import { oc } from "@orpc/contract";
 import { z } from "zod";
 
 import { commonErrors } from "#/orpc/errors";
-import { authErrors } from "#/orpc/middleware/auth/auth.errors";
+import { authErrors, roleErrors } from "#/orpc/middleware/auth/auth.errors";
 import { projectAccessErrors } from "#/orpc/middleware/project-access/project-access.errors";
 import { COLUMN_KINDS } from "#/orpc/project/constants";
 
@@ -61,7 +61,7 @@ const addEntryInputSchema = z.strictObject({
 });
 
 /*===== Procedures =====*/
-const errors = { ...commonErrors, ...authErrors };
+const errors = { ...commonErrors, ...authErrors, ...roleErrors };
 const projectErrors = { ...errors, ...projectAccessErrors };
 
 export const timeContract = {

@@ -15,6 +15,7 @@ import type { Person } from "#/orpc/project/contract";
 import { m } from "#/paraglide/messages";
 import { BoardLayoutPicker } from "#/routes/projects_projectKey/components/board-layout-picker";
 import { Board, SHOW_CANCELLED_ID } from "#/routes/projects_projectKey/components/board";
+import { useBoardAccess } from "#/routes/projects_projectKey/access";
 import { TaskDrawer } from "#/routes/projects_projectKey/components/task-drawer";
 import { boardQuery, ensureProject, projectQuery, taskQuery, timeQuery } from "#/routes/projects_projectKey/queries";
 import { boardSearchSchema, taskNumberOf } from "#/routes/projects_projectKey/search-params";
@@ -64,7 +65,7 @@ function BoardPage() {
   const { projectKey } = Route.useParams();
   const { task: openTask, cancelled: showCancelled = false } = Route.useSearch();
   const navigate = useNavigate({ from: Route.fullPath });
-  const { viewer } = Route.useRouteContext();
+  const { canEdit, isAdmin } = useBoardAccess();
   const { data: project } = useSuspenseQuery(projectQuery(projectKey));
   const { data: board } = useSuspenseQuery(boardQuery(project.id));
 
@@ -116,7 +117,7 @@ function BoardPage() {
           <ArchiveIcon data-icon="inline-start" />
           {m.archive_link()}
         </Link>
-        {viewer.role === "admin" && (
+        {isAdmin && (
           <Link
             to="/projects/$projectKey/settings"
             params={{ projectKey: project.key }}
@@ -137,7 +138,9 @@ function BoardPage() {
             board={board}
             labels={labels}
             people={people}
-            canMoveColumns={viewer.role === "admin"}
+            canMoveColumns={isAdmin}
+            canMoveCards={canEdit}
+            canCreate={isAdmin}
             showCancelled={showCancelled}
           />
         </CardContent>

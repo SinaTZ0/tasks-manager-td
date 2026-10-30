@@ -3,7 +3,7 @@ import { z } from "zod";
 
 import type { RichTextDoc } from "#/lib/rich-text";
 import { commonErrors } from "#/orpc/errors";
-import { authErrors } from "#/orpc/middleware/auth/auth.errors";
+import { authErrors, roleErrors } from "#/orpc/middleware/auth/auth.errors";
 import { projectAccessErrors } from "#/orpc/middleware/project-access/project-access.errors";
 
 /*===== Schemas =====*/
@@ -24,7 +24,7 @@ export type Comment = z.infer<typeof commentSchema>;
 
 /*===== Procedures =====*/
 // `projectAccessErrors` carries NOT_FOUND, which also answers a task or comment the project doesn't have.
-const errors = { ...commonErrors, ...authErrors, ...projectAccessErrors };
+const errors = { ...commonErrors, ...authErrors, ...roleErrors, ...projectAccessErrors };
 /** The document is checked by the service (`commentBodySchema`), so its messages are in the reader's language. */
 const bodySchema = z.unknown();
 

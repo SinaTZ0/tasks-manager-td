@@ -5,7 +5,7 @@ import { roleHomePath } from "#/lib/viewer";
 import { orpc } from "#/orpc/client";
 
 /** The roles that may open the pages below this layout. */
-const ROLES: readonly UserRole[] = ["user", "admin"];
+const ROLES: readonly UserRole[] = ["admin", "user", "viewer"];
 
 /*===== Guard =====*/
 /**

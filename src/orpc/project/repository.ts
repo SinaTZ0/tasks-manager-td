@@ -9,7 +9,14 @@ export type ColumnRecord = typeof boardColumn.$inferSelect;
 type NewColumnRecord = typeof boardColumn.$inferInsert;
 
 /** A member of a project, with the account fields the pages show. */
-export type MemberRow = { projectId: string; id: string; name: string; status: string; avatarMediaId: string | null };
+export type MemberRow = {
+  projectId: string;
+  id: string;
+  name: string;
+  role: string;
+  status: string;
+  avatarMediaId: string | null;
+};
 
 /*===== Projects =====*/
 /** Every project, by name. For admins, who see them all. */
@@ -79,6 +86,7 @@ export function findMembersOfProjects({
       projectId: projectMember.projectId,
       id: user.id,
       name: user.name,
+      role: user.role,
       status: user.status,
       avatarMediaId: user.avatarMediaId,
     })

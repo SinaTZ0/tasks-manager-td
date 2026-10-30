@@ -191,7 +191,7 @@ Agreed with the user on 2026-10-30, in this order. The aim is the practical gap 
 features (integrations, power-ups, templates, recurring cards, swimlanes, reactions, bulk actions) stay out. Each slice
 follows the backend flow, then the frontend flow; desktop first (the phone layout is checked after).
 
-### 9. Three Roles
+### 9. Three Roles ✓
 
 - **Roles**: `viewer` joins `USER_ROLES` (`src/lib/user-constants.ts`); the team page's role picker offers all three,
   with a line saying what each can do. Changing a role is an Activity entry, as now.

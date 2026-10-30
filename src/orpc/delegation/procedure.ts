@@ -1,6 +1,6 @@
 import { delegateTask, listDelegatedBy } from "#/orpc/delegation/service";
 import { base } from "#/orpc/implementer.server";
-import { requireUserMiddleware } from "#/orpc/middleware/auth/auth.middleware";
+import { requireEditorMiddleware, requireUserMiddleware } from "#/orpc/middleware/auth/auth.middleware";
 import { provideDbMiddleware } from "#/orpc/middleware/db/db.middleware";
 import { requireProjectMemberMiddleware } from "#/orpc/middleware/project-access/project-access.middleware";
 
@@ -8,7 +8,7 @@ const noData = { errors: [], fields: {} };
 
 /*===== Delegate =====*/
 export const delegateTaskProcedure = base.delegation.delegate
-  .use(requireUserMiddleware)
+  .use(requireEditorMiddleware)
   .use(provideDbMiddleware)
   .use(requireProjectMemberMiddleware)
   .handler(async ({ context, input, errors }) => {

@@ -1,6 +1,6 @@
 import { addComment, editComment, listComments, removeComment } from "#/orpc/comment/service";
 import { base } from "#/orpc/implementer.server";
-import { requireUserMiddleware } from "#/orpc/middleware/auth/auth.middleware";
+import { requireEditorMiddleware, requireUserMiddleware } from "#/orpc/middleware/auth/auth.middleware";
 import { provideDbMiddleware } from "#/orpc/middleware/db/db.middleware";
 import { requireProjectMemberMiddleware } from "#/orpc/middleware/project-access/project-access.middleware";
 
@@ -15,7 +15,7 @@ export const listCommentsProcedure = base.comment.list
 
 /*===== Add =====*/
 export const addCommentProcedure = base.comment.add
-  .use(requireUserMiddleware)
+  .use(requireEditorMiddleware)
   .use(provideDbMiddleware)
   .use(requireProjectMemberMiddleware)
   .handler(async ({ context, input, errors }) => {
@@ -29,7 +29,7 @@ export const addCommentProcedure = base.comment.add
 
 /*===== Edit =====*/
 export const editCommentProcedure = base.comment.edit
-  .use(requireUserMiddleware)
+  .use(requireEditorMiddleware)
   .use(provideDbMiddleware)
   .use(requireProjectMemberMiddleware)
   .handler(async ({ context, input, errors }) => {
@@ -43,7 +43,7 @@ export const editCommentProcedure = base.comment.edit
 
 /*===== Remove =====*/
 export const removeCommentProcedure = base.comment.remove
-  .use(requireUserMiddleware)
+  .use(requireEditorMiddleware)
   .use(provideDbMiddleware)
   .use(requireProjectMemberMiddleware)
   .handler(async ({ context, input, errors }) => {

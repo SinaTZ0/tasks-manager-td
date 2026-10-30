@@ -1,5 +1,5 @@
 import { base } from "#/orpc/implementer.server";
-import { requireRoleMiddleware, requireUserMiddleware } from "#/orpc/middleware/auth/auth.middleware";
+import { requireAdminMiddleware, requireUserMiddleware } from "#/orpc/middleware/auth/auth.middleware";
 import { provideDbMiddleware } from "#/orpc/middleware/db/db.middleware";
 import {
   changeColumn,
@@ -31,7 +31,7 @@ export const getProjectProcedure = base.project.get
 
 /*===== Create =====*/
 export const createProjectProcedure = base.project.create
-  .use(requireRoleMiddleware("admin"))
+  .use(requireAdminMiddleware)
   .use(provideDbMiddleware)
   .handler(async ({ context, input, errors }) => {
     const result = await createProject({ db: context.db, actorId: context.user.id, input });
@@ -41,7 +41,7 @@ export const createProjectProcedure = base.project.create
 
 /*===== Rename =====*/
 export const renameProjectProcedure = base.project.rename
-  .use(requireRoleMiddleware("admin"))
+  .use(requireAdminMiddleware)
   .use(provideDbMiddleware)
   .handler(async ({ context, input, errors }) => {
     const result = await renameProject({ db: context.db, actorId: context.user.id, ...input });
@@ -52,7 +52,7 @@ export const renameProjectProcedure = base.project.rename
 
 /*===== Members =====*/
 export const setProjectMemberProcedure = base.project.setMember
-  .use(requireRoleMiddleware("admin"))
+  .use(requireAdminMiddleware)
   .use(provideDbMiddleware)
   .handler(async ({ context, input, errors }) => {
     const result = await setProjectMember({ db: context.db, actorId: context.user.id, ...input });
@@ -63,7 +63,7 @@ export const setProjectMemberProcedure = base.project.setMember
 
 /*===== Columns =====*/
 export const updateColumnProcedure = base.project.updateColumn
-  .use(requireRoleMiddleware("admin"))
+  .use(requireAdminMiddleware)
   .use(provideDbMiddleware)
   .handler(async ({ context, input, errors }) => {
     const { projectId, columnId, ...change } = input;
@@ -74,7 +74,7 @@ export const updateColumnProcedure = base.project.updateColumn
   });
 
 export const moveColumnProcedure = base.project.moveColumn
-  .use(requireRoleMiddleware("admin"))
+  .use(requireAdminMiddleware)
   .use(provideDbMiddleware)
   .handler(async ({ context, input, errors }) => {
     const result = await moveColumn({ db: context.db, actorId: context.user.id, ...input });

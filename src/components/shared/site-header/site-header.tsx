@@ -20,20 +20,34 @@ import { LocaleSwitcher } from "#/components/shared/locale-switcher/locale-switc
 import { ThemeToggle } from "#/components/shared/theme-toggle/theme-toggle";
 import { useLocaleLinks } from "#/hooks/use-locale-links";
 import { useSignOut } from "#/hooks/use-sign-out";
+import { canEdit } from "#/lib/user-constants";
 import { cn } from "#/lib/utils";
 import type { Viewer } from "#/orpc/session/contract";
 import { m } from "#/paraglide/messages";
 
 /*===== Navigation =====*/
 
-// Message functions, not their text: called in render, so each request gets its own locale's labels. The team page
-// is only listed for admins; its route checks too.
+// Message functions, not their text: called in render, so each request gets its own locale's labels. Who sees each
+// link: everyone, editors (not viewers, who hand nothing on) or admins only; the team page's route checks too.
 const NAV_ITEMS = [
-  { label: m.nav_home, to: "/", adminOnly: false },
-  { label: m.nav_delegated, to: "/delegated", adminOnly: false },
-  { label: m.nav_notes, to: "/notes", adminOnly: false },
-  { label: m.nav_team, to: "/team", adminOnly: true },
+  { label: m.nav_home, to: "/", audience: "everyone" },
+  { label: m.nav_delegated, to: "/delegated", audience: "editors" },
+  { label: m.nav_notes, to: "/notes", audience: "everyone" },
+  { label: m.nav_team, to: "/team", audience: "admins" },
 ] as const;
+
+/** Whether a nav link is for this person's role. */
+function isListedFor({
+  audience,
+  role,
+}: {
+  audience: (typeof NAV_ITEMS)[number]["audience"];
+  role: string | undefined;
+}) {
+  if (audience === "admins") return role === "admin";
+  if (audience === "editors") return canEdit(role);
+  return true;
+}
 
 // Each link is a light key; the keys share one slot, so they drop their own cut. The current page's key stays sunk
 // (`aria-current="page"` latches it) and its LED lights blue, the selection signal. The focus ring is drawn inside the
@@ -112,7 +126,7 @@ export function SiteHeader({ viewer, timer, bell }: { viewer: Viewer | null; tim
         {/*------ Navigation ------*/}
         <nav aria-label={m.nav_main()} className="order-last w-full sm:order-none sm:w-auto">
           <ul className={slotClasses}>
-            {NAV_ITEMS.filter((item) => !item.adminOnly || viewer?.role === "admin").map((item) => (
+            {NAV_ITEMS.filter((item) => isListedFor({ audience: item.audience, role: viewer?.role })).map((item) => (
               <li key={item.to} className="flex">
                 {/* `exact` keeps "/" from matching every page */}
                 <Link to={item.to} activeOptions={{ exact: true }} className={navKeyClasses}>

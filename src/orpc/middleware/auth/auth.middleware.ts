@@ -1,7 +1,9 @@
 import { ORPCError, os } from "@orpc/server";
 
 import { getRequestSession } from "#/lib/auth.server";
+import { EDITOR_ROLES } from "#/lib/user-constants";
 import type { UserRole } from "#/lib/user-constants";
+import { m } from "#/paraglide/messages";
 
 /*===== Require User =====*/
 /**
@@ -29,7 +31,8 @@ export const requireUserMiddleware = os.$context<{ headers: Headers }>().middlew
  * Lets only the given roles through. Use it instead of `requireUserMiddleware`: it applies that first, so
  * `context.user` is set. The route guards check roles too, but they are never the only check.
  *
- * @throws `UNAUTHORIZED` as `requireUserMiddleware` does, and `FORBIDDEN` (see `auth.errors.ts`) for any other role.
+ * @throws `UNAUTHORIZED` as `requireUserMiddleware` does, and `FORBIDDEN` (see `auth.errors.ts`) for any other role,
+ * with a line in the reader's language saying their role can't do this.
  */
 export function requireRoleMiddleware(...roles: UserRole[]) {
   return os
@@ -40,9 +43,20 @@ export function requireRoleMiddleware(...roles: UserRole[]) {
       if (!roles.includes(context.user.role as UserRole)) {
         throw new ORPCError("FORBIDDEN", {
           message: "Your account can't do this.",
-          data: { errors: [], fields: {} },
+          data: { errors: [m.common_error_forbidden()], fields: {} },
         });
       }
       return next();
     });
 }
+
+/*===== Require Editor =====*/
+/**
+ * Lets through everyone who changes a project's work (`EDITOR_ROLES`), and refuses a viewer. Every procedure that
+ * changes a task, its comments, links, hand-offs or time uses it in place of `requireUserMiddleware`; reads stay open
+ * to every member.
+ */
+export const requireEditorMiddleware = requireRoleMiddleware(...EDITOR_ROLES);
+
+/** Admins only: creating, archiving, restoring and deleting tasks, and everything on the team and settings pages. */
+export const requireAdminMiddleware = requireRoleMiddleware("admin");

@@ -1,7 +1,7 @@
-import { and, asc, eq, ne } from "drizzle-orm";
+import { and, asc, count, eq, inArray, isNull, ne, notInArray } from "drizzle-orm";
 
 import type { Database } from "#/db/client.server";
-import { account, user } from "#/db/schema";
+import { account, boardColumn, task, user } from "#/db/schema";
 
 /*===== Types =====*/
 export type UserRecord = typeof user.$inferSelect;
@@ -33,6 +33,33 @@ export function lockOtherActiveAdmins({ db, exceptId }: { db: Database; exceptId
     .from(user)
     .where(and(eq(user.role, "admin"), eq(user.status, "active"), ne(user.id, exceptId)))
     .for("update");
+}
+
+/**
+ * How many open tasks (live, not in a done or cancelled column) each of `userIds` is assigned, for the team page: an
+ * admin who makes someone a viewer sees what to hand on. People with none are missing from the map.
+ */
+export async function countOpenTasks({
+  db,
+  userIds,
+}: {
+  db: Database;
+  userIds: string[];
+}): Promise<Map<string, number>> {
+  if (userIds.length === 0) return new Map();
+  const rows = await db
+    .select({ userId: task.assigneeId, open: count() })
+    .from(task)
+    .innerJoin(boardColumn, eq(boardColumn.id, task.columnId))
+    .where(
+      and(
+        inArray(task.assigneeId, userIds),
+        isNull(task.archivedAt),
+        notInArray(boardColumn.kind, ["done", "cancelled"]),
+      ),
+    )
+    .groupBy(task.assigneeId);
+  return new Map(rows.flatMap((row) => (row.userId ? [[row.userId, row.open] as const] : [])));
 }
 
 /*===== Writes =====*/

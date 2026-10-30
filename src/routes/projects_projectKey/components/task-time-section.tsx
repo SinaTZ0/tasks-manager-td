@@ -60,11 +60,14 @@ export function TaskTimeSection({
   project,
   people,
   viewerId,
+  readOnly,
 }: {
   task: TaskDetail;
   project: Project;
   people: Map<string, Person>;
   viewerId: string;
+  /** A viewer sees the time but logs none. */
+  readOnly: boolean;
 }) {
   const { data: time } = useQuery(timeQuery({ projectId: project.id, number: task.number }));
   const now = useNow();
@@ -110,7 +113,7 @@ export function TaskTimeSection({
                 log={log}
                 projectId={project.id}
                 person={people.get(log.userId)}
-                canRemove={log.manual && log.userId === viewerId && !archived}
+                canRemove={log.manual && log.userId === viewerId && !archived && !readOnly}
               />
             ))}
           </ul>
@@ -120,7 +123,7 @@ export function TaskTimeSection({
       </div>
 
       {/*------ Manual Entry ------*/}
-      {!archived && <TimeEntryForm projectId={project.id} taskId={task.id} />}
+      {!archived && !readOnly && <TimeEntryForm projectId={project.id} taskId={task.id} />}
     </section>
   );
 }

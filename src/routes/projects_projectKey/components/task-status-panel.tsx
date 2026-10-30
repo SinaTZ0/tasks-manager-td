@@ -53,6 +53,7 @@ export function TaskStatusPanel({
   code,
   people,
   blockers,
+  readOnly,
 }: {
   task: TaskDetail;
   project: Project;
@@ -60,6 +61,8 @@ export function TaskStatusPanel({
   people: Map<string, Person>;
   /** The codes of the tasks still holding it up: starting or finishing it asks why first (rule 4). */
   blockers: string[];
+  /** A viewer sees the display and meter, with no keys. */
+  readOnly: boolean;
 }) {
   const queryClient = useQueryClient();
   const transition = useTaskTransition(project);
@@ -141,36 +144,38 @@ export function TaskStatusPanel({
       )}
 
       {/*------ Keys ------*/}
-      <div className="flex flex-wrap gap-3">
-        {availableActions(kind).map((action) => {
-          if (action === "start" && timingHere) {
+      {!readOnly && (
+        <div className="flex flex-wrap gap-3">
+          {availableActions(kind).map((action) => {
+            if (action === "start" && timingHere) {
+              return (
+                <Button
+                  key="stop-mine"
+                  variant="secondary"
+                  size="sm"
+                  disabled={stopMine.isPending}
+                  onClick={() => stopMine.mutate(undefined)}
+                >
+                  <TimerOffIcon data-icon="inline-start" />
+                  {m.timer_stop_mine()}
+                </Button>
+              );
+            }
+            const Icon = statusActionIcon(action);
             return (
               <Button
-                key="stop-mine"
-                variant="secondary"
+                key={action}
+                variant={action === "start" || action === "reopen" ? "default" : "secondary"}
                 size="sm"
-                disabled={stopMine.isPending}
-                onClick={() => stopMine.mutate(undefined)}
+                onClick={() => take(action)}
               >
-                <TimerOffIcon data-icon="inline-start" />
-                {m.timer_stop_mine()}
+                <Icon data-icon="inline-start" />
+                {statusActionLabel({ action, kind })}
               </Button>
             );
-          }
-          const Icon = statusActionIcon(action);
-          return (
-            <Button
-              key={action}
-              variant={action === "start" || action === "reopen" ? "default" : "secondary"}
-              size="sm"
-              onClick={() => take(action)}
-            >
-              <Icon data-icon="inline-start" />
-              {statusActionLabel({ action, kind })}
-            </Button>
-          );
-        })}
-      </div>
+          })}
+        </div>
+      )}
 
       {/*------ Why ------*/}
       {task.statusNote && <StatusNote note={task.statusNote} people={people} />}

@@ -5,6 +5,7 @@ import type { UserRole } from "#/lib/user-constants";
 const ROLE_HOME: Record<UserRole, string> = {
   user: "/",
   admin: "/",
+  viewer: "/",
 };
 
 /** The landing page for a role. Unknown roles (a value removed from the list) go to the home page. */

@@ -29,11 +29,14 @@ export function LabelPicker({
   update,
   projectId,
   labels,
+  readOnly,
 }: {
   task: TaskDetail;
   update: ReturnType<typeof useTaskUpdate>;
   projectId: string;
   labels: Label[];
+  /** A viewer sees which labels are ticked, and makes none. */
+  readOnly: boolean;
 }) {
   const baseId = useId();
   const toggle = (labelId: string, on: boolean) =>
@@ -52,6 +55,7 @@ export function LabelPicker({
                   <Checkbox
                     id={id}
                     checked={task.labelIds.includes(label.id)}
+                    disabled={readOnly}
                     onCheckedChange={(checked) => toggle(label.id, checked)}
                   />
                   <FieldLabel htmlFor={id}>
@@ -63,7 +67,7 @@ export function LabelPicker({
           })}
         </ul>
       )}
-      <NewLabelForm projectId={projectId} onCreated={(label) => toggle(label.id, true)} />
+      {!readOnly && <NewLabelForm projectId={projectId} onCreated={(label) => toggle(label.id, true)} />}
     </FieldSet>
   );
 }

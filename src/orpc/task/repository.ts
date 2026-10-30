@@ -2,13 +2,14 @@ import { and, asc, desc, eq, inArray, isNotNull, isNull, ne, sql } from "drizzle
 
 import type { Database } from "#/db/client.server";
 import { boardColumn, label, project, projectMember, task, taskLabel, user } from "#/db/schema";
+import { EDITOR_ROLES } from "#/lib/user-constants";
 
 /*===== Types =====*/
 export type TaskRecord = typeof task.$inferSelect;
 type NewTaskRecord = typeof task.$inferInsert;
 export type LabelRecord = typeof label.$inferSelect;
 export type ColumnRow = { id: string; kind: string; name: string | null };
-export type PersonRow = { id: string; name: string; status: string; avatarMediaId: string | null };
+export type PersonRow = { id: string; name: string; role: string; status: string; avatarMediaId: string | null };
 
 /*===== Projects and Columns =====*/
 export async function findProjectKey({ db, projectId }: { db: Database; projectId: string }): Promise<string> {
@@ -93,28 +94,41 @@ export async function findColumnPositions({
 
 /*===== People =====*/
 /** Which of `ids` are active members of the project: only they can own or be given its tasks. */
+/**
+ * Which of `ids` are active members of the project. With `editorsOnly`, viewers are left out too: they can be
+ * mentioned, but never own, take or be handed a task.
+ */
 export async function findActiveMemberIds({
   db,
   projectId,
   ids,
+  editorsOnly = false,
 }: {
   db: Database;
   projectId: string;
   ids: string[];
+  editorsOnly?: boolean;
 }): Promise<Set<string>> {
   if (ids.length === 0) return new Set();
   const rows = await db
     .select({ id: user.id })
     .from(projectMember)
     .innerJoin(user, eq(user.id, projectMember.userId))
-    .where(and(eq(projectMember.projectId, projectId), inArray(user.id, ids), eq(user.status, "active")));
+    .where(
+      and(
+        eq(projectMember.projectId, projectId),
+        inArray(user.id, ids),
+        eq(user.status, "active"),
+        editorsOnly ? inArray(user.role, [...EDITOR_ROLES]) : undefined,
+      ),
+    );
   return new Set(rows.map((row) => row.id));
 }
 
 export function findPeople({ db, ids }: { db: Database; ids: string[] }): Promise<PersonRow[]> {
   if (ids.length === 0) return Promise.resolve([]);
   return db
-    .select({ id: user.id, name: user.name, status: user.status, avatarMediaId: user.avatarMediaId })
+    .select({ id: user.id, name: user.name, role: user.role, status: user.status, avatarMediaId: user.avatarMediaId })
     .from(user)
     .where(inArray(user.id, ids))
     .orderBy(asc(user.name));

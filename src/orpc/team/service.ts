@@ -6,6 +6,7 @@ import { recordActivity } from "#/orpc/activity/service";
 import type { TeamMember } from "#/orpc/team/contract";
 import { toTeamMember } from "#/orpc/team/mapper";
 import {
+  countOpenTasks,
   findAllUsers,
   findUserByEmail,
   findUserById,
@@ -19,7 +20,8 @@ import { m } from "#/paraglide/messages";
 /*===== List =====*/
 export async function listTeam({ db }: { db: Database }): Promise<TeamMember[]> {
   const rows = await findAllUsers({ db });
-  return rows.map(toTeamMember);
+  const open = await countOpenTasks({ db, userIds: rows.map((row) => row.id) });
+  return rows.map((record) => toTeamMember({ record, openTasks: open.get(record.id) ?? 0 }));
 }
 
 /*===== Add =====*/
@@ -62,7 +64,7 @@ export async function addMember({
       actorId,
       entries: [{ action: "user.created", after: { role }, snapshot: { userId: record.id, name, email } }],
     });
-    return { kind: "success", member: toTeamMember(record) };
+    return { kind: "success", member: toTeamMember({ record, openTasks: 0 }) };
   });
 }
 
@@ -73,6 +75,7 @@ type ChangeResult =
 /**
  * Changes a teammate's role or status. Nobody changes their own, and the last active admin can't be demoted or
  * deactivated, so the team always keeps someone who can manage it. A deactivated account is signed out everywhere.
+ * Someone made a viewer keeps the tasks assigned to them; the team page shows how many, so an admin can hand them on.
  *
  * @returns `conflict` with the reason for a change to one's own account or one that leaves no active admin.
  */
@@ -104,7 +107,8 @@ export async function changeMember({
     const field = "role" in change ? "role" : "status";
     const before = current[field];
     const next = "role" in change ? change.role : change.status;
-    if (before === next) return { kind: "success", member: toTeamMember(current) };
+    const openTasks = (await countOpenTasks({ db: tx, userIds: [userId] })).get(userId) ?? 0;
+    if (before === next) return { kind: "success", member: toTeamMember({ record: current, openTasks }) };
 
     const record = await updateUser({ db: tx, id: userId, values: change });
     await recordActivity({
@@ -119,7 +123,7 @@ export async function changeMember({
         },
       ],
     });
-    return { kind: "success", member: toTeamMember(record) };
+    return { kind: "success", member: toTeamMember({ record, openTasks }) };
   });
 
   // After the commit: a blocked account's open sessions would otherwise keep working until they expire.

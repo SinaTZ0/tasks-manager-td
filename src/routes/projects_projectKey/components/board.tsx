@@ -264,6 +264,8 @@ export function Board({
   labels,
   people,
   canMoveColumns,
+  canMoveCards,
+  canCreate,
   showCancelled,
 }: {
   project: Project;
@@ -273,6 +275,10 @@ export function Board({
   labels: Map<string, Label>;
   people: Map<string, Person>;
   canMoveColumns: boolean;
+  /** Drag cards and use their menus: everyone but a viewer. */
+  canMoveCards: boolean;
+  /** Quick add under each column: admins only. */
+  canCreate: boolean;
   showCancelled: boolean;
 }) {
   const moveTask = useTaskMove(project.id);
@@ -637,7 +643,11 @@ export function Board({
                 column={column}
                 count={ids.length}
                 movable={canMoveColumns}
-                footer={<QuickAdd projectId={project.id} columnId={column.id} columnTitle={columnTitle(column)} />}
+                footer={
+                  canCreate && (
+                    <QuickAdd projectId={project.id} columnId={column.id} columnTitle={columnTitle(column)} />
+                  )
+                }
               >
                 <SortableContext id={column.id} items={ids} strategy={verticalListSortingStrategy}>
                   <ol className="flex flex-col gap-3">
@@ -653,16 +663,19 @@ export function Board({
                           labels={labels}
                           people={people}
                           blockedBy={blockerCodes(task)}
+                          movable={canMoveCards}
                           menu={
-                            <TaskMenu
-                              taskId={task.id}
-                              code={codeOf(task.id)}
-                              kind={column.kind}
-                              columns={columns}
-                              currentColumnId={column.id}
-                              onMove={(target) => moveToEnd({ task, columnId: target })}
-                              onAction={(action) => takeAction({ task, action })}
-                            />
+                            canMoveCards && (
+                              <TaskMenu
+                                taskId={task.id}
+                                code={codeOf(task.id)}
+                                kind={column.kind}
+                                columns={columns}
+                                currentColumnId={column.id}
+                                onMove={(target) => moveToEnd({ task, columnId: target })}
+                                onAction={(action) => takeAction({ task, action })}
+                              />
+                            )
                           }
                         />
                       );
@@ -686,15 +699,17 @@ export function Board({
                     labels={labels}
                     people={people}
                     menu={
-                      <TaskMenu
-                        taskId={task.id}
-                        code={codeOf(task.id)}
-                        kind="cancelled"
-                        columns={[]}
-                        currentColumnId={cancelled.id}
-                        onMove={() => {}}
-                        onAction={(action) => takeAction({ task, action })}
-                      />
+                      canMoveCards && (
+                        <TaskMenu
+                          taskId={task.id}
+                          code={codeOf(task.id)}
+                          kind="cancelled"
+                          columns={[]}
+                          currentColumnId={cancelled.id}
+                          onMove={() => {}}
+                          onAction={(action) => takeAction({ task, action })}
+                        />
+                      )
                     }
                   />
                 </li>

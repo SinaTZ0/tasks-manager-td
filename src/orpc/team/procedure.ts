@@ -1,17 +1,17 @@
 import { base } from "#/orpc/implementer.server";
-import { requireRoleMiddleware } from "#/orpc/middleware/auth/auth.middleware";
+import { requireAdminMiddleware } from "#/orpc/middleware/auth/auth.middleware";
 import { provideDbMiddleware } from "#/orpc/middleware/db/db.middleware";
 import { addMember, changeMember, listTeam } from "#/orpc/team/service";
 
 /*===== List =====*/
 export const listTeamProcedure = base.team.list
-  .use(requireRoleMiddleware("admin"))
+  .use(requireAdminMiddleware)
   .use(provideDbMiddleware)
   .handler(({ context }) => listTeam({ db: context.db }));
 
 /*===== Create =====*/
 export const createTeamMemberProcedure = base.team.create
-  .use(requireRoleMiddleware("admin"))
+  .use(requireAdminMiddleware)
   .use(provideDbMiddleware)
   .handler(async ({ context, input, errors }) => {
     const result = await addMember({ db: context.db, actorId: context.user.id, input });
@@ -21,7 +21,7 @@ export const createTeamMemberProcedure = base.team.create
 
 /*===== Role =====*/
 export const setTeamMemberRoleProcedure = base.team.setRole
-  .use(requireRoleMiddleware("admin"))
+  .use(requireAdminMiddleware)
   .use(provideDbMiddleware)
   .handler(async ({ context, input, errors }) => {
     const result = await changeMember({
@@ -37,7 +37,7 @@ export const setTeamMemberRoleProcedure = base.team.setRole
 
 /*===== Status =====*/
 export const setTeamMemberStatusProcedure = base.team.setStatus
-  .use(requireRoleMiddleware("admin"))
+  .use(requireAdminMiddleware)
   .use(provideDbMiddleware)
   .handler(async ({ context, input, errors }) => {
     const result = await changeMember({

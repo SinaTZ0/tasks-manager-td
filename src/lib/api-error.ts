@@ -18,11 +18,15 @@ export function describeApiFailure({ error, fallback }: { error: unknown; fallba
     return { message: m.common_error_network(), fields: {} };
   }
 
+  const parsed = errorDataSchema.safeParse(error.data);
+  // A role the action isn't for says so (`requireRoleMiddleware`); otherwise the session is gone.
+  if (error.code === "FORBIDDEN" && parsed.success && parsed.data.errors[0]) {
+    return { message: parsed.data.errors[0], fields: {} };
+  }
   if (error.code === "UNAUTHORIZED" || error.code === "FORBIDDEN") {
     return { message: m.common_error_signed_out(), fields: {} };
   }
 
-  const parsed = errorDataSchema.safeParse(error.data);
   if (error.code === "INTERNAL_SERVER_ERROR") {
     const errorId = typeof error.data?.errorId === "string" ? error.data.errorId : null;
     return { message: errorId ? m.common_error_with_reference({ message: fallback, errorId }) : fallback, fields: {} };

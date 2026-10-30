@@ -13,7 +13,7 @@ import { describeApiFailure } from "#/lib/api-error";
 import { orpc } from "#/orpc/client";
 import { PASSWORD_MIN_LENGTH } from "#/orpc/team/constants";
 import { m } from "#/paraglide/messages";
-import { roleItems } from "#/routes/team/role-labels";
+import { roleHint, roleItems } from "#/routes/team/role-labels";
 import { newMemberFormSchema, type NewMemberFormValues } from "#/routes/team/schema";
 
 /*===== New Teammate =====*/
@@ -90,18 +90,22 @@ export function NewMemberForm() {
             control={form.control}
             name="role"
             render={({ field }) => (
-              <Select items={roles} value={field.value} onValueChange={(value) => value && field.onChange(value)}>
-                <SelectTrigger id="member-role" className="w-full">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {roles.map((item) => (
-                    <SelectItem key={item.value} value={item.value}>
-                      {item.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <>
+                <Select items={roles} value={field.value} onValueChange={(value) => value && field.onChange(value)}>
+                  <SelectTrigger id="member-role" className="w-full">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {roles.map((item) => (
+                      <SelectItem key={item.value} value={item.value}>
+                        {item.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {/* What the chosen role may do, so the admin picks knowingly. */}
+                <FieldDescription>{roleHint(field.value)}</FieldDescription>
+              </>
             )}
           />
         </Field>

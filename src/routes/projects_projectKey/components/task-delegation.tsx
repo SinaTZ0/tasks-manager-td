@@ -30,7 +30,17 @@ import { m } from "#/paraglide/messages";
  * The drawer's hand-offs (docs/app.md → Assign & Delegate): who has had the task, in order (Sina → Ali → Reza), each
  * hand-off's note, and a key to hand it on. Handing on makes someone else the assignee and tells them; the owner stays.
  */
-export function TaskDelegation({ task, project, code }: { task: TaskDetail; project: Project; code: string }) {
+export function TaskDelegation({
+  task,
+  project,
+  code,
+  readOnly,
+}: {
+  task: TaskDetail;
+  project: Project;
+  code: string;
+  readOnly: boolean;
+}) {
   const [open, setOpen] = useState(false);
 
   return (
@@ -43,11 +53,15 @@ export function TaskDelegation({ task, project, code }: { task: TaskDetail; proj
       ) : (
         <p className="text-body-sm text-muted-foreground">{m.delegation_none()}</p>
       )}
-      <Button variant="secondary" size="sm" className="self-start" onClick={() => setOpen(true)}>
-        <ForwardIcon data-icon="inline-start" />
-        {m.delegation_delegate()}
-      </Button>
-      <DelegateDialog task={task} project={project} code={code} open={open} onOpenChange={setOpen} />
+      {!readOnly && (
+        <>
+          <Button variant="secondary" size="sm" className="self-start" onClick={() => setOpen(true)}>
+            <ForwardIcon data-icon="inline-start" />
+            {m.delegation_delegate()}
+          </Button>
+          <DelegateDialog task={task} project={project} code={code} open={open} onOpenChange={setOpen} />
+        </>
+      )}
     </section>
   );
 }
@@ -114,7 +128,8 @@ function DelegateDialog({
   const [note, setNote] = useState("");
   const [errors, setErrors] = useState<Record<string, string>>({});
   const items = project.members
-    .filter((member) => member.status === "active" && member.id !== task.assigneeId)
+    // A viewer only reads: they can't be handed a task.
+    .filter((member) => member.status === "active" && member.role !== "viewer" && member.id !== task.assigneeId)
     .map((member) => ({ value: member.id, label: member.name }));
 
   const delegate = useMutation(

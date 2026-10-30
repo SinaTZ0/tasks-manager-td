@@ -295,7 +295,7 @@ export async function getTask({
 /*===== References =====*/
 /**
  * Checks that the people and labels a change names belong to the project: an owner or assignee must be an active
- * member, a label one of the project's.
+ * member who isn't a viewer (a viewer only reads), a label one of the project's.
  *
  * @returns Field messages for the ones that don't.
  */
@@ -310,7 +310,7 @@ async function checkReferences({
 }): Promise<Record<string, string>> {
   const fields: Record<string, string> = {};
   const people = [change.ownerId, change.assigneeId].filter((id): id is string => !!id);
-  const active = await findActiveMemberIds({ db, projectId, ids: people });
+  const active = await findActiveMemberIds({ db, projectId, ids: people, editorsOnly: true });
   if (change.ownerId && !active.has(change.ownerId)) fields.ownerId = m.task_error_person_unusable();
   if (change.assigneeId && !active.has(change.assigneeId)) fields.assigneeId = m.task_error_person_unusable();
 
@@ -716,7 +716,10 @@ export async function transitionTask({
 }
 
 /*===== Archive =====*/
-/** Takes a task off the board. Its row and history stay; it can be restored or, by an admin, deleted (rule 10). */
+/**
+ * Takes a task off the board. Its row and history stay; it can be restored or deleted (rule 10). Admin-only, like
+ * creating a task: the procedure checks the role.
+ */
 export async function archiveTask({
   db,
   actorId,
@@ -774,7 +777,7 @@ export async function listArchivedTasks({
 /*===== Restore =====*/
 /**
  * Puts an archived task back on the board, at the bottom of the column it was in (docs/app.md → Archive & restore).
- * Only an admin may: any member can archive a task, but what comes back is an admin's call, as with deleting. If it
+ * Only an admin may, as with archiving and deleting (the procedure checks the role too). If it
  * is in a column that holds others up, its dependents wait for it again: being blocked is worked out from the board,
  * not stored.
  *

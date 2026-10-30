@@ -46,7 +46,18 @@ function failureText({ error, fallback }: { error: unknown; fallback: string }) 
  * delete the viewer's own; a deleted one leaves a line saying so. Under it, the editor to write one: `@` mentions a
  * member, who is told, and Ctrl+Enter sends it. An archived task's thread is read-only.
  */
-export function TaskComments({ task, project, viewerId }: { task: TaskDetail; project: Project; viewerId: string }) {
+export function TaskComments({
+  task,
+  project,
+  viewerId,
+  readOnly,
+}: {
+  task: TaskDetail;
+  project: Project;
+  viewerId: string;
+  /** A viewer reads the thread: no editor, and nothing of their own to change. */
+  readOnly: boolean;
+}) {
   const { data: comments, isPending } = useQuery(commentsQuery({ projectId: project.id, taskId: task.id }));
   const archived = task.archivedAt !== null;
 
@@ -60,7 +71,7 @@ export function TaskComments({ task, project, viewerId }: { task: TaskDetail; pr
               key={comment.id}
               comment={comment}
               project={project}
-              canChange={comment.authorId === viewerId && !comment.deleted && !archived}
+              canChange={comment.authorId === viewerId && !comment.deleted && !archived && !readOnly}
             />
           ))}
         </ol>
@@ -69,7 +80,7 @@ export function TaskComments({ task, project, viewerId }: { task: TaskDetail; pr
       )}
 
       {/*------ New Comment ------*/}
-      {!archived && <CommentComposer task={task} project={project} />}
+      {!archived && !readOnly && <CommentComposer task={task} project={project} />}
     </section>
   );
 }

@@ -1,5 +1,9 @@
 import { base } from "#/orpc/implementer.server";
-import { requireUserMiddleware } from "#/orpc/middleware/auth/auth.middleware";
+import {
+  requireAdminMiddleware,
+  requireEditorMiddleware,
+  requireUserMiddleware,
+} from "#/orpc/middleware/auth/auth.middleware";
 import { provideDbMiddleware } from "#/orpc/middleware/db/db.middleware";
 import { requireProjectMemberMiddleware } from "#/orpc/middleware/project-access/project-access.middleware";
 import {
@@ -38,7 +42,7 @@ export const getTaskProcedure = base.task.get
 
 /*===== Create =====*/
 export const createTaskProcedure = base.task.create
-  .use(requireUserMiddleware)
+  .use(requireAdminMiddleware)
   .use(provideDbMiddleware)
   .use(requireProjectMemberMiddleware)
   .handler(async ({ context, input, errors }) => {
@@ -50,7 +54,7 @@ export const createTaskProcedure = base.task.create
 
 /*===== Update =====*/
 export const updateTaskProcedure = base.task.update
-  .use(requireUserMiddleware)
+  .use(requireEditorMiddleware)
   .use(provideDbMiddleware)
   .use(requireProjectMemberMiddleware)
   .handler(async ({ context, input, errors }) => {
@@ -63,7 +67,7 @@ export const updateTaskProcedure = base.task.update
 
 /*===== Move =====*/
 export const moveTaskProcedure = base.task.move
-  .use(requireUserMiddleware)
+  .use(requireEditorMiddleware)
   .use(provideDbMiddleware)
   .use(requireProjectMemberMiddleware)
   .handler(async ({ context, input, errors }) => {
@@ -76,7 +80,7 @@ export const moveTaskProcedure = base.task.move
 
 /*===== Status =====*/
 export const transitionTaskProcedure = base.task.transition
-  .use(requireUserMiddleware)
+  .use(requireEditorMiddleware)
   .use(provideDbMiddleware)
   .use(requireProjectMemberMiddleware)
   .handler(async ({ context, input, errors }) => {
@@ -89,7 +93,7 @@ export const transitionTaskProcedure = base.task.transition
 
 /*===== Archive =====*/
 export const archiveTaskProcedure = base.task.archive
-  .use(requireUserMiddleware)
+  .use(requireAdminMiddleware)
   .use(provideDbMiddleware)
   .use(requireProjectMemberMiddleware)
   .handler(async ({ context, input, errors }) => {
@@ -106,7 +110,7 @@ export const archivedTasksProcedure = base.task.archived
 
 /*===== Restore =====*/
 export const restoreTaskProcedure = base.task.restore
-  .use(requireUserMiddleware)
+  .use(requireAdminMiddleware)
   .use(provideDbMiddleware)
   .use(requireProjectMemberMiddleware)
   .handler(async ({ context, input, errors }) => {
@@ -119,7 +123,7 @@ export const restoreTaskProcedure = base.task.restore
 
 /*===== Delete =====*/
 export const deleteTaskProcedure = base.task.delete
-  .use(requireUserMiddleware)
+  .use(requireAdminMiddleware)
   .use(provideDbMiddleware)
   .use(requireProjectMemberMiddleware)
   .handler(async ({ context, input, errors }) => {
@@ -132,7 +136,7 @@ export const deleteTaskProcedure = base.task.delete
 
 /*===== Labels =====*/
 export const createLabelProcedure = base.task.createLabel
-  .use(requireUserMiddleware)
+  .use(requireEditorMiddleware)
   .use(provideDbMiddleware)
   .use(requireProjectMemberMiddleware)
   .handler(async ({ context, input, errors }) => {

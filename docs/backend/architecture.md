@@ -178,7 +178,9 @@ return { id: result.id };
   a failed send needs a new solve (`start` again).
 
 - `requireUserMiddleware` puts the signed-in user in `context.user`; `requireRoleMiddleware(...roles)` also checks the
-  role. Declare `authErrors` (and `roleErrors`) on their contracts. A procedure with neither is public.
+  role, and refuses others with `FORBIDDEN` and a line in the reader's language. Every procedure that changes a
+  project's work uses `requireEditorMiddleware` (admins and users; a viewer only reads), and admin-only ones
+  `requireAdminMiddleware`. Declare `authErrors` (and `roleErrors`) on their contracts. A procedure with neither is public.
 - **Ownership is checked in the data layer.** A user's records are read with the owner in the query
   (`findOwnedNote({ id, ownerId })`), so another user's record looks exactly like a missing one (`NOT_FOUND`), never
   `FORBIDDEN`.
