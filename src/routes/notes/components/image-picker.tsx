@@ -40,7 +40,7 @@ export function ImagePicker({
 
       {value ? (
         <div className="relative w-40">
-          <MediaImage media={value} variant="thumb" alt={m.notes_image_preview()} className="w-40 rounded-md" />
+          <MediaImage media={value} variant="thumb" alt={m.notes_image_preview()} className="w-40 rounded-chassis" />
           <Button
             type="button"
             variant="secondary"

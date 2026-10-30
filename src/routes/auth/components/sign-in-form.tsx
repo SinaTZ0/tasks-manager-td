@@ -59,7 +59,7 @@ export function SignInForm({ onSuccess }: { onSuccess: () => void }) {
           <FieldError errors={[errors.password]} />
         </Field>
 
-        <Button type="submit" disabled={isSubmitting}>
+        <Button type="submit" variant="highlight" disabled={isSubmitting}>
           {isSubmitting && <Spinner data-icon="inline-start" />}
           {m.auth_sign_in_submit()}
         </Button>

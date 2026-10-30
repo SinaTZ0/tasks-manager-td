@@ -79,7 +79,7 @@ export function SignUpForm({ onSuccess }: { onSuccess: () => void }) {
         {/* Invisible: it only solves the challenge; `suppressHydrationWarning` because it upgrades after hydration. */}
         <altcha-widget ref={widgetRef} display="invisible" suppressHydrationWarning />
 
-        <Button type="submit" disabled={isSubmitting}>
+        <Button type="submit" variant="highlight" disabled={isSubmitting}>
           {isSubmitting && <Spinner data-icon="inline-start" />}
           {m.auth_sign_up_submit()}
         </Button>

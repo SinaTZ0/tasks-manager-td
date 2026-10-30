@@ -22,7 +22,13 @@ export const Route = createRootRouteWithContext<RouterContext>()({
   staleTime: Infinity,
   head: () => ({
     meta: [{ charSet: "utf-8" }, { name: "viewport", content: "width=device-width, initial-scale=1" }],
-    links: [{ rel: "stylesheet", href: appCss }],
+    links: [
+      { rel: "stylesheet", href: appCss },
+      // The SVG is the mark itself; browsers that can't use it take the ICO, and iOS the 180px touch icon
+      { rel: "icon", href: "/favicon.ico", sizes: "32x32" },
+      { rel: "icon", href: "/favicon.svg", type: "image/svg+xml" },
+      { rel: "apple-touch-icon", href: "/apple-touch-icon.png" },
+    ],
   }),
   shellComponent: RootDocument,
   errorComponent: RootError,

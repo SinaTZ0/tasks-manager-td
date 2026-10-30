@@ -25,7 +25,9 @@ steps below were applied to it. The languages stay Persian and English.
       theme and account keys.
 - [x] 6. Home route: `/` is the board, behind sign-in (`app_layout`); visitors go to sign-in. Its columns are empty
       until the task feature fills them.
-- [ ] 7. Sign-in and notes pages restyled; favicon and the 1200×630 preview image; `site_name` is set.
+- [x] 7. Sign-in and notes pages restyled; favicon (`public/favicon.svg`, `.ico` and the touch icon); `site_name` is
+      set. No preview image: every page is private, and `pageMeta` gives private pages no link preview, so
+      `siteImage()` stays `null` until a public page exists.
 - [ ] 8. The full check (both themes, both directions, phone width, keyboard, reduced motion, lint, typecheck,
       build).
 

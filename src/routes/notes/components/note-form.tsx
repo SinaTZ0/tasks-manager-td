@@ -58,7 +58,7 @@ export function NoteForm({ onCreated }: { onCreated: () => void }) {
 
         <ImagePicker value={image} onChange={setImage} serverError={failure?.fields.imageMediaId} />
 
-        <Button type="submit" className="self-start" disabled={create.isPending}>
+        <Button type="submit" variant="highlight" className="self-start" disabled={create.isPending}>
           {create.isPending && <Spinner data-icon="inline-start" />}
           {m.notes_submit()}
         </Button>

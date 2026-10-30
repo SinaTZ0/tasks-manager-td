@@ -42,8 +42,9 @@ export function NoteCard({ note, onDeleted }: { note: Note; onDeleted: () => voi
         <CardTitle>{note.title}</CardTitle>
         <CardDescription>{formatDate(note.createdAt)}</CardDescription>
         <CardAction>
+          {/* A flat plate, not the red key: deleting one example note is routine, not a warning */}
           <Button
-            variant="ghost"
+            variant="outline"
             size="icon-sm"
             aria-label={m.notes_delete_label({ title: note.title })}
             disabled={remove.isPending}

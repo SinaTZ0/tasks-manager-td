@@ -43,10 +43,15 @@ function NotesPage() {
       {/*===== List =====*/}
       <section aria-label={m.notes_list_label()} className="min-w-0 flex-1">
         {notes.length === 0 ? (
-          <div className="flex flex-col items-center gap-3 rounded-lg border border-dashed px-6 py-16 text-center text-muted-foreground">
-            <NotebookPenIcon className="size-8" />
-            <p>{m.notes_empty()}</p>
-          </div>
+          // An empty bay in a housing, like an empty board column: grey print is only legible on a housing
+          <Card>
+            <CardContent>
+              <div className="flex flex-col items-center gap-3 rounded-chassis border border-dashed border-border px-6 py-16 text-center text-muted-foreground">
+                <NotebookPenIcon className="size-8" />
+                <p>{m.notes_empty()}</p>
+              </div>
+            </CardContent>
+          </Card>
         ) : (
           <ul className="grid gap-5 sm:grid-cols-2">
             {notes.map((note) => (
