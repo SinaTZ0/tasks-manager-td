@@ -10,9 +10,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "./select";
-import { twTriggerSize } from "./select.styles";
+import { twTriggerSize, twTriggerVariant } from "./select.styles";
 
 const sizeOptions = Object.keys(twTriggerSize) as Array<keyof typeof twTriggerSize>;
+const variantOptions = Object.keys(twTriggerVariant) as Array<keyof typeof twTriggerVariant>;
 
 /*===== Data =====*/
 const statuses = [
@@ -28,9 +29,10 @@ const meta = {
   title: "Primitive/Select",
   component: SelectTrigger,
   argTypes: {
+    variant: { control: "inline-radio", options: variantOptions },
     size: { control: "inline-radio", options: sizeOptions },
   },
-  args: { size: "default" },
+  args: { variant: "field", size: "default" },
   render: (args) => (
     <Select items={statuses}>
       <SelectTrigger {...args} className="w-full max-w-sm" aria-label="وضعیت">
@@ -103,6 +105,11 @@ export const Grouped: Story = {
       </SelectContent>
     </Select>
   ),
+};
+
+// A key that sets a view rather than a value, as in the board's filter row
+export const Key: Story = {
+  args: { variant: "key", size: "sm" },
 };
 
 export const Invalid: Story = {

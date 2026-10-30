@@ -1225,18 +1225,34 @@
   "my_tasks_no_due": "بدون سررسید",
   "board_filters": "پالایش کارت‌ها",
   "board_filter_assignee": "پالایش بر اساس مسئول",
-  "board_filter_assignee_any": "همه افراد",
   "board_filter_assignee_me": "من",
   "board_filter_label": "پالایش بر اساس برچسب",
-  "board_filter_label_any": "همه برچسب‌ها",
   "board_filter_priority": "پالایش بر اساس اولویت",
-  "board_filter_priority_any": "همه اولویت‌ها",
   "board_filter_due": "پالایش بر اساس سررسید",
-  "board_filter_due_any": "همه سررسیدها",
   "board_filter_due_overdue": "دیرشده",
   "board_filter_due_week": "سررسید این هفته",
   "board_filter_due_none": "بدون سررسید",
   "board_filter_blocked": "فقط مسدودها",
+  "board_mark_assignee": "مسئول",
+  "board_mark_label": "برچسب",
+  "board_mark_priority": "اولویت",
+  "board_mark_due": "سررسید",
+  "board_filter_any": "همه",
+  "board_panel_filter": "پالایه",
+  "board_panel_view": "نما",
+  "board_mark_layout": "چیدمان",
+  "board_mark_cancelled": "لغوشده‌ها",
+  "board_display_now": "اکنون",
+  "board_stat_blocked": "مسدود",
+  "board_stat_late": "دیرشده",
+  "board_channel_label": [
+    {
+      "declarations": ["input column", "input count", "local countText = count: number"],
+      "match": {
+        "": "{column}: {countText}"
+      }
+    }
+  ],
   "board_filter_clear": "پاک کردن پالایه‌ها",
   "board_filtered_count": [
     {

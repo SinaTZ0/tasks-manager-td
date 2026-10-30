@@ -29,12 +29,13 @@ export type SelectContentProps = SelectPrimitive.Popup.Props &
 
 /*===== Trigger =====*/
 
-function SelectTrigger({ className, size = "default", children, ...props }: SelectTriggerProps) {
+function SelectTrigger({ className, variant = "field", size = "default", children, ...props }: SelectTriggerProps) {
   return (
     <SelectPrimitive.Trigger
       data-slot="select-trigger"
+      data-variant={variant}
       data-size={size}
-      className={cn(selectTriggerVariants({ size }), className)}
+      className={cn(selectTriggerVariants({ variant, size }), className)}
       {...props}
     >
       {children}

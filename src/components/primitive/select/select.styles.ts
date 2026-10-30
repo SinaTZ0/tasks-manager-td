@@ -12,11 +12,10 @@ const twTriggerStyles = defineStyles({
   layoutValue:
     "*:data-[slot=select-value]:line-clamp-1 *:data-[slot=select-value]:flex *:data-[slot=select-value]:items-center *:data-[slot=select-value]:gap-1.5",
   geometry: "border-0 py-2 ps-4 pe-3",
-  // `body-lg` is 16px, which keeps iOS Safari from zooming in on focus
-  typography: "text-body-lg whitespace-nowrap",
-  appearance: "bg-transparent text-foreground data-placeholder:text-muted-foreground",
+  typography: "whitespace-nowrap",
+  appearance: "bg-transparent data-placeholder:text-muted-foreground",
   appearancePlate:
-    "after:pointer-events-none after:absolute after:inset-0 after:-z-1 after:rounded-[inherit] after:bg-field after:shadow-field",
+    "after:pointer-events-none after:absolute after:inset-0 after:-z-1 after:rounded-[inherit] after:transition-[inset,box-shadow,filter] after:duration-75 after:ease-instrument",
   interaction: "cursor-pointer outline-none select-none before:transition-colors before:duration-75",
   // Focus and an open popup light the cut orange; invalid lights it yellow while unfocused, as on every field
   focus: "focus-visible:before:bg-cut-focus",
@@ -25,6 +24,24 @@ const twTriggerStyles = defineStyles({
   disabled:
     "disabled:cursor-not-allowed disabled:text-muted-foreground disabled:after:bg-field-disabled data-disabled:cursor-not-allowed data-disabled:text-muted-foreground data-disabled:after:bg-field-disabled",
   icon: "[&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+});
+
+// `field` is the plate an ordinary form field sits on. `key` is a light keycap for a select that sets a view rather
+// than a value (the board's filters): it reads as a key in a row of keys and stays sunk while its list is open. A key
+// trigger is meant for the compact `sm` size.
+const twTriggerVariant = defineStyles({
+  field: {
+    // `body-lg` is 16px, which keeps iOS Safari from zooming in on focus
+    typography: "text-body-lg",
+    appearance: "text-foreground after:bg-field after:shadow-field",
+  },
+  key: {
+    typography: "font-heading text-button",
+    appearance: "text-keycap-foreground after:bg-keycap after:shadow-keycap-compact",
+    hover: "hover:after:brightness-105",
+    state:
+      "data-popup-open:after:inset-press-compact data-popup-open:after:shadow-keycap-pressed-compact data-popup-open:after:brightness-92",
+  },
 });
 
 // `sm` is a compact part: smaller radius and a narrower cut, like the compact keys
@@ -130,8 +147,8 @@ const twSeparatorStyles = defineStyles({
 /*===== Class Composition =====*/
 
 const selectTriggerVariants = cva(joinStyles(twTriggerStyles), {
-  variants: { size: composeStyles(twTriggerSize) },
-  defaultVariants: { size: "default" },
+  variants: { variant: composeStyles(twTriggerVariant), size: composeStyles(twTriggerSize) },
+  defaultVariants: { variant: "field", size: "default" },
 });
 
 const selectTriggerIconClasses = joinStyles(twTriggerIconStyles);
@@ -160,4 +177,5 @@ export {
   selectItemIndicatorClasses,
   selectSeparatorClasses,
   twTriggerSize,
+  twTriggerVariant,
 };

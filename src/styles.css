@@ -196,6 +196,7 @@
   --color-field: var(--field);
   --color-field-disabled: var(--field-disabled);
   --color-housing-ledge: var(--housing-ledge);
+  --color-tray: var(--tray);
   --color-glass: var(--glass);
   --color-glass-foreground: var(--glass-foreground);
   --color-glass-muted: var(--glass-muted);
@@ -259,6 +260,7 @@
   --shadow-keycap-pressed-compact: var(--elevation-keycap-pressed-compact);
   --shadow-field: var(--elevation-field);
   --shadow-housing: var(--elevation-housing);
+  --shadow-tray: var(--elevation-tray);
   --shadow-glass: var(--elevation-glass);
   --shadow-led-on: var(--elevation-led-on);
   --shadow-led-off: var(--elevation-led-off);
@@ -323,6 +325,12 @@
   /* A disabled plate sinks toward the cut, never lighter than a live one (which would read as more active) */
   --field-disabled: #d4d4d2;
   --housing-ledge: #676767;
+  /* A shallow tray milled into a housing that holds modules (the board's columns): a step darker than the housing,
+     so the cards seated in it stand out without a frame. `muted-foreground` holds 4.9:1 on it. */
+  --tray: #d3d3d1;
+  /* The housing plastic's grain (surface-grain below). Soft-light grain shows about twice as strong on graphite, so the
+     dark edition uses a tile at half the contrast. */
+  --grain: url("/textures/grain.webp");
   /* Display glass is set into the housing, not another card colour. Named `glass`, not `display`: `text-display` is a type style, and a colour of the same name would print it in the glass colour. */
   --glass: #141513;
   --glass-foreground: #ecebe4;
@@ -365,6 +373,8 @@
   --elevation-field: inset 0 2px 4px rgb(0 0 0 / 25%), inset 0 -1px 0 rgb(255 255 255 / 60%);
   /* Housings sit on the desk with a hard molded ledge only; a soft blur on top made cards float */
   --elevation-housing: 0 3px 0 var(--housing-ledge), inset 0 1px 0 rgb(255 255 255 / 80%);
+  /* The tray's top wall in shadow and its lower lip catching light, shallower than a cut */
+  --elevation-tray: inset 0 2px 3px rgb(0 0 0 / 18%), inset 0 -1px 0 rgb(255 255 255 / 55%);
   --elevation-glass: inset 0 3px 6px rgb(0 0 0 / 70%), 0 1px 0 rgb(255 255 255 / 75%);
   /* LED glow follows currentColor so one token serves every signal */
   --elevation-led-on:
@@ -435,6 +445,8 @@
   --field: #1d1d1d;
   --field-disabled: #151515;
   --housing-ledge: #0a0a0a;
+  --tray: #222222;
+  --grain: url("/textures/grain-dark.webp");
   --glass: #0b0c0a;
 
   --signal-selection: #6aa8d4;
@@ -443,13 +455,17 @@
   /* On graphite the lower lip catches far less light, so every highlight drops sharply */
   --elevation-sm: 0 2px 0 var(--housing-ledge), inset 0 1px 0 rgb(255 255 255 / 7%);
   --elevation-md: 0 3px 0 var(--housing-ledge), 0 14px 28px -10px rgb(0 0 0 / 70%), inset 0 1px 0 rgb(255 255 255 / 7%);
-  --elevation-cut: inset 0 3px 3px rgb(0 0 0 / 95%), 0 1px 0 rgb(255 255 255 / 12%), 0 -1px 0 rgb(0 0 0 / 50%);
+  /* A black void barely shows on graphite, so the cut's machined rim catches the light: a faint lit edge all round
+     and a brighter lower lip, the way an anodised edge reads on a dark device. */
+  --elevation-cut:
+    inset 0 3px 3px rgb(0 0 0 / 95%), 0 0 0 1px rgb(255 255 255 / 11%), 0 1.5px 0 0.5px rgb(255 255 255 / 20%);
   --elevation-keycap: inset 2px 2px 2px rgb(255 255 255 / 22%), inset -2px -2px 2px rgb(0 0 0 / 45%);
   --elevation-keycap-compact: inset 1px 1px 1px rgb(255 255 255 / 22%), inset -1px -1px 1px rgb(0 0 0 / 45%);
   --elevation-keycap-graphite: inset 2px 2px 2px rgb(255 255 255 / 10%), inset -2px -2px 2px rgb(0 0 0 / 60%);
   --elevation-keycap-graphite-compact: inset 1px 1px 1px rgb(255 255 255 / 10%), inset -1px -1px 1px rgb(0 0 0 / 60%);
   --elevation-field: inset 0 2px 4px rgb(0 0 0 / 60%), inset 0 -1px 0 rgb(255 255 255 / 6%);
   --elevation-housing: 0 3px 0 var(--housing-ledge), inset 0 1px 0 rgb(255 255 255 / 7%);
+  --elevation-tray: inset 0 2px 3px rgb(0 0 0 / 55%), inset 0 -1px 0 rgb(255 255 255 / 5%);
   --elevation-glass: inset 0 3px 6px rgb(0 0 0 / 90%), 0 1px 0 rgb(255 255 255 / 10%);
   --elevation-led-off: inset 0 1px 1px rgb(0 0 0 / 60%);
 
@@ -555,6 +571,15 @@
     opacity: 0;
     transform: translateX(calc(var(--page-shift) * -1));
   }
+}
+
+/* The moulded surface of a housing: a fine bead-blast grain (`--grain`, a neutral mid-grey tile) laid over the
+   housing's own colour with soft-light, so it reads as matte plastic in both themes without shifting the
+   colour or the text contrast. Any background colour set beside it shows through. */
+@utility surface-grain {
+  background-image: var(--grain);
+  background-size: 256px;
+  background-blend-mode: soft-light;
 }
 
 /* The board's grid in its wrapped layout: as many equal columns per row as the person chose. */

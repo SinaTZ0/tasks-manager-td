@@ -14,7 +14,8 @@ const twCardStyles = defineStyles({
   // Edge-to-edge media replaces the card's top padding; the card's `overflow-hidden` rounds its corners.
   geometryMedia: "has-[>[data-slot=card-media]:first-child]:pt-0 has-[>img:first-child]:pt-0",
   typography: "text-body-sm",
-  appearance: "border-border bg-card text-card-foreground shadow-housing",
+  // `surface-grain` is the moulded plastic's fine grain, blended into whatever colour the housing is
+  appearance: "border-border bg-card surface-grain text-card-foreground shadow-housing",
   // A card rendered as a link (`render={<SiteLink … />}`) takes the quiet `accent` wash on hover and focus. It does
   // not lift: a housing is screwed to the desk.
   interaction: "transition-colors duration-150 ease-out outline-none",

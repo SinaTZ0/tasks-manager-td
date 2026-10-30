@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 
 import { Led } from "#/components/primitive/led/led";
-import { Display, DisplayLabel, DisplayValue } from "./display";
+import { Display, DisplayButton, DisplayLabel, DisplayValue } from "./display";
 import { twSize } from "./display.styles";
 
 const sizeOptions = Object.keys(twSize) as Array<keyof typeof twSize>;
@@ -47,5 +47,29 @@ export const Sizes: Story = {
         </Display>
       ))}
     </div>
+  ),
+};
+
+// Zones of the glass that latch, like a sampler's on-screen pads: a let-go zone dims, its LED goes out.
+export const Buttons: Story = {
+  render: () => (
+    <Display className="w-fit">
+      <fieldset className="flex gap-1">
+        <legend className="sr-only">ستون‌ها</legend>
+        {[
+          { name: "صف", value: "03", on: true },
+          { name: "در حال انجام", value: "02", on: true },
+          { name: "مکث", value: "01", on: false },
+        ].map(({ name, value, on }) => (
+          <DisplayButton key={name} aria-pressed={on}>
+            <span className="flex items-center gap-2">
+              <Led signal="selection" state={on ? "on" : "off"} size="sm" />
+              <DisplayLabel>{name}</DisplayLabel>
+            </span>
+            <DisplayValue>{value}</DisplayValue>
+          </DisplayButton>
+        ))}
+      </fieldset>
+    </Display>
   ),
 };

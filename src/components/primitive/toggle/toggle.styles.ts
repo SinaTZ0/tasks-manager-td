@@ -21,14 +21,20 @@ const twVariant = defineStyles({
 
 /*===== Geometry =====*/
 
-// `sm` is the compact scale (32px) for dense toolbars and lives beside a label; `default` and `lg` keep the 40px+
-// tap target. Every key's cut sits 2–3px outside its box, so neighbours need at least `gap-2`.
+// `sm` is the compact scale (32px) for dense toolbars and lives beside a label; `md` (40px) keeps the compact scale
+// at a full tap target, to sit in a row with `sm` buttons and selects; `default` and `lg` are the full-size keys.
+// Every key's cut sits 2–3px outside its box, so neighbours need at least `gap-2`.
 const twSize = defineStyles({
   sm: {
     layout: "gap-1.5",
     geometry: "h-8 min-w-8 px-3",
     geometryIcon: "has-data-[icon=inline-end]:pe-2 has-data-[icon=inline-start]:ps-2",
     typography: "text-caption font-semibold",
+  },
+  md: {
+    layout: "gap-1.5",
+    geometry: "h-10 min-w-10 px-3.5",
+    geometryIcon: "has-data-[icon=inline-end]:pe-2.5 has-data-[icon=inline-start]:ps-2.5",
   },
   default: {
     layout: "gap-2",
@@ -52,9 +58,9 @@ const toggleVariants = cva(joinStyles(twSharedStyles), {
   // Scale (radius, bevel, cut width, press depth) follows the size, as on Button
   compoundVariants: [
     { size: ["default", "lg"], className: keycapVariants({ tone: null, scale: "regular" }) },
-    { size: "sm", className: keycapVariants({ tone: null, scale: "compact" }) },
+    { size: ["sm", "md"], className: keycapVariants({ tone: null, scale: "compact" }) },
     { variant: "default", size: ["default", "lg"], className: "after:shadow-keycap" },
-    { variant: "default", size: "sm", className: "after:shadow-keycap-compact" },
+    { variant: "default", size: ["sm", "md"], className: "after:shadow-keycap-compact" },
   ],
   defaultVariants: {
     variant: "default",

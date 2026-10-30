@@ -651,9 +651,9 @@ export function Board({
       <section
         aria-label={m.board_columns()}
         className={cn(
-          "-m-2 flex items-start gap-6 overflow-x-auto p-2 outline-none focus-visible:outline-2 focus-visible:outline-ring focus-visible:outline-solid",
-          // The person's layout (src/lib/board-layout.ts): fitted columns sit closer; wrapped ones form a grid.
-          "board-fit:gap-4 board-wrap:grid board-wrap:board-grid board-wrap:gap-y-10",
+          "-m-2 flex items-start gap-3 overflow-x-auto p-2 outline-none focus-visible:outline-2 focus-visible:outline-ring focus-visible:outline-solid",
+          // The person's layout (src/lib/board-layout.ts): wrapped columns form a grid.
+          "board-wrap:grid board-wrap:board-grid",
         )}
       >
         <SortableContext items={columns.map((column) => column.id)} strategy={rectSortingStrategy}>
@@ -668,7 +668,7 @@ export function Board({
                 movable={canMoveColumns}
               >
                 <SortableContext id={column.id} items={ids} strategy={verticalListSortingStrategy}>
-                  <ol className="flex flex-col gap-3">
+                  <ol className="flex flex-col gap-2">
                     {ids.map((id) => {
                       const task = tasks.get(id);
                       if (!task) return null;
@@ -726,7 +726,7 @@ export function Board({
             total={filter ? (totals.get(cancelled.id) ?? 0) : undefined}
             wipLimit={null}
           >
-            <ol className="flex flex-col gap-3">
+            <ol className="flex flex-col gap-2">
               {cancelledTasks.map((task) => (
                 <li key={task.id}>
                   <TaskCard

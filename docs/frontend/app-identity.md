@@ -37,7 +37,7 @@ translation ([i18n.md](./i18n.md)).
 ## Brand
 
 - **Name**: Tofang (تفنگ). The name prints in the header in `font-heading`, like a model name on a device.
-- **No imagery.** The instrument is the brand: the grey housing, the one orange key, the square LEDs and the dark
+- **No imagery.** (The housing's grain is a material, not an image.) The instrument is the brand: the grey housing, the one orange key, the square LEDs and the dark
   display glass. Icons are Lucide at a light stroke; avatars are keycaps with an initial.
 - **References**: the approved design study is in `docs/frontend/reference/` (the rr8 showcase source, its tokens
   and screenshots). It's reference only: compare against it, never import from it.
@@ -61,12 +61,19 @@ translation ([i18n.md](./i18n.md)).
 | --------------- | ---------------------- | --------------- | ------------------------------------------- |
 | Desk (the page) | warm grey              | near-black      | `background`, `foreground`                  |
 | Housing         | light grey, hard ledge | graphite        | `card`, `shadow-housing`, `rounded-housing` |
+| Tray            | a step darker, sunk    | darker graphite | `tray`, `shadow-tray`                       |
 | Cut (the void)  | near-black             | black           | `cut`, `shadow-cut`, `rounded-chassis`      |
 | Light key       | pale grey              | mid grey        | `keycap`, `shadow-keycap`                   |
 | Function key    | graphite               | darker graphite | `primary` / `keycap-graphite`               |
 | Action key      | orange                 | orange          | `highlight`, `shadow-keycap-highlight`      |
 | Field plate     | off-white              | dark grey       | `field`, `shadow-field`                     |
 | Display glass   | dark in both themes    |                 | `glass`, `glass-foreground`, `shadow-glass` |
+
+Housings are matte moulded plastic: `surface-grain` lays a fine grain tile (`--grain`, in `public/textures/`) over
+their colour with soft-light, so it never shifts the colour or the text contrast; the dark edition uses a tile at half
+the contrast. A tray is a shallow recess milled into a housing to seat modules (the board's columns hold their cards
+in one). On graphite a black cut barely shows, so in dark the cut's rim catches the light: a faint lit edge all round
+and a brighter lower lip.
 
 The cut and the keycap don't share a radius on purpose: the cut is a near-square milled slot (`rounded-chassis`, 3px)
 and the key is the moulded part that carries the rounding (`rounded-keycap`, 6px), so the void shows most at the

@@ -12,6 +12,7 @@ import {
   type BoardLayoutMode,
   type BoardPerRow,
 } from "#/lib/board-layout";
+import { Marking } from "#/components/primitive/marking/marking";
 import { formatNumber } from "#/lib/locale";
 import { m } from "#/paraglide/messages";
 
@@ -25,7 +26,8 @@ const MODES = [
 
 /**
  * Latch keys for how the board lays out its columns (`src/lib/board-layout.ts`): one scrolling row, one row fitted to
- * the window, or several rows, with a second set of keys for how many columns go in each. The choice is this
+ * the window, or several rows, with a second set of keys for how many columns go in each. Its name is printed above
+ * it, like the filter keys beside it. The choice is this
  * browser's, so it is the same on every project.
  */
 export function BoardLayoutPicker() {
@@ -34,39 +36,42 @@ export function BoardLayoutPicker() {
   );
 
   return (
-    <div className="flex items-center gap-3">
-      <ToggleGroup
-        aria-label={m.board_layout()}
-        size="sm"
-        value={[layout.mode]}
-        onValueChange={(next) => {
-          // One layout is always chosen: pressing the latched key again reports an empty array.
-          if (next[0]) setBoardLayout({ ...layout, mode: next[0] as BoardLayoutMode });
-        }}
-      >
-        {MODES.map(({ mode, label, Icon }) => (
-          <ToggleGroupItem key={mode} value={mode} aria-label={label()}>
-            <Icon />
-          </ToggleGroupItem>
-        ))}
-      </ToggleGroup>
-
-      {layout.mode === "wrap" && (
+    <span className="flex flex-col gap-1.5">
+      <Marking aria-hidden="true">{m.board_mark_layout()}</Marking>
+      <span className="flex items-center gap-2">
         <ToggleGroup
-          aria-label={m.board_layout_per_row()}
-          size="sm"
-          value={[String(layout.perRow)]}
+          aria-label={m.board_layout()}
+          size="md"
+          value={[layout.mode]}
           onValueChange={(next) => {
-            if (next[0]) setBoardLayout({ ...layout, perRow: Number(next[0]) as BoardPerRow });
+            // One layout is always chosen: pressing the latched key again reports an empty array.
+            if (next[0]) setBoardLayout({ ...layout, mode: next[0] as BoardLayoutMode });
           }}
         >
-          {BOARD_PER_ROW.map((count) => (
-            <ToggleGroupItem key={count} value={String(count)}>
-              {formatNumber(count)}
+          {MODES.map(({ mode, label, Icon }) => (
+            <ToggleGroupItem key={mode} value={mode} aria-label={label()}>
+              <Icon />
             </ToggleGroupItem>
           ))}
         </ToggleGroup>
-      )}
-    </div>
+
+        {layout.mode === "wrap" && (
+          <ToggleGroup
+            aria-label={m.board_layout_per_row()}
+            size="md"
+            value={[String(layout.perRow)]}
+            onValueChange={(next) => {
+              if (next[0]) setBoardLayout({ ...layout, perRow: Number(next[0]) as BoardPerRow });
+            }}
+          >
+            {BOARD_PER_ROW.map((count) => (
+              <ToggleGroupItem key={count} value={String(count)}>
+                {formatNumber(count)}
+              </ToggleGroupItem>
+            ))}
+          </ToggleGroup>
+        )}
+      </span>
+    </span>
   );
 }

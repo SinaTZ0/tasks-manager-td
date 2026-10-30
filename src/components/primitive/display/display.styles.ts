@@ -45,4 +45,23 @@ const displayValueClasses = joinStyles(
   }),
 );
 
-export { displayLabelClasses, displayValueClasses, displayVariants, twSize };
+// A touch zone on the glass: a region of the display that answers a press, like the pads a sampler prints in its
+// screen. It latches through `aria-pressed`: a latched zone prints at full brightness, one let go dims to the glass's
+// muted ink (60% still holds 5:1 on the glass). The focus ring is the glass ink, since the housing's ring colour
+// vanishes on the dark glass.
+const displayButtonClasses = joinStyles(
+  defineStyles({
+    layout: "group/display-button flex flex-col items-stretch gap-1",
+    geometry: "min-h-10 rounded-chassis-compact border-0 px-3 py-2",
+    typography: "text-start",
+    appearance: "bg-transparent text-glass-foreground",
+    interaction: "cursor-pointer transition-[background-color,opacity] duration-75 outline-none select-none",
+    hover: "hover:bg-glass-foreground/8",
+    active: "active:bg-glass-foreground/14",
+    state: "aria-[pressed=false]:opacity-60",
+    focus:
+      "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-glass-foreground focus-visible:outline-solid",
+  }),
+);
+
+export { displayButtonClasses, displayLabelClasses, displayValueClasses, displayVariants, twSize };

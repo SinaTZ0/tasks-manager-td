@@ -1,7 +1,7 @@
 import { type VariantProps } from "class-variance-authority";
 import type { ComponentProps } from "react";
 import { cn } from "#/lib/utils";
-import { displayLabelClasses, displayValueClasses, displayVariants } from "./display.styles";
+import { displayButtonClasses, displayLabelClasses, displayValueClasses, displayVariants } from "./display.styles";
 
 /*===== Display =====*/
 
@@ -41,4 +41,13 @@ function DisplayValue({ className, children, ...props }: ComponentProps<"span">)
   );
 }
 
-export { Display, DisplayLabel, DisplayValue };
+/**
+ * A zone of the glass that answers a press, for a live value that is also a switch (a board column shown or hidden).
+ * Give it `aria-pressed` when it latches; let go, it dims. Its content is the value it shows, so it needs an
+ * `aria-label` only when that content doesn't name it.
+ */
+function DisplayButton({ className, type = "button", ...props }: ComponentProps<"button">) {
+  return <button data-slot="display-button" type={type} {...props} className={cn(displayButtonClasses, className)} />;
+}
+
+export { Display, DisplayButton, DisplayLabel, DisplayValue };

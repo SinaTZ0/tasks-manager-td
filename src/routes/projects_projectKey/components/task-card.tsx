@@ -85,6 +85,10 @@ function CountBadge({
 
 /*===== Task Card =====*/
 
+/** Handles on a card that wait out of sight until the card is pointed at or focused, and never hide on touch. */
+const PARTS_ON_HOVER =
+  "opacity-0 transition-opacity group-focus-within/card:opacity-100 group-hover/card:opacity-100 pointer-coarse:opacity-100";
+
 /**
  * A card on the board, as a small housing module (the approved design, docs/frontend/reference/…/task-card.tsx): the
  * code and priority on a printed strip, the title and labels on the face, people and dates on the footer. The title is
@@ -94,7 +98,7 @@ function CountBadge({
  * it waits for, so the dependency shows without opening it.
  *
  * On the board the card is also something to pick up (`SortableTaskCard` passes the drag props): `grip` and `menu` sit
- * on the header strip, above the stretched link. `state` dims the card left behind while
+ * on the code line, above the stretched link, and show while the card is pointed at or focused. `state` dims the card left behind while
  * its copy is dragged (`placeholder`) and makes that copy inert (`overlay`).
  */
 export function TaskCard({
@@ -137,26 +141,28 @@ export function TaskCard({
       onPointerDown={onPointerDown}
       inert={state === "overlay" || undefined}
       className={cn(
-        "group/card relative flex flex-col rounded-housing border border-border bg-card shadow-housing transition-colors duration-150 select-none",
+        "group/card relative flex flex-col rounded-housing border border-border bg-card surface-grain shadow-housing transition-colors duration-150 select-none",
         "focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-ring hover:bg-accent",
         state === "placeholder" && "opacity-40",
         state === "overlay" && "cursor-grabbing bg-accent",
       )}
     >
-      {/*------ Header Strip ------*/}
-      <header className="flex min-h-12 items-center justify-between gap-3 border-b border-border px-3 py-2">
-        <span className="flex items-center gap-2">
-          {grip && <span className="relative z-10 flex">{grip}</span>}
+      {/*------ Code Line ------*/}
+      {/* The grip and menu print only while the pointer is over the card or focus is inside it (always on a touch
+          screen): on a board of cards they would otherwise be a column of handles. */}
+      <header className="flex min-h-9 items-center justify-between gap-2 ps-3 pe-1.5 pt-1.5">
+        <span className="flex items-center gap-2.5">
           <Marking variant="code">{code}</Marking>
-        </span>
-        <span className="flex items-center gap-2">
           <PriorityMark priority={task.priority} />
-          {menu && <span className="relative z-10 flex">{menu}</span>}
+        </span>
+        <span className={cn("relative z-10 flex items-center gap-0.5", PARTS_ON_HOVER)}>
+          {grip}
+          {menu}
         </span>
       </header>
 
       {/*------ Face ------*/}
-      <div className="flex flex-col gap-3 p-3">
+      <div className="flex flex-col gap-2.5 px-3 pt-1 pb-3">
         <h3 className="text-body leading-6 font-semibold">
           {/* The link's ::after stretches over the card, so the whole card opens the drawer. */}
           <Link
@@ -193,7 +199,13 @@ export function TaskCard({
       )}
 
       {/*------ Footer ------*/}
-      <footer className="flex min-h-11 items-center justify-between gap-3 px-3 pb-2.5">
+      {/* The blocked strip brings its own rule. */}
+      <footer
+        className={cn(
+          "flex min-h-11 items-center justify-between gap-3 border-border/60 px-3 py-1.5",
+          blockedBy.length === 0 && "border-t",
+        )}
+      >
         <span className="flex items-center gap-2">
           {owner && assignee && owner.id !== assignee.id && (
             <PersonAvatar name={owner.name} src={owner.avatarUrl} owner />
