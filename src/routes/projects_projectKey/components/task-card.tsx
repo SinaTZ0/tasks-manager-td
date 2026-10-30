@@ -199,8 +199,9 @@ export function TaskCard({
       </div>
 
       {/*------ Blocked Strip ------*/}
+      {/* The signal yellow washes out on the light housing, so light mode prints the strip in the attention ink. */}
       {blockedBy.length > 0 && (
-        <p className="flex items-center gap-2 border-y border-signal-attention/60 bg-signal-attention/15 px-3 py-1.5 text-caption">
+        <p className="flex items-center gap-2 border-y border-warning bg-warning-surface px-3 py-1.5 text-caption text-warning dark:border-signal-attention dark:bg-signal-attention/15 dark:text-foreground">
           <LockIcon aria-hidden="true" className="size-3.5 shrink-0" />
           <span className="sr-only">{m.dependency_blocked_label({ blockers: formatList(blockedBy) })}</span>
           <span aria-hidden="true">{m.dependency_waits_for()}</span>
