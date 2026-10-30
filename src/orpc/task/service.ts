@@ -8,7 +8,8 @@ import type { ActivityAction } from "#/orpc/activity/constants";
 import { findTaskActivities } from "#/orpc/activity/repository";
 import { recordActivity } from "#/orpc/activity/service";
 import { toChecklistItem } from "#/orpc/checklist/mapper";
-import { findChecklistItems } from "#/orpc/checklist/repository";
+import { countChecklists, findChecklistItems } from "#/orpc/checklist/repository";
+import { countComments } from "#/orpc/comment/repository";
 import { addPlainComment } from "#/orpc/comment/service";
 import { getHandoffs } from "#/orpc/delegation/service";
 import { findBlockingTasks, findReleasedDependents, findWaitsFor } from "#/orpc/dependency/repository";
@@ -76,21 +77,29 @@ export type TaskActor = { id: string; role?: string | null | undefined };
 const isUuid = (value: string) => z.guid().safeParse(value).success;
 
 /*===== Cards =====*/
-/** Task rows as cards, with their labels and time. */
+/** Task rows as cards, with their labels, time and badge counts, each read once for all of them. */
 async function toCards({ db, records }: { db: Database; records: TaskRecord[] }): Promise<TaskCard[]> {
   // One after the other: inside a transaction both would share one connection, which runs one query at a time.
   const taskIds = records.map((record) => record.id);
   const labelIds = await findLabelIdsByTask({ db, taskIds });
   const totals = await findTimeTotals({ db, taskIds });
   const waitsFor = await findWaitsFor({ db, taskIds });
-  return records.map((record) =>
-    toTaskCard({
+  const comments = await countComments({ db, taskIds });
+  const checklists = await countChecklists({ db, taskIds });
+  return records.map((record) => {
+    const checklist = checklists.get(record.id);
+    return toTaskCard({
       record,
       labelIds: labelIds.get(record.id) ?? [],
       time: totals.get(record.id),
       waitsFor: waitsFor.get(record.id) ?? [],
-    }),
-  );
+      counts: {
+        comments: comments.get(record.id) ?? 0,
+        checklistDone: checklist?.done ?? 0,
+        checklistTotal: checklist?.total ?? 0,
+      },
+    });
+  });
 }
 
 async function toCard({ db, record }: { db: Database; record: TaskRecord }): Promise<TaskCard> {
@@ -129,6 +138,7 @@ async function toDetail({
   const entries = await findTaskActivities({ db, taskId: record.id, actions: COLUMN_ENTRIES });
   const handoffs = await getHandoffs({ db, taskId: record.id });
   const checklist = await findChecklistItems({ db, taskIds: [record.id] });
+  const comments = await countComments({ db, taskIds: [record.id] });
   const last = entries.at(-1);
   const noted =
     (column?.kind === "paused" && last?.action === "task.paused") ||
@@ -150,6 +160,7 @@ async function toDetail({
     statusNote,
     handoffs,
     checklist: checklist.map(toChecklistItem),
+    comments: comments.get(record.id) ?? 0,
   });
 }
 

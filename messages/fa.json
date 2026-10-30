@@ -1437,5 +1437,21 @@
         "": "«{item}» به جایگاه {positionText} از {totalText} رفت."
       }
     }
+  ],
+  "card_comment_count": [
+    {
+      "declarations": ["input count", "local countText = count: number"],
+      "match": {
+        "": "نظرها: {countText}"
+      }
+    }
+  ],
+  "card_checklist_count": [
+    {
+      "declarations": ["input done", "local doneText = done: number", "input total", "local totalText = total: number"],
+      "match": {
+        "": "چک‌لیست: {doneText} از {totalText} انجام شده"
+      }
+    }
   ]
 }

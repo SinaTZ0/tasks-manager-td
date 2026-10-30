@@ -23,13 +23,14 @@ import { useMentionPicker } from "#/routes/projects_projectKey/components/mentio
 const commentsQuery = ({ projectId, taskId }: { projectId: string; taskId: string }) =>
   orpc.comment.list.queryOptions({ input: { projectId, taskId } });
 
-/** Refetches the thread and the history a comment change shows in. */
+/** Refetches the thread, the history a comment change shows in, and the board's comment counts. */
 function useThreadChanged() {
   const queryClient = useQueryClient();
   return () =>
     Promise.all([
       queryClient.invalidateQueries({ queryKey: orpc.comment.key() }),
       queryClient.invalidateQueries({ queryKey: orpc.activity.key() }),
+      queryClient.invalidateQueries({ queryKey: orpc.task.board.key() }),
     ]);
 }
 

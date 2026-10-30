@@ -97,6 +97,7 @@ export function TaskChecklist({
       Promise.all([
         queryClient.invalidateQueries({ queryKey }),
         queryClient.invalidateQueries({ queryKey: orpc.task.board.key() }),
+        queryClient.invalidateQueries({ queryKey: orpc.activity.key() }),
       ]),
   };
   const update = useMutation({
@@ -423,6 +424,7 @@ function AddStep({ task, projectId }: { task: TaskDetail; projectId: string }) {
         Promise.all([
           queryClient.invalidateQueries({ queryKey: taskQuery({ projectId, number: task.number }).queryKey }),
           queryClient.invalidateQueries({ queryKey: orpc.task.board.key() }),
+          queryClient.invalidateQueries({ queryKey: orpc.activity.key() }),
         ]),
     }),
   );

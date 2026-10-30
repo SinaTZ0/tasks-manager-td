@@ -1437,5 +1437,21 @@
         "": "“{item}” moved to place {positionText} of {totalText}."
       }
     }
+  ],
+  "card_comment_count": [
+    {
+      "declarations": ["input count", "local countText = count: number"],
+      "match": {
+        "": "Comments: {countText}"
+      }
+    }
+  ],
+  "card_checklist_count": [
+    {
+      "declarations": ["input done", "local doneText = done: number", "input total", "local totalText = total: number"],
+      "match": {
+        "": "Checklist: {doneText} of {totalText} done"
+      }
+    }
   ]
 }

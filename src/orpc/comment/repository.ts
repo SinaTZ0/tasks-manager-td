@@ -1,4 +1,4 @@
-import { and, asc, eq } from "drizzle-orm";
+import { and, asc, count, eq, inArray, isNull } from "drizzle-orm";
 
 import type { Database } from "#/db/client.server";
 import { comment, task, user } from "#/db/schema";
@@ -11,6 +11,24 @@ export type CommentWithTask = {
   comment: CommentRecord;
   task: { id: string; number: number; title: string; archivedAt: Date | null };
 };
+
+/*===== Counts =====*/
+/** Per task: how many comments it has, leaving out deleted ones, for the board's cards. */
+export async function countComments({
+  db,
+  taskIds,
+}: {
+  db: Database;
+  taskIds: string[];
+}): Promise<Map<string, number>> {
+  if (taskIds.length === 0) return new Map();
+  const rows = await db
+    .select({ taskId: comment.taskId, total: count() })
+    .from(comment)
+    .where(and(inArray(comment.taskId, taskIds), isNull(comment.deletedAt)))
+    .groupBy(comment.taskId);
+  return new Map(rows.map((row) => [row.taskId, row.total]));
+}
 
 /*===== Writes =====*/
 export async function insertComment({

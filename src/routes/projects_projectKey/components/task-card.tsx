@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { AlignStartVerticalIcon, LockIcon } from "lucide-react";
+import { AlignStartVerticalIcon, ListChecksIcon, LockIcon, MessageSquareIcon, type LucideIcon } from "lucide-react";
 import type { PointerEventHandler, ReactNode } from "react";
 
 import { Led } from "#/components/primitive/led/led";
@@ -8,7 +8,7 @@ import { PersonAvatar } from "#/components/shared/person-avatar/person-avatar";
 import { useNow } from "#/hooks/use-now";
 import { formatDuration, liveSeconds } from "#/lib/duration";
 import { DueMark } from "#/components/shared/due-mark/due-mark";
-import { formatList } from "#/lib/locale";
+import { formatList, formatNumber } from "#/lib/locale";
 import { cn } from "#/lib/utils";
 import type { Person } from "#/orpc/project/contract";
 import { taskCode } from "#/orpc/task/constants";
@@ -43,6 +43,35 @@ function SpentMarking({ seconds }: { seconds: number }) {
       <span className="sr-only">{m.time_spent_label()}: </span>
       {formatDuration(Math.floor(seconds / 60))}
     </Marking>
+  );
+}
+
+/*===== Count Badge =====*/
+
+/**
+ * A small count on the footer: an icon and a number, read out as `label`. `complete` lights a green LED beside it (a
+ * green text would be too faint on the card).
+ */
+function CountBadge({
+  icon: Icon,
+  label,
+  value,
+  complete = false,
+}: {
+  icon: LucideIcon;
+  label: string;
+  value: string;
+  complete?: boolean;
+}) {
+  return (
+    <span className="flex items-center gap-1 text-muted-foreground">
+      {complete && <Led signal="positive" state="on" size="sm" />}
+      <Icon aria-hidden="true" className="size-3.5" />
+      <span className="sr-only">{label}</span>
+      <Marking variant="code" aria-hidden="true">
+        {value}
+      </Marking>
+    </span>
   );
 }
 
@@ -90,6 +119,7 @@ export function TaskCard({
   const owner = people.get(task.ownerId);
   const assignee = task.assigneeId ? people.get(task.assigneeId) : undefined;
   const taskLabels = task.labelIds.map((id) => labels.get(id)).filter((label) => label !== undefined);
+  const { comments, checklistDone, checklistTotal } = task.counts;
 
   return (
     <article
@@ -163,7 +193,22 @@ export function TaskCard({
             <Marking>{m.task_unassigned()}</Marking>
           )}
         </span>
-        <span className="flex items-center gap-3">
+        <span className="flex flex-wrap items-center justify-end gap-x-3 gap-y-1">
+          {comments > 0 && (
+            <CountBadge
+              icon={MessageSquareIcon}
+              label={m.card_comment_count({ count: comments })}
+              value={formatNumber(comments)}
+            />
+          )}
+          {checklistTotal > 0 && (
+            <CountBadge
+              icon={ListChecksIcon}
+              label={m.card_checklist_count({ done: checklistDone, total: checklistTotal })}
+              value={`${formatNumber(checklistDone)}/${formatNumber(checklistTotal)}`}
+              complete={checklistDone === checklistTotal}
+            />
+          )}
           <SpentReadout task={task} />
           {task.hasDescription && (
             <AlignStartVerticalIcon aria-label={m.task_has_description()} className="size-3.5 text-muted-foreground" />

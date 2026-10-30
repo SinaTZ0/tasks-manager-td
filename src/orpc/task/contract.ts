@@ -46,6 +46,12 @@ export const taskCardSchema = z.object({
   runningSince: z.array(z.date()),
   /** The live tasks it waits for (done ones too): it is blocked while any of them is not done or cancelled. */
   waitsFor: z.array(z.string()),
+  /** What the card's badges count: its comments (deleted ones left out) and its checklist's steps. */
+  counts: z.object({
+    comments: z.number().int(),
+    checklistDone: z.number().int(),
+    checklistTotal: z.number().int(),
+  }),
 });
 
 export type TaskCard = z.infer<typeof taskCardSchema>;

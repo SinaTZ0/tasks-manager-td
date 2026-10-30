@@ -243,7 +243,7 @@ follows the backend flow, then the frontend flow; desktop first (the phone layou
 - Adding, ticking and deleting items are Activity entries; renames and reorders are not, to keep the history readable.
 - **Tests**: ticking an item records who and when.
 
-### 14. Counts on the Card
+### 14. Counts on the Card ✓
 
 - The card's front shows small badges: comments (💬 3), checklist progress (☑ 2/5, done when all ticked) and
   attachments (once slice 15 lands), each with an accessible label. The board query returns the counts with the cards,
