@@ -7,6 +7,7 @@ import { Provider as JotaiProvider } from "jotai";
 import { DirectionProvider } from "#/components/primitive/direction/direction";
 import { Toaster } from "#/components/primitive/toast/toast";
 import { TooltipProvider } from "#/components/primitive/tooltip/tooltip";
+import { BOARD_LAYOUT_INIT_SCRIPT } from "#/lib/board-layout";
 import { THEME_INIT_SCRIPT } from "#/lib/theme";
 import { orpc } from "#/orpc/client";
 import { m } from "#/paraglide/messages";
@@ -43,12 +44,13 @@ function RootDocument({ children }: { children: React.ReactNode }) {
   const direction = getTextDirection(locale);
 
   return (
-    // The theme script changes <html>'s class and style before hydration, so React must not
+    // The theme and board-layout scripts change <html>'s class, data and style before hydration, so React must not
     // treat that as a mismatch.
     <html lang={locale} dir={direction} suppressHydrationWarning>
       <head>
         {/* First in <head>: applies the saved or system theme before anything paints. */}
         <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
+        <script dangerouslySetInnerHTML={{ __html: BOARD_LAYOUT_INIT_SCRIPT }} />
         <HeadContent />
       </head>
       <body>

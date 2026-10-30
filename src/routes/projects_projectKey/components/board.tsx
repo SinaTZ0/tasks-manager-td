@@ -15,14 +15,14 @@ import {
   type DragEndEvent,
   type DragOverEvent,
   type DragStartEvent,
+  type KeyboardCoordinateGetter,
   type Over,
   type UniqueIdentifier,
 } from "@dnd-kit/core";
 import {
   arrayMove,
-  horizontalListSortingStrategy,
+  rectSortingStrategy,
   SortableContext,
-  sortableKeyboardCoordinates,
   useSortable,
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
@@ -41,6 +41,7 @@ import {
 
 import { Button } from "#/components/primitive/button/button";
 import { columnTitle } from "#/lib/column-title";
+import { cn } from "#/lib/utils";
 import { positionBetween } from "#/lib/position";
 import type { Column, Person, Project } from "#/orpc/project/contract";
 import { taskCode } from "#/orpc/task/constants";
@@ -102,6 +103,75 @@ function swallowNextClick() {
   const stop = stopClick;
   window.addEventListener("click", stop, { capture: true, once: true });
   setTimeout(() => window.removeEventListener("click", stop, { capture: true }), 0);
+}
+
+/*===== Keyboard Moves =====*/
+
+const ARROWS = ["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"];
+
+/**
+ * Where an arrow key takes the dragged item: onto the nearest target in that direction on screen, a column for a
+ * column, a card for a card (or the drop zone of a column with no other cards). dnd-kit's own
+ * `sortableKeyboardCoordinates` works from list order and assumes it runs left to right, so in Persian the arrow
+ * toward the start went nowhere; going by the screen works in both directions and in the wrapped grid.
+ */
+function keyboardTarget({
+  event,
+  context,
+  lanes,
+}: {
+  event: KeyboardEvent;
+  context: Parameters<KeyboardCoordinateGetter>[1]["context"];
+  lanes: Lanes;
+}): ReturnType<KeyboardCoordinateGetter> {
+  const { active, collisionRect, droppableRects, droppableContainers } = context;
+  if (!ARROWS.includes(event.code)) return undefined;
+  event.preventDefault();
+  if (!active || !collisionRect) return undefined;
+  // The keyboard sensor scrolls the board instead of moving the item when the target lies past the board's edge. It
+  // reads `scrollLeft` as left-to-right; in a right-to-left board that value runs negative, so the scroll it asks for
+  // toward the start is impossible and the key does nothing. Right to left, it is given no scrollers to handle (this
+  // context is rebuilt on the next render), and dnd-kit's auto-scroll follows the moved item instead.
+  if (document.dir === "rtl") context.scrollableAncestors = [];
+
+  const movingColumn = typeOf(active) === "column";
+  const horizontal = event.code === "ArrowLeft" || event.code === "ArrowRight";
+  const from = { x: collisionRect.left + collisionRect.width / 2, y: collisionRect.top + collisionRect.height / 2 };
+  let best: { rect: { left: number; top: number; width: number; height: number }; distance: number } | null = null;
+
+  for (const target of droppableContainers.getEnabled()) {
+    const rect = droppableRects.get(target.id);
+    if (!rect || target.id === active.id) continue;
+    const type = typeOf(target);
+    if (movingColumn !== (type === "column")) continue;
+    if (type === "zone") {
+      const columnId = (target.data.current as { columnId: string }).columnId;
+      if ((lanes[columnId] ?? []).some((id) => id !== active.id)) continue;
+    }
+
+    const dx = rect.left + rect.width / 2 - from.x;
+    const dy = rect.top + rect.height / 2 - from.y;
+    const ahead =
+      event.code === "ArrowRight"
+        ? dx > 1
+        : event.code === "ArrowLeft"
+          ? dx < -1
+          : event.code === "ArrowDown"
+            ? dy > 1
+            : dy < -1;
+    if (!ahead) continue;
+    // Straying off the arrow's line counts double, so ArrowLeft picks the card beside, not one further down.
+    const distance = horizontal ? Math.abs(dx) + 2 * Math.abs(dy) : Math.abs(dy) + 2 * Math.abs(dx);
+    if (!best || distance < best.distance) best = { rect, distance };
+  }
+  if (!best) return undefined;
+
+  // Moving down, the item's bottom meets the target's, so a taller card is passed rather than landed on short.
+  const { rect } = best;
+  return {
+    x: rect.left,
+    y: event.code === "ArrowDown" ? rect.top + rect.height - collisionRect.height : rect.top,
+  };
 }
 
 /*===== Sortable Column =====*/
@@ -273,7 +343,9 @@ export function Board({
   const sensors = useSensors(
     // A few pixels of travel before a drag starts, so a click on the card still opens it.
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
-    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: (event, { context }) => keyboardTarget({ event, context, lanes: lanesRef.current }),
+    }),
   );
 
   // A card dragged by keyboard into another column re-mounts there, so dnd-kit can't hand focus back to its grip.
@@ -436,9 +508,13 @@ export function Board({
       {/* Browsers make a scrolling box keyboard-focusable themselves, so it gets the focus ring but no `tabIndex`. */}
       <section
         aria-label={m.board_columns()}
-        className="-m-2 flex items-start gap-6 overflow-x-auto p-2 outline-none focus-visible:outline-2 focus-visible:outline-ring focus-visible:outline-solid"
+        className={cn(
+          "-m-2 flex items-start gap-6 overflow-x-auto p-2 outline-none focus-visible:outline-2 focus-visible:outline-ring focus-visible:outline-solid",
+          // The person's layout (src/lib/board-layout.ts): fitted columns sit closer; wrapped ones form a grid.
+          "board-fit:gap-4 board-wrap:grid board-wrap:board-grid board-wrap:gap-y-10",
+        )}
       >
-        <SortableContext items={columns.map((column) => column.id)} strategy={horizontalListSortingStrategy}>
+        <SortableContext items={columns.map((column) => column.id)} strategy={rectSortingStrategy}>
           {columns.map((column) => {
             const ids = lanes[column.id] ?? [];
             return (

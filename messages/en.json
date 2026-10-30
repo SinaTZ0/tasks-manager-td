@@ -502,5 +502,10 @@
   ],
   "task_move_to": "Move to",
   "task_move_failed": "The card wasn't moved. Try again.",
-  "column_move_failed": "The column wasn't moved. Try again."
+  "column_move_failed": "The column wasn't moved. Try again.",
+  "board_layout": "Board layout",
+  "board_layout_scroll": "One row, scrolling",
+  "board_layout_fit": "One row, fit to the window",
+  "board_layout_wrap": "Several rows",
+  "board_layout_per_row": "Columns per row"
 }

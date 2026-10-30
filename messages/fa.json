@@ -502,5 +502,10 @@
   ],
   "task_move_to": "انتقال به",
   "task_move_failed": "کارت جابه‌جا نشد. دوباره امتحان کنید.",
-  "column_move_failed": "ستون جابه‌جا نشد. دوباره امتحان کنید."
+  "column_move_failed": "ستون جابه‌جا نشد. دوباره امتحان کنید.",
+  "board_layout": "چیدمان تخته",
+  "board_layout_scroll": "یک ردیف، با اسکرول",
+  "board_layout_fit": "یک ردیف، هم‌اندازه پنجره",
+  "board_layout_wrap": "چند ردیف",
+  "board_layout_per_row": "ستون در هر ردیف"
 }

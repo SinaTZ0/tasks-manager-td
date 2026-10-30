@@ -12,6 +12,7 @@ import { PersonAvatar } from "#/components/shared/person-avatar/person-avatar";
 import { pageMeta } from "#/lib/seo";
 import type { Person } from "#/orpc/project/contract";
 import { m } from "#/paraglide/messages";
+import { BoardLayoutPicker } from "#/routes/projects_projectKey/components/board-layout-picker";
 import { Board } from "#/routes/projects_projectKey/components/board";
 import { TaskDrawer } from "#/routes/projects_projectKey/components/task-drawer";
 import { boardQuery, ensureProject, projectQuery, taskQuery } from "#/routes/projects_projectKey/queries";
@@ -69,7 +70,10 @@ function BoardPage() {
       <div className="flex items-center gap-4">
         <h1 className="font-heading text-h2">{project.name}</h1>
         <Marking variant="code">{project.key}</Marking>
-        <AvatarGroup className="ms-auto">
+        <span className="ms-auto">
+          <BoardLayoutPicker />
+        </span>
+        <AvatarGroup>
           {project.members.map((member) => (
             <PersonAvatar key={member.id} name={member.name} />
           ))}

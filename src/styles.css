@@ -14,6 +14,9 @@
    `highlight` (the orange key), and shadcn's `accent` is the quiet wash for hover and selected states. */
 
 @custom-variant dark (&:is(.dark *));
+/* The board's column layout, as each person chose it (src/lib/board-layout.ts); with neither, the row scrolls. */
+@custom-variant board-fit (&:where([data-board-layout="fit"] *));
+@custom-variant board-wrap (&:where([data-board-layout="wrap"] *));
 
 /*===== Type =====*/
 
@@ -552,6 +555,11 @@
     opacity: 0;
     transform: translateX(calc(var(--page-shift) * -1));
   }
+}
+
+/* The board's grid in its wrapped layout: as many equal columns per row as the person chose. */
+@utility board-grid {
+  grid-template-columns: repeat(var(--board-per-row, 3), minmax(0, 1fr));
 }
 
 /* A part being dragged on the board (dnd-kit): where it is and how it slides come in as custom properties. */

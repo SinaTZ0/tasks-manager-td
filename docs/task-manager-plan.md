@@ -114,6 +114,8 @@ Built once, in the slice that first needs them, and used by every procedure afte
 - Move cards between and within columns, reorder columns (admin), with optimistic moves and rollback.
 - A "move to…" menu on every card, so moving never depends on dragging.
 - Keyboard dragging, with announcements as Paraglide messages.
+- A board layout each person picks (saved in their browser): one scrolling row, one row fitted to the window, or
+  several rows of 2–4 columns.
 - **Tests**: a move records left/entered columns; a stale position key is resolved, not duplicated.
 
 ### 4. Status and Time

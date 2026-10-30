@@ -52,7 +52,10 @@ export function BoardColumn({
       ref={ref}
       style={style}
       aria-labelledby={headingId}
-      className={cn("flex min-w-64 flex-1 drag-motion flex-col gap-3", dragging && "z-10 opacity-70")}
+      className={cn(
+        "flex min-w-64 flex-1 drag-motion flex-col gap-3 board-fit:min-w-0 board-wrap:min-w-0",
+        dragging && "z-10 opacity-70",
+      )}
     >
       {/*------ Header ------*/}
       <header className="flex items-center justify-between gap-3 border-b-2 border-foreground pb-2">
