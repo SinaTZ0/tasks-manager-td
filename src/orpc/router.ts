@@ -13,6 +13,14 @@ import {
 import { viewerProcedure } from "#/orpc/session/procedure";
 import { siteOriginProcedure } from "#/orpc/site/procedure";
 import {
+  archiveTaskProcedure,
+  createLabelProcedure,
+  createTaskProcedure,
+  getTaskProcedure,
+  taskBoardProcedure,
+  updateTaskProcedure,
+} from "#/orpc/task/procedure";
+import {
   createTeamMemberProcedure,
   listTeamProcedure,
   setTeamMemberRoleProcedure,
@@ -46,6 +54,14 @@ export const router = implementer.router({
   },
   site: {
     origin: siteOriginProcedure,
+  },
+  task: {
+    board: taskBoardProcedure,
+    get: getTaskProcedure,
+    create: createTaskProcedure,
+    update: updateTaskProcedure,
+    archive: archiveTaskProcedure,
+    createLabel: createLabelProcedure,
   },
   team: {
     list: listTeamProcedure,

@@ -253,5 +253,133 @@
       }
     }
   ],
-  "team_save_failed": "تغییر ذخیره نشد. دوباره امتحان کنید."
+  "team_save_failed": "تغییر ذخیره نشد. دوباره امتحان کنید.",
+  "date_field_placeholder": "انتخاب تاریخ",
+  "date_field_clear": "پاک کردن تاریخ",
+  "date_field_open": "باز کردن تقویم",
+  "date_field_today": "امروز",
+  "rich_text_toolbar": "قالب متن",
+  "rich_text_bold": "پررنگ",
+  "rich_text_italic": "کج",
+  "rich_text_strike": "خط‌خورده",
+  "rich_text_code": "کد",
+  "rich_text_bullet_list": "فهرست نشانه‌دار",
+  "rich_text_ordered_list": "فهرست شماره‌دار",
+  "rich_text_quote": "نقل‌قول",
+  "rich_text_link": "پیوند",
+  "rich_text_link_url": "نشانی پیوند",
+  "rich_text_link_apply": "اعمال",
+  "rich_text_link_remove": "حذف پیوند",
+  "rich_text_undo": "واگرد",
+  "rich_text_redo": "ازنو",
+  "task_error_title_required": "عنوان کار خالی است. یک عنوان بنویسید.",
+  "task_error_title_too_long": [
+    {
+      "declarations": ["input max", "local maxText = max: number"],
+      "match": {
+        "": "عنوان حداکثر {maxText} حرف است."
+      }
+    }
+  ],
+  "task_error_description_invalid": "توضیح خوانده نشد. آن را کپی کنید، صفحه را دوباره بارگذاری کنید و دوباره بچسبانید.",
+  "task_error_description_too_long": [
+    {
+      "declarations": ["input max", "local maxText = max: number"],
+      "match": {
+        "": "توضیح حداکثر {maxText} حرف است."
+      }
+    }
+  ],
+  "task_error_estimate_invalid": "تخمینی از ۱ دقیقه تا ۹۹۹ ساعت بنویسید.",
+  "task_error_due_date_invalid": "تاریخ معتبری انتخاب کنید.",
+  "task_error_person_unusable": "فقط اعضای فعال این پروژه می‌توانند کار بگیرند.",
+  "task_error_label_unknown": "این برچسب در این پروژه نیست. صفحه را دوباره بارگذاری کنید.",
+  "task_error_column_unusable": "به این ستون نمی‌شود کار اضافه کرد.",
+  "task_error_owner_only": "فقط مالک یا مدیر می‌تواند مالکیت کار را واگذار کند.",
+  "label_error_name_required": "نام برچسب را بنویسید.",
+  "label_error_name_too_long": [
+    {
+      "declarations": ["input max", "local maxText = max: number"],
+      "match": {
+        "": "نام برچسب حداکثر {maxText} حرف است."
+      }
+    }
+  ],
+  "label_error_name_taken": "این پروژه برچسبی با این نام دارد.",
+  "priority_low": "کم",
+  "priority_medium": "متوسط",
+  "priority_high": "بالا",
+  "priority_urgent": "فوری",
+  "priority_readout": [
+    {
+      "declarations": ["input priority"],
+      "match": {
+        "": "اولویت: {priority}"
+      }
+    }
+  ],
+  "label_color_slate": "سنگی",
+  "label_color_purple": "بنفش",
+  "label_color_pink": "صورتی",
+  "label_color_brown": "قهوه‌ای",
+  "label_color_teal": "فیروزه‌ای",
+  "label_color_navy": "سرمه‌ای",
+  "label_new_label": "برچسب تازه",
+  "label_add": "افزودن",
+  "label_color": "رنگ برچسب",
+  "task_labels": "برچسب‌ها",
+  "task_unassigned": "بی‌مسئول",
+  "task_has_description": "توضیح دارد",
+  "task_due_label": "سررسید",
+  "task_quick_add_placeholder": "افزودن کار…",
+  "task_quick_add_label": [
+    {
+      "declarations": ["input column"],
+      "match": {
+        "": "کار تازه در {column}"
+      }
+    }
+  ],
+  "task_save_failed": "تغییر ذخیره نشد. دوباره امتحان کنید.",
+  "task_title_label": "عنوان",
+  "task_description_label": "توضیح",
+  "task_description_edit": "ویرایش",
+  "task_description_placeholder": "چه باید انجام شود و از کجا بفهمیم تمام شده است؟",
+  "task_description_save": "ذخیره",
+  "task_description_cancel": "لغو",
+  "task_description_empty": "هنوز توضیحی ندارد.",
+  "task_priority_label": "اولویت",
+  "task_owner_label": "مالک",
+  "task_assignee_label": "مسئول",
+  "task_owner_locked": "فقط مالک یا مدیر می‌تواند آن را واگذار کند.",
+  "task_estimate_label": "تخمین زمان",
+  "task_estimate_hint": "ساعت و دقیقه، مثل ۱:۳۰، یا ۲ برای دو ساعت.",
+  "task_not_found": "این کار در این پروژه نیست یا حذف شده است.",
+  "task_created_by": [
+    {
+      "declarations": ["input name", "input date"],
+      "match": {
+        "": "ساخته‌شده به دست {name} در {date}"
+      }
+    }
+  ],
+  "task_archived_notice": "این کار بایگانی شده است. روی تخته نیست و تاریخچه‌اش می‌ماند.",
+  "task_archive": "بایگانی",
+  "task_archive_title": [
+    {
+      "declarations": ["input code"],
+      "match": {
+        "": "{code} بایگانی شود؟"
+      }
+    }
+  ],
+  "task_archive_description": "از تخته برداشته می‌شود و تاریخچه‌اش می‌ماند. مدیر می‌تواند آن را از بایگانی برگرداند.",
+  "task_archived": [
+    {
+      "declarations": ["input code"],
+      "match": {
+        "": "{code} بایگانی شد."
+      }
+    }
+  ]
 }

@@ -13,17 +13,21 @@ const pad = (value: number) => formatNumber(value, { minimumIntegerDigits: 2 });
 /**
  * One column of the board: its name printed over a heavy rule, the card count in the instrument mono (`count/limit`
  * when it has a WIP limit, with a yellow LED once the count passes it), and the cards below. With no cards it shows an
- * empty bay, so the column keeps its shape and still reads as a place to drop work.
+ * empty bay, so the column keeps its shape and still reads as a place to drop work. The footer (quick add) sits under
+ * the cards.
  */
 export function BoardColumn({
   title,
   count,
   wipLimit,
+  footer,
   children,
 }: {
   title: string;
   count: number;
   wipLimit: number | null;
+  /** Below the cards: the quick-add field. */
+  footer?: ReactNode;
   children?: ReactNode;
 }) {
   const headingId = useId();
@@ -66,6 +70,7 @@ export function BoardColumn({
           <Marking>{m.board_column_empty()}</Marking>
         </p>
       )}
+      {footer}
     </section>
   );
 }

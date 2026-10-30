@@ -29,6 +29,13 @@
       "when": 1793374283336,
       "tag": "0003_activity-append-only",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1793375428896,
+      "tag": "0004_tasks",
+      "breakpoints": true
     }
   ]
 }

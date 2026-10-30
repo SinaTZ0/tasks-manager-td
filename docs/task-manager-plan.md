@@ -29,7 +29,7 @@ Made with the user on 2026-10-30. They answer the spec's open questions and over
   @mentions through its mention extension). Bundle size doesn't matter much: almost every page is behind sign-in and
   used all day. A document is stored as Tiptap's JSON, so a mention keeps the user's id and survives a rename, plus a
   plain-text copy for search and for readable Activity entries. Read-only text is drawn with Tiptap's static renderer,
-  so it is in the server-rendered page too (to confirm in slice 2).
+  so it is in the server-rendered page too.
 - **Notes stay**: the template's notes become a personal notebook. Each person sees only their own notes, as the
   procedures already enforce. The `note` feature is no longer "the example to delete".
 
@@ -53,7 +53,7 @@ Added in the slice that first needs them, versions checked against React 19 at i
 | ------------------------------------------------------------------------------- | ----- | ---------------------------------------------------------------------------- |
 | `fractional-indexing`                                                           | 2     | Position keys for cards and columns, so a move writes one row                |
 | `@dnd-kit/core`, `@dnd-kit/sortable`                                            | 3     | Dragging cards and columns, with keyboard dragging and Persian announcements |
-| `react-day-picker`                                                              | 2     | The due-date picker as a `calendar` primitive, with its Persian calendar     |
+| `@daypicker/react`, `@daypicker/persian`                                        | 2     | The due-date picker as a `calendar` primitive, with its Jalali calendar      |
 | `@tiptap/react`, `@tiptap/pm`, `@tiptap/starter-kit`, `@tiptap/static-renderer` | 2     | The rich-text editor and its read-only rendering                             |
 | `@tiptap/extension-mention`, `@tiptap/suggestion`                               | 7     | @mentions in comments, with a picker built from the popover primitive        |
 
@@ -96,7 +96,7 @@ Built once, in the slice that first needs them, and used by every procedure afte
   uses the project's key, which never changes.
 - **Tests**: a non-member can't read a project; the last admin can't be demoted; Activity can't be updated or deleted.
 
-### 2. Tasks on the Board
+### 2. Tasks on the Board ✓
 
 - Create, edit and archive a task: title, description (rich text), priority, due date, estimate, labels, owner, assignee.
 - Quick add at the bottom of a column: type a title, press Enter.
@@ -105,7 +105,7 @@ Built once, in the slice that first needs them, and used by every procedure afte
   assignee avatar, priority, due date, labels; the blocked and timer marks arrive with their slices.
 - The card drawer, opened by a typed search param (`?task=TD-42`) so a card has a link: details and editing.
 - Labels: a member adds them from the drawer; colours come from a fixed set in the theme (signals stay reserved).
-- New primitives: `calendar` (react-day-picker) and a date field; `rich-text-editor` and `rich-text` (read-only), both
+- New primitives: `calendar` (DayPicker, Jalali in Persian) and `date-picker`; `rich-text-editor` and `rich-text` (read-only), both
   restyled as instrument parts (the editor is a field plate in a cut, its toolbar a row of compact keys).
 - **Tests**: every task change writes Activity; archived tasks leave the board but keep their history.
 

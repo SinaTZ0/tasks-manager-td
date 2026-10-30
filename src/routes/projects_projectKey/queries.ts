@@ -5,9 +5,16 @@ import type { QueryClient } from "@tanstack/react-query";
 import { orpc } from "#/orpc/client";
 import type { Project } from "#/orpc/project/contract";
 
-/*===== Project =====*/
+/*===== Queries =====*/
 /** The project's query, by its key as the URL has it (any case: the server matches capitals). */
 export const projectQuery = (projectKey: string) => orpc.project.get.queryOptions({ input: { key: projectKey } });
+
+/** The project's live tasks, labels and the people its cards name. */
+export const boardQuery = (projectId: string) => orpc.task.board.queryOptions({ input: { projectId } });
+
+/** One task's details, for its drawer. */
+export const taskQuery = ({ projectId, number }: { projectId: string; number: number }) =>
+  orpc.task.get.queryOptions({ input: { projectId, number } });
 
 /**
  * Loads a project into the cache for a route's loader. A project the viewer can't open answers `NOT_FOUND`, the same

@@ -206,6 +206,16 @@
   --color-signal-positive: var(--signal-positive);
   --color-signal-off: var(--signal-off);
 
+  /*------ Labels ------*/
+  /* A label's colour is a small printed swatch beside its name, never a signal: none of these is orange, yellow,
+     blue or green, so a label can't read as a status. The names are `LABEL_COLORS` (src/orpc/task/constants.ts). */
+  --color-label-slate: var(--label-slate);
+  --color-label-purple: var(--label-purple);
+  --color-label-pink: var(--label-pink);
+  --color-label-brown: var(--label-brown);
+  --color-label-teal: var(--label-teal);
+  --color-label-navy: var(--label-navy);
+
   /*------ Radius ------*/
   /* The cut is a near-square machined slot and the keycap is the molded part that carries the rounding. The
      mismatch is the point: the void shows most at the corners, like a real key in a milled hole. Compact parts
@@ -321,6 +331,14 @@
   --signal-positive: #9fc33a;
   /* An unlit LED is still a visible part: grey plastic, not nothing */
   --signal-off: #a3a3a3;
+
+  /* Label swatches: mid-tone inks that hold 3:1 against both the light and the graphite housing */
+  --label-slate: #6f7b8c;
+  --label-purple: #8b5cc4;
+  --label-pink: #cf4f93;
+  --label-brown: #94683d;
+  --label-teal: #22968c;
+  --label-navy: #4a68ad;
 
   /*------ Depth ------*/
   /* Popups are a module lifted off the desk: a hard molded ledge plus a soft shadow */

@@ -1,6 +1,7 @@
 import {
   boolean,
   customType,
+  date,
   index,
   integer,
   jsonb,
@@ -204,6 +205,93 @@ export const boardColumn = pgTable(
     wipLimit: integer("wip_limit"),
   },
   (table) => [uniqueIndex("board_column_project_id_kind_idx").on(table.projectId, table.kind)],
+);
+
+/*===== Tasks =====*/
+// A card on a project's board (docs/app.md → Task). It sits in exactly one column (rule 1) and keeps its number for
+// life: `TD-42` is the project's key and this number. Archived tasks leave the board but keep their row and history;
+// only an admin hard-deletes one, from the archive (rule 10).
+
+export const task = pgTable(
+  "task",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    projectId: uuid("project_id")
+      .notNull()
+      .references(() => project.id, { onDelete: "restrict" }),
+    /** From the project's counter, so `TD-42` is never reused. */
+    number: integer("number").notNull(),
+    columnId: uuid("column_id")
+      .notNull()
+      .references(() => boardColumn.id, { onDelete: "restrict" }),
+    /** Order within the column. */
+    position: positionKey("position").notNull(),
+    title: text("title").notNull(),
+    /** A Tiptap document (`src/lib/rich-text.ts`); null when empty. */
+    description: jsonb("description"),
+    /** The description's plain text, for search and the history. */
+    descriptionText: text("description_text").notNull().default(""),
+    /** One of `TASK_PRIORITIES` (`src/orpc/task/constants.ts`). */
+    priority: text("priority").notNull().default("medium"),
+    dueDate: date("due_date", { mode: "string" }),
+    estimateMinutes: integer("estimate_minutes"),
+    /** Responsible for the task. Changed only by the owner or an admin, never by delegation (rule 6). */
+    ownerId: text("owner_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "restrict" }),
+    /** Doing the work. */
+    assigneeId: text("assignee_id").references(() => user.id, { onDelete: "restrict" }),
+    createdBy: text("created_by")
+      .notNull()
+      .references(() => user.id, { onDelete: "restrict" }),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+    updatedAt: timestamp("updated_at")
+      .notNull()
+      .defaultNow()
+      .$onUpdate(() => new Date()),
+    archivedAt: timestamp("archived_at"),
+  },
+  (table) => [
+    uniqueIndex("task_project_id_number_idx").on(table.projectId, table.number),
+    // The board reads a project's live tasks, column by column, in order.
+    index("task_column_id_position_idx").on(table.columnId, table.position),
+    index("task_project_id_archived_at_idx").on(table.projectId, table.archivedAt),
+  ],
+);
+
+/*===== Labels =====*/
+// A coloured tag that belongs to one project; any member adds them. The colours are a fixed set of theme tokens
+// (`LABEL_COLORS`), none of them a signal colour, so a label never reads as a status.
+
+export const label = pgTable(
+  "label",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    projectId: uuid("project_id")
+      .notNull()
+      .references(() => project.id, { onDelete: "cascade" }),
+    name: text("name").notNull(),
+    /** One of `LABEL_COLORS` (`src/orpc/task/constants.ts`). */
+    color: text("color").notNull(),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+  },
+  (table) => [uniqueIndex("label_project_id_name_idx").on(table.projectId, table.name)],
+);
+
+export const taskLabel = pgTable(
+  "task_label",
+  {
+    taskId: uuid("task_id")
+      .notNull()
+      .references(() => task.id, { onDelete: "cascade" }),
+    labelId: uuid("label_id")
+      .notNull()
+      .references(() => label.id, { onDelete: "cascade" }),
+  },
+  (table) => [
+    primaryKey({ columns: [table.taskId, table.labelId] }),
+    index("task_label_label_id_idx").on(table.labelId),
+  ],
 );
 
 /*===== Activity =====*/

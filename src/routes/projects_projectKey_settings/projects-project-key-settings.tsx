@@ -46,9 +46,7 @@ function SettingsPage() {
         </Link>
         <div className="flex items-center gap-3">
           <h1 className="font-heading text-h2">{m.settings_heading({ project: project.name })}</h1>
-          <Marking variant="code">
-            <bdi dir="ltr">{project.key}</bdi>
-          </Marking>
+          <Marking variant="code">{project.key}</Marking>
         </div>
       </div>
 

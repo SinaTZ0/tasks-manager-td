@@ -13,6 +13,11 @@ export const ACTIVITY_ACTIONS = [
   "member.added",
   "member.removed",
   "column.updated",
+  "label.created",
+  /*------ Task ------*/
+  "task.created",
+  "task.updated",
+  "task.archived",
 ] as const;
 
 export type ActivityAction = (typeof ACTIVITY_ACTIONS)[number];

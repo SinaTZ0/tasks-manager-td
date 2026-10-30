@@ -81,9 +81,7 @@ function ProjectCard({ project }: { project: ProjectSummary }) {
         <CardTitle>
           <div className="flex items-center justify-between gap-3">
             <h2 className="text-h3">{project.name}</h2>
-            <Marking variant="code">
-              <bdi dir="ltr">{project.key}</bdi>
-            </Marking>
+            <Marking variant="code">{project.key}</Marking>
           </div>
         </CardTitle>
       </CardHeader>

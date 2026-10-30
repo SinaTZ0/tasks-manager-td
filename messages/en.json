@@ -253,5 +253,133 @@
       }
     }
   ],
-  "team_save_failed": "The change wasn't saved. Try again."
+  "team_save_failed": "The change wasn't saved. Try again.",
+  "date_field_placeholder": "Pick a date",
+  "date_field_clear": "Clear the date",
+  "date_field_open": "Open the calendar",
+  "date_field_today": "Today",
+  "rich_text_toolbar": "Text formatting",
+  "rich_text_bold": "Bold",
+  "rich_text_italic": "Italic",
+  "rich_text_strike": "Strikethrough",
+  "rich_text_code": "Code",
+  "rich_text_bullet_list": "Bulleted list",
+  "rich_text_ordered_list": "Numbered list",
+  "rich_text_quote": "Quote",
+  "rich_text_link": "Link",
+  "rich_text_link_url": "Link address",
+  "rich_text_link_apply": "Apply",
+  "rich_text_link_remove": "Remove link",
+  "rich_text_undo": "Undo",
+  "rich_text_redo": "Redo",
+  "task_error_title_required": "Write a title for the task.",
+  "task_error_title_too_long": [
+    {
+      "declarations": ["input max", "local maxText = max: number"],
+      "match": {
+        "": "A title can be at most {maxText} characters."
+      }
+    }
+  ],
+  "task_error_description_invalid": "The description couldn't be read. Copy it, reload the page and paste it again.",
+  "task_error_description_too_long": [
+    {
+      "declarations": ["input max", "local maxText = max: number"],
+      "match": {
+        "": "A description can be at most {maxText} characters."
+      }
+    }
+  ],
+  "task_error_estimate_invalid": "Enter an estimate from 1 minute to 999 hours.",
+  "task_error_due_date_invalid": "Pick a valid date.",
+  "task_error_person_unusable": "Only active members of this project can take a task.",
+  "task_error_label_unknown": "That label isn't on this project. Reload the page.",
+  "task_error_column_unusable": "Tasks can't be added to that column.",
+  "task_error_owner_only": "Only the owner or an admin can hand over a task.",
+  "label_error_name_required": "Name the label.",
+  "label_error_name_too_long": [
+    {
+      "declarations": ["input max", "local maxText = max: number"],
+      "match": {
+        "": "A label name can be at most {maxText} characters."
+      }
+    }
+  ],
+  "label_error_name_taken": "This project already has a label with that name.",
+  "priority_low": "Low",
+  "priority_medium": "Medium",
+  "priority_high": "High",
+  "priority_urgent": "Urgent",
+  "priority_readout": [
+    {
+      "declarations": ["input priority"],
+      "match": {
+        "": "Priority: {priority}"
+      }
+    }
+  ],
+  "label_color_slate": "Slate",
+  "label_color_purple": "Purple",
+  "label_color_pink": "Pink",
+  "label_color_brown": "Brown",
+  "label_color_teal": "Teal",
+  "label_color_navy": "Navy",
+  "label_new_label": "New label",
+  "label_add": "Add",
+  "label_color": "Label colour",
+  "task_labels": "Labels",
+  "task_unassigned": "Unassigned",
+  "task_has_description": "Has a description",
+  "task_due_label": "Due",
+  "task_quick_add_placeholder": "Add a task…",
+  "task_quick_add_label": [
+    {
+      "declarations": ["input column"],
+      "match": {
+        "": "New task in {column}"
+      }
+    }
+  ],
+  "task_save_failed": "The change wasn't saved. Try again.",
+  "task_title_label": "Title",
+  "task_description_label": "Description",
+  "task_description_edit": "Edit",
+  "task_description_placeholder": "What needs doing, and how will you know it's done?",
+  "task_description_save": "Save",
+  "task_description_cancel": "Cancel",
+  "task_description_empty": "No description yet.",
+  "task_priority_label": "Priority",
+  "task_owner_label": "Owner",
+  "task_assignee_label": "Assignee",
+  "task_owner_locked": "Only the owner or an admin can hand it over.",
+  "task_estimate_label": "Estimate",
+  "task_estimate_hint": "Hours and minutes, like 1:30, or 2 for two hours.",
+  "task_not_found": "This task isn't on this project, or it was deleted.",
+  "task_created_by": [
+    {
+      "declarations": ["input name", "input date"],
+      "match": {
+        "": "Created by {name} on {date}"
+      }
+    }
+  ],
+  "task_archived_notice": "This task is archived. It's off the board and its history is kept.",
+  "task_archive": "Archive",
+  "task_archive_title": [
+    {
+      "declarations": ["input code"],
+      "match": {
+        "": "Archive {code}?"
+      }
+    }
+  ],
+  "task_archive_description": "It leaves the board but keeps its history. An admin can restore it from the archive.",
+  "task_archived": [
+    {
+      "declarations": ["input code"],
+      "match": {
+        "": "{code} archived."
+      }
+    }
+  ]
 }
