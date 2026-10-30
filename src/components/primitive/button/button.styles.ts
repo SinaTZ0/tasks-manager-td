@@ -1,87 +1,76 @@
 import { cva } from "class-variance-authority";
+import { keycapVariants, twKeycapTone } from "../instrument.styles";
 import { composeStyles, defineStyles, joinStyles } from "../styles";
 
 /*===== Shared Styles =====*/
 
 const twSharedStyles = defineStyles({
-  // `group/button` lets icons and labels react to the button's own state.
-  layout: "group/button inline-flex shrink-0 items-center justify-center",
-  // A 1.5px edge, transparent unless a variant draws it, so every variant has the same size.
-  geometry: "rounded-md border-[1.5px]",
-  appearance: "border-transparent bg-clip-padding",
-  typography: "text-button whitespace-nowrap",
-  interaction:
-    "transition-[color,background-color,border-color,translate] duration-150 ease-out outline-none select-none",
-  focus:
-    "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring focus-visible:outline-solid",
-  // The press: a 1px drop while held. Transforms only run with motion allowed.
-  active: "motion-safe:active:not-disabled:translate-y-px",
-  disabled: "disabled:pointer-events-none disabled:opacity-45",
-  invalid: "aria-invalid:border-destructive",
-  icon: "[&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-5",
-  // The arrow nudge: a trailing forward arrow moves 4px ahead (left in RTL) on hover and keyboard focus.
-  iconNudge:
-    "**:data-[icon=inline-end]:transition-[translate] **:data-[icon=inline-end]:duration-150 **:data-[icon=inline-end]:ease-out motion-safe:**:data-[icon=inline-end]:group-hover/button:-translate-x-1 motion-safe:**:data-[icon=inline-end]:group-focus-visible/button:-translate-x-1",
-  motion: "motion-reduce:transition-none",
+  // `group/button` lets icons and labels react to the button's own state
+  layout: "group/button",
+  icon: "[&_svg:not([class*='size-'])]:size-4.5",
 });
 
 /*===== Appearance =====*/
 
-// One `highlight` button per view: the page's main call to action. `default` (primary) is for in-app actions.
-// Hover tints by one step; the movement is the shared press and arrow nudge above.
+// Each variant is a keycap material (instrument.styles.ts), except `ghost` and `link`, which are printed on the housing
+// with no cut. One `highlight` (the orange key) per view: the page's main call to action. `default` is the graphite
+// function key for in-app actions; `secondary` the light key for everything else.
 const twVariant = defineStyles({
   default: {
-    appearance: "bg-primary text-primary-foreground",
-    hover: "hover:bg-primary-hover",
+    appearance: joinStyles(twKeycapTone.graphite),
   },
   highlight: {
-    appearance: "bg-highlight text-highlight-foreground",
-    hover: "hover:bg-highlight-hover",
-  },
-  outline: {
-    appearance: "border-input bg-transparent text-foreground",
-    hover: "hover:bg-accent",
-    state: "aria-expanded:bg-accent",
+    appearance: joinStyles(twKeycapTone.highlight),
   },
   secondary: {
-    appearance: "bg-secondary text-secondary-foreground",
-    hover: "hover:bg-accent",
-    state: "aria-expanded:bg-accent",
+    appearance: joinStyles(twKeycapTone.light),
   },
-  ghost: {
-    appearance: "text-brand-text",
-    hover: "hover:bg-accent",
-    state: "aria-expanded:bg-accent",
+  // A blank plate flush with the housing: quieter than a raised key, still clearly a control
+  outline: {
+    appearance: joinStyles(twKeycapTone.flat),
   },
   destructive: {
-    appearance: "bg-destructive-surface text-destructive",
-    hover: "hover:border-destructive",
+    appearance: joinStyles(twKeycapTone.danger),
+  },
+  ghost: {
+    layout: "relative inline-flex shrink-0 items-center justify-center",
+    geometry: "rounded-keycap-compact",
+    typography: "font-heading text-button whitespace-nowrap",
+    appearance: "text-foreground",
+    interaction: "transition-colors duration-75 outline-none select-none",
+    hover: "hover:bg-accent",
+    state: "aria-expanded:bg-accent",
+    focus: "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring",
+    disabled: "data-disabled:pointer-events-none data-disabled:opacity-45",
   },
   link: {
+    layout: "relative inline-flex shrink-0 items-center justify-center",
+    typography: "font-heading text-button whitespace-nowrap",
     appearance: "text-brand-text underline-offset-4",
+    interaction: "outline-none select-none",
     hover: "hover:underline",
+    focus: "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring",
+    disabled: "data-disabled:pointer-events-none data-disabled:opacity-45",
   },
 });
 
 /*===== Geometry =====*/
 
-// Heights line up with the 44px inputs; `sm` and every icon size keep a 40px minimum tap target.
+// Heights line up with the 44px fields. Every part's cut sits 2–3px outside its box, so neighbours need a gap of at
+// least `gap-2` to keep their cuts apart. Compact sizes (xs, sm, icon-xs, icon-sm) take the compact keycap scale.
 // `geometryIcon` tightens the padding on the side holding a `data-icon` child so the icon looks optically centered.
-// `geometryGroup` restores the shared radius when compact buttons sit inside a ButtonGroup.
 const twSize = defineStyles({
   xs: {
     layout: "gap-1",
-    geometry: "h-8 rounded-sm px-3",
+    geometry: "h-8 px-3",
     geometryIcon: "has-data-[icon=inline-end]:pe-2 has-data-[icon=inline-start]:ps-2",
-    geometryGroup: "in-data-[slot=button-group]:rounded-md",
-    typography: "text-caption font-bold",
+    typography: "text-caption font-semibold",
     icon: "[&_svg:not([class*='size-'])]:size-4",
   },
   sm: {
     layout: "gap-1.5",
-    geometry: "h-10 rounded-sm px-4",
+    geometry: "h-10 px-4",
     geometryIcon: "has-data-[icon=inline-end]:pe-3 has-data-[icon=inline-start]:ps-3",
-    geometryGroup: "in-data-[slot=button-group]:rounded-md",
     icon: "[&_svg:not([class*='size-'])]:size-4",
   },
   default: {
@@ -95,30 +84,54 @@ const twSize = defineStyles({
     geometryIcon: "has-data-[icon=inline-end]:pe-5 has-data-[icon=inline-start]:ps-5",
   },
   "icon-xs": {
-    geometry: "size-8 rounded-sm",
-    geometryGroup: "in-data-[slot=button-group]:rounded-md",
+    geometry: "size-8",
     icon: "[&_svg:not([class*='size-'])]:size-4",
   },
   "icon-sm": {
-    geometry: "size-10 rounded-sm",
-    geometryGroup: "in-data-[slot=button-group]:rounded-md",
+    geometry: "size-10",
+    icon: "[&_svg:not([class*='size-'])]:size-4",
   },
   icon: {
     geometry: "size-11",
   },
   "icon-lg": {
     geometry: "size-12",
-    icon: "[&_svg:not([class*='size-'])]:size-6",
+    icon: "[&_svg:not([class*='size-'])]:size-5",
   },
 });
 
 /*===== Class Composition =====*/
+
+const compactSizes = ["xs", "sm", "icon-xs", "icon-sm"] as const;
+const regularSizes = ["default", "lg", "icon", "icon-lg"] as const;
+const keycapTones = ["default", "highlight", "secondary", "outline", "destructive"] as const;
 
 const buttonVariants = cva(joinStyles(twSharedStyles), {
   variants: {
     variant: composeStyles(twVariant),
     size: composeStyles(twSize),
   },
+  // The keycap scale (radius, bevel, cut width, press depth) follows the size, so a 32px key isn't drawn with
+  // full-size proportions. Ghost and link have no keycap, so they skip it.
+  compoundVariants: [
+    {
+      variant: [...keycapTones],
+      size: [...regularSizes],
+      className: keycapVariants({ tone: null, scale: "regular" }),
+    },
+    {
+      variant: [...keycapTones],
+      size: [...compactSizes],
+      className: keycapVariants({ tone: null, scale: "compact" }),
+    },
+    // The bevel depends on material and scale together
+    { variant: "default", size: [...regularSizes], className: "after:shadow-keycap-graphite" },
+    { variant: "default", size: [...compactSizes], className: "after:shadow-keycap-graphite-compact" },
+    { variant: "highlight", size: [...regularSizes], className: "after:shadow-keycap-highlight" },
+    { variant: "highlight", size: [...compactSizes], className: "after:shadow-keycap-highlight-compact" },
+    { variant: ["secondary", "destructive"], size: [...regularSizes], className: "after:shadow-keycap" },
+    { variant: ["secondary", "destructive"], size: [...compactSizes], className: "after:shadow-keycap-compact" },
+  ],
   defaultVariants: {
     variant: "default",
     size: "default",

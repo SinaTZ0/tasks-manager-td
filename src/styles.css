@@ -2,9 +2,16 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 @import "@fontsource-variable/vazirmatn";
+@import "@fontsource/ibm-plex-sans-arabic/400.css";
+@import "@fontsource/ibm-plex-sans-arabic/500.css";
+@import "@fontsource/ibm-plex-sans-arabic/600.css";
+@import "@fontsource/ibm-plex-sans-arabic/700.css";
+@import "@fontsource/ibm-plex-mono/400.css";
+@import "@fontsource/ibm-plex-mono/500.css";
 
-/* Tokens follow docs/frontend/app-identity.md. Names follow shadcn; the one call to action per view is `highlight`, and
-   shadcn's `accent` is the quiet wash for hover and selected states. */
+/* Tokens follow docs/frontend/app-identity.md: the app is a hardware instrument. The page is the desk, cards are
+   housings, controls are keycaps seated in machined cuts. Names follow shadcn; the one call to action per view is
+   `highlight` (the orange key), and shadcn's `accent` is the quiet wash for hover and selected states. */
 
 @custom-variant dark (&:is(.dark *));
 
@@ -17,22 +24,23 @@
   --text-base--line-height: calc(26 / 15);
   --text-lg--line-height: calc(28 / 16);
 
-  /* The app's type styles as `text-<name>`: size, line height and weight together. Small sizes and medium weights
-     keep the page quiet; display, h1 and h2 drop one step on phones, below. */
-  --text-display: 2.75rem;
-  --text-display--line-height: 4.25rem;
+  /* The app's type styles as `text-<name>`: size, line height and weight together. An instrument prints small and
+     dense, so the scale stays compact; display, h1 and h2 drop one step on phones, below. Nothing goes under 12px. */
+  --text-display: 2.5rem;
+  --text-display--line-height: 3.75rem;
   --text-display--font-weight: 700;
+  /* Numeric readouts in display windows (timers, counts); always paired with `font-mono` */
   --text-stat: 2.25rem;
-  --text-stat--line-height: 3rem;
-  --text-stat--font-weight: 700;
-  --text-h1: 2rem;
-  --text-h1--line-height: 3.25rem;
+  --text-stat--line-height: 2.75rem;
+  --text-stat--font-weight: 500;
+  --text-h1: 1.75rem;
+  --text-h1--line-height: 2.75rem;
   --text-h1--font-weight: 700;
-  --text-h2: 1.5rem;
-  --text-h2--line-height: 2.5rem;
+  --text-h2: 1.375rem;
+  --text-h2--line-height: 2.25rem;
   --text-h2--font-weight: 600;
-  --text-h3: 1.125rem;
-  --text-h3--line-height: 1.875rem;
+  --text-h3: 1.0625rem;
+  --text-h3--line-height: 1.75rem;
   --text-h3--font-weight: 600;
   --text-h4: 0.9375rem;
   --text-h4--line-height: 1.625rem;
@@ -46,7 +54,7 @@
   --text-caption: 0.75rem;
   --text-caption--line-height: 1.25rem;
   --text-caption--font-weight: 500;
-  --text-button: 0.8125rem;
+  --text-button: 0.875rem;
   --text-button--line-height: 1.375rem;
   --text-button--font-weight: 600;
   --text-kicker: 0.75rem;
@@ -55,9 +63,33 @@
   --text-nav: 0.8125rem;
   --text-nav--line-height: 1.375rem;
   --text-nav--font-weight: 500;
+  /* Silkscreen printed on the housing next to a part: panel names, key legends, value labels. 12px is the floor
+     for Persian, so markings never go smaller even though hardware prints them tiny. */
+  --text-marking: 0.75rem;
+  --text-marking--line-height: 1.125rem;
+  --text-marking--font-weight: 600;
+
+  /* Printed markings track slightly open; mono readouts open further so digits read like a segment display */
+  --tracking-marking: 0.02em;
+  --tracking-readout: 0.08em;
 
   /* Layout: `max-w-site` is the 1200px content width */
   --container-site: 75rem;
+
+  /*------ Animation ------*/
+  /* Hard on/off steps like a real LED; a smooth fade would read as a web spinner. */
+  --animate-led-blink: led-blink 1.1s steps(1, end) infinite;
+
+  @keyframes led-blink {
+    0%,
+    55% {
+      opacity: 1;
+    }
+    56%,
+    100% {
+      opacity: 0.25;
+    }
+  }
 }
 
 /* Under 600px the three largest styles drop one step. Overriding the variables here, instead of pairing breakpoint
@@ -66,18 +98,21 @@
   :root {
     --text-display: 2rem;
     --text-display--line-height: 3.25rem;
-    --text-h1: 1.625rem;
-    --text-h1--line-height: 2.5rem;
-    --text-h2: 1.375rem;
-    --text-h2--line-height: 2.25rem;
+    --text-h1: 1.5rem;
+    --text-h1--line-height: 2.375rem;
+    --text-h2: 1.25rem;
+    --text-h2--line-height: 2rem;
   }
 }
 
 /*===== Theme Mapping =====*/
 
 @theme inline {
-  --font-heading: var(--font-sans);
+  /* Body copy is Vazirmatn. Everything printed on the instrument (headings, key legends, markings) is Plex Sans
+     Arabic, and every code, number and timer is Plex Mono. */
   --font-sans: "Vazirmatn Variable", "Segoe UI", Tahoma, system-ui, sans-serif;
+  --font-heading: "IBM Plex Sans Arabic", "Vazirmatn Variable", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, monospace;
 
   /*------ shadcn semantic colors ------*/
   --color-background: var(--background);
@@ -126,134 +161,261 @@
   --color-info: var(--info);
   --color-info-surface: var(--info-surface);
 
+  /*------ Instrument materials ------*/
+  --color-keycap: var(--keycap);
+  --color-keycap-foreground: var(--keycap-foreground);
+  --color-keycap-graphite: var(--keycap-graphite);
+  --color-keycap-graphite-foreground: var(--keycap-graphite-foreground);
+  --color-cut: var(--cut);
+  --color-cut-focus: var(--cut-focus);
+  --color-field: var(--field);
+  --color-housing-ledge: var(--housing-ledge);
+  --color-glass: var(--glass);
+  --color-glass-foreground: var(--glass-foreground);
+  --color-glass-muted: var(--glass-muted);
+
+  /*------ Signals ------*/
+  /* Each signal colour has one meaning, everywhere: orange = action or recording, yellow = attention or blocked,
+     blue = selection, green = running or positive. LEDs light in these; text never relies on them alone. */
+  --color-signal-action: var(--signal-action);
+  --color-signal-attention: var(--signal-attention);
+  --color-signal-selection: var(--signal-selection);
+  --color-signal-positive: var(--signal-positive);
+  --color-signal-off: var(--signal-off);
+
   /*------ Radius ------*/
-  /* sm 8 (inputs, thumbnails), md 12 (buttons, notices, tiles), lg 18 (feature cards, media). xl and up stay at
-     least lg so the scale never shrinks. */
-  --radius-sm: 0.5rem;
+  /* The cut is a near-square machined slot and the keycap is the molded part that carries the rounding. The
+     mismatch is the point: the void shows most at the corners, like a real key in a milled hole. Compact parts
+     (32px and under) scale both down. Housings have their own corner so squaring the cuts never squares a panel. */
+  --radius-chassis: 3px;
+  --radius-chassis-compact: 2px;
+  --radius-keycap: 6px;
+  --radius-keycap-compact: 4px;
+  --radius-housing: 4px;
+  /* shadcn's scale, kept for parts that aren't keys or cuts (popups, thumbnails) */
+  --radius-sm: 4px;
   --radius-md: var(--radius);
-  --radius-lg: 1.125rem;
-  --radius-xl: 1.125rem;
-  --radius-2xl: 2rem;
-  --radius-3xl: 2.5rem;
-  --radius-4xl: 3rem;
+  --radius-lg: 6px;
+  --radius-xl: 8px;
+  --radius-2xl: 12px;
+  --radius-3xl: 16px;
+  --radius-4xl: 24px;
+
+  /*------ Spacing ------*/
+  /* The width of the void between a part and its cut, and how far a pressed keycap shrinks inside it */
+  --spacing-cut: 3px;
+  --spacing-cut-compact: 2px;
+  --spacing-press: 1.5px;
+  --spacing-press-compact: 1px;
 
   /*------ Shadow ------*/
-  /* Cards rest on sm and lift to md on hover */
+  /* Popups rest on sm and lift to md */
   --shadow-sm: var(--elevation-sm);
   --shadow-md: var(--elevation-md);
+  --shadow-cut: var(--elevation-cut);
+  --shadow-keycap: var(--elevation-keycap);
+  --shadow-keycap-compact: var(--elevation-keycap-compact);
+  --shadow-keycap-graphite: var(--elevation-keycap-graphite);
+  --shadow-keycap-graphite-compact: var(--elevation-keycap-graphite-compact);
+  --shadow-keycap-highlight: var(--elevation-keycap-highlight);
+  --shadow-keycap-highlight-compact: var(--elevation-keycap-highlight-compact);
+  --shadow-keycap-pressed: var(--elevation-keycap-pressed);
+  --shadow-keycap-pressed-compact: var(--elevation-keycap-pressed-compact);
+  --shadow-field: var(--elevation-field);
+  --shadow-housing: var(--elevation-housing);
+  --shadow-glass: var(--elevation-glass);
+  --shadow-led-on: var(--elevation-led-on);
+  --shadow-led-off: var(--elevation-led-off);
+
+  /*------ Motion ------*/
+  --ease-instrument: cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /*===== Light Theme =====*/
 
-/* Placeholder palette: neutral grays and one primary. Replace these per project (docs/frontend/app-identity.md). */
+/* Light grey housings on a warm grey desk, light and graphite keycaps, one orange key. */
 :root {
-  --radius: 0.625rem;
+  --radius: 6px;
 
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0.008 326);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0.008 326);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0.008 326);
-  --primary: oklch(0.52 0.105 223.128);
-  --primary-hover: #1d4ed8;
-  --primary-foreground: oklch(0.984 0.019 200.873);
-  --secondary: oklch(0.967 0.001 286.375);
-  --secondary-foreground: oklch(0.21 0.006 285.885);
-  --muted: oklch(0.96 0.003 325.6);
-  --muted-foreground: oklch(0.542 0.034 322.5);
-  --accent: oklch(0.96 0.003 325.6);
-  --accent-foreground: oklch(0.212 0.019 322.12);
-  --destructive: oklch(0.577 0.245 27.325);
-  --destructive-surface: #fde8e8;
-  --border: oklch(0.922 0.005 325.62);
-  --input: oklch(0.922 0.005 325.62);
-  --ring: oklch(0.711 0.019 323.02);
+  --background: #a2a09f;
+  --foreground: #171717;
+  --card: #e0e0e0;
+  --card-foreground: #171717;
+  --popover: #e6e6e6;
+  --popover-foreground: #171717;
+  /* `primary` is the graphite function key (in-app actions); the orange key is `highlight` */
+  --primary: #3a3a3a;
+  --primary-hover: #444444;
+  --primary-foreground: #f2f2f2;
+  --secondary: #c6c8ca;
+  --secondary-foreground: #1e1e1e;
+  --muted: #d2d2d0;
+  /* 5.9:1 on housings. On the desk only `foreground` is used: grey text there falls under 4.5:1. */
+  --muted-foreground: #555555;
+  --accent: #d2d2d0;
+  --accent-foreground: #171717;
+  --destructive: #b3261e;
+  --destructive-surface: #f1d4d0;
+  /* Printed seams and rules on a housing, not control edges: controls are drawn by their cut */
+  --border: #9c9c9a;
+  --input: #9c9c9a;
+  /* Near-black clears 3:1 on both the desk and the housing; orange only clears it on the housing */
+  --ring: #171717;
 
-  --brand-text: #1d4ed8;
-  --highlight: #f59e0b;
-  --highlight-hover: #d97706;
-  --highlight-foreground: #18181b;
+  --brand-text: #171717;
+  --highlight: #f23a0c;
+  --highlight-hover: #ff4a1c;
+  /* Near-black on the orange key clears AA (4.8:1); white only reaches 3.9:1 */
+  --highlight-foreground: #111111;
 
-  --success: #15803d;
-  --success-surface: #e3f5e9;
-  --warning: #92400e;
-  --warning-surface: #fdf3dc;
-  --info: #1e40af;
-  --info-surface: #e3ecfb;
+  --success: #3d5a14;
+  --success-surface: #dfe7c4;
+  --warning: #6e4b00;
+  --warning-surface: #f2e2a8;
+  --info: #1f4c70;
+  --info-surface: #d3e2ee;
 
-  --elevation-sm: 0 1px 2px #0000000a, 0 2px 8px -2px #0000000d;
-  --elevation-md: 0 1px 2px #0000000a, 0 12px 28px -12px #00000029;
+  /*------ Materials ------*/
+  --keycap: #c6c8ca;
+  --keycap-foreground: #1e1e1e;
+  --keycap-graphite: #3a3a3a;
+  --keycap-graphite-foreground: #f2f2f2;
+  /* The void around a part. Not an outline, so it stays near-black in both themes. */
+  --cut: #111111;
+  --cut-focus: #f23a0c;
+  --field: #ebebeb;
+  --housing-ledge: #676767;
+  /* Display glass is set into the housing, not another card colour. Named `glass`, not `display`: `text-display` is a type style, and a colour of the same name would print it in the glass colour. */
+  --glass: #141513;
+  --glass-foreground: #ecebe4;
+  --glass-muted: rgb(236 235 228 / 55%);
 
-  --chart-1: oklch(0.811 0.111 293.571);
-  --chart-2: oklch(0.606 0.25 292.717);
-  --chart-3: oklch(0.541 0.281 293.009);
-  --chart-4: oklch(0.491 0.27 292.581);
-  --chart-5: oklch(0.432 0.232 292.759);
+  --signal-action: #f23a0c;
+  --signal-attention: #f2b705;
+  --signal-selection: #4f8fb8;
+  --signal-positive: #9fc33a;
+  /* An unlit LED is still a visible part: grey plastic, not nothing */
+  --signal-off: #a3a3a3;
 
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0.008 326);
-  --sidebar-primary: oklch(0.609 0.126 221.723);
-  --sidebar-primary-foreground: oklch(0.984 0.019 200.873);
-  --sidebar-accent: oklch(0.96 0.003 325.6);
-  --sidebar-accent-foreground: oklch(0.212 0.019 322.12);
-  --sidebar-border: oklch(0.922 0.005 325.62);
-  --sidebar-ring: oklch(0.711 0.019 323.02);
+  /*------ Depth ------*/
+  /* Popups are a module lifted off the desk: a hard molded ledge plus a soft shadow */
+  --elevation-sm: 0 2px 0 var(--housing-ledge), inset 0 1px 0 rgb(255 255 255 / 80%);
+  --elevation-md:
+    0 3px 0 var(--housing-ledge), 0 14px 28px -10px rgb(0 0 0 / 45%), inset 0 1px 0 rgb(255 255 255 / 80%);
+  /* A machined cut: the top inner wall falls into shadow, the lower lip catches light, a faint dark line marks the
+     upper edge. No outer drop shadow, because a hole can't cast one; that is what made the gap read as a frame. */
+  --elevation-cut: inset 0 3px 3px rgb(0 0 0 / 90%), 0 1px 0 rgb(255 255 255 / 75%), 0 -1px 0 rgb(0 0 0 / 18%);
+  /* Keycap bevels: light top-start edge, shaded bottom-end edge. Compact bevels shade the edges of a 32px key
+     instead of flooding its face. */
+  --elevation-keycap: inset 2px 2px 2px rgb(255 255 255 / 60%), inset -2px -2px 2px rgb(0 0 0 / 30%);
+  --elevation-keycap-compact: inset 1px 1px 1px rgb(255 255 255 / 60%), inset -1px -1px 1px rgb(0 0 0 / 25%);
+  --elevation-keycap-graphite: inset 2px 2px 2px rgb(255 255 255 / 16%), inset -2px -2px 2px rgb(0 0 0 / 45%);
+  --elevation-keycap-graphite-compact: inset 1px 1px 1px rgb(255 255 255 / 16%), inset -1px -1px 1px rgb(0 0 0 / 45%);
+  --elevation-keycap-highlight: inset 1.5px 1.5px 1px rgb(255 255 255 / 30%), inset -1.5px -1.5px 1px rgb(0 0 0 / 30%);
+  --elevation-keycap-highlight-compact:
+    inset 1px 1px 0.5px rgb(255 255 255 / 30%), inset -1px -1px 0.5px rgb(0 0 0 / 30%);
+  --elevation-keycap-pressed: inset 0 0 16px 0 rgb(0 0 0 / 60%);
+  --elevation-keycap-pressed-compact: inset 0 0 6px 0 rgb(0 0 0 / 55%);
+  --elevation-field: inset 0 2px 4px rgb(0 0 0 / 25%), inset 0 -1px 0 rgb(255 255 255 / 60%);
+  /* Housings sit on the desk with a hard molded ledge only; a soft blur on top made cards float */
+  --elevation-housing: 0 3px 0 var(--housing-ledge), inset 0 1px 0 rgb(255 255 255 / 80%);
+  --elevation-glass: inset 0 3px 6px rgb(0 0 0 / 70%), 0 1px 0 rgb(255 255 255 / 75%);
+  /* LED glow follows currentColor so one token serves every signal */
+  --elevation-led-on:
+    0 0 0 2px color-mix(in srgb, currentColor 18%, transparent),
+    0 0 8px color-mix(in srgb, currentColor 60%, transparent);
+  --elevation-led-off: inset 0 1px 1px rgb(0 0 0 / 35%);
+
+  --chart-1: #f23a0c;
+  --chart-2: #3a3a3a;
+  --chart-3: #4f8fb8;
+  --chart-4: #f2b705;
+  --chart-5: #9fc33a;
+
+  --sidebar: #d6d6d4;
+  --sidebar-foreground: #171717;
+  --sidebar-primary: #3a3a3a;
+  --sidebar-primary-foreground: #f2f2f2;
+  --sidebar-accent: #c8c8c6;
+  --sidebar-accent-foreground: #171717;
+  --sidebar-border: #9c9c9a;
+  --sidebar-ring: #171717;
 }
 
 /*===== Dark Theme =====*/
 
+/* The graphite edition of the same instrument. Only materials and the light-dependent parts of the depth recipes
+   change; sizes, radii and motion are shared, so both themes are the same physical object. */
 .dark {
-  --background: oklch(0.145 0.008 326);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.212 0.019 322.12);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.212 0.019 322.12);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.45 0.085 224.283);
-  --primary-hover: #93c5fd;
-  --primary-foreground: oklch(0.984 0.019 200.873);
-  --secondary: oklch(0.274 0.006 286.033);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.263 0.024 320.12);
-  --muted-foreground: oklch(0.711 0.019 323.02);
-  --accent: oklch(0.263 0.024 320.12);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --destructive-surface: #3b1717;
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.542 0.034 322.5);
+  --background: #121212;
+  --foreground: #e6e6e6;
+  --card: #2b2b2b;
+  --card-foreground: #e8e8e8;
+  --popover: #303030;
+  --popover-foreground: #e8e8e8;
+  --primary: #1c1c1c;
+  --primary-hover: #242424;
+  --primary-foreground: #ededed;
+  --secondary: #5a5a5a;
+  --secondary-foreground: #f2f2f2;
+  --muted: #333333;
+  --muted-foreground: #a8a8a8;
+  --accent: #383838;
+  --accent-foreground: #f2f2f2;
+  --destructive: #ff8a7a;
+  --destructive-surface: #3b1d19;
+  --border: #474747;
+  --input: #474747;
+  /* On graphite the orange clears 3:1 against desk and housing alike */
+  --ring: #f23a0c;
 
-  --brand-text: #93c5fd;
-  --highlight: #fbbf24;
-  --highlight-hover: #fcd34d;
-  --highlight-foreground: #18181b;
+  --brand-text: #e6e6e6;
+  --highlight: #f23a0c;
+  --highlight-hover: #ff4a1c;
+  --highlight-foreground: #111111;
 
-  --success: #86efac;
-  --success-surface: #12301d;
-  --warning: #fcd34d;
-  --warning-surface: #33280e;
-  --info: #93c5fd;
-  --info-surface: #142238;
+  --success: #c5df7a;
+  --success-surface: #27301a;
+  --warning: #f5d06a;
+  --warning-surface: #3a3010;
+  --info: #9cc6e6;
+  --info-surface: #182a38;
 
-  --elevation-sm: 0 1px 2px #00000059, 0 2px 8px -2px #00000040;
-  --elevation-md: 0 1px 2px #00000059, 0 14px 30px -12px #00000080;
+  --keycap: #5a5a5a;
+  --keycap-foreground: #f2f2f2;
+  --keycap-graphite: #1c1c1c;
+  --keycap-graphite-foreground: #ededed;
+  --cut: #050505;
+  --field: #1d1d1d;
+  --housing-ledge: #0a0a0a;
+  --glass: #0b0c0a;
 
-  --chart-1: oklch(0.811 0.111 293.571);
-  --chart-2: oklch(0.606 0.25 292.717);
-  --chart-3: oklch(0.541 0.281 293.009);
-  --chart-4: oklch(0.491 0.27 292.581);
-  --chart-5: oklch(0.432 0.232 292.759);
+  --signal-selection: #6aa8d4;
+  --signal-off: #4a4a4a;
 
-  --sidebar: oklch(0.212 0.019 322.12);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.715 0.143 215.221);
-  --sidebar-primary-foreground: oklch(0.302 0.056 229.695);
-  --sidebar-accent: oklch(0.263 0.024 320.12);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.542 0.034 322.5);
+  /* On graphite the lower lip catches far less light, so every highlight drops sharply */
+  --elevation-sm: 0 2px 0 var(--housing-ledge), inset 0 1px 0 rgb(255 255 255 / 7%);
+  --elevation-md: 0 3px 0 var(--housing-ledge), 0 14px 28px -10px rgb(0 0 0 / 70%), inset 0 1px 0 rgb(255 255 255 / 7%);
+  --elevation-cut: inset 0 3px 3px rgb(0 0 0 / 95%), 0 1px 0 rgb(255 255 255 / 12%), 0 -1px 0 rgb(0 0 0 / 50%);
+  --elevation-keycap: inset 2px 2px 2px rgb(255 255 255 / 22%), inset -2px -2px 2px rgb(0 0 0 / 45%);
+  --elevation-keycap-compact: inset 1px 1px 1px rgb(255 255 255 / 22%), inset -1px -1px 1px rgb(0 0 0 / 45%);
+  --elevation-keycap-graphite: inset 2px 2px 2px rgb(255 255 255 / 10%), inset -2px -2px 2px rgb(0 0 0 / 60%);
+  --elevation-keycap-graphite-compact: inset 1px 1px 1px rgb(255 255 255 / 10%), inset -1px -1px 1px rgb(0 0 0 / 60%);
+  --elevation-field: inset 0 2px 4px rgb(0 0 0 / 60%), inset 0 -1px 0 rgb(255 255 255 / 6%);
+  --elevation-housing: 0 3px 0 var(--housing-ledge), inset 0 1px 0 rgb(255 255 255 / 7%);
+  --elevation-glass: inset 0 3px 6px rgb(0 0 0 / 90%), 0 1px 0 rgb(255 255 255 / 10%);
+  --elevation-led-off: inset 0 1px 1px rgb(0 0 0 / 60%);
+
+  --chart-2: #8a8a8a;
+
+  --sidebar: #242424;
+  --sidebar-foreground: #e6e6e6;
+  --sidebar-primary: #1c1c1c;
+  --sidebar-primary-foreground: #ededed;
+  --sidebar-accent: #333333;
+  --sidebar-accent-foreground: #f2f2f2;
+  --sidebar-border: #474747;
+  --sidebar-ring: #f23a0c;
 }
 
 /*===== Base =====*/

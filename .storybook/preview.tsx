@@ -34,6 +34,21 @@ const withTheme: Decorator = (Story, context) => {
 };
 
 /**
+ * Seats the story on a housing panel, because that is where parts live in the app: keys, fields and LEDs are drawn
+ * for the light grey housing, not the desk behind it. Stories of parts that are themselves housings or float above
+ * them (Card, Sheet, Dialog) opt out with `parameters: { housing: false }`.
+ */
+const withHousing: Decorator = (Story, context) => {
+  if (context.parameters.housing === false) return <Story />;
+
+  return (
+    <div className="rounded-housing bg-card p-6 text-card-foreground shadow-housing">
+      <Story />
+    </div>
+  );
+};
+
+/**
  * Applies the toolbar locale the way `__root.tsx` does: `lang` and `dir` on <html>, and Base UI's direction context,
  * which it reads instead of the `dir` attribute. Messages read the locale through `getLocale()`, which a story has no
  * URL for, so it is overwritten with the toolbar's choice.
@@ -57,7 +72,7 @@ const withLocale: Decorator = (Story, context) => {
 
 /*===== Preview =====*/
 const preview: Preview = {
-  decorators: [withTheme, withLocale],
+  decorators: [withHousing, withTheme, withLocale],
   globalTypes: {
     locale: {
       description: "Language and direction",

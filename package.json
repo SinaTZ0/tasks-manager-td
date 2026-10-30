@@ -1,5 +1,5 @@
 {
-  "name": "template-start",
+  "name": "tofang-task-manager",
   "private": true,
   "type": "module",
   "packageManager": "pnpm@12.10.1",
@@ -40,6 +40,8 @@
     "@aws-sdk/client-s3": "^3.1159.0",
     "@base-ui/react": "^1.9.0",
     "@fontsource-variable/vazirmatn": "^5.3.0",
+    "@fontsource/ibm-plex-mono": "^5.3.0",
+    "@fontsource/ibm-plex-sans-arabic": "^5.3.0",
     "@hookform/resolvers": "^6.0.2",
     "@inlang/paraglide-js": "^2.29.3",
     "@orpc/client": "^2.0.0-beta.47",

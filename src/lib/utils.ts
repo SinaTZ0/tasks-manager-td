@@ -8,6 +8,12 @@ import { createCn } from "cn/config";
  */
 export const cn = createCn({
   extend: {
+    // Custom spacing, tracking and radius steps from `src/styles.css`: without them `inset-0 inset-press` keeps both
+    theme: {
+      spacing: ["cut", "cut-compact", "press", "press-compact"],
+      tracking: ["marking", "readout"],
+      radius: ["chassis", "chassis-compact", "keycap", "keycap-compact", "housing"],
+    },
     classGroups: {
       "font-size": [
         {
@@ -25,6 +31,7 @@ export const cn = createCn({
             "button",
             "kicker",
             "nav",
+            "marking",
           ],
         },
       ],
