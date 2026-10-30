@@ -134,7 +134,7 @@ func (t *Tool) Setup(args []string) error {
 	ui.Info("  Error viewer  https://%s   password: %s (also in .env)", envfile.Get(env, "ERRORS_DOMAIN"),
 		envfile.Get(env, "ERROR_VIEWER_ADMIN_PASSWORD"))
 	ui.Info("")
-	ui.Info("  The first admin: sign up on the site, then choose Make admin (or: deploy/deploy.sh admin <email>).")
+	ui.Info("  The first admin: choose Make admin (or: deploy/deploy.sh admin <email>); it creates the account.")
 	ui.Info("  A nightly database backup: add this line with crontab -e")
 	ui.Info("    0 3 * * * %s backup --db >>%s 2>&1", t.P.Path("deploy", "deploy.sh"),
 		filepath.Join(backup.Dir(t.P), "cron.log"))

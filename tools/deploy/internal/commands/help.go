@@ -28,7 +28,8 @@ With no command, a menu with the stack's status under it.
   cert [auto|<folder>]          switch to Let's Encrypt, or install your own certificate from a folder
   status                        containers, disk, backups and the status lines
   logs [<service>]              follow a service's logs: %s
-  admin [<email>]               give an account the admin role
+  admin [<email>]               give an account the admin role; for an email no account has, on a terminal,
+                                create the account (asks for a name and password)
   seed [notes]                  load content from the seeds in the app's image; without a part, on a terminal,
                                 it asks which
   seed notes [--replace] [--owner <email>]

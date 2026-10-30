@@ -74,7 +74,9 @@ func (t *Tool) Logs(args []string) error {
 
 /*===== Make Admin =====*/
 
-// Admin gives an account the admin role.
+// Admin gives an account the admin role. The app has no public sign-up, so for an email no account has yet it
+// offers, on a terminal, to create the account: a name and a password, made by the bundled admin seed
+// (`src/db/seed-admin.ts`). That is how a new server gets its first admin.
 func (t *Tool) Admin(args []string) error {
 	if err := t.requireSetUp(); err != nil {
 		return err
@@ -94,19 +96,69 @@ func (t *Tool) Admin(args []string) error {
 	if !strings.Contains(email, "@") {
 		return ui.Fail("%q isn't an email address.", email)
 	}
-	// The email goes in as a psql variable (`:'email'` quotes it), never pasted into the SQL.
+	// The email goes in as a psql variable (`:'email'` quotes it), never pasted into the SQL. Emails are stored in
+	// lower case (Better-Auth), so the one typed is matched the same way.
 	cmd := t.S.Command(nil, "exec", "-T", "db", "psql", "-U", "app", "-d", "app", "-v", "ON_ERROR_STOP=1",
 		"-v", "email="+email, "-qtA")
-	cmd.Stdin = strings.NewReader(`update "user" set role = 'admin' where email = :'email' returning email;`)
+	cmd.Stdin = strings.NewReader(`update "user" set role = 'admin' where email = lower(:'email') returning email;`)
 	cmd.Stderr = ui.Err
 	out, err := cmd.Output()
 	if err != nil {
 		return interrupt.Check(ui.Fail("psql failed (see above)."))
 	}
-	if strings.TrimSpace(string(out)) == "" {
-		return ui.Fail("No account with %s. Sign up on the site first.", email)
+	if strings.TrimSpace(string(out)) != "" {
+		ui.OK("%s is now an admin.", email)
+		return nil
 	}
-	ui.OK("%s is now an admin.", email)
+	return t.createAdmin(email)
+}
+
+// adminPasswordMin is the app's shortest password (PASSWORD_MIN_LENGTH, src/orpc/team/constants.ts); the seed checks
+// it too, but asking again here beats failing after the container started.
+const adminPasswordMin = 8
+
+// createAdmin makes a new admin account for email, asking for its name and password. Without a terminal it stops:
+// a password never goes on a command line.
+func (t *Tool) createAdmin(email string) error {
+	if !ui.Interactive {
+		return ui.Fail("No account with %s. Run deploy/deploy.sh admin %s on a terminal to create it.", email, email)
+	}
+	create, err := ui.Confirm(fmt.Sprintf("No account with %s. Create it as an admin?", email), true)
+	if err != nil || !create {
+		return err
+	}
+	name, err := ui.Ask("Their name", "Admin", "")
+	if err != nil {
+		return err
+	}
+	password := ""
+	for {
+		if password, err = ui.AskSecret(fmt.Sprintf("Password (at least %d characters)", adminPasswordMin)); err != nil {
+			return err
+		}
+		if len([]rune(password)) < adminPasswordMin {
+			ui.Warn("Too short: at least %d characters.", adminPasswordMin)
+			continue
+		}
+		again, err := ui.AskSecret("The password again")
+		if err != nil {
+			return err
+		}
+		if again == password {
+			break
+		}
+		ui.Warn("The two didn't match. Once more.")
+	}
+	// A one-off container of the app's service, like the seeds. `-e NAME` without a value hands the variable over
+	// from this process's environment, so the password shows in no process list.
+	env := []string{"SEED_ADMIN_EMAIL=" + email, "SEED_ADMIN_PASSWORD=" + password, "SEED_ADMIN_NAME=" + name}
+	run := t.S.Command(env, "run", "--rm", "--no-deps", "-T", "-e", "SEED_ADMIN_EMAIL", "-e", "SEED_ADMIN_PASSWORD",
+		"-e", "SEED_ADMIN_NAME", "app", "node", "deploy/seed-admin.mjs")
+	run.Stdout, run.Stderr = ui.Out, ui.Err
+	if err := run.Run(); err != nil {
+		return interrupt.Check(ui.Fail("Creating the account failed (see above)."))
+	}
+	ui.OK("%s is now an admin. They sign in with that password and can change their name on their profile.", email)
 	return nil
 }
 

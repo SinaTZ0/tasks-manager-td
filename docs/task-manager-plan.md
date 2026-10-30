@@ -184,7 +184,7 @@ Built once, in the slice that first needs them, and used by every procedure afte
 - In slice 1: rewrite `docs/app.md`'s Open Questions as a pointer to the Decisions here, and update the note
   references in `CLAUDE.md`, `docs/backend-flow.md` and `docs/frontend-flow.md` (notes are a feature now, still the
   shape to copy).
-- Before the first deploy: replace `drizzle/` with one fresh initial migration, and seed the first admin with
-  `pnpm db:seed` (a deploy step, per the `how-update-server` skill).
+- Before the first deploy ✓: `drizzle/` is one fresh initial migration, and `deploy/deploy.sh admin <email>` creates
+  the first admin (not a deploy step: it needs a password; docs/deployment.md → The first admin).
 - After the MVP, the spec's "should have" list: My Tasks, filters, search, sub-tasks, checklists, attachments,
   watchers, WIP warnings, due-date alerts, real-time, keyboard shortcuts.

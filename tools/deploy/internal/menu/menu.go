@@ -33,7 +33,7 @@ var items = []item{
 	{"cert", "SSL certificate", "automatic or your own files", func(t *commands.Tool) error { return t.Cert(nil) }},
 	{"status", "Status", "containers, health, disk", func(t *commands.Tool) error { return t.Status(nil) }},
 	{"logs", "Logs", "pick a service, follow", func(t *commands.Tool) error { return t.Logs(nil) }},
-	{"admin", "Make admin", "promote an account by email", func(t *commands.Tool) error { return t.Admin(nil) }},
+	{"admin", "Make admin", "promote an account by email, or create one", func(t *commands.Tool) error { return t.Admin(nil) }},
 	{"seed", "Seed", "sample content from the seeds", func(t *commands.Tool) error { return t.Seed(nil) }},
 	{"steps", "Deploy steps", "list them, run the pending ones", func(t *commands.Tool) error { return t.Steps(nil) }},
 	{"pgweb", "Database browser", "browse and edit the database, for a set time", func(t *commands.Tool) error {

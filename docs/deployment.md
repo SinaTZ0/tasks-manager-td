@@ -161,13 +161,11 @@ docker compose -f compose.prod.yaml ps   # app should turn "healthy"
 curl https://<domain>/healthz            # {"status":"ok"}
 ```
 
-**The first admin.** `pnpm db:seed` needs the source tree, which the image doesn't have. Sign up on the site, then
-choose Make admin (`deploy/deploy.sh admin you@example.com`), or by hand:
-
-```bash
-docker compose -f compose.prod.yaml exec db \
-  psql -U app -d app -c "update \"user\" set role = 'admin' where email = 'you@example.com';"
-```
+**The first admin.** There is no public sign-up: an admin creates every account on the team page, so the first one
+comes from the server. Choose Make admin (`deploy/deploy.sh admin you@example.com`) on a terminal. For an email no
+account has, it asks for a name and a password and creates the admin with the admin seed bundled into the image
+(`src/db/seed-admin.ts`, `pnpm db:seed` in development). For an existing account it only gives it the admin role. It
+isn't a deploy step: a password can't be written into a commit.
 
 **Seed.** A new server's database is empty but for its tables. Seed (`deploy/deploy.sh seed <part>`) loads content
 from the seeds bundled into the image: each seed in `src/db/` is built into one plain JavaScript file by the
