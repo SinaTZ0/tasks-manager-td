@@ -11,6 +11,22 @@ on `ui/`, `defineStyles`, tokens in `src/styles.css` ([architecture.md](./fronte
 [app-identity.md](./frontend/app-identity.md#constraints) (contrast, keyboard focus, text size, RTL). If the homepage
 breaks one, tell the person and propose the smallest change that fixes it, rather than silently restyling.
 
+## Tofang: Where This Stands
+
+The input was the approved design study in `docs/frontend/reference/` (a showcase page, not a homepage), so the
+steps below were applied to it. The languages stay Persian and English.
+
+- [x] 1. Read the design (reference README lists the decisions).
+- [x] 2. App identity filled in.
+- [x] 3. Tokens in `src/styles.css`, light and dark; fonts self-hosted; the type-style list in `cn` updated.
+- [x] 4. Primitives restyled on the instrument recipe, new ones created (toggle, toggle-group, checkbox, switch,
+      slider, progress, avatar, kbd, dialog, popover, plus the atoms led, display, marking), stories updated.
+- [ ] 5. Header and footer rebuilt in the new look (they still use the old layout with the new primitives).
+- [ ] 6. Home route: replace the template's homepage with the board entry (or a redirect to it).
+- [ ] 7. Sign-in and notes pages restyled; favicon and the 1200×630 preview image; `site_name` is set.
+- [ ] 8. The full check (both themes, both directions, phone width, keyboard, reduced motion, lint, typecheck,
+      build).
+
 ## Input
 
 - **The homepage source** (HTML, JSX, CSS) at the path the person gives. It holds the exact values: colours, sizes,

@@ -18,8 +18,8 @@ decide. The `notes` route (`src/routes/notes/`) is the worked example.
 
 ## Steps
 
-1. **Design**: decide what the page is for and design it around its real content. Read
-   [app-identity.md](./frontend/app-identity.md) for the mood and tone. The existing pages, primitives and tokens are
+1. **Design**: decide what the page is for and design it around its real content. The screens and the rules they
+   enforce are in [app.md](./app.md); read [app-identity.md](./frontend/app-identity.md) for the mood and tone. The existing pages, primitives and tokens are
    a starting point, not a template to repeat: if the design needs something they don't do, change them.
 2. **Route and data**: register the route in `routes.ts` and create its flat slice folder with a `createFileRoute`
    file ([architecture.md](./frontend/architecture.md) → Route Slices). If it needs a signed-in user, put it under a

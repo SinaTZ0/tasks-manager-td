@@ -12,6 +12,10 @@
     button.stories.tsx  # maintained UI documentation
   ```
 
+- `src/components/primitive/` also holds the instrument's own atoms, parts with no shadcn original that the design
+  system is built from and that other primitives use: `led`, `display` and `marking`. They follow the same folder
+  layout. A component belongs here only if it is a generic part of the instrument; anything that knows about tasks,
+  boards or users (a task card, a priority mark) is app-made and lives in a route slice or `shared/`.
 - `src/components/ui/` holds the untouched shadcn source, with every component installed. Never edit it and never
   import from it. It exists so that shadcn updates show up as a git diff (see
   [Reviewing a shadcn Update](#reviewing-a-shadcn-update)), and as the source to copy when creating a primitive. Docs
@@ -50,6 +54,39 @@ other change worth porting.
 For each changed component in `git diff src/components/ui/` that has a primitive, decide whether the change is worth
 porting (a new `data-*` attribute, an accessibility fix, a new helper or dependency) and port it into the primitive by
 hand. Commit the `ui/` update even when nothing is ported, so the next diff starts from it.
+
+## The Instrument Model
+
+Every part is drawn as hardware ([app-identity.md](./app-identity.md#materials)). The recipe lives in
+`primitive/instrument.styles.ts`; build new pressable or seated parts from it instead of restyling by hand.
+
+- **Cut**: the machined hole, painted on `::before` at `z -2`, larger than the part by the cut gap (`-inset-cut`,
+  3px; `-inset-cut-compact`, 2px), near-square (`rounded-chassis`), near-black with the cut's shading (`shadow-cut`).
+  It sits outside the part's box, so it never changes layout: give neighbouring parts at least `gap-2`.
+- **Keycap**: the moulded face, painted on `::after` at `z -1` with its material and bevel. The element itself is
+  transparent and `isolate`, so both pseudo-elements stack behind its content. **Never give a part's root a
+  background**: the cut paints over it. Put colour on `::after`.
+- **Press**: the face shrinks inside the cut (`after:inset-press`) and darkens, with the pressed inner shadow. It never
+  translates: a key that moves down slides over the lower gap. Momentary parts sink on `:active`; latching parts
+  (Toggle, Tab, Checkbox) hold the sunk state through `data-pressed`, `data-checked` or `data-active`.
+- **Scale**: `regular` for parts 40px and up, `compact` below. Compact scales the radius, bevel, cut width and press
+  depth together; a full-size bevel floods a 32px face.
+- **Tone**: `light` (pale key), `graphite` (function key, `primary`), `highlight` (the orange key), `danger`, `flat`
+  (a plate flush with the housing). Button maps its shadcn variants onto these; `ghost` and `link` have no cut.
+- **Slot**: one long cut holding several parts (toggle group, tab list). The slot's background is the void and its
+  padding is the gap; parts inside hide their own cut (`before:hidden`).
+- **Field**: inputs and textareas can't have pseudo-elements, so they render a wrapper that carries the cut and the
+  plate (`bg-field shadow-field`); the consumer's `className` (layout only) goes on the wrapper. Focus turns the cut
+  orange (`cut-focus`), invalid turns it yellow.
+- **Focus**: keys draw the ring outside the cut (`outline-offset-4`, `-3` compact), so it never hides the void.
+- **Disabled**: the face goes grey and dim, the legend muted; the cut stays, because the part is still there.
+- **Housings and popups**: `bg-card` (or `bg-popover`), one thin border, `rounded-housing`, `shadow-housing` (a hard
+  ledge, no blur). Popups lift with `shadow-md`.
+- **Markings**: text printed on a housing uses `markingClasses` (words) or `readoutClasses` (codes, numbers, in mono
+  and LTR), or the `Marking` primitive.
+
+Stories render on a housing panel (the `withHousing` decorator in `.storybook/preview.tsx`), because that is where
+parts live. A story of a housing or a popup opts out with `parameters: { housing: false }`.
 
 ## Style Maps
 

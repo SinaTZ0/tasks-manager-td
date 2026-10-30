@@ -1,21 +1,20 @@
-# Project Template
+# Tofang (تفنگ)
 
-A starting point for full-stack [TanStack Start](https://tanstack.com/start) apps, Persian first (right-to-left) with
-English as a second language.
+The team's task manager: a kanban board for five people, with time tracking (start, pause, stop), dependencies,
+delegation, comments and a full history of every change. Persian first (right-to-left), with English.
 
-- **Backend:** contract-first [oRPC](https://orpc.dev) v2, Drizzle + Postgres, Better-Auth (email + password, Altcha
-  captcha on sign-up), image uploads processed with sharp into S3-compatible storage, pino logging, and error tracking
-  with a small self-hosted error viewer (`tools/error-viewer`, Go + SQLite).
-- **Frontend:** flat route slices, shadcn components rebuilt as `primitive/`s on Base UI, Tailwind v4 tokens with
-  light/dark themes, TanStack Query as the one data cache (filled by route loaders, preloaded on hover), typed search
-  params, Jotai and Storybook, and Persian and English messages with [Paraglide JS](https://paraglidejs.com)
-  (`/notes`, `/en/notes`).
-- **Example feature:** notes (`src/orpc/note/`, `src/routes/notes/`) shows the whole path: a guarded page, a loader that fills the Query cache,
-  a form with server field errors, an image upload and a delete.
+- **What it does**: [docs/app.md](docs/app.md), the product spec: entities, features by phase, business rules,
+  screens and open questions.
+- **How it looks**: a hardware instrument in the spirit of the Teenage Engineering EP–133: keycaps seated in
+  machined cuts, square LEDs, dark display glass, one orange key per view
+  ([docs/frontend/app-identity.md](docs/frontend/app-identity.md)). Browse the parts with `pnpm storybook`.
+- **How it's built**: started from [template-start](https://github.com/SinaTZ0/template-start). TanStack Start,
+  contract-first oRPC, Drizzle + Postgres, Better-Auth, Paraglide JS, Tailwind v4 and Base UI primitives. Agents start
+  at [CLAUDE.md](CLAUDE.md).
 
 ## Getting Started
 
-Requirements: Node 26, pnpm, Docker (for the dev services), Go 1.26+ (for the error viewer).
+Requirements: Node 26 (`nvm use`, from `.nvmrc`), pnpm, Docker (for the dev services), Go 1.26+ (for the error viewer).
 
 ```bash
 pnpm install
@@ -70,28 +69,13 @@ tools/deploy/, tools/error-viewer/ the deploy tool's Go source (docs/deployment.
 docs/                              start at backend-flow.md or frontend-flow.md
 ```
 
-## Starting a New Project
+## Status
 
-1. Copy the template without its git history:
-
-   ```bash
-   git clone --depth 1 https://github.com/SinaTZ0/template-start.git my-app
-   cd my-app
-   rm -rf .git && git init && git branch -M main
-   ```
-
-   `pnpm dlx degit SinaTZ0/template-start my-app` does the same without the git step (then run `git init` in it).
-
-2. Rename: `name` in `package.json`, `compose.dev.yaml` and `compose.prod.yaml` (and `image` there), the bucket name in
-   `.env.example` and `.env.production.example`, the `site_name` and `site_description` messages in `messages/*.json`,
-   and a `SITE_IMAGE` for link previews in `src/lib/site.ts`. Keep English, or change the languages
-   (`docs/frontend/i18n.md` → Adding or Removing a Language).
-3. Design the look. Everything that ships (colours, type styles, radius and shadows in `src/styles.css`, the primitives'
-   styles) is a neutral placeholder. Design the homepage, then give it to an agent with
-   `docs/customize-template.md`, which turns it into app-identity, tokens, primitives, header, footer and the home
-   route.
-4. Rewrite this README and the first paragraph of `CLAUDE.md` for the project.
-5. Build the first real feature by copying the shape of `note`, then delete the example (`src/orpc/note/`,
-   `src/routes/notes*`, the `note` table, its entries in `contract.ts`, `router.ts` and `routes.ts`). Before the first
-   deploy, replace `drizzle/` with one fresh migration: delete the folder and run `pnpm db:generate --name init`.
-6. Deploy with `compose.prod.yaml` and go through "Before Going Live" in `docs/deployment.md`.
+- Done: the template is set up and renamed; the design system is in place (tokens in `src/styles.css`, the
+  instrument recipe, restyled and new primitives with stories); docs filled in (app-identity, components, the product
+  spec, the design reference).
+- Next: the header, footer, home and sign-in pages in the new look (`docs/customize-template.md` lists the open
+  steps), then the first feature (boards and tasks) by copying the shape of the `note` example, which is deleted
+  once tasks exist.
+- Before the first deploy: replace `drizzle/` with one fresh migration (`pnpm db:generate --name init`), and go
+  through "Before Going Live" in `docs/deployment.md`.

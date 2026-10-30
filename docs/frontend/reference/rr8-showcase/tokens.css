@@ -1,0 +1,349 @@
+/*===== Design Tokens =====*/
+
+:root {
+  /*----- Color Roles -----*/
+  --background: #a2a09f;
+  --foreground: #171717;
+  --card: #e0e0e0;
+  --card-foreground: #171717;
+  --surface-readout: #171717;
+  --surface-input: #ebebeb;
+  --surface-input-bezel: #d6d6ce;
+  /* The void between a key and its cutout in the housing, not an outline, so it stays near-black. */
+  --surface-keycap-well: #111111;
+  --keycap-secondary: #c6c8ca;
+  --keycap-secondary-foreground: #1e1e1e;
+  --primary: #f23a0c;
+  /* Near-black on the orange keycap clears WCAG AA (~4.8:1); white only reached ~3.9:1. */
+  --primary-foreground: #111111;
+  --secondary: #c6c8ca;
+  --secondary-foreground: #1e1e1e;
+  --keycap-secondary-foreground-hover: #ffffff;
+  --muted-foreground: #5f5f5f;
+  --content-secondary: #4a4a4a;
+  --content-subtle: #929292;
+  --content-inverse: #e0e0e0;
+  --content-input: #18181b;
+  --input: #ebebeb;
+  --input-foreground: #18181b;
+  --input-border: #18181b;
+  --input-placeholder: #66666e;
+  --input-caret: #f23a0c;
+  --input-autofill: #ebebeb;
+  --border: #242424;
+  --border-shell: #8f8f8f;
+  --border-shell-highlight: rgb(245 245 245 / 70%);
+  --border-fastener: #777777;
+  --ring: #f23a0c;
+  --status-positive: #b8cf62;
+  --indicator-metal: #b8b8b8;
+  /* Signal colours each carry one meaning: orange = action/record, yellow = attention/blocked, blue = selection. */
+  --signal-attention: #f2b705;
+  --signal-selection: #4f8fb8;
+  /* An unlit LED is still a visible part, so it reads as grey plastic rather than disappearing. */
+  --indicator-off: #a3a3a3;
+  /* Darker function keys (transport, shift) sit beside the light keys like on a sampler deck. */
+  --keycap-graphite: #3a3a3a;
+  --keycap-graphite-foreground: #f2f2f2;
+  /* The display is a separate dark glass window set into the housing, not another card colour. */
+  --surface-display: #141513;
+  --display-foreground: #ecebe4;
+  --display-muted: rgb(236 235 228 / 48%);
+  --border-shell-ledge: #676767;
+
+  /*----- Typography Roles -----*/
+  --font-family-body: 'Vazirmatn Variable', Vazirmatn, ui-sans-serif, system-ui, sans-serif;
+  --font-family-industrial:
+    'IBM Plex Sans Arabic', 'Vazirmatn Variable', Vazirmatn, ui-sans-serif, system-ui, sans-serif;
+  --font-family-instrument: 'IBM Plex Mono', ui-monospace, monospace;
+  --type-size-button: 0.95rem;
+  --type-size-input: 0.9rem;
+  --type-size-placeholder: 0.85rem;
+  /* Persian script needs more size than Latin to stay legible; 0.7rem is the floor for printed markings. */
+  --type-size-card-label: 0.75rem;
+  --type-size-card-meta: 0.7rem;
+  --type-size-card-status: 0.75rem;
+  --type-size-marking: 0.7rem;
+  --type-size-display: 2.5rem;
+  --type-size-signal: 1.5rem;
+  --type-size-title: 1.875rem;
+  --type-weight-label: 600;
+  --type-weight-body: 500;
+  --type-tracking-label: 0.02em;
+  --type-tracking-serial: 0.14em;
+  --type-tracking-readout: 0.08em;
+  --type-tracking-value: -0.04em;
+  --type-leading-description: 1.75rem;
+
+  /*----- Space And Shape Roles -----*/
+  --space-page-inline: 1.5rem;
+  --space-page-block: 2rem;
+  --space-showcase-stack: 2rem;
+  --space-card-inline: 1.25rem;
+  --space-card-header-block: 0.75rem;
+  --space-card-content-block: 1.5rem;
+  --space-card-controls-block: 1.25rem;
+  --space-card-footer-block: 1rem;
+  --space-card-shell: 0.25rem;
+  --space-control-stack: 1rem;
+  /* Width of the void between a keycap and its cutout. */
+  --space-cut-gap: 3px;
+  --space-cut-gap-compact: 2px;
+  /*
+   * The cutout is a near-square machined slot; the keycap is the molded part and carries the
+   * rounding. The mismatch is intentional: the black void shows most at the corners, like a
+   * real key sitting in a milled hole.
+   */
+  --radius-control-chassis: 3px;
+  --radius-control-keycap: 6px;
+  --radius-input-cavity: 6px;
+  /* Compact keys (h-6 to h-9) scale the cut down with them; full-size radii look blobby on a 32px key. */
+  --radius-control-chassis-compact: 2px;
+  --radius-control-keycap-compact: 4px;
+  /* Housing corners are independent of the control cutouts so squaring the cuts never squares the card. */
+  --radius-card-shell: 4px;
+  --radius-status-indicator: 1px;
+
+  /*----- Depth And Motion Roles -----*/
+  /*
+   * Machined cutout: the top inner wall falls into shadow, the lower lip catches light, and a faint
+   * dark line marks the shaded upper edge. No outer drop shadow, because a hole cannot cast one onto
+   * the panel; that drop shadow is what made the gap read as a raised frame.
+   */
+  --elevation-control-socket:
+    inset 0 3px 3px rgb(0 0 0 / 90%), 0 1px 0 rgb(255 255 255 / 75%), 0 -1px 0 rgb(0 0 0 / 18%);
+  --elevation-control-primary: inset 1.5px 1.5px 1px rgb(255 255 255 / 30%), inset -1.5px -1.5px 1px rgb(0 0 0 / 30%);
+  --elevation-control-secondary: inset 2px 2px 2px rgb(255 255 255 / 60%), inset -2px -2px 2px rgb(0 0 0 / 30%);
+  --elevation-control-pressed: inset 0 0 16px 0 rgb(0 0 0 / 60%);
+  /* Compact bevel and press shadow are scaled down so they shade the key edges, not flood the whole face. */
+  --elevation-control-primary-compact:
+    inset 1px 1px 0.5px rgb(255 255 255 / 30%), inset -1px -1px 0.5px rgb(0 0 0 / 30%);
+  --elevation-control-pressed-compact: inset 0 0 6px 0 rgb(0 0 0 / 55%);
+  --elevation-control-secondary-compact: inset 1px 1px 1px rgb(255 255 255 / 60%), inset -1px -1px 1px rgb(0 0 0 / 25%);
+  --elevation-control-graphite: inset 2px 2px 2px rgb(255 255 255 / 16%), inset -2px -2px 2px rgb(0 0 0 / 45%);
+  --elevation-control-graphite-compact: inset 1px 1px 1px rgb(255 255 255 / 16%), inset -1px -1px 1px rgb(0 0 0 / 45%);
+  /*
+   * Panels sit on the desk with a hard molded ledge only. The soft 18px drop shadow was removed
+   * because ledge + blur + seam + border stacked into a busy, floating card.
+   */
+  --elevation-panel: 0 3px 0 var(--border-shell-ledge), inset 0 1px 0 rgb(255 255 255 / 80%);
+  /* Display glass is sunk into the housing: dark top wall plus the same lit lower lip as a cutout. */
+  --elevation-display: inset 0 3px 6px rgb(0 0 0 / 70%), 0 1px 0 rgb(255 255 255 / 75%);
+  /* LED glow follows currentColor so one token serves every signal colour. */
+  --elevation-led-glow:
+    0 0 0 2px color-mix(in srgb, currentColor 18%, transparent),
+    0 0 8px color-mix(in srgb, currentColor 60%, transparent);
+  --elevation-led-off: inset 0 1px 1px rgb(0 0 0 / 35%);
+  --elevation-focus: inset 0 8px 16px rgb(0 0 0 / 90%);
+  --elevation-card:
+    0 4px 0 var(--border-shell-ledge), 0 18px 28px rgb(0 0 0 / 30%), inset 0 1px 0 rgb(255 255 255 / 90%);
+  --elevation-fastener: inset 0 1px 1px rgb(255 255 255 / 85%);
+  --elevation-accent-glow: 0 0 0 3px rgb(242 58 12 / 14%);
+  --elevation-input: inset 0 2px 4px rgb(0 0 0 / 25%), inset 0 -1px 0 rgb(255 255 255 / 60%);
+  --elevation-input-autofill: 0 0 0 1000px #ebebeb inset;
+  --elevation-indicator: inset 1px 1px 0 rgb(255 255 255 / 25%);
+  --motion-duration-press: 80ms;
+  --motion-duration-label: 75ms;
+  --motion-duration-field: 200ms;
+  --motion-ease-instrument: ease-in-out;
+  --motion-ease-state: ease-out;
+  --motion-hover-brightness: 105%;
+  /*
+   * Seen from above, a key sinking into its cutout stays centred and shrinks slightly, so the gap
+   * widens evenly on every side. Translating it instead slides the key into the lower gap.
+   */
+  --motion-pressed-inset: 1.5px;
+  --motion-pressed-inset-compact: 1px;
+  --motion-pressed-brightness: 92%;
+  --focus-outline-color: rgb(255 255 255 / 70%);
+}
+
+/*===== Tailwind Theme Bridge =====*/
+
+@theme inline {
+  --font-sans: var(--font-family-body);
+  --font-industrial: var(--font-family-industrial);
+  --font-instrument: var(--font-family-instrument);
+
+  --color-background: var(--background);
+  --color-canvas: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-surface-readout: var(--surface-readout);
+  --color-surface-input: var(--surface-input);
+  --color-surface-input-bezel: var(--surface-input-bezel);
+  --color-surface-keycap-well: var(--surface-keycap-well);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-keycap-secondary: var(--keycap-secondary);
+  --color-keycap-secondary-foreground: var(--keycap-secondary-foreground);
+  --color-keycap-secondary-foreground-hover: var(--keycap-secondary-foreground-hover);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-content-secondary: var(--content-secondary);
+  --color-content-subtle: var(--content-subtle);
+  --color-content-inverse: var(--content-inverse);
+  --color-content-input: var(--content-input);
+  --color-input: var(--input);
+  --color-input-foreground: var(--input-foreground);
+  --color-input-border: var(--input-border);
+  --color-input-placeholder: var(--input-placeholder);
+  --color-input-caret: var(--input-caret);
+  --color-input-autofill: var(--input-autofill);
+  --color-border: var(--border);
+  --color-border-shell: var(--border-shell);
+  --color-border-shell-highlight: var(--border-shell-highlight);
+  --color-border-fastener: var(--border-fastener);
+  --color-ring: var(--ring);
+  --color-focus-outline: var(--focus-outline-color);
+  --color-status-positive: var(--status-positive);
+  --color-indicator-metal: var(--indicator-metal);
+  --color-signal-attention: var(--signal-attention);
+  --color-signal-selection: var(--signal-selection);
+  --color-indicator-off: var(--indicator-off);
+  --color-keycap-graphite: var(--keycap-graphite);
+  --color-keycap-graphite-foreground: var(--keycap-graphite-foreground);
+  --color-surface-display: var(--surface-display);
+  --color-display-foreground: var(--display-foreground);
+  --color-display-muted: var(--display-muted);
+
+  --radius-chassis: var(--radius-control-chassis);
+  --radius-keycap: var(--radius-control-keycap);
+  --radius-chassis-compact: var(--radius-control-chassis-compact);
+  --radius-keycap-compact: var(--radius-control-keycap-compact);
+  --radius-cavity: var(--radius-input-cavity);
+  --radius-card: var(--radius-card-shell);
+  --radius-indicator: var(--radius-status-indicator);
+
+  --shadow-socket-inset: var(--elevation-control-socket);
+  --shadow-socket-focus: var(--elevation-focus);
+  --shadow-keycap-primary: var(--elevation-control-primary);
+  --shadow-keycap-secondary: var(--elevation-control-secondary);
+  --shadow-keycap-pressed: var(--elevation-control-pressed);
+  --shadow-keycap-primary-compact: var(--elevation-control-primary-compact);
+  --shadow-keycap-pressed-compact: var(--elevation-control-pressed-compact);
+  --shadow-keycap-secondary-compact: var(--elevation-control-secondary-compact);
+  --shadow-keycap-graphite: var(--elevation-control-graphite);
+  --shadow-keycap-graphite-compact: var(--elevation-control-graphite-compact);
+  --shadow-panel: var(--elevation-panel);
+  --shadow-display: var(--elevation-display);
+  --shadow-led-glow: var(--elevation-led-glow);
+  --shadow-led-off: var(--elevation-led-off);
+  --shadow-card: var(--elevation-card);
+  --shadow-fastener: var(--elevation-fastener);
+  --shadow-accent-glow: var(--elevation-accent-glow);
+  --shadow-input: var(--elevation-input);
+  --shadow-input-autofill: var(--elevation-input-autofill);
+  --shadow-indicator: var(--elevation-indicator);
+
+  --transition-duration-press: var(--motion-duration-press);
+  --transition-duration-label: var(--motion-duration-label);
+  --transition-duration-field: var(--motion-duration-field);
+  --ease-instrument: var(--motion-ease-instrument);
+  --ease-state: var(--motion-ease-state);
+
+  --text-button: var(--type-size-button);
+  --text-field: var(--type-size-input);
+  --text-placeholder: var(--type-size-placeholder);
+  --text-card-label: var(--type-size-card-label);
+  --text-card-meta: var(--type-size-card-meta);
+  --text-card-status: var(--type-size-card-status);
+  --text-signal: var(--type-size-signal);
+  --text-title: var(--type-size-title);
+  --text-marking: var(--type-size-marking);
+  --text-display: var(--type-size-display);
+  --tracking-label: var(--type-tracking-label);
+  --tracking-serial: var(--type-tracking-serial);
+  --tracking-readout: var(--type-tracking-readout);
+  --tracking-value: var(--type-tracking-value);
+  --leading-description: var(--type-leading-description);
+
+  --spacing-page-inline: var(--space-page-inline);
+  --spacing-page-block: var(--space-page-block);
+  --spacing-showcase-stack: var(--space-showcase-stack);
+  --spacing-card-inline: var(--space-card-inline);
+  --spacing-card-header-block: var(--space-card-header-block);
+  --spacing-card-content-block: var(--space-card-content-block);
+  --spacing-card-controls-block: var(--space-card-controls-block);
+  --spacing-card-footer-block: var(--space-card-footer-block);
+  --spacing-card-shell: var(--space-card-shell);
+  --spacing-control-stack: var(--space-control-stack);
+  --spacing-cut-gap: var(--space-cut-gap);
+  --spacing-cut-gap-compact: var(--space-cut-gap-compact);
+}
+
+/*===== Animation =====*/
+
+@theme {
+  /* Hard on/off steps like a real LED; a smooth fade would read as a web spinner. */
+  --animate-led-blink: led-blink 1.1s steps(1, end) infinite;
+
+  @keyframes led-blink {
+    0%,
+    55% {
+      opacity: 1;
+    }
+    56%,
+    100% {
+      opacity: 0.25;
+    }
+  }
+}
+
+/*===== Dark Material =====*/
+
+/*
+ * Graphite housing variant. Only material colours and the light-dependent parts of the depth
+ * recipes change; sizes, radii, and motion are shared so both themes are the same physical object.
+ */
+.dark {
+  --background: #121212;
+  --foreground: #e6e6e6;
+  --card: #2b2b2b;
+  --card-foreground: #e8e8e8;
+  --surface-readout: #0d0d0d;
+  --surface-input: #1d1d1d;
+  --surface-input-bezel: #151515;
+  --surface-keycap-well: #050505;
+  --keycap-secondary: #5a5a5a;
+  --keycap-secondary-foreground: #f2f2f2;
+  --secondary: #5a5a5a;
+  --secondary-foreground: #f2f2f2;
+  --keycap-graphite: #1c1c1c;
+  --keycap-graphite-foreground: #ededed;
+  --muted-foreground: #a0a0a0;
+  --content-secondary: #bdbdbd;
+  --content-subtle: #8a8a8a;
+  --content-inverse: #e0e0e0;
+  --content-input: #ededed;
+  --input: #1d1d1d;
+  --input-foreground: #ededed;
+  --input-border: #000000;
+  --input-placeholder: #8a8a8a;
+  --input-autofill: #1d1d1d;
+  --border: #0e0e0e;
+  --border-shell: #3d3d3d;
+  --border-shell-highlight: rgb(255 255 255 / 8%);
+  --border-shell-ledge: #0a0a0a;
+  --border-fastener: #555555;
+  --indicator-metal: #6e6e6e;
+  --indicator-off: #4a4a4a;
+  --surface-display: #0b0c0a;
+
+  /* On graphite the lower lip catches far less light, so the highlights drop sharply. */
+  --elevation-control-socket:
+    inset 0 3px 3px rgb(0 0 0 / 95%), 0 1px 0 rgb(255 255 255 / 12%), 0 -1px 0 rgb(0 0 0 / 50%);
+  --elevation-control-secondary: inset 2px 2px 2px rgb(255 255 255 / 22%), inset -2px -2px 2px rgb(0 0 0 / 45%);
+  --elevation-control-secondary-compact: inset 1px 1px 1px rgb(255 255 255 / 22%), inset -1px -1px 1px rgb(0 0 0 / 45%);
+  --elevation-control-graphite: inset 2px 2px 2px rgb(255 255 255 / 10%), inset -2px -2px 2px rgb(0 0 0 / 60%);
+  --elevation-control-graphite-compact: inset 1px 1px 1px rgb(255 255 255 / 10%), inset -1px -1px 1px rgb(0 0 0 / 60%);
+  --elevation-card: 0 4px 0 #0a0a0a, 0 18px 28px rgb(0 0 0 / 50%), inset 0 1px 0 rgb(255 255 255 / 8%);
+  --elevation-panel: 0 3px 0 var(--border-shell-ledge), inset 0 1px 0 rgb(255 255 255 / 7%);
+  --elevation-display: inset 0 3px 6px rgb(0 0 0 / 90%), 0 1px 0 rgb(255 255 255 / 10%);
+  --elevation-fastener: inset 0 1px 1px rgb(255 255 255 / 20%);
+  --elevation-input: inset 0 2px 4px rgb(0 0 0 / 60%), inset 0 -1px 0 rgb(255 255 255 / 6%);
+  --elevation-input-autofill: 0 0 0 1000px #1d1d1d inset;
+  --elevation-led-off: inset 0 1px 1px rgb(0 0 0 / 60%);
+}
