@@ -8,6 +8,7 @@ import { DirectionProvider } from "#/components/primitive/direction/direction";
 import { Toaster } from "#/components/primitive/toast/toast";
 import { TooltipProvider } from "#/components/primitive/tooltip/tooltip";
 import { BOARD_LAYOUT_INIT_SCRIPT } from "#/lib/board-layout";
+import { BOARD_PANEL_INIT_SCRIPT } from "#/lib/board-panel";
 import { THEME_INIT_SCRIPT } from "#/lib/theme";
 import { orpc } from "#/orpc/client";
 import { m } from "#/paraglide/messages";
@@ -51,6 +52,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
         {/* First in <head>: applies the saved or system theme before anything paints. */}
         <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
         <script dangerouslySetInnerHTML={{ __html: BOARD_LAYOUT_INIT_SCRIPT }} />
+        <script dangerouslySetInnerHTML={{ __html: BOARD_PANEL_INIT_SCRIPT }} />
         <HeadContent />
       </head>
       <body>

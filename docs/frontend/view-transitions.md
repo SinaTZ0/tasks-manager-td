@@ -90,6 +90,11 @@ frame by frame.
   `update` animates on page load whenever its content differs from the server HTML. Start the change with
   `startTransition(() => { addTransitionType("form-swap"); update(); })`, and animate only that type:
   `update={{ "form-swap": "form-card", default: "none" }}`.
+- **State that lives outside React** (an attribute on `<html>`, applied before paint like the theme) can start the
+  browser's transition itself, typed the same way: the board's head panel folds with
+  `document.startViewTransition({ update, types: ["board-panel"] })` (`src/lib/board-panel.ts`), and only that type
+  names the panel and the columns (`:active-view-transition-type(board-panel)`), so the page fade never pulls them out
+  of the page. Flush any React render the new state needs inside `update` (`flushSync`), or it lands after the capture.
 - **Focus and scroll go in `useLayoutEffect`** when the new content mounts. The browser captures the new state right
   after layout effects; a `focus()` from `useEffect` scrolls mid-animation, and named elements end in the wrong place.
 

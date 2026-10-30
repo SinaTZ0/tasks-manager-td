@@ -107,17 +107,20 @@ function AccountMenu({ viewer }: { viewer: Viewer }) {
  * and the language, theme and account keys. On a phone the navigation drops to its own row. It spans the whole window,
  * not the content width, so its edges line up with the board, which needs every column it can get. `search`, `timer`
  * and `bell` are the signed-in viewer's search field, running timer and notifications, before the device keys.
+ * `pageKeys` are keys the current page adds, such as the board's panel key; they come first.
  */
 export function SiteHeader({
   viewer,
   search,
   timer,
   bell,
+  pageKeys,
 }: {
   viewer: Viewer | null;
   search?: ReactNode;
   timer?: ReactNode;
   bell?: ReactNode;
+  pageKeys?: ReactNode;
 }) {
   const localeLinks = useLocaleLinks();
 
@@ -156,6 +159,7 @@ export function SiteHeader({
 
         {/*------ Device Keys ------*/}
         <div className="ms-auto flex shrink-0 items-center gap-3">
+          {pageKeys}
           {search}
           {timer}
           {bell}

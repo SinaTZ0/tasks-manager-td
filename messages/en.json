@@ -1229,6 +1229,7 @@
   "board_mark_priority": "Priority",
   "board_mark_due": "Due",
   "board_filter_any": "All",
+  "board_panel_hide": "Hide the project panel",
   "board_panel_filter": "Filter",
   "board_panel_view": "View",
   "calendar_panel_month": "Month",

@@ -17,6 +17,8 @@
 /* The board's column layout, as each person chose it (src/lib/board-layout.ts); with neither, the row scrolls. */
 @custom-variant board-fit (&:where([data-board-layout="fit"] *));
 @custom-variant board-wrap (&:where([data-board-layout="wrap"] *));
+/* The board's head panel folded away (src/lib/board-panel.ts). */
+@custom-variant board-panel-closed (&:where([data-board-panel="closed"] *));
 
 /*===== Type =====*/
 
@@ -571,6 +573,52 @@
   from {
     opacity: 0;
     transform: translateX(calc(var(--page-shift) * -1));
+  }
+}
+
+/*------ Board Panel ------*/
+/* Folding a board's head panel away (type `board-panel`, src/lib/board-panel.ts). Only while it runs are the panel and
+   the columns named, so the router's page fade never pulls them out of the page. The panel folds up from its bottom
+   edge into the header, or unfolds down from it, while the columns' group slides to its new place, so the board
+   moves as one piece instead of jumping. */
+:root:active-view-transition-type(board-panel) #board-panel {
+  view-transition-name: board-panel;
+}
+:root:active-view-transition-type(board-panel) #board-columns {
+  view-transition-name: board-columns;
+}
+
+/* Panel and columns share one duration and easing, so the panel's folding edge stays on the columns' top edge. */
+::view-transition-group(board-columns) {
+  animation-duration: 240ms;
+  animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+::view-transition-old(board-panel):only-child {
+  animation: 240ms cubic-bezier(0.4, 0, 0.2, 1) both board-panel-fold;
+}
+::view-transition-new(board-panel):only-child {
+  animation: 240ms cubic-bezier(0.4, 0, 0.2, 1) both board-panel-unfold;
+}
+
+/* Both ends are spelled out: `clip-path` won't interpolate from `none`, and the panel would flip halfway instead. */
+@keyframes board-panel-fold {
+  from {
+    clip-path: inset(0 0 0 0);
+  }
+  to {
+    opacity: 0;
+    clip-path: inset(0 0 100% 0);
+    transform: translateY(-0.75rem);
+  }
+}
+@keyframes board-panel-unfold {
+  from {
+    opacity: 0;
+    clip-path: inset(0 0 100% 0);
+    transform: translateY(-0.75rem);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
   }
 }
 
