@@ -2,6 +2,7 @@ import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, Outlet } from "@tanstack/react-router";
 import { useEffect } from "react";
 
+import { NotificationBell, notificationsQuery } from "#/components/shared/notification-bell/notification-bell";
 import { SiteFooter } from "#/components/shared/site-footer/site-footer";
 import { RunningTimer } from "#/components/shared/running-timer/running-timer";
 import { SiteHeader } from "#/components/shared/site-header/site-header";
@@ -11,11 +12,16 @@ import { m } from "#/paraglide/messages";
 
 /*===== Route =====*/
 export const Route = createFileRoute("/_site-layout")({
-  // The header needs the viewer, and a signed-in viewer's running timer, on every page, so both load before any page
-  // renders.
+  // The header needs the viewer, and a signed-in viewer's running timer and notifications, on every page, so they load
+  // before any page renders.
   beforeLoad: async ({ context }) => {
     const viewer = await context.queryClient.ensureQueryData(orpc.session.viewer.queryOptions());
-    if (viewer) await context.queryClient.ensureQueryData(orpc.time.current.queryOptions());
+    if (viewer) {
+      await Promise.all([
+        context.queryClient.ensureQueryData(orpc.time.current.queryOptions()),
+        context.queryClient.ensureQueryData(notificationsQuery()),
+      ]);
+    }
     return viewer;
   },
   component: SiteLayout,
@@ -41,7 +47,7 @@ function SiteLayout() {
       >
         {m.common_skip_to_content()}
       </a>
-      <SiteHeader viewer={viewer} timer={viewer && <RunningTimer />} />
+      <SiteHeader viewer={viewer} timer={viewer && <RunningTimer />} bell={viewer && <NotificationBell />} />
       <main id="main" className="flex-1">
         <Outlet />
       </main>

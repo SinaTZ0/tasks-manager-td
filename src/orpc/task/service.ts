@@ -8,7 +8,9 @@ import type { ActivityAction } from "#/orpc/activity/constants";
 import { findTaskActivities } from "#/orpc/activity/repository";
 import { recordActivity } from "#/orpc/activity/service";
 import { addPlainComment } from "#/orpc/comment/service";
+import { getHandoffs } from "#/orpc/delegation/service";
 import { findBlockingTasks, findReleasedDependents, findWaitsFor } from "#/orpc/dependency/repository";
+import { notify, type NotificationEntry } from "#/orpc/notification/service";
 import type { ColumnKind } from "#/orpc/project/constants";
 import { toPerson } from "#/orpc/project/mapper";
 import {
@@ -119,6 +121,7 @@ async function toDetail({
   const waitsFor = await findWaitsFor({ db, taskIds: [record.id] });
   const column = await findColumn({ db, projectId, columnId: record.columnId });
   const entries = await findTaskActivities({ db, taskId: record.id, actions: COLUMN_ENTRIES });
+  const handoffs = await getHandoffs({ db, taskId: record.id });
   const last = entries.at(-1);
   const noted =
     (column?.kind === "paused" && last?.action === "task.paused") ||
@@ -138,6 +141,7 @@ async function toDetail({
     time: totals.get(record.id),
     waitsFor: waitsFor.get(record.id) ?? [],
     statusNote,
+    handoffs,
   });
 }
 
@@ -145,8 +149,8 @@ async function toDetail({
 const isReleased = (kind: string | undefined) => (RELEASED_KINDS as readonly string[]).includes(kind ?? "");
 
 /**
- * Records "unblocked" on each task that `blocker` was the last to hold up, as it is done, cancelled or archived: the
- * history entry the waiting task's owner is told about. Asked before the blocker moves.
+ * Records "unblocked" on each task that `blocker` was the last to hold up, as it is done, cancelled or archived, and
+ * tells each waiting task's owner (docs/app.md → Dependency). Asked before the blocker moves.
  */
 async function releaseDependents({
   db,
@@ -160,6 +164,7 @@ async function releaseDependents({
   const released = await findReleasedDependents({ db, blockerId: blocker.id });
   if (released.length === 0) return;
   const key = await findProjectKey({ db, projectId: blocker.projectId });
+  const blockerCode = taskCode({ key, number: blocker.number });
   await recordActivity({
     db,
     actorId,
@@ -167,12 +172,24 @@ async function releaseDependents({
       action: "task.unblocked",
       projectId: blocker.projectId,
       taskId: dependent.id,
-      after: {
-        blockerId: blocker.id,
-        blockerCode: taskCode({ key, number: blocker.number }),
-        ownerId: dependent.ownerId,
-      },
+      after: { blockerId: blocker.id, blockerCode, ownerId: dependent.ownerId },
       snapshot: { code: taskCode({ key, number: dependent.number }), title: dependent.title },
+    })),
+  });
+  await notify({
+    db,
+    actorId,
+    entries: released.map((dependent) => ({
+      userId: dependent.ownerId,
+      kind: "unblocked",
+      projectId: blocker.projectId,
+      taskId: dependent.id,
+      data: {
+        projectKey: key,
+        taskCode: taskCode({ key, number: dependent.number }),
+        taskTitle: dependent.title,
+        note: blockerCode,
+      },
     })),
   });
 }
@@ -307,6 +324,27 @@ async function labelNames({ db, projectId, ids }: { db: Database; projectId: str
   return ids.map((id) => byId.get(id) ?? id);
 }
 
+/*===== Assigned =====*/
+/** "Assigned to you": what the task's new assignee is told (nobody, when they assigned themselves). */
+function assignedEntry({
+  record,
+  projectId,
+  key,
+}: {
+  record: TaskRecord;
+  projectId: string;
+  key: string;
+}): NotificationEntry {
+  if (!record.assigneeId) throw new Error("assignedEntry: the task has no assignee");
+  return {
+    userId: record.assigneeId,
+    kind: "assigned",
+    projectId,
+    taskId: record.id,
+    data: { projectKey: key, taskCode: taskCode({ key, number: record.number }), taskTitle: record.title },
+  };
+}
+
 /*===== Create =====*/
 type CreateResult = { kind: "success"; task: TaskCard } | Invalid;
 
@@ -370,7 +408,8 @@ export async function createTask({
     });
     await replaceTaskLabels({ db: tx, taskId: record.id, labelIds });
 
-    const code = taskCode({ key: await findProjectKey({ db: tx, projectId }), number });
+    const key = await findProjectKey({ db: tx, projectId });
+    const code = taskCode({ key, number });
     await recordActivity({
       db: tx,
       actorId,
@@ -384,6 +423,9 @@ export async function createTask({
         },
       ],
     });
+    if (record.assigneeId) {
+      await notify({ db: tx, actorId, entries: [assignedEntry({ record, projectId, key })] });
+    }
     return { kind: "success", task: toTaskCard({ record, labelIds }) };
   });
 }
@@ -479,12 +521,16 @@ export async function updateTask({
 
     // Labels live in their own table; the row is still touched so `updatedAt` says when the task last changed.
     const record = await updateTaskRow({ db: tx, id: taskId, values: { ...values, updatedAt: new Date() } });
-    const code = taskCode({ key: await findProjectKey({ db: tx, projectId }), number: current.number });
+    const key = await findProjectKey({ db: tx, projectId });
+    const code = taskCode({ key, number: current.number });
     await recordActivity({
       db: tx,
       actorId: actor.id,
       entries: [{ action: "task.updated", projectId, taskId, before, after, snapshot: { code, title: record.title } }],
     });
+    if (values.assigneeId) {
+      await notify({ db: tx, actorId: actor.id, entries: [assignedEntry({ record, projectId, key })] });
+    }
     return { kind: "success", task: await toDetail({ db: tx, projectId, record }) };
   });
 }

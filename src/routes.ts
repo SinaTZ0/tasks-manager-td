@@ -8,6 +8,7 @@ export const routes = rootRoute("__root.tsx", [
     layout("app_layout/app-layout.tsx", [
       index("home/home.tsx"),
       route("/notes", "notes/notes.tsx"),
+      route("/delegated", "delegated/delegated.tsx"),
       route("/projects/$projectKey", "projects_projectKey/projects-project-key.tsx"),
       layout("admin_layout/admin-layout.tsx", [
         route("/team", "team/team.tsx"),

@@ -1,8 +1,10 @@
 import { createCaptchaChallengeProcedure } from "#/orpc/captcha/procedure";
+import { delegatedByMeProcedure, delegateTaskProcedure } from "#/orpc/delegation/procedure";
 import { addDependencyProcedure, removeDependencyProcedure } from "#/orpc/dependency/procedure";
 import { implementer } from "#/orpc/implementer.server";
 import { uploadMediaProcedure } from "#/orpc/media/procedure";
 import { createNoteProcedure, deleteNoteProcedure, listNotesProcedure } from "#/orpc/note/procedure";
+import { listNotificationsProcedure, markNotificationsReadProcedure } from "#/orpc/notification/procedure";
 import {
   createProjectProcedure,
   getProjectProcedure,
@@ -44,6 +46,10 @@ export const router = implementer.router({
   captcha: {
     createChallenge: createCaptchaChallengeProcedure,
   },
+  delegation: {
+    delegate: delegateTaskProcedure,
+    mine: delegatedByMeProcedure,
+  },
   dependency: {
     add: addDependencyProcedure,
     remove: removeDependencyProcedure,
@@ -55,6 +61,10 @@ export const router = implementer.router({
     list: listNotesProcedure,
     create: createNoteProcedure,
     delete: deleteNoteProcedure,
+  },
+  notification: {
+    list: listNotificationsProcedure,
+    markRead: markNotificationsReadProcedure,
   },
   project: {
     list: listProjectsProcedure,

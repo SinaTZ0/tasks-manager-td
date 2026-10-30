@@ -140,15 +140,21 @@ Built once, in the slice that first needs them, and used by every procedure afte
 - Rule 4: moving a blocked task into doing or done is refused unless forced with a comment. The board, the menu and
   the drawer ask for it first; the comment goes in the `comment` table (made here, its thread comes in slice 7).
 - Cycles are refused: a recursive query checks the path before a link is saved.
-- When a blocker is done, the blocked task's owner is notified (with slice 6's notifications; until then, Activity).
+- When a blocker is done, the blocked task's owner is notified (slice 6's notifications).
 - **Tests**: a cycle is refused; a forced move leaves its comment.
 
-### 6. Assign, Delegate and Notifications
+### 6. Assign, Delegate and Notifications ✓
 
-- Assign a task; delegate with a note (assignee changes, owner doesn't, a delegation record is kept).
-- The hand-off chain in the drawer (Sina → Ali → Reza); a "delegated by me" view.
-- Notifications: a bell in the header with the unread count, a dropdown list, read and unread. Events: assigned to you,
-  delegated to you, mentioned, unblocked. Refetched every 30 seconds or so.
+- Assign a task from the drawer's assignee field; delegate with a note from the drawer's "Delegate" key. The assignee
+  changes, the owner doesn't (rule 6), and a `delegation` row is kept. Any member of the project may hand a task on,
+  like assigning it, and it is accepted at once.
+- The hand-off chain in the drawer (Sina → Ali → Reza), each hand-off with its note. A "Delegated by me" page
+  (`/delegated`, in the header's navigation): live tasks the viewer handed on, or owns and someone handed on, that
+  someone else has now.
+- Notifications: a bell in the header with an orange LED and the unread count, a list of the latest 30, each opening its
+  task and marked read as it does, and "mark all read". Events: assigned to you, delegated to you, unblocked (to the
+  waiting task's owner); "mentioned" is a kind already, written by slice 7's comments. Nobody is told about their own
+  doing. The bell asks again every 30 seconds (`NOTIFICATION_POLL_MS`).
 - **Tests**: delegation never changes the owner; a notification reaches only its user.
 
 ### 7. Comments and History

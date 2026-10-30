@@ -18,6 +18,7 @@ import { Route as authAuthRouteImport } from './routes/auth/auth'
 import { Route as rpcRpcRouteImport } from './routes/rpc/rpc'
 import { Route as homeHomeRouteImport } from './routes/home/home'
 import { Route as admin_layoutAdminLayoutRouteImport } from './routes/admin_layout/admin-layout'
+import { Route as delegatedDelegatedRouteImport } from './routes/delegated/delegated'
 import { Route as notesNotesRouteImport } from './routes/notes/notes'
 import { Route as api_authApiAuthRouteImport } from './routes/api_auth/api-auth'
 import { Route as teamTeamRouteImport } from './routes/team/team'
@@ -66,6 +67,11 @@ const admin_layoutAdminLayoutRoute = admin_layoutAdminLayoutRouteImport.update({
   id: '/_admin-layout',
   getParentRoute: () => app_layoutAppLayoutRoute,
 } as any)
+const delegatedDelegatedRoute = delegatedDelegatedRouteImport.update({
+  id: '/delegated',
+  path: '/delegated',
+  getParentRoute: () => app_layoutAppLayoutRoute,
+} as any)
 const notesNotesRoute = notesNotesRouteImport.update({
   id: '/notes',
   path: '/notes',
@@ -101,6 +107,7 @@ export interface FileRoutesByFullPath {
   '/sitemap.xml': typeof sitemapSitemapRoute
   '/auth': typeof authAuthRoute
   '/rpc/$': typeof rpcRpcRoute
+  '/delegated': typeof delegatedDelegatedRoute
   '/notes': typeof notesNotesRoute
   '/api/auth/$': typeof api_authApiAuthRoute
   '/team': typeof teamTeamRoute
@@ -114,6 +121,7 @@ export interface FileRoutesByTo {
   '/sitemap.xml': typeof sitemapSitemapRoute
   '/auth': typeof authAuthRoute
   '/rpc/$': typeof rpcRpcRoute
+  '/delegated': typeof delegatedDelegatedRoute
   '/notes': typeof notesNotesRoute
   '/api/auth/$': typeof api_authApiAuthRoute
   '/team': typeof teamTeamRoute
@@ -131,6 +139,7 @@ export interface FileRoutesById {
   '/rpc/$': typeof rpcRpcRoute
   '/_site-layout/_app-layout/': typeof homeHomeRoute
   '/_site-layout/_app-layout/_admin-layout': typeof admin_layoutAdminLayoutRouteWithChildren
+  '/_site-layout/_app-layout/delegated': typeof delegatedDelegatedRoute
   '/_site-layout/_app-layout/notes': typeof notesNotesRoute
   '/api/auth/$': typeof api_authApiAuthRoute
   '/_site-layout/_app-layout/_admin-layout/team': typeof teamTeamRoute
@@ -146,6 +155,7 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/auth'
     | '/rpc/$'
+    | '/delegated'
     | '/notes'
     | '/api/auth/$'
     | '/team'
@@ -159,6 +169,7 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/auth'
     | '/rpc/$'
+    | '/delegated'
     | '/notes'
     | '/api/auth/$'
     | '/team'
@@ -175,6 +186,7 @@ export interface FileRouteTypes {
     | '/rpc/$'
     | '/_site-layout/_app-layout/'
     | '/_site-layout/_app-layout/_admin-layout'
+    | '/_site-layout/_app-layout/delegated'
     | '/_site-layout/_app-layout/notes'
     | '/api/auth/$'
     | '/_site-layout/_app-layout/_admin-layout/team'
@@ -256,6 +268,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof admin_layoutAdminLayoutRouteImport
       parentRoute: typeof app_layoutAppLayoutRoute
     }
+    '/_site-layout/_app-layout/delegated': {
+      id: '/_site-layout/_app-layout/delegated'
+      path: '/delegated'
+      fullPath: '/delegated'
+      preLoaderRoute: typeof delegatedDelegatedRouteImport
+      parentRoute: typeof app_layoutAppLayoutRoute
+    }
     '/_site-layout/_app-layout/notes': {
       id: '/_site-layout/_app-layout/notes'
       path: '/notes'
@@ -314,6 +333,7 @@ const admin_layoutAdminLayoutRouteWithChildren =
 interface app_layoutAppLayoutRouteChildren {
   homeHomeRoute: typeof homeHomeRoute
   admin_layoutAdminLayoutRoute: typeof admin_layoutAdminLayoutRouteWithChildren
+  delegatedDelegatedRoute: typeof delegatedDelegatedRoute
   notesNotesRoute: typeof notesNotesRoute
   projects_projectKeyProjectsProjectKeyRoute: typeof projects_projectKeyProjectsProjectKeyRoute
 }
@@ -321,6 +341,7 @@ interface app_layoutAppLayoutRouteChildren {
 const app_layoutAppLayoutRouteChildren: app_layoutAppLayoutRouteChildren = {
   homeHomeRoute: homeHomeRoute,
   admin_layoutAdminLayoutRoute: admin_layoutAdminLayoutRouteWithChildren,
+  delegatedDelegatedRoute: delegatedDelegatedRoute,
   notesNotesRoute: notesNotesRoute,
   projects_projectKeyProjectsProjectKeyRoute:
     projects_projectKeyProjectsProjectKeyRoute,

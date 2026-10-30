@@ -30,6 +30,7 @@ import { m } from "#/paraglide/messages";
 // is only listed for admins; its route checks too.
 const NAV_ITEMS = [
   { label: m.nav_home, to: "/", adminOnly: false },
+  { label: m.nav_delegated, to: "/delegated", adminOnly: false },
   { label: m.nav_notes, to: "/notes", adminOnly: false },
   { label: m.nav_team, to: "/team", adminOnly: true },
 ] as const;
@@ -78,10 +79,10 @@ function AccountMenu({ viewer }: { viewer: Viewer }) {
 /**
  * The instrument's top panel: a housing strip across the desk with the model name, the main navigation as a row of keys,
  * and the language, theme and account keys. On a phone the navigation drops to its own row. It spans the whole window,
- * not the content width, so its edges line up with the board, which needs every column it can get. `timer` is the
- * signed-in viewer's running timer, before the device keys.
+ * not the content width, so its edges line up with the board, which needs every column it can get. `timer` and `bell`
+ * are the signed-in viewer's running timer and notifications, before the device keys.
  */
-export function SiteHeader({ viewer, timer }: { viewer: Viewer | null; timer?: ReactNode }) {
+export function SiteHeader({ viewer, timer, bell }: { viewer: Viewer | null; timer?: ReactNode; bell?: ReactNode }) {
   const localeLinks = useLocaleLinks();
 
   return (
@@ -120,6 +121,7 @@ export function SiteHeader({ viewer, timer }: { viewer: Viewer | null; timer?: R
         {/*------ Device Keys ------*/}
         <div className="ms-auto flex shrink-0 items-center gap-3">
           {timer}
+          {bell}
           <LocaleSwitcher links={localeLinks} variant="secondary" />
           <ThemeToggle />
           {viewer ? (

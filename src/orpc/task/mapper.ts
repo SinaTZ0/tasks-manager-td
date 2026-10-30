@@ -43,12 +43,14 @@ export function toTaskDetail({
   time,
   waitsFor,
   statusNote,
+  handoffs,
 }: {
   record: TaskRecord;
   labelIds: string[];
   time: TimeTotals | undefined;
   waitsFor: string[];
   statusNote: TaskDetail["statusNote"];
+  handoffs: TaskDetail["handoffs"];
 }): TaskDetail {
   return {
     ...toTaskCard({ record, labelIds, time, waitsFor }),
@@ -58,6 +60,7 @@ export function toTaskDetail({
     updatedAt: record.updatedAt,
     archivedAt: record.archivedAt,
     statusNote,
+    handoffs,
   };
 }
 

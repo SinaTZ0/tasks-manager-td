@@ -50,6 +50,13 @@
       "when": 1793380078126,
       "tag": "0006_dependencies-comments",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1793380716345,
+      "tag": "0007_delegations-notifications",
+      "breakpoints": true
     }
   ]
 }

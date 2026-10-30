@@ -720,5 +720,93 @@
   ],
   "dependency_save_failed": "The dependency couldn't be saved.",
   "dependency_state_waiting": "blocking",
-  "dependency_state_released": "done"
+  "dependency_state_released": "done",
+  "delegation_error_already_assigned": "They already have this task.",
+  "delegation_error_note_too_long": [
+    {
+      "declarations": ["input max", "local maxText = max: number"],
+      "match": {
+        "": "Keep the note to {maxText} characters."
+      }
+    }
+  ],
+  "nav_delegated": "Delegated",
+  "delegation_title": "Hand-offs",
+  "delegation_none": "Not handed on yet.",
+  "delegation_delegate": "Delegate",
+  "delegation_to": "to",
+  "delegation_entry": [
+    {
+      "declarations": ["input from", "input to", "input date"],
+      "match": {
+        "": "{from} handed it to {to} · {date}"
+      }
+    }
+  ],
+  "delegation_failed": "Couldn't hand the task on. Try again.",
+  "delegation_error_person_required": "Choose who does it now.",
+  "delegation_dialog_title": [
+    {
+      "declarations": ["input code"],
+      "match": {
+        "": "Delegate {code}"
+      }
+    }
+  ],
+  "delegation_dialog_description": "They become the assignee and get a notification. The owner stays the same.",
+  "delegation_to_label": "Who does it now",
+  "delegation_to_placeholder": "Choose a person",
+  "delegation_note_label": "Note (optional)",
+  "delegation_note_hint": "What they should know to pick it up.",
+  "delegation_confirm": "Delegate",
+  "notification_assigned": [
+    {
+      "declarations": ["input name", "input code"],
+      "match": {
+        "": "{name} assigned you {code}"
+      }
+    }
+  ],
+  "notification_delegated": [
+    {
+      "declarations": ["input name", "input code"],
+      "match": {
+        "": "{name} handed you {code}"
+      }
+    }
+  ],
+  "notification_mentioned": [
+    {
+      "declarations": ["input name", "input code"],
+      "match": {
+        "": "{name} mentioned you on {code}"
+      }
+    }
+  ],
+  "notification_unblocked": [
+    {
+      "declarations": ["input code", "input blocker"],
+      "match": {
+        "": "{code} no longer waits: {blocker} is finished"
+      }
+    }
+  ],
+  "notification_mark_failed": "Couldn't mark them read. Try again.",
+  "notification_open": "Notifications",
+  "notification_open_unread": [
+    {
+      "declarations": ["input count", "local countText = count: number"],
+      "match": {
+        "": "Notifications, {countText} unread"
+      }
+    }
+  ],
+  "notification_title": "Notifications",
+  "notification_mark_all": "Mark all read",
+  "notification_unread": "Unread",
+  "notification_empty": "Nothing new.",
+  "delegated_title": "Delegated by me",
+  "delegated_description": "Tasks you handed on, or own, that someone else is doing now.",
+  "delegated_empty": "Nothing is handed on right now.",
+  "delegated_not_owner": "Someone else owns it"
 }

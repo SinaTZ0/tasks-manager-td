@@ -315,6 +315,70 @@ export const comment = pgTable(
   (table) => [index("comment_task_id_created_at_idx").on(table.taskId, table.createdAt)],
 );
 
+/*===== Delegations =====*/
+// "You do this now" (docs/app.md → Delegation): a task handed from one person to another, with a note. The assignee
+// changes; the owner never does (rule 6). A task's delegations in order are its hand-off chain (Sina → Ali → Reza).
+
+export const delegation = pgTable(
+  "delegation",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    taskId: uuid("task_id")
+      .notNull()
+      .references(() => task.id, { onDelete: "cascade" }),
+    /** Who handed it on. */
+    fromId: text("from_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "restrict" }),
+    /** The new assignee. */
+    toId: text("to_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "restrict" }),
+    /** Who was doing it before, if anyone. */
+    previousAssigneeId: text("previous_assignee_id").references(() => user.id, { onDelete: "restrict" }),
+    note: text("note"),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+  },
+  (table) => [
+    index("delegation_task_id_created_at_idx").on(table.taskId, table.createdAt),
+    index("delegation_from_id_idx").on(table.fromId),
+  ],
+);
+
+/*===== Notifications =====*/
+// An alert for one person about one event (docs/app.md → Notification), in the app only (no e-mail yet). Only its
+// person ever reads it. `data` keeps what it needs to read well later: the task's code and title, a note.
+
+export const notification = pgTable(
+  "notification",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    /** One of `NOTIFICATION_KINDS` (`src/orpc/notification/constants.ts`). */
+    kind: text("kind").notNull(),
+    /** Who caused it. */
+    actorId: text("actor_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "restrict" }),
+    projectId: uuid("project_id")
+      .notNull()
+      .references(() => project.id, { onDelete: "cascade" }),
+    taskId: uuid("task_id").references(() => task.id, { onDelete: "cascade" }),
+    data: jsonb("data").notNull().default({}),
+    readAt: timestamp("read_at"),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+  },
+  (table) => [
+    index("notification_user_id_created_at_idx").on(table.userId, table.createdAt),
+    // Serves the bell's unread count.
+    index("notification_unread_idx")
+      .on(table.userId)
+      .where(sql`${table.readAt} is null`),
+  ],
+);
+
 /*===== Time Logs =====*/
 // One stretch of work by one person on one task (docs/app.md → TimeLog); the time spent on a task is the sum of its
 // logs. A timer's log is open (`endedAt` null) while it runs. A manual entry ("worked 2h yesterday") is written closed,

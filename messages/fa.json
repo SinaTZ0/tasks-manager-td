@@ -720,5 +720,93 @@
   ],
   "dependency_save_failed": "وابستگی ذخیره نشد.",
   "dependency_state_waiting": "مانع",
-  "dependency_state_released": "تمام"
+  "dependency_state_released": "تمام",
+  "delegation_error_already_assigned": "این کار همین حالا با اوست.",
+  "delegation_error_note_too_long": [
+    {
+      "declarations": ["input max", "local maxText = max: number"],
+      "match": {
+        "": "یادداشت حداکثر {maxText} نویسه باشد."
+      }
+    }
+  ],
+  "nav_delegated": "واگذارشده‌ها",
+  "delegation_title": "واگذاری‌ها",
+  "delegation_none": "هنوز به کسی واگذار نشده.",
+  "delegation_delegate": "واگذاری",
+  "delegation_to": "به",
+  "delegation_entry": [
+    {
+      "declarations": ["input from", "input to", "input date"],
+      "match": {
+        "": "{from} به {to} سپرد · {date}"
+      }
+    }
+  ],
+  "delegation_failed": "واگذاری انجام نشد. دوباره امتحان کنید.",
+  "delegation_error_person_required": "انتخاب کنید چه کسی انجامش دهد.",
+  "delegation_dialog_title": [
+    {
+      "declarations": ["input code"],
+      "match": {
+        "": "واگذاری {code}"
+      }
+    }
+  ],
+  "delegation_dialog_description": "او انجام‌دهنده‌ی کار می‌شود و اعلان می‌گیرد. مالک کار عوض نمی‌شود.",
+  "delegation_to_label": "چه کسی انجامش دهد",
+  "delegation_to_placeholder": "یک نفر را انتخاب کنید",
+  "delegation_note_label": "یادداشت (اختیاری)",
+  "delegation_note_hint": "آنچه برای ادامه‌ی کار باید بداند.",
+  "delegation_confirm": "واگذار کن",
+  "notification_assigned": [
+    {
+      "declarations": ["input name", "input code"],
+      "match": {
+        "": "{name} کار {code} را به شما سپرد"
+      }
+    }
+  ],
+  "notification_delegated": [
+    {
+      "declarations": ["input name", "input code"],
+      "match": {
+        "": "{name} کار {code} را به شما واگذار کرد"
+      }
+    }
+  ],
+  "notification_mentioned": [
+    {
+      "declarations": ["input name", "input code"],
+      "match": {
+        "": "{name} در {code} از شما نام برد"
+      }
+    }
+  ],
+  "notification_unblocked": [
+    {
+      "declarations": ["input code", "input blocker"],
+      "match": {
+        "": "{code} دیگر منتظر نیست: {blocker} تمام شد"
+      }
+    }
+  ],
+  "notification_mark_failed": "علامت‌گذاری انجام نشد. دوباره امتحان کنید.",
+  "notification_open": "اعلان‌ها",
+  "notification_open_unread": [
+    {
+      "declarations": ["input count", "local countText = count: number"],
+      "match": {
+        "": "اعلان‌ها، {countText} خوانده‌نشده"
+      }
+    }
+  ],
+  "notification_title": "اعلان‌ها",
+  "notification_mark_all": "همه خوانده شد",
+  "notification_unread": "خوانده‌نشده",
+  "notification_empty": "خبر تازه‌ای نیست.",
+  "delegated_title": "واگذارشده‌های من",
+  "delegated_description": "کارهایی که واگذار کرده‌اید یا مالکشان هستید و حالا کس دیگری انجامشان می‌دهد.",
+  "delegated_empty": "فعلاً کاری واگذار نشده.",
+  "delegated_not_owner": "مالکش کس دیگری است"
 }

@@ -20,6 +20,7 @@ import {
   PriorityField,
 } from "#/routes/projects_projectKey/components/task-meta-fields";
 import { TaskDescriptionField } from "#/routes/projects_projectKey/components/task-description-field";
+import { TaskDelegation } from "#/routes/projects_projectKey/components/task-delegation";
 import { TaskDependencies } from "#/routes/projects_projectKey/components/task-dependencies";
 import { TaskStatusPanel } from "#/routes/projects_projectKey/components/task-status-panel";
 import { TaskTimeSection } from "#/routes/projects_projectKey/components/task-time-section";
@@ -143,6 +144,8 @@ function TaskDetails({
             />
             <DueDateField task={task} update={update} />
             <EstimateField key={task.estimateMinutes} task={task} update={update} />
+            <Separator />
+            <TaskDelegation task={task} project={project} code={code} />
             <Separator />
             <ArchiveTaskButton projectId={project.id} task={task} code={code} onArchived={onArchived} />
           </div>
