@@ -1,0 +1,241 @@
+# Production stack (docs/deployment.md). Caddy is the only service with public ports: it terminates HTTPS and proxies to
+# the app and to the error viewer (on its own subdomain), and serves image variants read-only from SeaweedFS. Before the app starts, two one-time jobs run from the
+# app's image: `migrate` applies pending database migrations and `storage-init` creates the media bucket.
+#
+# Set up, update and back up with `deploy/deploy.sh`. By hand: configure with a `.env` file next to this one (copy
+# `.env.production.example`), then deploy or update with
+#   docker compose -f compose.prod.yaml up -d --build
+# Needs Docker Compose 2.23.1 or later (inline `configs`).
+
+# Pinned so the volumes keep their names even when the folder is renamed. Rename per project.
+name: template
+
+# ===== Shared =====
+x-logging: &logging # Docker keeps container logs forever by default; rotate them.
+  driver: json-file
+  options:
+    max-size: 10m
+    max-file: "5"
+
+x-app-image: &app-image
+  # The same image runs the app and both jobs. Only `app` builds it: with a `build` each, Compose builds the image three
+  # times and unpacks each copy, which can fill a small disk; the jobs use the image `app` built.
+  image: template-app
+  init: true
+  logging: *logging
+
+services:
+  caddy:
+    image: caddy:2.10-alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    environment:
+      DOMAIN: ${DOMAIN:?set DOMAIN in .env}
+      ERRORS_DOMAIN: ${ERRORS_DOMAIN:?set ERRORS_DOMAIN in .env}
+      S3_BUCKET_NAME: ${S3_BUCKET_NAME:?set S3_BUCKET_NAME in .env}
+      # `auto` (Let's Encrypt) or `files` (the certificate in `certs/`), see `deploy/Caddyfile`.
+      TLS_MODE: ${TLS_MODE:-auto}
+    volumes:
+      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+      # Your own certificate, put there by `deploy/deploy.sh`. Unused with `TLS_MODE=auto`.
+      - ./certs:/certs:ro
+      # Certificates and their keys: keep this volume, or every restart requests new ones (and hits rate limits).
+      - caddy_data:/data
+      - caddy_config:/config
+    # No `depends_on`: Caddy resolves `app` and `error-viewer` per request, not at startup. And `deploy/deploy.sh`
+    # updates everything but the app with `up --no-deps`, which drops unselected services from a `depends_on` label,
+    # so Caddy's config would look changed and Compose would recreate it mid-update, dropping requests.
+    logging: *logging
+
+  app:
+    <<: *app-image
+    build:
+      context: .
+      # The browser bundle reports its errors to this DSN, inlined at build time (`vite.config.ts`).
+      args:
+        SENTRY_DSN: ${SENTRY_DSN:-}
+        # An npm mirror, for a server that can't reach registry.npmjs.org. Empty uses npm's.
+        NPM_REGISTRY: ${NPM_REGISTRY:-}
+    restart: unless-stopped
+    # Listed one by one, so each container gets only its own secrets (never the store's admin key). A variable added to
+    # `src/env.server.ts` must be added here too, and one read from `.env` also to `.env.production.example` and the
+    # settings registry in `tools/deploy/internal/settings` (docs/deployment.md → Adding a Variable).
+    environment:
+      NODE_ENV: production
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+      LOG_SLOW_REQUEST_MS: ${LOG_SLOW_REQUEST_MS:-1000}
+      LOG_SLOW_QUERY_MS: ${LOG_SLOW_QUERY_MS:-200}
+      LOG_QUERY_PARAMS: ${LOG_QUERY_PARAMS:-false}
+      # The error viewer's DSN (docs/deployment.md → Error Tracking). Empty turns reporting off.
+      SENTRY_DSN: ${SENTRY_DSN:-}
+      DATABASE_URL: postgresql://app:${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}@db:5432/app
+      BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET:?set BETTER_AUTH_SECRET in .env}
+      BETTER_AUTH_URL: https://${DOMAIN}
+      ALTCHA_HMAC_KEY: ${ALTCHA_HMAC_KEY:?set ALTCHA_HMAC_KEY in .env}
+      S3_ENDPOINT: http://seaweedfs:8333
+      S3_BUCKET_NAME: ${S3_BUCKET_NAME}
+      S3_ACCESS_KEY: ${S3_ACCESS_KEY:?set S3_ACCESS_KEY in .env}
+      S3_SECRET_KEY: ${S3_SECRET_KEY:?set S3_SECRET_KEY in .env}
+      MEDIA_PUBLIC_URL: /media
+    healthcheck:
+      test:
+        - CMD
+        - node
+        - -e
+        - "fetch('http://127.0.0.1:3000/healthz').then((r) => process.exit(r.ok ? 0 : 1), () => process.exit(1))"
+      interval: 10s
+      timeout: 5s
+      start_period: 20s
+      retries: 3
+    depends_on:
+      db:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+      storage-init:
+        condition: service_completed_successfully
+
+  # ------ One-time Jobs ------
+  migrate:
+    <<: *app-image
+    # Never from Docker Hub: a missing `template-app` means `app` hasn't been built yet.
+    pull_policy: never
+    command: ["node", "deploy/migrate.mjs"]
+    restart: "no"
+    environment:
+      DATABASE_URL: postgresql://app:${POSTGRES_PASSWORD}@db:5432/app
+    depends_on:
+      db:
+        condition: service_healthy
+
+  storage-init:
+    <<: *app-image
+    pull_policy: never
+    command: ["node", "deploy/init-storage.mjs"]
+    restart: "no"
+    # The admin identity: creating a bucket is the one thing the app's own identity can't do.
+    environment:
+      S3_ENDPOINT: http://seaweedfs:8333
+      S3_BUCKET_NAME: ${S3_BUCKET_NAME}
+      S3_ACCESS_KEY: ${S3_ADMIN_ACCESS_KEY:?set S3_ADMIN_ACCESS_KEY in .env}
+      S3_SECRET_KEY: ${S3_ADMIN_SECRET_KEY:?set S3_ADMIN_SECRET_KEY in .env}
+    depends_on:
+      - seaweedfs
+
+  # ------ Data ------
+  db:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: app
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: app
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U app -d app"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+    logging: *logging
+
+  # S3 with authentication (`configs.seaweedfs-s3`), reachable only inside this stack. Small volumes, not reserved up
+  # front, for the same reasons as in `compose.dev.yaml`: reserved, they took 10 GB of a 40 GB server for 1 MB of images.
+  seaweedfs:
+    image: chrislusf/seaweedfs:3.99
+    restart: unless-stopped
+    command: server -dir=/data -s3 -s3.port=8333 -s3.config=/etc/seaweedfs/s3.json -master.volumeSizeLimitMB=1024 -master.volumePreallocate=false
+    configs:
+      - source: seaweedfs-s3
+        target: /etc/seaweedfs/s3.json
+    volumes:
+      - seaweedfs:/data
+    logging: *logging
+
+  # ------ Error Tracking ------
+  # The error viewer (tools/error-viewer, docs/backend/logging.md), reached through Caddy at https://$ERRORS_DOMAIN by
+  # both the app and browsers. Its SQLite file lives in its own volume, apart from the app's data and backups.
+  error-viewer:
+    build:
+      context: tools/error-viewer
+      args:
+        GOPROXY: ${GOPROXY:-}
+    image: template-error-viewer
+    restart: unless-stopped
+    environment:
+      PUBLIC_KEY: ${ERROR_VIEWER_PUBLIC_KEY:?set ERROR_VIEWER_PUBLIC_KEY in .env}
+      ADMIN_PASSWORD: ${ERROR_VIEWER_ADMIN_PASSWORD:?set ERROR_VIEWER_ADMIN_PASSWORD in .env}
+      SESSION_SECRET: ${ERROR_VIEWER_SESSION_SECRET:?set ERROR_VIEWER_SESSION_SECRET in .env}
+      # Browsers post their errors from the app's pages.
+      ALLOWED_ORIGIN: https://${DOMAIN}
+      BASE_URL: https://${ERRORS_DOMAIN}
+    volumes:
+      - error-viewer-data:/data
+    logging: *logging
+
+  # ------ Database Browser ------
+  # pgweb, for emergencies (docs/deployment.md → Database Browser): full read and write access to the whole database,
+  # as the app's own user. Never started by a deploy (the `tools` profile): `deploy/deploy.sh pgweb open` starts it with
+  # a sign-in made for that session and its closing time, passed through the environment of that one `docker compose`
+  # call, and `pgweb close` removes it. Bound to the server's loopback, so it's reached through an SSH tunnel only.
+  pgweb:
+    image: sosedoff/pgweb:0.16.2
+    profiles: [tools]
+    # `timeout` stops it on time even with the deploy tool gone; `restart: "no"` keeps it down after that, and after a
+    # reboot. Started by hand, without the tool, it stops after a second.
+    restart: "no"
+    entrypoint:
+      - timeout
+      - "${PGWEB_SECONDS:-1}"
+      - /usr/bin/pgweb
+      - --bind=0.0.0.0
+      - --listen=8081
+      - --lock-session
+      - --no-idle-timeout
+      - --no-ssh
+      - --skip-open
+    environment:
+      PGWEB_DATABASE_URL: postgres://app:${POSTGRES_PASSWORD}@db:5432/app?sslmode=disable&application_name=pgweb
+      PGWEB_AUTH_USER: ${PGWEB_AUTH_USER:-}
+      PGWEB_AUTH_PASS: ${PGWEB_AUTH_PASS:-}
+    labels:
+      # Every run of the deploy tool closes a browser past this time (epoch seconds).
+      deploy.pgweb.closes-at: "${PGWEB_CLOSES_AT:-0}"
+    ports:
+      - "127.0.0.1:8081:8081"
+    depends_on:
+      db:
+        condition: service_healthy
+    logging: *logging
+
+# ===== Store Identities =====
+# `anonymous` is what Caddy's `/media` reads use; the app may read and write its bucket and nothing else; `admin` is
+# only for `storage-init`.
+configs:
+  seaweedfs-s3:
+    content: |
+      {
+        "identities": [
+          { "name": "anonymous", "actions": ["Read:${S3_BUCKET_NAME}"] },
+          {
+            "name": "app",
+            "credentials": [{ "accessKey": "${S3_ACCESS_KEY}", "secretKey": "${S3_SECRET_KEY}" }],
+            "actions": ["Read:${S3_BUCKET_NAME}", "Write:${S3_BUCKET_NAME}"]
+          },
+          {
+            "name": "admin",
+            "credentials": [{ "accessKey": "${S3_ADMIN_ACCESS_KEY}", "secretKey": "${S3_ADMIN_SECRET_KEY}" }],
+            "actions": ["Admin"]
+          }
+        ]
+      }
+
+volumes:
+  pgdata:
+  seaweedfs:
+  error-viewer-data:
+  caddy_data:
+  caddy_config:

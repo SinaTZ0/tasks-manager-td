@@ -1,0 +1,36 @@
+.DS_Store
+.env
+.env.*
+!.env.example
+!.env.production.example
+/node_modules/
+
+# Production server state (deploy/deploy.sh): certificates, private keys, database dumps and its logs never belong in git.
+/certs/
+/backups/
+/deploy/logs/
+*.key
+*.pfx
+# What the Bash deploy script downloaded for itself (gum), left on servers set up before the deploy tool.
+/deploy/.bin/
+
+# Paraglide's compiled messages (pnpm i18n:compile, docs/frontend/i18n.md)
+/src/paraglide/
+
+# TanStack Start and Nitro build output
+/.output/
+/.tanstack/
+/.nitro/
+.tmp-claude
+
+# Playwright
+/playwright-report/
+/test-results/
+/playwright/.cache/
+
+# Storybook
+/storybook-static/
+*storybook.log
+
+# A design export as it arrived, unpacked locally while customizing the template (docs/customize-template.md)
+/target/

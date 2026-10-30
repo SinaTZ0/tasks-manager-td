@@ -1,0 +1,23 @@
+# Only what the image build needs; secrets and local state never enter the build context.
+.git
+.env
+.env.*
+node_modules
+.output
+.tanstack
+.nitro
+# Regenerated from messages/ by the build (docs/frontend/i18n.md).
+src/paraglide
+project.inlang/cache
+.tmp-claude
+.claude
+.agents
+playwright-report
+test-results
+storybook-static
+certs
+backups
+*.key
+*.pfx
+# The error viewer builds from its own folder (tools/error-viewer/Dockerfile).
+tools
