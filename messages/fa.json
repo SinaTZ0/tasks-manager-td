@@ -1578,5 +1578,82 @@
         "": "پیوست‌ها: {countText}"
       }
     }
-  ]
+  ],
+  "notification_watched_commented": [
+    {
+      "declarations": ["input name", "input code"],
+      "match": {
+        "": "{name} در {code} نظر داد"
+      }
+    }
+  ],
+  "notification_watched_started": [
+    {
+      "declarations": ["input name", "input code"],
+      "match": {
+        "": "{name} کار {code} را شروع کرد"
+      }
+    }
+  ],
+  "notification_watched_paused": [
+    {
+      "declarations": ["input name", "input code"],
+      "match": {
+        "": "{name} کار {code} را به مکث برد"
+      }
+    }
+  ],
+  "notification_watched_completed": [
+    {
+      "declarations": ["input name", "input code"],
+      "match": {
+        "": "{name} کار {code} را تمام کرد"
+      }
+    }
+  ],
+  "notification_watched_stopped": [
+    {
+      "declarations": ["input name", "input code"],
+      "match": {
+        "": "{name} کار {code} را متوقف کرد"
+      }
+    }
+  ],
+  "notification_watched_reopened": [
+    {
+      "declarations": ["input name", "input code"],
+      "match": {
+        "": "{name} کار {code} را دوباره باز کرد"
+      }
+    }
+  ],
+  "notification_watched_moved": [
+    {
+      "declarations": ["input name", "input code", "input column"],
+      "match": {
+        "": "{name} کار {code} را به «{column}» برد"
+      }
+    }
+  ],
+  "notification_watched_delegated": [
+    {
+      "declarations": ["input name", "input code", "input to"],
+      "match": {
+        "": "{name} کار {code} را به {to} واگذار کرد"
+      }
+    }
+  ],
+  "notification_watched_archived": [
+    {
+      "declarations": ["input name", "input code"],
+      "match": {
+        "": "{name} کار {code} را بایگانی کرد"
+      }
+    }
+  ],
+  "watcher_watch": "دنبال کن",
+  "watcher_watching_hint": "از نظرها و تغییر وضعیت این کار باخبر می‌شوید.",
+  "watcher_failed": "دنبال کردن تغییر نکرد. دوباره امتحان کنید.",
+  "watcher_list": "دنبال‌کننده‌ها",
+  "watcher_card_watching": "دنبالش می‌کنید"
 }

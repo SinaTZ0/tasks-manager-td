@@ -15,6 +15,7 @@ import {
 } from "#/components/primitive/popover/popover";
 import { toast } from "#/components/primitive/toast/toast";
 import { describeApiFailure } from "#/lib/api-error";
+import { columnTitle } from "#/lib/column-title";
 import { formatDate, formatNumber, isoToDate } from "#/lib/locale";
 import { orpc } from "#/orpc/client";
 import { useLiveConnected } from "#/hooks/use-live-updates";
@@ -23,6 +24,46 @@ import type { Notification } from "#/orpc/notification/contract";
 import { m } from "#/paraglide/messages";
 
 /*===== Wording =====*/
+
+/** What happened to a watched card, as a sentence. */
+function watchedSentenceOf(item: Notification): string {
+  const code = item.taskCode;
+  const name = item.actorName ?? "";
+  switch (item.event) {
+    case "commented":
+      return m.notification_watched_commented({ name, code });
+    case "started":
+      return m.notification_watched_started({ name, code });
+    case "paused":
+      return m.notification_watched_paused({ name, code });
+    case "completed":
+      return m.notification_watched_completed({ name, code });
+    case "stopped":
+      return m.notification_watched_stopped({ name, code });
+    case "reopened":
+      return m.notification_watched_reopened({ name, code });
+    case "moved":
+      return m.notification_watched_moved({
+        name,
+        code,
+        column: item.columnKind ? columnTitle({ kind: item.columnKind, name: item.note }) : (item.note ?? ""),
+      });
+    case "delegated":
+      return m.notification_watched_delegated({ name, code, to: item.note ?? "" });
+    case "archived":
+    case null:
+      return m.notification_watched_archived({ name, code });
+  }
+}
+
+/** The extra line a notification shows under its title: a hand-off's note, a comment's excerpt, a pause's reason. */
+function detailOf(item: Notification): string | null {
+  if (item.kind === "delegated") return item.note;
+  if (item.kind === "watched" && (item.event === "commented" || item.event === "paused" || item.event === "stopped")) {
+    return item.note;
+  }
+  return null;
+}
 
 /** The notification as a sentence: who did what to which task, or which task's due date came. */
 function sentenceOf(item: Notification): string {
@@ -41,6 +82,8 @@ function sentenceOf(item: Notification): string {
       return m.notification_due_soon({ code, date: item.dueDate ? formatDate(isoToDate(item.dueDate)) : "" });
     case "overdue":
       return m.notification_overdue({ code, date: item.dueDate ? formatDate(isoToDate(item.dueDate)) : "" });
+    case "watched":
+      return watchedSentenceOf(item);
   }
 }
 
@@ -130,8 +173,8 @@ export function NotificationBell() {
                   <span className="flex min-w-0 flex-col gap-0.5">
                     <span className="text-body-sm">{sentenceOf(item)}</span>
                     <span className="truncate text-body-sm text-muted-foreground">{item.taskTitle}</span>
-                    {item.kind === "delegated" && item.note && (
-                      <span className="line-clamp-2 text-caption text-muted-foreground">{item.note}</span>
+                    {detailOf(item) && (
+                      <span className="line-clamp-2 text-caption text-muted-foreground">{detailOf(item)}</span>
                     )}
                     <Marking>{formatDate(item.createdAt, { dateStyle: "medium", timeStyle: "short" })}</Marking>
                   </span>

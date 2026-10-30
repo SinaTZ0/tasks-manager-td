@@ -276,7 +276,7 @@ Drafted on 2026-10-30 from Phase 2's "After These" list, in this order; the phon
 slice follows the backend flow, then the frontend flow, desktop only. The points marked **To confirm** are proposals:
 ask the user before building that slice.
 
-### 17. Watchers
+### 17. Watchers ✓
 
 - Anyone on the project, viewers included, can watch a card: an eye key in the drawer, and the watchers' avatars
   beside it. Watching is a personal setting, so it writes no Activity entry and a viewer may do it.
@@ -285,7 +285,7 @@ ask the user before building that slice.
   someone already told as assignee, owner or mentioned gets only that notification.
 - The bell's sentence names what happened (`Sara commented on TGQ-12`). The card's footer shows an eye when the viewer
   watches it.
-- **To confirm**: commenting on a card, or being mentioned on it, starts watching it (as GitHub does); the owner and
+- Decided: commenting on a card, or being mentioned on it, starts watching it (as GitHub does); the owner and
   assignee are not added, since they are told already.
 - **Tests**: a watcher is told about a comment, not about their own; unwatching stops it.
 
@@ -302,11 +302,14 @@ ask the user before building that slice.
 
 - An opt-in key in the bell: "Notify me on this computer", which asks the browser's permission. The choice is kept
   per browser (localStorage), and the key says when the browser blocks them.
-- When the live stream (slice 16) brings a notification while the tab is hidden, a system notification shows the
-  bell's sentence; clicking it focuses the tab and opens the card. Only while a tab is open: no service worker or Web
-  Push, so nothing reaches a closed browser.
-- **To confirm**: no Web Push for now (it needs a service worker, VAPID keys and a subscription table).
-- **Tests**: none beyond the browser check (no server change).
+- Decided: Web Push, so a notification reaches a browser with no Tofang tab open. A service worker (`/sw.js`) shows
+  it and, on a click, focuses an open tab or opens one on the card. Turning the key on stores the browser's push
+  subscription (a `push_subscription` row per browser, removed on sign-out, when turned off, or when the push service
+  answers 404/410); every new notification is sent to each of the person's subscriptions after its transaction
+  commits, through the VAPID keys in `.env` (`VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT`; without them
+  the key is hidden). A tab that is open and visible shows nothing extra: the bell already lights.
+- **Tests**: a notification is sent to the person's subscriptions and not to anyone else's; a gone subscription is
+  removed.
 
 ### 20. Move or Copy a Card to Another Project
 
@@ -320,7 +323,7 @@ ask the user before building that slice.
 - **Copy**: a new task in the target with the title, description, priority, due date, estimate, labels (matched by
   name) and the checklist, unticked; links are copied, and files are copied in the bucket. Comments, time, history and
   dependencies are not. The copy's history says what it was copied from.
-- **To confirm**: move keeps its history and the old code as an alias (rather than closing the old card and copying).
+- Decided: move keeps its history and the old code as an alias (rather than closing the old card and copying).
 - **Tests**: a move keeps the task's time and comments and drops its dependencies on the old project; a move whose
   assignee isn't on the target is refused; an old code opens the moved task.
 

@@ -62,6 +62,7 @@ export function toTaskDetail({
   handoffs,
   checklist,
   attachments,
+  watchers,
   comments,
 }: {
   record: TaskRecord;
@@ -72,6 +73,7 @@ export function toTaskDetail({
   handoffs: TaskDetail["handoffs"];
   checklist: TaskDetail["checklist"];
   attachments: TaskDetail["attachments"];
+  watchers: TaskDetail["watchers"];
   /** How many comments it has, deleted ones left out. */
   comments: number;
 }): TaskDetail {
@@ -92,6 +94,7 @@ export function toTaskDetail({
     handoffs,
     checklist,
     attachments,
+    watchers,
   };
 }
 

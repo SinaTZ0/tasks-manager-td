@@ -28,7 +28,7 @@ export const taskBoardProcedure = base.task.board
   .use(requireUserMiddleware)
   .use(provideDbMiddleware)
   .use(requireProjectMemberMiddleware)
-  .handler(({ context, input }) => getBoard({ db: context.db, projectId: input.projectId }));
+  .handler(({ context, input }) => getBoard({ db: context.db, projectId: input.projectId, viewerId: context.user.id }));
 
 /*===== Get =====*/
 export const getTaskProcedure = base.task.get

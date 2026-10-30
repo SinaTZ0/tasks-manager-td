@@ -17,6 +17,7 @@ import { siteContract } from "#/orpc/site/contract";
 import { taskContract } from "#/orpc/task/contract";
 import { teamContract } from "#/orpc/team/contract";
 import { timeContract } from "#/orpc/time/contract";
+import { watcherContract } from "#/orpc/watcher/contract";
 
 /*===== API Contract =====*/
 // Source of truth for the API. The browser client is typed from this, never from the router.
@@ -40,4 +41,5 @@ export const contract = {
   task: taskContract,
   team: teamContract,
   time: timeContract,
+  watcher: watcherContract,
 };

@@ -16,6 +16,7 @@ import { countComments } from "#/orpc/comment/repository";
 import { addPlainComment } from "#/orpc/comment/service";
 import { getHandoffs } from "#/orpc/delegation/service";
 import { findBlockingTasks, findReleasedDependents, findWaitsFor } from "#/orpc/dependency/repository";
+import type { WatchedEvent } from "#/orpc/notification/constants";
 import { notify, type NotificationEntry } from "#/orpc/notification/service";
 import type { ColumnKind } from "#/orpc/project/constants";
 import type { Person } from "#/orpc/project/contract";
@@ -65,6 +66,8 @@ import {
 } from "#/orpc/task/validation";
 import { findTimeTotals } from "#/orpc/time/repository";
 import { closeTimers, startTimer } from "#/orpc/time/service";
+import { findWatchedTaskIds } from "#/orpc/watcher/repository";
+import { getWatchers, notifyWatchers } from "#/orpc/watcher/service";
 import { m } from "#/paraglide/messages";
 
 /*===== Types =====*/
@@ -145,6 +148,7 @@ async function toDetail({
   const checklist = await findChecklistItems({ db, taskIds: [record.id] });
   const comments = await countComments({ db, taskIds: [record.id] });
   const attachments = await findAttachments({ db, taskIds: [record.id] });
+  const watchers = await getWatchers({ db, taskId: record.id });
   const last = entries.at(-1);
   const noted =
     (column?.kind === "paused" && last?.action === "task.paused") ||
@@ -167,6 +171,7 @@ async function toDetail({
     handoffs,
     checklist: checklist.map(toChecklistItem),
     attachments: attachments.map(toAttachment),
+    watchers,
     comments: comments.get(record.id) ?? 0,
   });
 }
@@ -284,9 +289,24 @@ async function passBlockedGate({
 }
 
 /*===== Board =====*/
-/** A project's live tasks with their labels and time, the project's labels, and everyone the cards name. */
-export async function getBoard({ db, projectId }: { db: Database; projectId: string }): Promise<Board> {
-  const [records, labels] = await Promise.all([findLiveTasks({ db, projectId }), findLabels({ db, projectId })]);
+/**
+ * A project's live tasks with their labels and time, the project's labels, everyone the cards name, and which cards
+ * the viewer watches.
+ */
+export async function getBoard({
+  db,
+  projectId,
+  viewerId,
+}: {
+  db: Database;
+  projectId: string;
+  viewerId: string;
+}): Promise<Board> {
+  const [records, labels, watching] = await Promise.all([
+    findLiveTasks({ db, projectId }),
+    findLabels({ db, projectId }),
+    findWatchedTaskIds({ db, projectId, userId: viewerId }),
+  ]);
   const personIds = new Set(
     records.flatMap((record) => [record.ownerId, record.createdBy, ...(record.assigneeId ? [record.assigneeId] : [])]),
   );
@@ -296,6 +316,7 @@ export async function getBoard({ db, projectId }: { db: Database; projectId: str
     tasks: await toCards({ db, records }),
     labels: labels.map(toLabel),
     people: people.map(toPerson),
+    watching,
   };
 }
 
@@ -641,6 +662,18 @@ export async function moveTask({
         },
       ],
     });
+    // A drag within one kind of column (reordering, or between two of a kind) is no news to watchers.
+    if (from?.kind !== column.kind) {
+      await notifyWatchers({
+        db: tx,
+        actorId,
+        projectId,
+        task: record,
+        event: "moved",
+        note: column.name,
+        columnKind: to,
+      });
+    }
     return { kind: "success", task: await toCard({ db: tx, record }) };
   });
 }
@@ -655,6 +688,15 @@ const STATUS_ENTRY = {
   stop: "task.stopped",
   reopen: "task.reopened",
 } as const satisfies Record<TaskStatusAction, ActivityAction>;
+
+/** What a status action is called in a watcher's notification. */
+const STATUS_EVENT = {
+  start: "started",
+  pause: "paused",
+  done: "completed",
+  stop: "stopped",
+  reopen: "reopened",
+} as const satisfies Record<TaskStatusAction, WatchedEvent>;
 
 /**
  * Takes a status action (docs/app.md → Status / Pause / Stop): moves the task to the bottom of the action's column,
@@ -730,6 +772,7 @@ export async function transitionTask({
           },
         ],
       });
+      await notifyWatchers({ db: tx, actorId, projectId, task: record, event: STATUS_EVENT[action], note: reason });
     }
 
     /*------ Timer ------*/
@@ -801,6 +844,7 @@ export async function archiveTask({
       actorId,
       entries: [{ action: "task.archived", projectId, taskId, snapshot: { code, title: current.title } }],
     });
+    await notifyWatchers({ db: tx, actorId, projectId, task: current, event: "archived" });
     return { kind: "ok" };
   });
 }

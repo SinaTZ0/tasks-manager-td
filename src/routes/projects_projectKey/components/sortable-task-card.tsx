@@ -44,6 +44,7 @@ export function SortableTaskCard({
   blockedBy,
   movable,
   menu,
+  watching,
 }: {
   task: TaskCardData;
   /** The column the card is shown in, which during a drag may not be the one stored yet. */
@@ -56,6 +57,8 @@ export function SortableTaskCard({
   /** False for a viewer: the card stays put, with no grip to pick it up. */
   movable: boolean;
   menu: ReactNode;
+  /** The viewer watches it. */
+  watching: boolean;
 }) {
   const code = taskCode({ key: projectKey, number: task.number });
   const { setNodeRef, setActivatorNodeRef, attributes, listeners, transform, transition, isDragging } = useSortable({
@@ -84,6 +87,7 @@ export function SortableTaskCard({
         blockedBy={blockedBy}
         onPointerDown={listeners?.onPointerDown as PointerEventHandler<HTMLElement> | undefined}
         state={isDragging ? "placeholder" : "idle"}
+        watching={watching}
         grip={
           movable && (
             <CardGrip

@@ -379,6 +379,28 @@ export const attachment = pgTable(
   (table) => [index("attachment_task_id_created_at_idx").on(table.taskId, table.createdAt)],
 );
 
+/*===== Watchers =====*/
+// People who asked to hear about a card they don't own or work on (docs/task-manager-plan.md → slice 17): an eye key
+// in the drawer, or by commenting on it or being mentioned there. A personal setting: it writes no history.
+
+export const taskWatcher = pgTable(
+  "task_watcher",
+  {
+    taskId: uuid("task_id")
+      .notNull()
+      .references(() => task.id, { onDelete: "cascade" }),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+  },
+  // The primary key serves "this task's watchers"; the index serves "the cards this person watches" on a board.
+  (table) => [
+    primaryKey({ columns: [table.taskId, table.userId] }),
+    index("task_watcher_user_id_idx").on(table.userId),
+  ],
+);
+
 /*===== Delegations =====*/
 // "You do this now" (docs/app.md → Delegation): a task handed from one person to another, with a note. The assignee
 // changes; the owner never does (rule 6). A task's delegations in order are its hand-off chain (Sina → Ali → Reza).

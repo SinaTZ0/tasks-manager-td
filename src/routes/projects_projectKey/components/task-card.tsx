@@ -1,6 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import {
   AlignStartVerticalIcon,
+  EyeIcon,
   ListChecksIcon,
   LockIcon,
   MessageSquareIcon,
@@ -107,6 +108,7 @@ export function TaskCard({
   menu,
   state = "idle",
   stopped = false,
+  watching = false,
 }: {
   task: TaskCardData;
   projectKey: string;
@@ -121,6 +123,8 @@ export function TaskCard({
   state?: "idle" | "placeholder" | "overlay";
   /** In the cancelled column: like a done card, its due date no longer warns. */
   stopped?: boolean;
+  /** The viewer watches it: an eye on the footer. */
+  watching?: boolean;
 }) {
   const code = taskCode({ key: projectKey, number: task.number });
   const owner = people.get(task.ownerId);
@@ -227,6 +231,7 @@ export function TaskCard({
           {task.hasDescription && (
             <AlignStartVerticalIcon aria-label={m.task_has_description()} className="size-3.5 text-muted-foreground" />
           )}
+          {watching && <EyeIcon aria-label={m.watcher_card_watching()} className="size-3.5 text-muted-foreground" />}
           {task.dueDate && <DueMark dueDate={task.dueDate} finished={stopped || task.completedAt !== null} />}
         </span>
       </footer>

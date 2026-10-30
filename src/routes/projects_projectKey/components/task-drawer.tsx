@@ -36,6 +36,7 @@ import { TaskDelegation } from "#/routes/projects_projectKey/components/task-del
 import { TaskDependencies } from "#/routes/projects_projectKey/components/task-dependencies";
 import { TaskStatusPanel } from "#/routes/projects_projectKey/components/task-status-panel";
 import { TaskTimeSection } from "#/routes/projects_projectKey/components/task-time-section";
+import { TaskWatchers } from "#/routes/projects_projectKey/components/task-watchers";
 import { TaskTitleField } from "#/routes/projects_projectKey/components/task-title-field";
 import { blockersOf, kindsOf } from "#/routes/projects_projectKey/dependencies";
 import { taskQuery } from "#/routes/projects_projectKey/queries";
@@ -197,6 +198,8 @@ function TaskDetails({
             <EstimateField key={task.estimateMinutes} task={task} update={update} readOnly={readOnly} />
             <Separator />
             <TaskDelegation task={task} project={project} code={code} readOnly={readOnly} />
+            <Separator />
+            <TaskWatchers task={task} projectId={project.id} viewerId={viewerId} />
             {isAdmin && (
               <>
                 <Separator />

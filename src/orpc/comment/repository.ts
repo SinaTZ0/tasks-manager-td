@@ -9,7 +9,14 @@ export type CommentRow = CommentRecord & { authorName: string; authorAvatarMedia
 /** A comment with the task it is on, as an edit or a delete needs it. */
 export type CommentWithTask = {
   comment: CommentRecord;
-  task: { id: string; number: number; title: string; archivedAt: Date | null };
+  task: {
+    id: string;
+    number: number;
+    title: string;
+    ownerId: string;
+    assigneeId: string | null;
+    archivedAt: Date | null;
+  };
 };
 
 /*===== Counts =====*/
@@ -104,7 +111,14 @@ export async function lockComment({
   const [row] = await db
     .select({
       comment,
-      task: { id: task.id, number: task.number, title: task.title, archivedAt: task.archivedAt },
+      task: {
+        id: task.id,
+        number: task.number,
+        title: task.title,
+        ownerId: task.ownerId,
+        assigneeId: task.assigneeId,
+        archivedAt: task.archivedAt,
+      },
     })
     .from(comment)
     .innerJoin(task, eq(task.id, comment.taskId))

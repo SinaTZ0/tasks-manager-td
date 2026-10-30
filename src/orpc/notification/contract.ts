@@ -3,7 +3,8 @@ import { z } from "zod";
 
 import { commonErrors } from "#/orpc/errors";
 import { authErrors } from "#/orpc/middleware/auth/auth.errors";
-import { NOTIFICATION_KINDS } from "#/orpc/notification/constants";
+import { NOTIFICATION_KINDS, WATCHED_EVENTS } from "#/orpc/notification/constants";
+import { COLUMN_KINDS } from "#/orpc/project/constants";
 
 /*===== Schemas =====*/
 export const notificationSchema = z.object({
@@ -15,7 +16,14 @@ export const notificationSchema = z.object({
   /** The task's code and title as they were when it happened. */
   taskCode: z.string(),
   taskTitle: z.string(),
-  /** A delegation's note, or the code of the blocker that was finished. */
+  /** For a watched card, what happened to it. */
+  event: z.enum(WATCHED_EVENTS).nullable(),
+  /** For a watched card moved to another kind of column, that column's kind; `note` has its name, if it has one. */
+  columnKind: z.enum(COLUMN_KINDS).nullable(),
+  /**
+   * A delegation's note, the code of the blocker that was finished, a mention's or comment's excerpt, a pause's or
+   * stop's reason, the column a watched card was moved to, or who it was handed to.
+   */
   note: z.string().nullable(),
   /** For a due-date reminder, the due date (ISO) it was about. */
   dueDate: z.string().nullable(),

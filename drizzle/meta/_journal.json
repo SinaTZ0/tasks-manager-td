@@ -29,6 +29,13 @@
       "when": 1793388623141,
       "tag": "0003_attachments",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1793389814752,
+      "tag": "0004_watchers",
+      "breakpoints": true
     }
   ]
 }

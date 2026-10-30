@@ -9,7 +9,8 @@ import { delegationNoteSchema } from "#/orpc/delegation/validation";
 import { notify } from "#/orpc/notification/service";
 import { COLUMN_KINDS } from "#/orpc/project/constants";
 import { TASK_PRIORITIES, taskCode } from "#/orpc/task/constants";
-import { findActiveMemberIds, findProjectKey, lockTask, updateTaskRow } from "#/orpc/task/repository";
+import { findActiveMemberIds, findPeople, findProjectKey, lockTask, updateTaskRow } from "#/orpc/task/repository";
+import { notifyWatchers } from "#/orpc/watcher/service";
 import { m } from "#/paraglide/messages";
 
 /*===== Types =====*/
@@ -28,7 +29,7 @@ export const toHandoff = (row: HandoffRow): Handoff => ({
 /*===== Delegate =====*/
 /**
  * "You do this now" (docs/app.md → Assign & Delegate): makes another active member the task's assignee, keeps the
- * hand-off with its note, and tells the new assignee. The owner never changes (rule 6), so they still find the task on
+ * hand-off with its note, and tells the new assignee and the card's watchers. The owner never changes (rule 6), so they still find the task on
  * their "delegated by me" page. Delegation is accepted at once: there is nothing for the new assignee to confirm. Any
  * member of the project may hand a task on, like assigning it.
  *
@@ -97,6 +98,16 @@ export async function delegateTask({
           data: { projectKey: key, taskCode: code, taskTitle: record.title, note },
         },
       ],
+    });
+    const [to] = await findPeople({ db: tx, ids: [toId] });
+    await notifyWatchers({
+      db: tx,
+      actorId,
+      projectId,
+      task: record,
+      event: "delegated",
+      note: to?.name ?? null,
+      except: [toId],
     });
     return { kind: "ok" };
   });

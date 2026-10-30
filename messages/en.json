@@ -1578,5 +1578,82 @@
         "": "Attachments: {countText}"
       }
     }
-  ]
+  ],
+  "notification_watched_commented": [
+    {
+      "declarations": ["input name", "input code"],
+      "match": {
+        "": "{name} commented on {code}"
+      }
+    }
+  ],
+  "notification_watched_started": [
+    {
+      "declarations": ["input name", "input code"],
+      "match": {
+        "": "{name} started {code}"
+      }
+    }
+  ],
+  "notification_watched_paused": [
+    {
+      "declarations": ["input name", "input code"],
+      "match": {
+        "": "{name} paused {code}"
+      }
+    }
+  ],
+  "notification_watched_completed": [
+    {
+      "declarations": ["input name", "input code"],
+      "match": {
+        "": "{name} finished {code}"
+      }
+    }
+  ],
+  "notification_watched_stopped": [
+    {
+      "declarations": ["input name", "input code"],
+      "match": {
+        "": "{name} stopped {code}"
+      }
+    }
+  ],
+  "notification_watched_reopened": [
+    {
+      "declarations": ["input name", "input code"],
+      "match": {
+        "": "{name} reopened {code}"
+      }
+    }
+  ],
+  "notification_watched_moved": [
+    {
+      "declarations": ["input name", "input code", "input column"],
+      "match": {
+        "": "{name} moved {code} to “{column}”"
+      }
+    }
+  ],
+  "notification_watched_delegated": [
+    {
+      "declarations": ["input name", "input code", "input to"],
+      "match": {
+        "": "{name} handed {code} to {to}"
+      }
+    }
+  ],
+  "notification_watched_archived": [
+    {
+      "declarations": ["input name", "input code"],
+      "match": {
+        "": "{name} archived {code}"
+      }
+    }
+  ],
+  "watcher_watch": "Watch",
+  "watcher_watching_hint": "You'll hear about its comments and status changes.",
+  "watcher_failed": "Couldn't change watching. Try again.",
+  "watcher_list": "Watchers",
+  "watcher_card_watching": "You watch this"
 }

@@ -64,6 +64,7 @@ import {
   stopTimerProcedure,
   taskTimeProcedure,
 } from "#/orpc/time/procedure";
+import { unwatchTaskProcedure, watchTaskProcedure } from "#/orpc/watcher/procedure";
 
 /*===== API Router =====*/
 // Assembled with the undecorated implementer (see `implementer.server.ts`).
@@ -163,5 +164,9 @@ export const router = implementer.router({
     forTask: taskTimeProcedure,
     add: addTimeEntryProcedure,
     remove: removeTimeEntryProcedure,
+  },
+  watcher: {
+    watch: watchTaskProcedure,
+    unwatch: unwatchTaskProcedure,
   },
 });

@@ -18,6 +18,7 @@ import { notify } from "#/orpc/notification/service";
 import { avatarUrlOf } from "#/orpc/project/mapper";
 import { taskCode } from "#/orpc/task/constants";
 import { findActiveMemberIds, findPeople, findProjectKey, lockTask } from "#/orpc/task/repository";
+import { autoWatch, notifyWatchers } from "#/orpc/watcher/service";
 import { m } from "#/paraglide/messages";
 
 /*===== Types =====*/
@@ -27,8 +28,10 @@ type Saved = { kind: "success"; comment: Comment };
 
 const isUuid = (value: string) => z.guid().safeParse(value).success;
 
-/** How much of a comment a mention's notification quotes. */
+/** How much of a comment a mention's or watcher's notification quotes. */
 const EXCERPT_LENGTH = 140;
+
+const excerptOf = (text: string) => (text.length > EXCERPT_LENGTH ? `${text.slice(0, EXCERPT_LENGTH)}…` : text);
 
 /*===== Shapes =====*/
 function toComment(record: CommentRow): Comment {
@@ -53,7 +56,10 @@ async function withAuthorName({ db, record }: { db: Database; record: CommentRec
 /*===== Mentions =====*/
 /**
  * Tells the project's active members a comment mentions, leaving out `already` (those an edit's earlier text had
- * mentioned, who were told then). A mention of someone outside the project stays in the text but tells nobody.
+ * mentioned, who were told then), and makes them watch the card. A mention of someone outside the project stays in the
+ * text but tells nobody.
+ *
+ * @returns Who was mentioned and told (the actor included, if they mentioned themselves).
  */
 async function notifyMentions({
   db,
@@ -67,16 +73,16 @@ async function notifyMentions({
   db: Database;
   actorId: string;
   projectId: string;
-  task: { id: string; number: number; title: string };
+  task: { id: string; number: number; title: string; ownerId: string; assigneeId: string | null };
   doc: RichTextDoc;
   text: string;
   already?: string[];
-}): Promise<void> {
+}): Promise<Set<string>> {
   const ids = mentionedIds(doc).filter((id) => !already.includes(id));
-  if (ids.length === 0) return;
+  if (ids.length === 0) return new Set();
   const members = await findActiveMemberIds({ db, projectId, ids });
   const key = await findProjectKey({ db, projectId });
-  const note = text.length > EXCERPT_LENGTH ? `${text.slice(0, EXCERPT_LENGTH)}…` : text;
+  const note = excerptOf(text);
   await notify({
     db,
     actorId,
@@ -88,6 +94,8 @@ async function notifyMentions({
       data: { projectKey: key, taskCode: taskCode({ key, number: task.number }), taskTitle: task.title, note },
     })),
   });
+  await autoWatch({ db, projectId, task, userIds: [...members] });
+  return members;
 }
 
 /*===== List =====*/
@@ -107,7 +115,8 @@ export async function listComments({
 
 /*===== Add =====*/
 /**
- * Adds a comment to a live task, records it in the history, and tells the project members it mentions.
+ * Adds a comment to a live task, records it in the history, tells the project members it mentions and the card's
+ * watchers (once each: a mention is the one notification), and makes the author watch the card.
  *
  * @returns `not-found` for a task the project doesn't have or an archived one; `invalid` for a bad document.
  */
@@ -148,7 +157,18 @@ export async function addComment({
         },
       ],
     });
-    await notifyMentions({ db: tx, actorId, projectId, task, doc, text });
+    const mentioned = await notifyMentions({ db: tx, actorId, projectId, task, doc, text });
+    // Told before the author starts watching; `notifyWatchers` leaves the author out anyway.
+    await notifyWatchers({
+      db: tx,
+      actorId,
+      projectId,
+      task,
+      event: "commented",
+      note: excerptOf(text),
+      except: mentioned,
+    });
+    await autoWatch({ db: tx, projectId, task, userIds: [actorId] });
     return { kind: "success", comment: await withAuthorName({ db: tx, record }) };
   });
 }

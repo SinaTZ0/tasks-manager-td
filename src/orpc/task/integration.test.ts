@@ -99,7 +99,7 @@ describe("tasks", () => {
     if (created.kind !== "success") throw new Error("setup failed");
 
     expect(await archiveTask({ db, actorId: users.ali, projectId, taskId: created.task.id })).toEqual({ kind: "ok" });
-    const board = await getBoard({ db, projectId });
+    const board = await getBoard({ db, projectId, viewerId: users.ali });
     expect(board.tasks.some((task) => task.id === created.task.id)).toBe(false);
     expect(await getTask({ db, projectId, number: created.task.number })).toMatchObject({
       archivedAt: expect.any(Date),

@@ -80,6 +80,8 @@ export const taskDetailSchema = taskCardSchema.extend({
   checklist: z.array(checklistItemSchema),
   /** Its files and links, oldest first. */
   attachments: z.array(attachmentSchema),
+  /** Who watches it, in the order they started. */
+  watchers: z.array(personSchema),
 });
 
 export type TaskDetail = z.infer<typeof taskDetailSchema>;
@@ -89,6 +91,8 @@ export const boardSchema = z.object({
   tasks: z.array(taskCardSchema),
   labels: z.array(labelSchema),
   people: z.array(personSchema),
+  /** The ids of the cards the viewer watches. */
+  watching: z.array(z.string()),
 });
 
 export type Board = z.infer<typeof boardSchema>;

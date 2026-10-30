@@ -3,7 +3,13 @@ import { z } from "zod";
 import type { Database } from "#/db/client.server";
 import { publishLive } from "#/orpc/live/publish";
 import { oneOf } from "#/orpc/allowed-values";
-import { NOTIFICATION_KINDS, NOTIFICATION_LIST_LIMIT, type NotificationKind } from "#/orpc/notification/constants";
+import {
+  NOTIFICATION_KINDS,
+  NOTIFICATION_LIST_LIMIT,
+  WATCHED_EVENTS,
+  type NotificationKind,
+  type WatchedEvent,
+} from "#/orpc/notification/constants";
 import type { Notification } from "#/orpc/notification/contract";
 import { addDays, teamToday } from "#/lib/team-day";
 import {
@@ -14,11 +20,20 @@ import {
   insertNotifications,
   markRead,
 } from "#/orpc/notification/repository";
+import { COLUMN_KINDS, type ColumnKind } from "#/orpc/project/constants";
 import { taskCode } from "#/orpc/task/constants";
 
 /*===== Types =====*/
 /** What a notification keeps to read well later, since titles change and tasks can be deleted. */
-type NotificationData = { projectKey: string; taskCode: string; taskTitle: string; note?: string | null };
+type NotificationData = {
+  projectKey: string;
+  taskCode: string;
+  taskTitle: string;
+  note?: string | null;
+  /** For a `watched` notification, what happened, and for a move, the kind of column it went to. */
+  event?: WatchedEvent;
+  columnKind?: ColumnKind;
+};
 
 /** One person to tell about one event. */
 export type NotificationEntry = {
@@ -106,6 +121,10 @@ export async function listNotifications({
         projectKey: data.projectKey ?? "",
         taskCode: data.taskCode ?? "",
         taskTitle: data.taskTitle ?? "",
+        event: data.event ? oneOf({ allowed: WATCHED_EVENTS, value: data.event, what: "watched event" }) : null,
+        columnKind: data.columnKind
+          ? oneOf({ allowed: COLUMN_KINDS, value: data.columnKind, what: "column kind" })
+          : null,
         note: data.note ?? null,
         dueDate: row.dueDate,
         read: row.readAt !== null,

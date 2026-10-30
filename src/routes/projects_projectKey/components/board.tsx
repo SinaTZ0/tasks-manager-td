@@ -293,6 +293,7 @@ export function Board({
 }) {
   const moveTask = useTaskMove(project.id);
   const transition = useTaskTransition(project);
+  const watching = useMemo(() => new Set(board.watching), [board.watching]);
   // Kept after the dialog closes, so it can play its way out showing what it asked. `run` takes the action with the
   // reason given.
   const [asking, setAsking] = useState<{
@@ -680,6 +681,7 @@ export function Board({
                           people={people}
                           blockedBy={blockerCodes(task)}
                           movable={canMoveCards && !filter}
+                          watching={watching.has(task.id)}
                           menu={
                             canMoveCards && (
                               <TaskMenu
@@ -716,6 +718,7 @@ export function Board({
                 <li key={task.id}>
                   <TaskCard
                     stopped
+                    watching={watching.has(task.id)}
                     task={task}
                     projectKey={project.key}
                     labels={labels}
@@ -765,6 +768,7 @@ export function Board({
             people={people}
             blockedBy={blockerCodes(dragged)}
             state="overlay"
+            watching={watching.has(dragged.id)}
             grip={<CardGrip code={codeOf(dragged.id)} />}
           />
         )}
