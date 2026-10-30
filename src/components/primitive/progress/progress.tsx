@@ -1,6 +1,7 @@
 import { Progress as ProgressPrimitive } from "@base-ui/react/progress";
 import type { CSSProperties } from "react";
 import { cn } from "#/lib/utils";
+import { m } from "#/paraglide/messages";
 
 import {
   progressClasses,
@@ -56,9 +57,20 @@ export type ProgressProps = ProgressPrimitive.Root.Props & {
 
 /**
  * A segmented level meter. Children (`ProgressLabel`, `ProgressValue`) sit on the line above the meter. Give
- * `getAriaValueText` a readable value ("45 of 60 minutes") when the raw number means little on its own.
+ * `getAriaValueText` a readable value ("45 of 60 minutes") when the raw number means little on its own. `value={null}`
+ * is work of unknown length: a lit block sweeps along the meter, announced as "loading" in the page's language (Base
+ * UI's own text is English).
  */
-function Progress({ className, children, value, threshold, min = 0, max = 100, ...props }: ProgressProps) {
+function Progress({
+  className,
+  children,
+  value,
+  threshold,
+  min = 0,
+  max = 100,
+  getAriaValueText = (formattedValue, rawValue) => (rawValue === null ? m.common_loading() : formattedValue),
+  ...props
+}: ProgressProps) {
   const isOver = threshold !== undefined && value !== null && value !== undefined && value > threshold;
   const positions = thresholdPositions({ value, threshold, min, max });
 
@@ -67,6 +79,7 @@ function Progress({ className, children, value, threshold, min = 0, max = 100, .
       value={value}
       min={min}
       max={max}
+      getAriaValueText={getAriaValueText}
       data-slot="progress"
       data-over={isOver || undefined}
       {...props}

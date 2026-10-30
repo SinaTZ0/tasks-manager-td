@@ -79,6 +79,28 @@
   /*------ Animation ------*/
   /* Hard on/off steps like a real LED; a smooth fade would read as a web spinner. */
   --animate-led-blink: led-blink 1.1s steps(1, end) infinite;
+  /* An indeterminate meter: a lit block runs along the segments toward the reading direction's end, then starts over */
+  --animate-meter-sweep: meter-sweep 1.4s linear infinite;
+  --animate-meter-sweep-rtl: meter-sweep-rtl 1.4s linear infinite;
+
+  /* The block is a quarter of the track, so 400% of its own width carries it to the far end */
+  @keyframes meter-sweep {
+    from {
+      translate: -100% 0;
+    }
+    to {
+      translate: 400% 0;
+    }
+  }
+
+  @keyframes meter-sweep-rtl {
+    from {
+      translate: 100% 0;
+    }
+    to {
+      translate: -400% 0;
+    }
+  }
 
   @keyframes led-blink {
     0%,

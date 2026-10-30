@@ -51,3 +51,12 @@ export const Levels: Story = {
     </div>
   ),
 };
+
+/** No value yet: a lit block sweeps toward the end of the reading direction. Under reduced motion it holds still. */
+export const Indeterminate: Story = {
+  render: () => (
+    <Progress value={null} className="w-80">
+      <ProgressLabel>بارگذاری</ProgressLabel>
+    </Progress>
+  ),
+};
