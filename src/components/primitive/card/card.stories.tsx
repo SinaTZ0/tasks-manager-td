@@ -3,6 +3,8 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import placeholderImage from "#/assets/placeholder.svg";
 import { Button } from "#/components/primitive/button/button";
 import { SiteLink } from "#/components/shared/site-link/site-link";
+import { readoutClasses } from "../instrument.styles";
+import { Led } from "../led/led";
 import { Card, CardAction, CardContent, CardDescription, CardFooter, CardHeader, CardMedia, CardTitle } from "./card";
 import { twMediaFit, twSize } from "./card.styles";
 
@@ -17,6 +19,8 @@ const meta = {
     size: { control: "inline-radio", options: sizeOptions },
   },
   args: { size: "default" },
+  // A card is itself a housing, so it sits straight on the desk instead of on the story's housing panel
+  parameters: { housing: false },
   render: (args) => (
     <Card {...args} className="max-w-sm">
       <CardHeader>
@@ -43,7 +47,7 @@ export const Small: Story = {
   args: { size: "sm" },
 };
 
-// A whole card that is a link: hover or tab to it for the card lift, media zoom and title tint. The second card's
+// A whole card that is a link: hover or tab to it for the accent wash and media zoom. The second card's
 // image is a poster, so it shows from the top instead of being cropped in the middle.
 export const LinkWithMedia: Story = {
   render: (args) => (
@@ -97,6 +101,33 @@ export const WithFooter: Story = {
       <CardContent>محتوای کارت</CardContent>
       <CardFooter>
         <Button className="w-full">ادامه</Button>
+      </CardFooter>
+    </Card>
+  ),
+};
+
+// The header strip as a module label: a status LED and a serial printed in the instrument mono.
+export const Module: Story = {
+  render: (args) => (
+    <Card {...args} className="max-w-sm">
+      <CardHeader>
+        <CardTitle>زمان‌سنج</CardTitle>
+        <CardDescription>کار جاری و زمان صرف‌شده</CardDescription>
+        <CardAction className="flex items-center gap-2">
+          <Led signal="positive" state="blink" label="در حال اجرا" />
+          <span className={readoutClasses}>
+            <bdi dir="ltr">M / 01</bdi>
+          </span>
+        </CardAction>
+      </CardHeader>
+      <CardContent>بدنه ماژول: کلیدها، فیلدها و نمایشگر روی همین سطح می‌نشینند.</CardContent>
+      <CardFooter className="justify-end gap-3">
+        <Button variant="secondary" size="sm">
+          مکث
+        </Button>
+        <Button variant="highlight" size="sm">
+          شروع
+        </Button>
       </CardFooter>
     </Card>
   ),

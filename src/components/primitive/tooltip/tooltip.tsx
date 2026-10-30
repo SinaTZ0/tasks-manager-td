@@ -1,6 +1,6 @@
 import { Tooltip as TooltipPrimitive } from "@base-ui/react/tooltip";
 import { cn } from "#/lib/utils";
-import { tooltipArrowClasses, tooltipContentClasses, tooltipPositionerClasses } from "./tooltip.styles";
+import { tooltipContentClasses, tooltipPositionerClasses } from "./tooltip.styles";
 
 /*===== Tooltip =====*/
 
@@ -21,11 +21,11 @@ function TooltipTrigger({ ...props }: TooltipPrimitive.Trigger.Props) {
 export type TooltipContentProps = TooltipPrimitive.Popup.Props &
   Pick<TooltipPrimitive.Positioner.Props, "align" | "alignOffset" | "side" | "sideOffset">;
 
-/** Renders the portal, positioner, popup and arrow together. */
+/** Renders the portal, positioner and popup together. The popup is a strip of display glass with no arrow. */
 function TooltipContent({
   className,
   side = "top",
-  sideOffset = 4,
+  sideOffset = 6,
   align = "center",
   alignOffset = 0,
   children,
@@ -42,7 +42,6 @@ function TooltipContent({
       >
         <TooltipPrimitive.Popup data-slot="tooltip-content" className={cn(tooltipContentClasses, className)} {...props}>
           {children}
-          <TooltipPrimitive.Arrow className={tooltipArrowClasses} />
         </TooltipPrimitive.Popup>
       </TooltipPrimitive.Positioner>
     </TooltipPrimitive.Portal>

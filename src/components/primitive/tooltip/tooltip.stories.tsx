@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { HeartIcon } from "lucide-react";
+import { PlayIcon } from "lucide-react";
 
 import { Button } from "../button/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./tooltip";
@@ -8,7 +8,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "./tooltip";
 const meta = {
   title: "Primitive/Tooltip",
   component: TooltipContent,
-  args: { children: "جستجو در سایت" },
+  args: { children: "شروع زمان‌سنج" },
   argTypes: {
     side: {
       control: "select",
@@ -19,8 +19,8 @@ const meta = {
   render: (args) => (
     <div className="flex justify-center p-16">
       <Tooltip defaultOpen>
-        <TooltipTrigger render={<Button size="icon" variant="outline" aria-label="جستجو در سایت" />}>
-          <HeartIcon />
+        <TooltipTrigger render={<Button size="icon" variant="secondary" aria-label="شروع زمان‌سنج" />}>
+          <PlayIcon />
         </TooltipTrigger>
         <TooltipContent {...args} />
       </Tooltip>

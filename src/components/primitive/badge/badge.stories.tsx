@@ -34,7 +34,7 @@ export const Variants: Story = {
   ),
 };
 
-// Status tones travel with an icon and a word, never colour alone.
+// Status tones print a swatch and a word, never colour alone; an icon can join them.
 export const WithIcon: Story = {
   render: () => (
     <div className="flex gap-3">
@@ -42,9 +42,24 @@ export const WithIcon: Story = {
         <CircleCheckIcon data-icon="inline-start" />
         ثبت شد
       </Badge>
-      <Badge variant="gold">
+      <Badge variant="highlight">
         <StarIcon data-icon="inline-start" />
         ویژه
+      </Badge>
+    </div>
+  ),
+};
+
+// Labels on a task card: stamped words with swatches in the signal colours.
+export const TaskLabels: Story = {
+  render: () => (
+    <div className="flex flex-wrap gap-2">
+      <Badge variant="info">طراحی</Badge>
+      <Badge variant="warning">منتظر بازبینی</Badge>
+      <Badge variant="success">تحویل شد</Badge>
+      <Badge variant="destructive">باگ</Badge>
+      <Badge variant="outline">
+        <bdi dir="ltr">TD-42</bdi>
       </Badge>
     </div>
   ),

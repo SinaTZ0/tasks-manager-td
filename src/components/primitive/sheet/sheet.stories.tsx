@@ -2,12 +2,14 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import { MenuIcon } from "lucide-react";
 
 import { Button } from "../button/button";
-import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "./sheet";
+import { Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle, SheetTrigger } from "./sheet";
 
 /*===== Meta =====*/
 const meta = {
   title: "Primitive/Sheet",
   component: SheetContent,
+  // The sheet floats above the page, so the trigger sits straight on the desk
+  parameters: { housing: false },
   argTypes: {
     side: { control: "select", options: ["start", "end", "top", "bottom"] },
   },
@@ -21,6 +23,10 @@ const meta = {
           <SheetTitle>منو</SheetTitle>
           <SheetDescription>دسترسی به بخش‌های سایت</SheetDescription>
         </SheetHeader>
+        <div className="px-6 text-body-sm">تخته، کارهای من، گزارش زمان</div>
+        <SheetFooter>
+          <Button variant="secondary">بستن منو</Button>
+        </SheetFooter>
       </SheetContent>
     </Sheet>
   ),

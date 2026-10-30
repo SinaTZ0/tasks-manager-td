@@ -1,12 +1,14 @@
 import { Menu as MenuPrimitive } from "@base-ui/react/menu";
 import { cn } from "#/lib/utils";
-import { CheckIcon, ChevronLeftIcon } from "lucide-react";
+import { ChevronLeftIcon } from "lucide-react";
+import { Led } from "../led/led";
 import type { ComponentProps } from "react";
 
 import {
   dropdownMenuContentClasses,
   dropdownMenuIndicatorClasses,
   dropdownMenuIndicatorItemClasses,
+  dropdownMenuLedClasses,
   dropdownMenuItemClasses,
   dropdownMenuLabelClasses,
   dropdownMenuSeparatorClasses,
@@ -162,9 +164,7 @@ function DropdownMenuCheckboxItem({
       {...props}
     >
       <span className={dropdownMenuIndicatorClasses} data-slot="dropdown-menu-checkbox-item-indicator">
-        <MenuPrimitive.CheckboxItemIndicator>
-          <CheckIcon />
-        </MenuPrimitive.CheckboxItemIndicator>
+        <Led signal="selection" state="off" className={dropdownMenuLedClasses} />
       </span>
       {children}
     </MenuPrimitive.CheckboxItem>
@@ -191,9 +191,7 @@ function DropdownMenuRadioItem({
       {...props}
     >
       <span className={dropdownMenuIndicatorClasses} data-slot="dropdown-menu-radio-item-indicator">
-        <MenuPrimitive.RadioItemIndicator>
-          <CheckIcon />
-        </MenuPrimitive.RadioItemIndicator>
+        <Led signal="selection" state="off" className={dropdownMenuLedClasses} />
       </span>
       {children}
     </MenuPrimitive.RadioItem>
@@ -211,7 +209,15 @@ function DropdownMenuSeparator({ className, ...props }: MenuPrimitive.Separator.
 }
 
 function DropdownMenuShortcut({ className, ...props }: ComponentProps<"span">) {
-  return <span data-slot="dropdown-menu-shortcut" className={cn(dropdownMenuShortcutClasses, className)} {...props} />;
+  // Shortcuts are key names (Ctrl+K), always read left to right
+  return (
+    <span
+      data-slot="dropdown-menu-shortcut"
+      dir="ltr"
+      className={cn(dropdownMenuShortcutClasses, className)}
+      {...props}
+    />
+  );
 }
 
 export {

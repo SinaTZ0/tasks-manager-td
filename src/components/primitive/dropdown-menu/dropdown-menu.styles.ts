@@ -1,12 +1,14 @@
+import { markingClasses, readoutClasses } from "../instrument.styles";
 import { defineStyles, joinStyles } from "../styles";
 
 /*===== Popup =====*/
 
+// The popup is a small module lifted off the panel: popover material, a thin shell edge and the `md` ledge plus shadow.
 const twContentStyles = defineStyles({
   layout:
     "z-50 max-h-(--available-height) w-(--anchor-width) min-w-48 origin-(--transform-origin) overflow-x-hidden overflow-y-auto outline-none",
-  geometry: "rounded-md p-1",
-  appearance: "bg-popover text-popover-foreground shadow-md ring-1 ring-border",
+  geometry: "rounded-housing border p-1",
+  appearance: "border-border bg-popover text-popover-foreground shadow-md",
   state:
     "duration-100 data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:overflow-hidden data-closed:fade-out-0 data-closed:zoom-out-95",
   stateSide:
@@ -23,7 +25,7 @@ const twSubContentStyles = defineStyles({
 // Rows are at least 40px tall (the tap-target floor). Selected and focused rows take the quiet `accent` wash.
 const twItemStyles = defineStyles({
   layout: "group/dropdown-menu-item relative flex items-center gap-2",
-  geometry: "min-h-10 rounded-sm px-3 py-2 data-inset:ps-8",
+  geometry: "min-h-10 rounded-keycap-compact px-3 py-2 data-inset:ps-8",
   typography: "text-body-sm",
   interaction: "cursor-default outline-hidden select-none",
   focus: "focus:bg-accent focus:text-accent-foreground",
@@ -37,19 +39,26 @@ const twSubTriggerStyles = defineStyles({
     "data-popup-open:bg-accent data-popup-open:text-accent-foreground data-open:bg-accent data-open:text-accent-foreground",
 });
 
-// Checkbox and radio rows reserve the inline-end column for their indicator.
+// Checkbox and radio rows reserve the inline-end column for their LED. The LED is always there, unlit grey plastic
+// when off, so the reader sees which rows are switchable before choosing.
+// A suffixed group name, so spreading it over the item styles adds to `geometry` instead of replacing it (replacing
+// it dropped the 40px row height and padding).
 const twIndicatorItemStyles = defineStyles({
-  geometry: "pe-9",
+  geometryIndicator: "pe-9",
 });
 
 const twIndicatorStyles = defineStyles({
   layout: "pointer-events-none absolute inset-e-3 flex items-center justify-center",
 });
 
+const twLedStyles = defineStyles({
+  state: "group-data-checked/dropdown-menu-item:bg-current group-data-checked/dropdown-menu-item:shadow-led-on",
+});
+
+// Group labels are printed markings, like a panel's silkscreen
 const twLabelStyles = defineStyles({
-  geometry: "px-3 py-2 data-inset:ps-8",
-  typography: "text-caption",
-  appearance: "text-muted-foreground",
+  geometry: "px-3 pt-2 pb-1 data-inset:ps-8",
+  typography: markingClasses,
 });
 
 const twSeparatorStyles = defineStyles({
@@ -57,10 +66,11 @@ const twSeparatorStyles = defineStyles({
   appearance: "bg-border",
 });
 
+// Shortcuts are printed in the instrument mono, like key legends
 const twShortcutStyles = defineStyles({
   layout: "ms-auto",
-  typography: "text-caption tracking-widest",
-  appearance: "text-muted-foreground group-focus/dropdown-menu-item:text-accent-foreground",
+  typography: readoutClasses,
+  appearance: "group-focus/dropdown-menu-item:text-accent-foreground",
 });
 
 export const dropdownMenuContentClasses = joinStyles(twContentStyles);
@@ -69,6 +79,7 @@ export const dropdownMenuItemClasses = joinStyles(twItemStyles);
 export const dropdownMenuSubTriggerClasses = joinStyles({ ...twItemStyles, ...twSubTriggerStyles });
 export const dropdownMenuIndicatorItemClasses = joinStyles({ ...twItemStyles, ...twIndicatorItemStyles });
 export const dropdownMenuIndicatorClasses = joinStyles(twIndicatorStyles);
+export const dropdownMenuLedClasses = joinStyles(twLedStyles);
 export const dropdownMenuLabelClasses = joinStyles(twLabelStyles);
 export const dropdownMenuSeparatorClasses = joinStyles(twSeparatorStyles);
 export const dropdownMenuShortcutClasses = joinStyles(twShortcutStyles);

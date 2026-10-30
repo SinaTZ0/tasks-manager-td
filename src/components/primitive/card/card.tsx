@@ -19,10 +19,9 @@ import {
 export type CardProps = useRender.ComponentProps<"div"> & VariantProps<typeof cardVariants>;
 
 /**
- * A styled surface whose parts share the size's spacing.
- * A whole card that is a link renders as that link: `render={<SiteLink href="…" />}`. The link card then gets the
- * card lift, and its CardTitle, CardMedia and any trailing arrow react to the card's hover and keyboard focus.
- * Keep other links and buttons out of a link card. `data-size` is kept on the root because CardTitle scales its text
+ * A housing module whose parts share the size's spacing. The header is a printed strip, ruled off from the body.
+ * A whole card that is a link renders as that link: `render={<SiteLink href="…" />}`. The link card then takes the
+ * accent wash and its CardMedia zooms on hover and keyboard focus. Keep other links and buttons out of a link card. `data-size` is kept on the root because CardTitle scales its text
  * from it.
  */
 function Card({ className, size = "default", render, ...props }: CardProps) {

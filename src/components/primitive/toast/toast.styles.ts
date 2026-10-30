@@ -11,7 +11,8 @@ const twViewportStyles = defineStyles({
 
 /*===== Toast Styles =====*/
 
-// Base UI exposes each toast's index, height and swipe offset as CSS variables. The stack is built from them:
+// A toast is a small module lifted off the desk (popover material, thin shell edge, the `md` ledge plus shadow), so it
+// reads as part of the instrument rather than a browser notification. Base UI exposes each toast's index, height and swipe offset as CSS variables. The stack is built from them:
 // toasts behind the front one peek out above it and shrink, and expand into a list on hover or focus.
 const twToastStyles = defineStyles({
   layout:
@@ -19,11 +20,11 @@ const twToastStyles = defineStyles({
   layoutStack:
     "[--gap:0.75rem] [--height:var(--toast-frontmost-height,var(--toast-height))] [--offset-y:calc(var(--toast-offset-y)*-1+calc(var(--toast-index)*var(--gap)*-1)+var(--toast-swipe-movement-y))] [--peek:0.75rem] [--scale:calc(max(0,1-(var(--toast-index)*0.1)))] [--shrink:calc(1-var(--scale))]",
   geometry:
-    "h-(--height) transform-[translateX(var(--toast-swipe-movement-x))_translateY(calc(var(--toast-swipe-movement-y)-(var(--toast-index)*var(--peek))-(var(--shrink)*var(--height))))_scale(var(--scale))] rounded-md border",
+    "h-(--height) transform-[translateX(var(--toast-swipe-movement-x))_translateY(calc(var(--toast-swipe-movement-y)-(var(--toast-index)*var(--peek))-(var(--shrink)*var(--height))))_scale(var(--scale))] rounded-housing border",
   // Fills the gap below each toast so hover doesn't drop while the pointer moves between toasts.
   geometryGap:
     "after:absolute after:inset-s-0 after:top-full after:h-[calc(var(--gap)+1px)] after:w-full after:content-['']",
-  appearance: "bg-popover text-popover-foreground shadow-md",
+  appearance: "border-border bg-popover text-popover-foreground shadow-md",
   interaction:
     "will-change-transform outline-none select-none [transition:transform_500ms_cubic-bezier(0.22,1,0.36,1),opacity_500ms,height_150ms]",
   focus:
@@ -46,7 +47,7 @@ const twContentStyles = defineStyles({
 });
 
 const twTitleStyles = defineStyles({
-  typography: "text-body-sm font-bold",
+  typography: "font-heading text-body-sm font-semibold",
 });
 
 const twDescriptionStyles = defineStyles({
