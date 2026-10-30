@@ -36,7 +36,7 @@ const historyOf = (taskId: string) =>
     .select({ action: activity.action, before: activity.before, after: activity.after })
     .from(activity)
     .where(and(eq(activity.taskId, taskId)))
-    .orderBy(activity.createdAt);
+    .orderBy(activity.createdAt, activity.seq);
 
 describe("tasks", () => {
   it("numbers tasks per project and records each change", async () => {
@@ -155,7 +155,7 @@ describe("tasks", () => {
     expect(invalid).toMatchObject({ kind: "invalid" });
   });
 
-  it("hard-deletes only an archived task, and only for an admin (rule 10)", async () => {
+  it("restores and hard-deletes an archived task only for an admin (rule 10)", async () => {
     const { projectId, users } = fixture;
     const created = await createTask({ db, actorId: users.ali, projectId, input: { title: "پاک‌شدنی" } });
     if (created.kind !== "success") throw new Error("setup failed");
@@ -166,8 +166,11 @@ describe("tasks", () => {
     await archiveTask({ db, actorId: users.ali, projectId, taskId });
     expect(await remove(users.ali, "user")).toMatchObject({ kind: "invalid" });
 
-    // Restored, it is live again and can't be deleted; archived once more, the admin can.
-    expect(await restoreTask({ db, actorId: users.ali, projectId, taskId })).toEqual({ kind: "ok" });
+    // A member can't bring it back; restored by the admin, it is live again and can't be deleted; archived once more,
+    // the admin can.
+    const restore = (id: string, role: string) => restoreTask({ db, actor: { id, role }, projectId, taskId });
+    expect(await restore(users.ali, "user")).toMatchObject({ kind: "invalid" });
+    expect(await restore(users.admin, "admin")).toEqual({ kind: "ok" });
     expect(await getTask({ db, projectId, number: created.task.number })).toMatchObject({ archivedAt: null });
     await archiveTask({ db, actorId: users.ali, projectId, taskId });
     expect(await remove(users.admin, "admin")).toEqual({ kind: "ok" });

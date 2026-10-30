@@ -90,7 +90,7 @@ function CommentItem({ comment, project, canChange }: { comment: Comment; projec
 
   return (
     <li className="flex gap-3">
-      <PersonAvatar name={comment.authorName} decorative />
+      <PersonAvatar name={comment.authorName} src={comment.authorAvatarUrl} decorative />
       <div className="flex min-w-0 flex-1 flex-col gap-1.5">
         {/*------ Signature ------*/}
         <div className="flex items-center gap-3">

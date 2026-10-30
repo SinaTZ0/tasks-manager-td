@@ -6,12 +6,17 @@ import { COLUMN_KINDS } from "#/orpc/project/constants";
 import type { ColumnRecord, MemberRow, ProjectRecord } from "#/orpc/project/repository";
 
 /*===== Public Shapes =====*/
+/** The small variant of someone's picture (`user.avatar_media_id`), or null for none: pages then show their initial. */
+export function avatarUrlOf(mediaId: string | null | undefined): string | null {
+  return mediaId ? mediaUrl({ kind: "avatar", mediaId, variant: "thumb" }) : null;
+}
+
 export function toPerson(row: Pick<MemberRow, "id" | "name" | "status" | "avatarMediaId">): Person {
   return {
     id: row.id,
     name: row.name,
     status: oneOf({ allowed: USER_STATUSES, value: row.status, what: "user status" }),
-    avatarUrl: row.avatarMediaId ? mediaUrl({ kind: "avatar", mediaId: row.avatarMediaId, variant: "thumb" }) : null,
+    avatarUrl: avatarUrlOf(row.avatarMediaId),
   };
 }
 

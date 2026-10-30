@@ -64,6 +64,13 @@
       "when": 1793382507979,
       "tag": "0008_profile-avatar",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1793383925638,
+      "tag": "0009_activity-seq",
+      "breakpoints": true
     }
   ]
 }

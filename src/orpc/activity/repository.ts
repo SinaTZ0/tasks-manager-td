@@ -8,7 +8,7 @@ import type { ActivityAction } from "#/orpc/activity/constants";
 type NewActivityRecord = typeof activity.$inferInsert;
 export type ActivityRecord = typeof activity.$inferSelect;
 /** An entry with its actor's name, for the history pages. */
-export type ActivityRow = ActivityRecord & { actorName: string };
+export type ActivityRow = ActivityRecord & { actorName: string; actorAvatarMediaId: string | null };
 
 /*===== Writes =====*/
 /** Appends history entries. There is no update or delete: the table refuses both. */
@@ -32,7 +32,7 @@ export function findTaskActivities({
     .select()
     .from(activity)
     .where(and(eq(activity.taskId, taskId), inArray(activity.action, [...actions])))
-    .orderBy(asc(activity.createdAt));
+    .orderBy(asc(activity.createdAt), asc(activity.seq));
 }
 
 /*===== History Pages =====*/
@@ -46,7 +46,9 @@ const rowColumns = {
   after: activity.after,
   snapshot: activity.snapshot,
   createdAt: activity.createdAt,
+  seq: activity.seq,
   actorName: user.name,
+  actorAvatarMediaId: user.avatarMediaId,
 };
 
 /** A task's entries, newest first, at most `limit`. */
@@ -66,7 +68,7 @@ export function findTaskHistory({
     .from(activity)
     .innerJoin(user, eq(user.id, activity.actorId))
     .where(and(eq(activity.projectId, projectId), eq(activity.taskId, taskId)))
-    .orderBy(desc(activity.createdAt), desc(activity.id))
+    .orderBy(desc(activity.createdAt), desc(activity.seq))
     .limit(limit);
 }
 
@@ -90,7 +92,7 @@ export function findProjectHistory({
     .from(activity)
     .innerJoin(user, eq(user.id, activity.actorId))
     .where(and(eq(activity.projectId, projectId), before ? lt(activity.createdAt, before) : undefined))
-    .orderBy(desc(activity.createdAt), desc(activity.id))
+    .orderBy(desc(activity.createdAt), desc(activity.seq))
     .limit(limit);
 }
 
@@ -117,5 +119,5 @@ export function findProjectHistoryBetween({
         before ? lt(activity.createdAt, before) : undefined,
       ),
     )
-    .orderBy(desc(activity.createdAt), desc(activity.id));
+    .orderBy(desc(activity.createdAt), desc(activity.seq));
 }

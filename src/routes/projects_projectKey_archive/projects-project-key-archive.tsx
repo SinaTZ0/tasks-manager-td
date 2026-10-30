@@ -47,10 +47,11 @@ export const Route = createFileRoute("/_site-layout/_app-layout/projects/$projec
 
 /**
  * A project's archive (docs/app.md → Archive & restore, rule 10): the tasks taken off its board, most recently archived
- * first. Any member can put one back; an admin can also delete one for good, after confirming.
+ * first. An admin can put one back or delete it for good, after confirming; members see the list read-only.
  */
 function ArchivePage() {
   const { projectKey } = Route.useParams();
+  const { viewer } = Route.useRouteContext();
   const { data: project } = useSuspenseQuery(projectQuery(projectKey));
   const { data } = useSuspenseQuery(archiveQuery(project.id));
   const people = new Map(data.people.map((person) => [person.id, person]));
@@ -72,7 +73,9 @@ function ArchivePage() {
           <h1 className="font-heading text-h2">{m.archive_heading({ project: isolate(project.name) })}</h1>
           <Marking variant="code">{project.key}</Marking>
         </div>
-        <p className="text-muted-foreground">{m.archive_description()}</p>
+        <p className="text-muted-foreground">
+          {viewer.role === "admin" ? m.archive_description() : m.archive_description_member()}
+        </p>
       </div>
 
       {/*------ List ------*/}
@@ -163,25 +166,25 @@ function ArchivedRow({
       <span className="text-caption text-muted-foreground">
         {m.archive_archived_on({ date: formatDate(task.archivedAt, { dateStyle: "medium" }) })}
       </span>
-      <div className="flex gap-3">
-        <Button
-          variant="secondary"
-          size="sm"
-          disabled={restore.isPending}
-          onClick={() => restore.mutate({ projectId: project.id, taskId: task.id })}
-        >
-          <ArchiveRestoreIcon data-icon="inline-start" />
-          {m.archive_restore()}
-          <span className="sr-only"> {code}</span>
-        </Button>
-        {viewer.role === "admin" && (
+      {viewer.role === "admin" && (
+        <div className="flex gap-3">
+          <Button
+            variant="secondary"
+            size="sm"
+            disabled={restore.isPending}
+            onClick={() => restore.mutate({ projectId: project.id, taskId: task.id })}
+          >
+            <ArchiveRestoreIcon data-icon="inline-start" />
+            {m.archive_restore()}
+            <span className="sr-only"> {code}</span>
+          </Button>
           <Button variant="destructive" size="sm" onClick={() => setConfirming(true)}>
             <Trash2Icon data-icon="inline-start" />
             {m.archive_delete()}
             <span className="sr-only"> {code}</span>
           </Button>
-        )}
-      </div>
+        </div>
+      )}
 
       {/*------ Confirm ------*/}
       <Dialog open={confirming} onOpenChange={setConfirming}>

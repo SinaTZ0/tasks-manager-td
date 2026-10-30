@@ -327,7 +327,7 @@ function ActivityEntry({
 
   return (
     <li className="flex gap-3 py-3">
-      <PersonAvatar name={item.actorName} decorative />
+      <PersonAvatar name={item.actorName} src={item.actorAvatarUrl} decorative />
       <div className="flex min-w-0 flex-1 flex-col gap-1">
         {/*------ Task ------*/}
         {taskKey && item.taskCode && (

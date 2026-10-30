@@ -1,5 +1,6 @@
 import type { AuthSession } from "#/lib/auth.server";
 import { revokeUserSessions } from "#/lib/auth.server";
+import { avatarUrlOf } from "#/orpc/project/mapper";
 import type { Viewer } from "#/orpc/session/contract";
 
 /*===== Viewer =====*/
@@ -17,5 +18,11 @@ export async function resolveViewer({ user }: { user: AuthSession["user"] | null
   }
 
   // Better-Auth types additional fields as optional, but the column is NOT NULL with a default.
-  return { id: user.id, name: user.name, email: user.email, role: user.role ?? "user" };
+  return {
+    id: user.id,
+    name: user.name,
+    email: user.email,
+    role: user.role ?? "user",
+    avatarUrl: avatarUrlOf(user.avatarMediaId),
+  };
 }

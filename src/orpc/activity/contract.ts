@@ -19,6 +19,7 @@ export const activityItemSchema = z.object({
   /** Who made the change: a timer they stopped can be someone else's (`after.userId`). */
   actorId: z.string(),
   actorName: z.string(),
+  actorAvatarUrl: z.string().nullable(),
   /** Null for project-level changes (members, columns, labels). */
   taskId: z.string().nullable(),
   /** The task's code and title when the change was made (`snapshot.code`, `snapshot.title`). */

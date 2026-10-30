@@ -110,8 +110,11 @@ export const restoreTaskProcedure = base.task.restore
   .use(provideDbMiddleware)
   .use(requireProjectMemberMiddleware)
   .handler(async ({ context, input, errors }) => {
-    const result = await restoreTask({ db: context.db, actorId: context.user.id, ...input });
+    const result = await restoreTask({ db: context.db, actor: context.user, ...input });
     if (result.kind === "not-found") throw errors.NOT_FOUND({ data: noData });
+    if (result.kind === "invalid") {
+      throw errors.INVALID_INPUT({ data: { errors: result.errors ?? [], fields: result.fields } });
+    }
   });
 
 /*===== Delete =====*/

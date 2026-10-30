@@ -5,9 +5,17 @@ import { issuesToErrorData } from "#/lib/schema-issues";
 import { mentionedIds, plainTextToRichText, type RichTextDoc } from "#/lib/rich-text";
 import { recordActivity } from "#/orpc/activity/service";
 import type { Comment } from "#/orpc/comment/contract";
-import { findComments, insertComment, lockComment, updateComment, type CommentRecord } from "#/orpc/comment/repository";
+import {
+  findComments,
+  insertComment,
+  lockComment,
+  updateComment,
+  type CommentRecord,
+  type CommentRow,
+} from "#/orpc/comment/repository";
 import { commentBodySchema } from "#/orpc/comment/validation";
 import { notify } from "#/orpc/notification/service";
+import { avatarUrlOf } from "#/orpc/project/mapper";
 import { taskCode } from "#/orpc/task/constants";
 import { findActiveMemberIds, findPeople, findProjectKey, lockTask } from "#/orpc/task/repository";
 import { m } from "#/paraglide/messages";
@@ -23,12 +31,13 @@ const isUuid = (value: string) => z.guid().safeParse(value).success;
 const EXCERPT_LENGTH = 140;
 
 /*===== Shapes =====*/
-function toComment(record: CommentRecord & { authorName: string }): Comment {
+function toComment(record: CommentRow): Comment {
   const deleted = record.deletedAt !== null;
   return {
     id: record.id,
     authorId: record.authorId,
     authorName: record.authorName,
+    authorAvatarUrl: avatarUrlOf(record.authorAvatarMediaId),
     body: deleted ? null : (record.body as RichTextDoc),
     createdAt: record.createdAt,
     editedAt: record.editedAt,
@@ -38,7 +47,7 @@ function toComment(record: CommentRecord & { authorName: string }): Comment {
 
 async function withAuthorName({ db, record }: { db: Database; record: CommentRecord }) {
   const [author] = await findPeople({ db, ids: [record.authorId] });
-  return toComment({ ...record, authorName: author?.name ?? "" });
+  return toComment({ ...record, authorName: author?.name ?? "", authorAvatarMediaId: author?.avatarMediaId ?? null });
 }
 
 /*===== Mentions =====*/

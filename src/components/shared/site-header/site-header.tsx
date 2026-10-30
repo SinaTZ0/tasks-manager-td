@@ -45,7 +45,7 @@ const navKeyClasses = cn(
 
 /*===== Account =====*/
 
-/** The viewer's keycap: their initial on a light key, opening the account menu. */
+/** The viewer's keycap: their picture, or their initial, on a light key, opening the account menu. */
 function AccountMenu({ viewer }: { viewer: Viewer }) {
   const signOut = useSignOut();
   const initial = Array.from(viewer.name.trim())[0] ?? "";
@@ -53,7 +53,13 @@ function AccountMenu({ viewer }: { viewer: Viewer }) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger render={<Button variant="secondary" size="icon-sm" aria-label={m.nav_account()} />}>
-        {initial ? <span aria-hidden="true">{initial}</span> : <UserIcon />}
+        {viewer.avatarUrl ? (
+          <img src={viewer.avatarUrl} alt="" className="size-7 rounded-sm object-cover" />
+        ) : initial ? (
+          <span aria-hidden="true">{initial}</span>
+        ) : (
+          <UserIcon />
+        )}
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="min-w-56">
         <DropdownMenuGroup>

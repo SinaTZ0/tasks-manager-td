@@ -54,6 +54,8 @@ export const auth = betterAuth({
       // Never from the client: only server code sets a role or blocks an account (`user-constants.ts`).
       role: { type: "string", required: false, defaultValue: "user", input: false },
       status: { type: "string", required: false, defaultValue: "active", input: false },
+      // Read for the header's picture; set only by `profile.update`, which checks the upload is theirs.
+      avatarMediaId: { type: "string", required: false, input: false },
     },
   },
 

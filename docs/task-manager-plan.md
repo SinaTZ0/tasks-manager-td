@@ -173,9 +173,9 @@ Built once, in the slice that first needs them, and used by every procedure afte
 - Profile (`/profile`, from the account menu): your own name and picture (the template's image upload, kind
   `avatar`, on `user.avatar_media_id`). The picture shows on cards, member lists and the people picker; the email
   and role stay an admin's, on the team page.
-- An archive list per project (`/projects/$projectKey/archive`, linked from the board's header). Any member can
-  restore a task (it goes back to the bottom of its column); an admin can hard-delete one from there, after
-  confirming (rule 10). Its comments, logs, links, hand-offs and notifications go with it; the history keeps a
+- An archive list per project (`/projects/$projectKey/archive`, linked from the board's header). An admin can
+  restore a task (it goes back to the bottom of its column) or hard-delete one from there, after confirming
+  (rule 10); members see the list read-only. Its comments, logs, links, hand-offs and notifications go with it; the history keeps a
   `task.deleted` entry.
 - **Tests**: hard delete only for an admin and only from the archive.
 

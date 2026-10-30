@@ -774,25 +774,28 @@ export async function listArchivedTasks({
 /*===== Restore =====*/
 /**
  * Puts an archived task back on the board, at the bottom of the column it was in (docs/app.md → Archive & restore).
- * Any member may, as any member may archive one. If it is in a column that holds others up, its dependents wait for it
- * again: being blocked is worked out from the board, not stored.
+ * Only an admin may: any member can archive a task, but what comes back is an admin's call, as with deleting. If it
+ * is in a column that holds others up, its dependents wait for it again: being blocked is worked out from the board,
+ * not stored.
  *
- * @returns `not-found` for a task the project doesn't have; restoring a live task is a no-op.
+ * @returns `not-found` for a task the project doesn't have; `invalid` for an actor who isn't an admin; restoring a live
+ * task is a no-op.
  */
 export async function restoreTask({
   db,
-  actorId,
+  actor,
   projectId,
   taskId,
 }: {
   db: Database;
-  actorId: string;
+  actor: TaskActor;
   projectId: string;
   taskId: string;
-}): Promise<{ kind: "ok" } | NotFound> {
+}): Promise<{ kind: "ok" } | NotFound | Invalid> {
   if (!isUuid(taskId)) return { kind: "not-found" };
+  if (actor.role !== "admin") return { kind: "invalid", fields: {}, errors: [m.task_error_restore_admin_only()] };
 
-  return db.transaction(async (tx): Promise<{ kind: "ok" } | NotFound> => {
+  return db.transaction(async (tx): Promise<{ kind: "ok" } | NotFound | Invalid> => {
     const current = await lockTask({ db: tx, projectId, id: taskId });
     if (!current) return { kind: "not-found" };
     if (!current.archivedAt) return { kind: "ok" };
@@ -802,7 +805,7 @@ export async function restoreTask({
     const code = taskCode({ key: await findProjectKey({ db: tx, projectId }), number: current.number });
     await recordActivity({
       db: tx,
-      actorId,
+      actorId: actor.id,
       entries: [{ action: "task.restored", projectId, taskId, snapshot: { code, title: current.title } }],
     });
     return { kind: "ok" };

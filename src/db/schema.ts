@@ -1,5 +1,6 @@
 import { sql } from "drizzle-orm";
 import {
+  bigint,
   boolean,
   check,
   customType,
@@ -477,10 +478,15 @@ export const activity = pgTable(
     after: jsonb("after"),
     snapshot: jsonb("snapshot").notNull().default({}),
     createdAt: timestamp("created_at").notNull().defaultNow(),
+    /**
+     * Write order. The entries of one transaction share `created_at` (Postgres's `now()` is the transaction's start),
+     * so "started the task" and "started the timer" are told apart by this, not by the random id.
+     */
+    seq: bigint("seq", { mode: "number" }).notNull().generatedAlwaysAsIdentity(),
   },
   (table) => [
-    index("activity_project_id_created_at_idx").on(table.projectId, table.createdAt),
-    index("activity_task_id_created_at_idx").on(table.taskId, table.createdAt),
+    index("activity_project_id_created_at_idx").on(table.projectId, table.createdAt, table.seq),
+    index("activity_task_id_created_at_idx").on(table.taskId, table.createdAt, table.seq),
   ],
 );
 

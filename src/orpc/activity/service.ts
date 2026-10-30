@@ -3,6 +3,7 @@ import { z } from "zod";
 import type { Database } from "#/db/client.server";
 import { ACTIVITY_ACTIONS, type ActivityAction } from "#/orpc/activity/constants";
 import type { ActivityItem, ActivityPage } from "#/orpc/activity/contract";
+import { avatarUrlOf } from "#/orpc/project/mapper";
 import {
   type ActivityRow,
   findProjectHistory,
@@ -74,6 +75,7 @@ function toItems(rows: ActivityRow[]): ActivityItem[] {
         action: row.action,
         actorId: row.actorId,
         actorName: row.actorName,
+        actorAvatarUrl: avatarUrlOf(row.actorAvatarMediaId),
         taskId: row.taskId,
         taskCode: textOf(snapshot.code),
         taskTitle: textOf(snapshot.title),

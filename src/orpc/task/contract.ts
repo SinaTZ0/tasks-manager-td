@@ -166,7 +166,7 @@ export const taskContract = {
     .errors(errors)
     .input(z.strictObject({ projectId: z.string() }))
     .output(z.object({ tasks: z.array(archivedTaskSchema), people: z.array(personSchema) })),
-  /** Puts an archived task back on the board, at the bottom of its column. */
+  /** Puts an archived task back on the board, at the bottom of its column. Admins only: anyone else gets `INVALID_INPUT`. */
   restore: oc
     .errors(errors)
     .input(z.strictObject({ projectId: z.string(), taskId: z.string() }))

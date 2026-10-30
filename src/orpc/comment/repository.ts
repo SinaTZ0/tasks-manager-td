@@ -5,7 +5,7 @@ import { comment, task, user } from "#/db/schema";
 
 /*===== Types =====*/
 export type CommentRecord = typeof comment.$inferSelect;
-export type CommentRow = CommentRecord & { authorName: string };
+export type CommentRow = CommentRecord & { authorName: string; authorAvatarMediaId: string | null };
 /** A comment with the task it is on, as an edit or a delete needs it. */
 export type CommentWithTask = {
   comment: CommentRecord;
@@ -64,6 +64,7 @@ export function findComments({
       editedAt: comment.editedAt,
       deletedAt: comment.deletedAt,
       authorName: user.name,
+      authorAvatarMediaId: user.avatarMediaId,
     })
     .from(comment)
     .innerJoin(user, eq(user.id, comment.authorId))

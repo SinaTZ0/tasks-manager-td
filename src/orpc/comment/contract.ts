@@ -12,6 +12,7 @@ export const commentSchema = z.object({
   authorId: z.string(),
   /** By name: someone who left the project still signs their comments. */
   authorName: z.string(),
+  authorAvatarUrl: z.string().nullable(),
   /** The Tiptap document; null once deleted. */
   body: z.custom<RichTextDoc>((value) => typeof value === "object" && value !== null).nullable(),
   createdAt: z.date(),

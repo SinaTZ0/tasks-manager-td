@@ -1188,5 +1188,7 @@
       }
     }
   ],
-  "archive_delete_failed": "Couldn't delete the task. Try again."
+  "archive_delete_failed": "Couldn't delete the task. Try again.",
+  "task_error_restore_admin_only": "Only an admin can bring a task back from the archive.",
+  "archive_description_member": "Tasks taken off the board. An admin can restore one to its column."
 }

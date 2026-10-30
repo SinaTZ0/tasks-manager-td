@@ -10,6 +10,8 @@ const viewerSchema = z.object({
   name: z.string(),
   email: z.string(),
   role: z.string(),
+  /** Their picture's small variant, or null for none (the header shows their initial). */
+  avatarUrl: z.string().nullable(),
 });
 
 export type Viewer = z.infer<typeof viewerSchema>;
