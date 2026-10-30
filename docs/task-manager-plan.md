@@ -270,11 +270,69 @@ follows the backend flow, then the frontend flow; desktop first (the phone layou
   polling if it drops.
 - **Tests**: a change is published only to members of its project.
 
-### After These
+## Phase 3
 
-Not planned yet, in rough order of use: watchers, keyboard shortcuts beyond `/` (`n` new card, `e` edit), browser
-notifications, moving or copying a card to another project, a calendar view of due dates. Sub-tasks are left out:
-checklists cover them at this size. Then the phone layout.
+Drafted on 2026-10-30 from Phase 2's "After These" list, in this order; the phone layout is not planned for now. Each
+slice follows the backend flow, then the frontend flow, desktop only. The points marked **To confirm** are proposals:
+ask the user before building that slice.
+
+### 17. Watchers
+
+- Anyone on the project, viewers included, can watch a card: an eye key in the drawer, and the watchers' avatars
+  beside it. Watching is a personal setting, so it writes no Activity entry and a viewer may do it.
+- Watchers are told (a new notification kind, `watched`) about a new comment, a status change (started, paused,
+  done, stopped, reopened), a hand-off, and archiving. Never about their own change, and never twice for one change:
+  someone already told as assignee, owner or mentioned gets only that notification.
+- The bell's sentence names what happened (`Sara commented on TGQ-12`). The card's footer shows an eye when the viewer
+  watches it.
+- **To confirm**: commenting on a card, or being mentioned on it, starts watching it (as GitHub does); the owner and
+  assignee are not added, since they are told already.
+- **Tests**: a watcher is told about a comment, not about their own; unwatching stops it.
+
+### 18. Keyboard Shortcuts
+
+- Single keys, read by `event.code` so they work on a Persian keyboard layout too, and ignored while typing in a field,
+  an editor or with a menu open: `n` new card (admins: opens quick add in the first column), `e` edit the open card's
+  title, `c` focus its comment editor, `m` assign it to me (editors), `g` then `b` / `m` / `d` to the board, My Tasks,
+  Delegated, and `?` a dialog listing them all (with the `kbd` primitive). `/` (search) and `Esc` stay as they are.
+- A key that the viewer's role can't use does nothing, and isn't listed for them.
+- **Tests**: none beyond the browser check (no server change).
+
+### 19. Browser Notifications
+
+- An opt-in key in the bell: "Notify me on this computer", which asks the browser's permission. The choice is kept
+  per browser (localStorage), and the key says when the browser blocks them.
+- When the live stream (slice 16) brings a notification while the tab is hidden, a system notification shows the
+  bell's sentence; clicking it focuses the tab and opens the card. Only while a tab is open: no service worker or Web
+  Push, so nothing reaches a closed browser.
+- **To confirm**: no Web Push for now (it needs a service worker, VAPID keys and a subscription table).
+- **Tests**: none beyond the browser check (no server change).
+
+### 20. Move or Copy a Card to Another Project
+
+- Admins only, like creating a card: "Move to project…" and "Copy to project…" in the card's menu and the drawer,
+  picking a project and a column kind (the same kind by default).
+- **Move**: the task takes the next number in the target (`TGQ-12` becomes `WEB-31`); its comments, checklist,
+  attachments, time logs, hand-offs and history go with it. Labels are matched by name in the target, missing ones
+  created; dependencies on tasks of the old project are removed (each one an Activity entry); an owner or assignee who
+  isn't a member of the target makes the move refuse, with a message naming them. The old code keeps working: a link
+  to `TGQ-12` opens `WEB-31` (a small alias table). Both projects' histories get an entry.
+- **Copy**: a new task in the target with the title, description, priority, due date, estimate, labels (matched by
+  name) and the checklist, unticked; links are copied, and files are copied in the bucket. Comments, time, history and
+  dependencies are not. The copy's history says what it was copied from.
+- **To confirm**: move keeps its history and the old code as an alias (rather than closing the old card and copying).
+- **Tests**: a move keeps the task's time and comments and drops its dependencies on the old project; a move whose
+  assignee isn't on the target is refused; an old code opens the moved task.
+
+### 21. Calendar View
+
+- `/projects/$projectKey/calendar`, beside the board: a month grid (Jalali months in Persian, Gregorian in English,
+  weeks starting on Saturday in both, the team's day from `src/lib/team-day.ts`) placing each live card with a due
+  date on its day, with the board's filters. Overdue and due-soon cards carry the `DueMark` colours; a "no due date"
+  count links to the board filtered to them.
+- Editors drag a card to another day to change its due date (an ordinary update, so an Activity entry and a live
+  update), or use the arrow keys on a focused card. Clicking a card opens its drawer over the calendar.
+- **Tests**: none new: the date change is `task.update`, already tested; browser check of both calendars.
 
 ## Housekeeping
 
