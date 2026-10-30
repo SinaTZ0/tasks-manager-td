@@ -66,7 +66,7 @@ export function TaskComments({
     <section aria-label={m.comment_title()} className="flex flex-col gap-6">
       {/*------ Thread ------*/}
       {comments && comments.length > 0 ? (
-        <ol className="flex flex-col gap-5">
+        <ol className="flex flex-col striped">
           {comments.map((comment) => (
             <CommentItem
               key={comment.id}
@@ -101,7 +101,7 @@ function CommentItem({ comment, project, canChange }: { comment: Comment; projec
   const date = formatDate(comment.createdAt, { dateStyle: "medium", timeStyle: "short" });
 
   return (
-    <li className="flex gap-3">
+    <li className="flex gap-3 py-3">
       <PersonAvatar name={comment.authorName} src={comment.authorAvatarUrl} decorative />
       <div className="flex min-w-0 flex-1 flex-col gap-1.5">
         {/*------ Signature ------*/}

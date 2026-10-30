@@ -88,7 +88,7 @@ function HandoffChain({ handoffs }: { handoffs: Handoff[] }) {
           </Fragment>
         ))}
       </p>
-      <ol className="flex flex-col divide-y divide-border">
+      <ol className="flex flex-col striped">
         {handoffs.toReversed().map((handoff) => (
           <li key={handoff.id} className="flex flex-col gap-0.5 py-2">
             <span className="text-caption text-muted-foreground">

@@ -87,7 +87,7 @@ function ArchivePage() {
               <p>{m.archive_empty()}</p>
             </div>
           ) : (
-            <ul className="flex flex-col divide-y divide-border">
+            <ul className="flex flex-col striped">
               {data.tasks.map((task) => (
                 <ArchivedRow
                   key={task.id}

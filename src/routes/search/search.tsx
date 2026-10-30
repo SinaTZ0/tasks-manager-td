@@ -94,7 +94,7 @@ function SearchPage() {
               <output className="block pb-3 text-body-sm text-muted-foreground">
                 {m.search_count({ count: results.length })}
               </output>
-              <ul className="flex flex-col divide-y divide-border">
+              <ul className="flex flex-col striped">
                 {results.map((result) => (
                   <ResultRow key={result.id} result={result} />
                 ))}

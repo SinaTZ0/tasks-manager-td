@@ -45,7 +45,7 @@ function DelegatedPage() {
               <p>{m.delegated_empty()}</p>
             </div>
           ) : (
-            <ul className="flex flex-col divide-y divide-border">
+            <ul className="flex flex-col striped">
               {tasks.map((task) => (
                 <DelegatedRow key={task.id} task={task} />
               ))}

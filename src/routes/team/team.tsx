@@ -33,7 +33,7 @@ function TeamPage() {
           <CardDescription>{m.team_description()}</CardDescription>
         </CardHeader>
         <CardContent>
-          <ul className="divide-y divide-border">
+          <ul className="striped">
             {team.map((member) => (
               <MemberRow key={member.id} member={member} isSelf={member.id === viewer.id} />
             ))}

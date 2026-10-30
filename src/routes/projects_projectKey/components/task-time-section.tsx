@@ -106,7 +106,7 @@ export function TaskTimeSection({
       <div className="flex flex-col gap-3">
         <h4 className="text-body-sm font-semibold">{m.time_logs()}</h4>
         {time && time.logs.length > 0 ? (
-          <ul className="flex flex-col divide-y divide-border">
+          <ul className="flex flex-col striped">
             {time.logs.toReversed().map((log) => (
               <TimeLogRow
                 key={log.id}

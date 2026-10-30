@@ -562,6 +562,19 @@
   grid-template-columns: repeat(var(--board-per-row, 3), minmax(0, 1fr));
 }
 
+/* A list read row by row (comments, history, time entries, task lists): rows alternate plain and banded, so the eye
+   keeps its line across a wide row without a rule between each. The band is the text colour thinned, so it reads on
+   the housing, the drawer and both themes alike. Rows keep their own block padding; the band adds the inline one. */
+@utility striped {
+  & > li {
+    padding-inline: 0.75rem;
+    border-radius: var(--radius);
+  }
+  & > li:nth-child(even) {
+    background-color: color-mix(in oklab, var(--foreground) 7%, transparent);
+  }
+}
+
 /* A part being dragged on the board (dnd-kit): where it is and how it slides come in as custom properties. */
 @utility drag-motion {
   transform: var(--drag-transform, none);

@@ -325,7 +325,7 @@ export function ActivityFeed({
   projectKey?: string;
 }) {
   return (
-    <ol className="flex flex-col divide-y divide-border">
+    <ol className="flex flex-col striped">
       {items.map((item) => (
         <ActivityEntry
           key={item.id}

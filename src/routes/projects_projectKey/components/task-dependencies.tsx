@@ -77,7 +77,7 @@ export function TaskDependencies({
       <div className="flex flex-col gap-2">
         <h4 className="text-body-sm font-semibold">{m.dependency_waits_for()}</h4>
         {waitsFor.length > 0 ? (
-          <ul className="flex flex-col divide-y divide-border">
+          <ul className="flex flex-col striped">
             {waitsFor.map((blocker) => {
               const holding = isHolding(kinds.get(blocker.columnId));
               const code = codeOf(blocker);

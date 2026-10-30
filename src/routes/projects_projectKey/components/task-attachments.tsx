@@ -169,7 +169,7 @@ export function TaskAttachments({
       {empty ? (
         <p className="text-body-sm text-muted-foreground">{m.attachment_empty()}</p>
       ) : (
-        <ul className="flex flex-col divide-y divide-border">
+        <ul className="flex flex-col striped">
           {task.attachments.map((item) => (
             <AttachmentRow
               key={item.id}

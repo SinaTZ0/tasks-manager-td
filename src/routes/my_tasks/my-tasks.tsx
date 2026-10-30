@@ -66,7 +66,7 @@ function MyTasksPage() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <ul className="flex flex-col divide-y divide-border">
+              <ul className="flex flex-col striped">
                 {items.map((task) => (
                   <MyTaskRow key={task.id} task={task} />
                 ))}
