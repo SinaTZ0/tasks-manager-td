@@ -1,4 +1,5 @@
-import { and, asc, count, eq, inArray, isNull, sql } from "drizzle-orm";
+import { generateNKeysBetween } from "fractional-indexing";
+import { and, asc, count, desc, eq, inArray, isNull, sql } from "drizzle-orm";
 
 import type { Database } from "#/db/client.server";
 import { boardColumn, project, projectMember, task, timeLog, user } from "#/db/schema";
@@ -180,8 +181,62 @@ export async function findColumn({
   return row;
 }
 
-export async function insertColumns({ db, values }: { db: Database; values: NewColumnRecord[] }): Promise<void> {
-  await db.insert(boardColumn).values(values);
+export async function insertColumns({
+  db,
+  values,
+}: {
+  db: Database;
+  values: NewColumnRecord[];
+}): Promise<ColumnRecord[]> {
+  return db.insert(boardColumn).values(values).returning();
+}
+
+export async function deleteColumnRow({ db, id }: { db: Database; id: string }): Promise<void> {
+  await db.delete(boardColumn).where(eq(boardColumn.id, id));
+}
+
+/** How many live (unarchived) tasks sit in a column. */
+export async function countLiveTasks({ db, columnId }: { db: Database; columnId: string }): Promise<number> {
+  const [row] = await db
+    .select({ count: count() })
+    .from(task)
+    .where(and(eq(task.columnId, columnId), isNull(task.archivedAt)));
+  return row?.count ?? 0;
+}
+
+/**
+ * Moves a column's archived tasks to another column, keeping their order after its last task (archived ones
+ * included), so a restore puts them somewhere that still exists.
+ */
+export async function rehomeArchivedTasks({
+  db,
+  fromColumnId,
+  toColumnId,
+}: {
+  db: Database;
+  fromColumnId: string;
+  toColumnId: string;
+}): Promise<void> {
+  const archived = await db
+    .select({ id: task.id })
+    .from(task)
+    .where(eq(task.columnId, fromColumnId))
+    .orderBy(asc(task.position));
+  if (archived.length === 0) return;
+  const [last] = await db
+    .select({ position: task.position })
+    .from(task)
+    .where(eq(task.columnId, toColumnId))
+    .orderBy(desc(task.position))
+    .limit(1);
+  const positions = generateNKeysBetween(last?.position ?? null, null, archived.length);
+  // One after the other: a transaction's connection runs one query at a time.
+  for (const [index, row] of archived.entries()) {
+    await db
+      .update(task)
+      .set({ columnId: toColumnId, position: positions[index] ?? "" })
+      .where(eq(task.id, row.id));
+  }
 }
 
 export async function updateColumnRow({

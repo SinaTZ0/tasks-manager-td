@@ -81,6 +81,29 @@ export async function findRunningTimer({ db, userId }: { db: Database; userId: s
   return row;
 }
 
+/*===== Paused =====*/
+/**
+ * Marks tasks paused at `at`, those of them with no clock still running (someone else may still be working on one).
+ * Unpauses a task when a clock starts on it.
+ */
+export async function setPaused({
+  db,
+  taskIds,
+  at,
+}: {
+  db: Database;
+  taskIds: string[];
+  /** Null unpauses. */
+  at: Date | null;
+}): Promise<void> {
+  if (taskIds.length === 0) return;
+  const idle = sql`not exists (select 1 from ${timeLog} where ${timeLog.taskId} = ${task.id} and ${timeLog.endedAt} is null)`;
+  await db
+    .update(task)
+    .set({ pausedAt: at })
+    .where(at === null ? inArray(task.id, taskIds) : and(inArray(task.id, taskIds), idle));
+}
+
 /*===== Logs =====*/
 export async function insertTimeLog({
   db,

@@ -15,8 +15,7 @@ import { columnTitle } from "#/lib/column-title";
 import { formatDuration, parseDuration } from "#/lib/duration";
 import { formatDate } from "#/lib/locale";
 import { orpc } from "#/orpc/client";
-import { COLUMN_KINDS } from "#/orpc/project/constants";
-import type { Person, Project } from "#/orpc/project/contract";
+import type { Column, Person, Project } from "#/orpc/project/contract";
 import { TIME_ENTRY_MAX_MINUTES, TIME_NOTE_MAX_LENGTH } from "#/orpc/task/constants";
 import type { TaskDetail } from "#/orpc/task/contract";
 import type { ColumnStay, TimeLog } from "#/orpc/time/contract";
@@ -34,25 +33,34 @@ function formatSpan(seconds: number): string {
 
 const secondsBetween = (start: Date, end: number) => Math.max(0, (end - start.getTime()) / 1000);
 
-/** Seconds spent in each kind of column, open stays counted up to `now` (left out while the page hydrates). */
-function timeByKind({ stays, now }: { stays: ColumnStay[]; now: number | null }) {
-  const totals = new Map<ColumnStay["kind"], number>();
+/**
+ * Seconds spent in each column, open stays counted up to `now` (left out while the page hydrates), in board order. A
+ * column removed since goes last, under the name it had then.
+ */
+function timeByColumn({ stays, columns, now }: { stays: ColumnStay[]; columns: Column[]; now: number | null }) {
+  const totals = new Map<string, { title: string; seconds: number }>();
   for (const stay of stays) {
     const end = stay.leftAt?.getTime() ?? now;
     if (end === null) continue;
-    totals.set(stay.kind, (totals.get(stay.kind) ?? 0) + secondsBetween(stay.enteredAt, end));
+    const column = columns.find((item) => item.id === stay.columnId);
+    const total = totals.get(stay.columnId) ?? { title: columnTitle(column ?? stay), seconds: 0 };
+    total.seconds += secondsBetween(stay.enteredAt, end);
+    totals.set(stay.columnId, total);
   }
-  return COLUMN_KINDS.flatMap((kind) => {
-    const seconds = totals.get(kind);
-    return seconds === undefined ? [] : [{ kind, seconds }];
-  });
+  const rank = (id: string) => {
+    const index = columns.findIndex((column) => column.id === id);
+    return index === -1 ? columns.length : index;
+  };
+  return [...totals.entries()]
+    .toSorted(([a], [b]) => rank(a) - rank(b))
+    .map(([columnId, total]) => ({ columnId, ...total }));
 }
 
 /*===== Task Time Section =====*/
 
 /**
- * The drawer's time: how old the task is (created to done, or to now), how long it has sat in each kind of column (from
- * its history), every stretch of work logged on it, and a form to log time worked without the timer. Each person can
+ * The drawer's time: how old the task is (created to done, or to now), how long it has sat in each column (from its
+ * history), every stretch of work logged on it, and a form to log time worked without the timer. Each person can
  * remove their own typed-in entries; timed ones stay as the timer saw them.
  */
 export function TaskTimeSection({
@@ -87,19 +95,14 @@ export function TaskTimeSection({
           <Marking variant="code">{ageEnd === null ? "" : formatSpan(secondsBetween(task.createdAt, ageEnd))}</Marking>
         </dd>
         {time &&
-          timeByKind({ stays: time.stays, now }).map(({ kind, seconds }) => {
-            const column = project.columns.find((item) => item.kind === kind);
-            return (
-              <div key={kind} className="contents">
-                <dt className="text-body-sm text-muted-foreground">
-                  {m.time_in_column({ column: column ? columnTitle(column) : kind })}
-                </dt>
-                <dd>
-                  <Marking variant="code">{formatSpan(seconds)}</Marking>
-                </dd>
-              </div>
-            );
-          })}
+          timeByColumn({ stays: time.stays, columns: project.columns, now }).map(({ columnId, title, seconds }) => (
+            <div key={columnId} className="contents">
+              <dt className="text-body-sm text-muted-foreground">{m.time_in_column({ column: title })}</dt>
+              <dd>
+                <Marking variant="code">{formatSpan(seconds)}</Marking>
+              </dd>
+            </div>
+          ))}
       </dl>
 
       {/*------ Logs ------*/}

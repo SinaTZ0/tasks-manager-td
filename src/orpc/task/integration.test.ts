@@ -5,7 +5,7 @@ import { db } from "#/db/client.server";
 import { activity } from "#/db/schema";
 import { createTestProject, deleteTestProject } from "#/db/test-fixtures.server";
 import { findColumns } from "#/orpc/project/repository";
-import { setProjectMember } from "#/orpc/project/service";
+import { addColumn, removeColumn, setProjectMember } from "#/orpc/project/service";
 import {
   archiveTask,
   createTask,
@@ -110,7 +110,7 @@ describe("tasks", () => {
   it("records the columns a move leaves and enters, and never lets two cards share a position", async () => {
     const { projectId, users } = fixture;
     const columns = await findColumns({ db, projectId });
-    const todo = columns.find((column) => column.kind === "todo");
+    const todo = columns.find((column) => column.kind === "doing");
     if (!todo) throw new Error("setup failed");
 
     const a = await createTask({ db, actorId: users.ali, projectId, input: { title: "الف" } });
@@ -142,8 +142,8 @@ describe("tasks", () => {
     const [, moved] = await historyOf(a.task.id);
     expect(moved).toMatchObject({
       action: "task.moved",
-      before: { columnKind: "backlog" },
-      after: { columnId: todo.id, columnKind: "todo" },
+      before: { columnKind: "todo" },
+      after: { columnId: todo.id, columnKind: "doing" },
     });
 
     const invalid = await moveTask({
@@ -155,6 +155,23 @@ describe("tasks", () => {
       position: "!",
     });
     expect(invalid).toMatchObject({ kind: "invalid" });
+  });
+
+  it("keeps a custom column while it holds a card", async () => {
+    const { projectId, users } = fixture;
+    const added = await addColumn({ db, actorId: users.admin, projectId, name: "آزمون" });
+    if (added.kind !== "success") throw new Error("setup failed");
+    const columnId = added.column.id;
+    const created = await createTask({ db, actorId: users.ali, projectId, input: { title: "در ستون", columnId } });
+    if (created.kind !== "success") throw new Error("setup failed");
+
+    const remove = () => removeColumn({ db, actorId: users.admin, projectId, columnId });
+    expect(await remove()).toMatchObject({ kind: "invalid" });
+    // Archived, the card no longer holds the column: it moves to to do, so a restore still has a column.
+    await archiveTask({ db, actorId: users.ali, projectId, taskId: created.task.id });
+    expect(await remove()).toEqual({ kind: "ok" });
+    const todo = (await findColumns({ db, projectId })).find((column) => column.kind === "todo");
+    expect(await getTask({ db, projectId, number: created.task.number })).toMatchObject({ columnId: todo?.id });
   });
 
   it("restores and hard-deletes an archived task only for an admin (rule 10)", async () => {

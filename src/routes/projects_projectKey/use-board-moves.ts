@@ -6,8 +6,8 @@ import { describeApiFailure } from "#/lib/api-error";
 import { orpc } from "#/orpc/client";
 import type { Project } from "#/orpc/project/contract";
 import { positionBetween } from "#/lib/position";
-import { STATUS_ACTION_RULES, type TaskStatusAction } from "#/orpc/task/constants";
-import type { Board } from "#/orpc/task/contract";
+import { COLUMN_ACTION_RULES, isColumnAction, type TaskStatusAction } from "#/orpc/task/constants";
+import type { Board, TaskCard } from "#/orpc/task/contract";
 import { m } from "#/paraglide/messages";
 import { boardQuery, projectQuery } from "#/routes/projects_projectKey/queries";
 
@@ -47,7 +47,7 @@ export function useTaskMove(projectId: string) {
           queryClient.invalidateQueries({ queryKey: orpc.task.board.key() }),
           // An open drawer prints the card's column.
           queryClient.invalidateQueries({ queryKey: orpc.task.get.key() }),
-          // Leaving doing stops the card's timers (rule 3).
+          // Entering done stops the card's clocks (rule 3).
           queryClient.invalidateQueries({ queryKey: orpc.time.key() }),
         ]),
     }),
@@ -88,10 +88,36 @@ export function useTaskMove(projectId: string) {
 /*===== Status =====*/
 
 /**
+ * How the board shows a status action before the server answers. Start and pause light the card's clock and leave it
+ * in place (a pause leaves others' clocks running, which the refetch shows); done, stop and reopen send it to the
+ * bottom of their column, and done and stop put its clocks out.
+ */
+function afterAction({
+  task,
+  action,
+  target,
+  last,
+}: {
+  task: TaskCard;
+  action: TaskStatusAction;
+  target: Project["columns"][number] | undefined;
+  last: TaskCard | undefined;
+}): TaskCard {
+  if (action === "start") {
+    return { ...task, pausedAt: null, runningSince: task.runningSince.length > 0 ? task.runningSince : [new Date()] };
+  }
+  if (action === "pause") {
+    return task.runningSince.length > 1 ? task : { ...task, runningSince: [], pausedAt: new Date() };
+  }
+  if (!target || task.columnId === target.id) return task;
+  const moved = { ...task, columnId: target.id, position: positionBetween(last?.position ?? null, null) };
+  return action === "reopen" ? moved : { ...moved, runningSince: [], pausedAt: null };
+}
+
+/**
  * Takes a status action on a task (start, pause, done, stop, reopen), from its card menu or its drawer. Like a move,
- * the board shows it at once: the card goes to the bottom of the action's column, lit as running after a start and
- * with its timers stopped after anything that leaves doing. A refused action puts the board back and says why. The
- * drawer, the task's time and the header's timer are refetched afterwards.
+ * the board shows it at once (`afterAction`). A refused action puts the board back and says why. The drawer, the
+ * task's time and the header's timer are refetched afterwards.
  */
 export function useTaskTransition(project: Pick<Project, "id" | "columns">) {
   const queryClient = useQueryClient();
@@ -121,20 +147,13 @@ export function useTaskTransition(project: Pick<Project, "id" | "columns">) {
   }) => {
     void queryClient.cancelQueries({ queryKey: key });
     const previous = queryClient.getQueryData<Board>(key);
-    const target = project.columns.find((column) => column.kind === STATUS_ACTION_RULES[action].to);
-    if (previous && target) {
-      const last = previous.tasks.findLast((task) => task.columnId === target.id && task.id !== taskId);
+    const target = isColumnAction(action)
+      ? project.columns.find((column) => column.kind === COLUMN_ACTION_RULES[action].to)
+      : undefined;
+    if (previous) {
+      const last = target && previous.tasks.findLast((task) => task.columnId === target.id && task.id !== taskId);
       const tasks = previous.tasks
-        .map((task) => {
-          if (task.id !== taskId) return task;
-          const moved =
-            task.columnId === target.id
-              ? task
-              : { ...task, columnId: target.id, position: positionBetween(last?.position ?? null, null) };
-          if (action === "start")
-            return { ...moved, runningSince: task.runningSince.length > 0 ? task.runningSince : [new Date()] };
-          return { ...moved, runningSince: [] };
-        })
+        .map((task) => (task.id === taskId ? afterAction({ task, action, target, last }) : task))
         .toSorted(byPosition);
       queryClient.setQueryData<Board>(key, { ...previous, tasks });
     }

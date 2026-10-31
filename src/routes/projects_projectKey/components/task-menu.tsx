@@ -40,8 +40,8 @@ export function restoreTaskMenuFocus(taskId: string) {
 }
 
 /**
- * The card's menu key: the status actions its column allows (start, pause, done, stop, reopen), then "move to…" every
- * other column, so changing a card never depends on dragging it (docs/app.md → Board & Drag). The board takes the
+ * The card's menu key: the status actions it allows now (start or pause the viewer's clock, done, stop, reopen), then
+ * "move to…" every other column, so changing a card never depends on dragging it (docs/app.md → Board & Drag). The board takes the
  * action, asking for a reason first where one is due. A moved card goes to the bottom of its new column. A cancelled
  * card only reopens: `columns` is empty there. For an admin, `onTransfer` adds moving or copying it to another project.
  */
@@ -49,6 +49,8 @@ export function TaskMenu({
   taskId,
   code,
   kind,
+  timing,
+  paused,
   columns,
   currentColumnId,
   onMove,
@@ -59,6 +61,10 @@ export function TaskMenu({
   code: string;
   /** The kind of the column the card is in. */
   kind: ColumnKind;
+  /** The viewer's clock runs on it: the menu offers pause instead of start. */
+  timing: boolean;
+  /** Its clock is paused: start reads "resume". */
+  paused: boolean;
   /** The board's columns, in order; empty for none to move to. */
   columns: Column[];
   currentColumnId: string;
@@ -66,7 +72,7 @@ export function TaskMenu({
   onAction: (action: TaskStatusAction) => void;
   onTransfer?: ((mode: TransferMode) => void) | undefined;
 }) {
-  const actions = availableActions(kind);
+  const actions = availableActions({ kind, timing });
   const targets = columns.filter((column) => column.id !== currentColumnId);
 
   return (
@@ -94,7 +100,7 @@ export function TaskMenu({
             return (
               <DropdownMenuItem key={action} onClick={() => onAction(action)}>
                 <Icon />
-                {statusActionLabel({ action, kind })}
+                {statusActionLabel({ action, paused })}
               </DropdownMenuItem>
             );
           })}

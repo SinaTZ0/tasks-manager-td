@@ -27,6 +27,7 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
+import { useQuery } from "@tanstack/react-query";
 import { GripVerticalIcon } from "lucide-react";
 import {
   useId,
@@ -44,18 +45,21 @@ import { toast } from "#/components/primitive/toast/toast";
 import { columnTitle } from "#/lib/column-title";
 import { cn } from "#/lib/utils";
 import { positionBetween } from "#/lib/position";
+import { orpc } from "#/orpc/client";
+import { isBackwardMove } from "#/orpc/project/constants";
 import type { Column, Person, Project } from "#/orpc/project/contract";
-import { STATUS_ACTION_RULES, taskCode, type TaskStatusAction } from "#/orpc/task/constants";
+import { COLUMN_ACTION_RULES, isColumnAction, taskCode, type TaskStatusAction } from "#/orpc/task/constants";
 import type { Board as BoardData, Label, TaskCard as TaskCardData } from "#/orpc/task/contract";
 import { m } from "#/paraglide/messages";
 import { BoardColumn } from "#/routes/projects_projectKey/components/board-column";
+import { ConfirmDialog, type ConfirmRequest } from "#/routes/projects_projectKey/components/confirm-dialog";
 import { CardGrip, cardGripId, SortableTaskCard } from "#/routes/projects_projectKey/components/sortable-task-card";
 import { ReasonDialog, type ReasonRequest } from "#/routes/projects_projectKey/components/reason-dialog";
 import { TaskCard } from "#/routes/projects_projectKey/components/task-card";
 import { restoreTaskMenuFocus, TaskMenu, taskMenuKey } from "#/routes/projects_projectKey/components/task-menu";
 import { TransferDialog, type TransferRequest } from "#/routes/projects_projectKey/components/transfer-dialog";
 import { blockersOf, entersGuardedColumn, kindsOf } from "#/routes/projects_projectKey/dependencies";
-import { asksReason } from "#/routes/projects_projectKey/task-status";
+import { asksReason, statusActionLabel } from "#/routes/projects_projectKey/task-status";
 import { useColumnMove, useTaskMove, useTaskTransition } from "#/routes/projects_projectKey/use-board-moves";
 
 /*===== Drag State =====*/
@@ -257,10 +261,11 @@ export const SHOW_CANCELLED_ID = "show-cancelled";
 /**
  * The board's columns and cards, and every way of moving them (docs/app.md → Board & Drag): drag a card within its
  * column or to another, by pointer or keyboard; send it to the bottom of another column from its menu; and, for an
- * admin, drag a column by its grip. A move shows at once and is saved behind it (`use-board-moves.ts`). Each card's
- * menu also takes its status actions (start, pause, done, stop, reopen), asking for a reason where one is due. A card
- * that still waits for others enters doing or done only once the person says why (rule 4); its strip names what it
- * waits for.
+ * admin, drag a custom column by its grip (to do, doing and done keep their order). A move shows at once and is saved
+ * behind it (`use-board-moves.ts`). Each card's menu also takes its status actions (start or pause the viewer's clock,
+ * done, stop, reopen), asking for a reason where one is due. A card going back along the fixed columns (done to doing,
+ * say) asks first, and so does starting the clock on a done card. A card that still waits for others enters doing or
+ * done only once the person says why (rule 4); its strip names what it waits for.
  *
  * Columns the person hid (`hiddenColumns`) are left out, though a card's menu can still send a card to one. The
  * cancelled column is shown only on request (`showCancelled`), after the others and outside the dragging: nothing
@@ -312,6 +317,16 @@ export function Board({
     run: (reason: string) => void;
     open: boolean;
   } | null>(null);
+  // Kept after closing for the same reason; `run` goes ahead once confirmed.
+  const [confirming, setConfirming] = useState<{
+    taskId: string;
+    request: ConfirmRequest;
+    run: () => void;
+    open: boolean;
+  } | null>(null);
+  // Which card the viewer's own clock runs on: its menu offers pause there. Only menus read it, so it can wait for the
+  // browser.
+  const { data: myTimer } = useQuery(orpc.time.current.queryOptions());
   const moveColumn = useColumnMove({ projectId: project.id, projectKey });
   const [drag, setDrag] = useState<Drag | null>(null);
   const droppedOrder = drag?.type === "dropped-column" && drag.until === project.columns ? drag.order : null;
@@ -495,17 +510,14 @@ export function Board({
     const positionOf = (neighbour: string | undefined) =>
       neighbour === undefined ? null : (tasks.get(neighbour)?.position ?? null);
     const position = keyBetween(positionOf(lane[index - 1]), positionOf(lane[index + 1]));
-    // A blocked card goes back to its place until the person says why it goes ahead.
-    if (
-      guard({
-        task,
-        toColumnId: columnId,
-        run: (forceComment) => moveTask({ taskId: id, columnId, position, forceComment }),
-      })
-    )
+    const run = (forceComment?: string) => moveTask({ taskId: id, columnId, position, forceComment });
+    // A card going back, or a blocked one, goes back to its place until the person confirms or says why.
+    if (confirmBack({ task, toColumnId: columnId, run: () => guard({ task, toColumnId: columnId, run }) || run() })) {
       return;
+    }
+    if (guard({ task, toColumnId: columnId, run })) return;
     setDrag({ type: "dropped-task", lanes: { ...current.lanes, [columnId]: lane }, until: board.tasks });
-    moveTask({ taskId: id, columnId, position });
+    run();
   };
 
   /*------ Menu Focus ------*/
@@ -544,20 +556,46 @@ export function Board({
     return true;
   }
 
+  /*------ Backward Moves ------*/
+  /**
+   * A card going back along the fixed columns (done to doing or to do, doing to to do) asks first, and `run` moves it
+   * once the person confirms.
+   *
+   * @returns Whether it asked, in which case the caller doesn't move the card itself.
+   */
+  function confirmBack({
+    task,
+    toColumnId,
+    run,
+  }: {
+    task: TaskCardData;
+    toColumnId: string;
+    run: () => void;
+  }): boolean {
+    const from = project.columns.find((column) => column.id === task.columnId);
+    const to = project.columns.find((column) => column.id === toColumnId);
+    if (!from || !to || !isBackwardMove({ from: from.kind, to: to.kind })) return false;
+    const code = codeOf(task.id);
+    const request = {
+      title: m.task_back_title({ code }),
+      description: m.task_move_description({ from: columnTitle(from), to: columnTitle(to) }),
+      confirm: m.task_back_confirm(),
+    };
+    setConfirming({ taskId: task.id, request, run, open: true });
+    return true;
+  }
+
   /*------ Move To ------*/
   const moveToEnd = ({ task, columnId }: { task: TaskCardData; columnId: string }) => {
     const last = board.tasks.findLast((item) => item.columnId === columnId && item.id !== task.id);
     const position = positionBetween(last?.position ?? null, null);
-    if (
-      guard({
-        task,
-        toColumnId: columnId,
-        run: (forceComment) => moveTask({ taskId: task.id, columnId, position, forceComment }),
-      })
-    )
-      return;
-    menuFocus.current = task.id;
-    moveTask({ taskId: task.id, columnId, position });
+    const run = (forceComment?: string) => {
+      menuFocus.current = task.id;
+      moveTask({ taskId: task.id, columnId, position, forceComment });
+    };
+    const ahead = () => guard({ task, toColumnId: columnId, run }) || run();
+    if (confirmBack({ task, toColumnId: columnId, run: ahead })) return;
+    ahead();
   };
 
   /*------ Status ------*/
@@ -576,18 +614,28 @@ export function Board({
         open: true,
       });
     }
-    const target = project.columns.find((column) => column.kind === STATUS_ACTION_RULES[action].to);
-    if (
-      target &&
-      guard({
-        task,
-        toColumnId: target.id,
-        run: (forceComment) => transition({ taskId: task.id, action, forceComment }),
-      })
-    )
-      return;
-    menuFocus.current = task.id;
-    transition({ taskId: task.id, action });
+    const run = (forceComment?: string) => {
+      menuFocus.current = task.id;
+      transition({ taskId: task.id, action, forceComment });
+    };
+
+    /*------ Clock ------*/
+    // The clock leaves the card where it is; on a done card it asks first, since the work was meant to be over.
+    if (!isColumnAction(action)) {
+      if (kinds.get(task.columnId) !== "done") return run();
+      const request = {
+        title: m.task_start_done_title({ code }),
+        description: m.task_start_done_description(),
+        confirm: statusActionLabel({ action, paused: task.pausedAt !== null }),
+      };
+      return setConfirming({ taskId: task.id, request, run, open: true });
+    }
+
+    /*------ Move ------*/
+    const target = project.columns.find((column) => column.kind === COLUMN_ACTION_RULES[action].to);
+    const ahead = () => (target && guard({ task, toColumnId: target.id, run })) || run();
+    if (target && confirmBack({ task, toColumnId: target.id, run: ahead })) return;
+    ahead();
   };
 
   /*------ Announcements ------*/
@@ -672,7 +720,7 @@ export function Board({
                 column={column}
                 count={ids.length}
                 total={filter ? (totals.get(column.id) ?? 0) : undefined}
-                movable={canMoveColumns}
+                movable={canMoveColumns && column.kind === "custom"}
               >
                 <SortableContext id={column.id} items={ids} strategy={verticalListSortingStrategy}>
                   <ol className={CARD_LIST}>
@@ -696,6 +744,8 @@ export function Board({
                                 taskId={task.id}
                                 code={codeOf(task.id)}
                                 kind={column.kind}
+                                timing={myTimer?.taskId === task.id}
+                                paused={task.pausedAt !== null}
                                 columns={allColumns}
                                 currentColumnId={column.id}
                                 onMove={(target) => moveToEnd({ task, columnId: target })}
@@ -749,6 +799,8 @@ export function Board({
                           taskId={task.id}
                           code={codeOf(task.id)}
                           kind="cancelled"
+                          timing={false}
+                          paused={false}
                           columns={[]}
                           currentColumnId={cancelled.id}
                           onMove={() => {}}
@@ -787,6 +839,17 @@ export function Board({
             const key = taskMenuKey(asking.taskId)();
             return key === true ? (document.getElementById(SHOW_CANCELLED_ID) ?? true) : key;
           }}
+        />
+      )}
+
+      {/*------ Confirm ------*/}
+      {confirming && (
+        <ConfirmDialog
+          request={confirming.request}
+          open={confirming.open}
+          onOpenChange={(open) => setConfirming({ ...confirming, open })}
+          onConfirm={confirming.run}
+          finalFocus={taskMenuKey(confirming.taskId)}
         />
       )}
 

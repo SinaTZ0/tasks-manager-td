@@ -183,9 +183,17 @@ function describe({ item, people }: { item: ActivityItem; people: Map<string, Pe
         clauses: clauses.length > 0 ? clauses : [m.activity_column_renamed({ from: isolate(from), to: isolate(to) })],
       };
     }
+    case "column.created":
+      return {
+        clauses: [m.activity_column_created({ column: columnOf(snapshot, { kindKey: "kind", nameKey: "name" }) })],
+      };
     case "column.moved":
       return {
         clauses: [m.activity_column_moved({ column: columnOf(snapshot, { kindKey: "kind", nameKey: "name" }) })],
+      };
+    case "column.deleted":
+      return {
+        clauses: [m.activity_column_deleted({ column: columnOf(snapshot, { kindKey: "kind", nameKey: "name" }) })],
       };
     case "label.created":
       return { clauses: [m.activity_label_created({ name: isolate(textOf(after, "name") ?? "?") })] };
@@ -235,13 +243,6 @@ function describe({ item, people }: { item: ActivityItem; people: Map<string, Pe
       return { clauses: [m.activity_task_copied({ from: isolate(textOf(before, "code") ?? "?") })] };
 
     /*------ Status ------*/
-    case "task.started":
-      return {
-        clauses: [before?.columnKind === "paused" ? m.activity_task_resumed() : m.activity_task_started()],
-        forced,
-      };
-    case "task.paused":
-      return { clauses: [m.activity_task_paused()], quote: textOf(after, "reason") };
     case "task.completed":
       return { clauses: [m.activity_task_completed()], forced };
     case "task.stopped":
@@ -254,7 +255,8 @@ function describe({ item, people }: { item: ActivityItem; people: Map<string, Pe
       return { clauses: [m.activity_time_started()] };
     case "time.stopped": {
       const duration = isolate(formatClock(numberOf(after, "seconds") ?? 0));
-      // Pausing or archiving a task stops everyone's timer on it, so the timer can be someone else's.
+      // Finishing or archiving a task stops everyone's clock on it, so the clock can be someone else's. A pause may
+      // carry its reason.
       const owner = after?.userId;
       return {
         clauses: [
@@ -262,6 +264,7 @@ function describe({ item, people }: { item: ActivityItem; people: Map<string, Pe
             ? m.activity_time_stopped({ duration })
             : m.activity_time_stopped_other({ name: nameOf(owner), duration }),
         ],
+        quote: textOf(after, "reason"),
       };
     }
     case "time.added":

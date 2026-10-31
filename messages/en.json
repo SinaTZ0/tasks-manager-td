@@ -28,11 +28,8 @@
   "root_not_found_details": "The page you're looking for doesn't exist or has moved.",
   "board_columns": "Board columns",
   "board_columns_shown": "Columns shown on the board",
-  "board_column_backlog": "Backlog",
   "board_column_todo": "To do",
   "board_column_doing": "Doing",
-  "board_column_paused": "Paused",
-  "board_column_review": "Review",
   "board_column_done": "Done",
   "board_column_empty": "No tasks",
   "notes_title": "Notes",
@@ -211,7 +208,7 @@
   "settings_members": "Members",
   "settings_members_description": "Members see this board and can be given its tasks. Admins see every project.",
   "settings_columns": "Columns",
-  "settings_columns_description": "Rename a column or give it a WIP limit. What a column does follows its kind, whatever it is called.",
+  "settings_columns_description": "To do, Doing and Done are always on the board, in that order. Add your own columns and drag them anywhere on the board; a column can be removed once it is empty.",
   "settings_column_name_label": "Name",
   "settings_column_wip_label": "WIP limit",
   "settings_save": "Save",
@@ -569,9 +566,9 @@
     }
   ],
   "task_status": "Status",
-  "task_action_start": "Start",
-  "task_action_resume": "Resume",
-  "task_action_pause": "Pause",
+  "task_action_start": "Start timer",
+  "task_action_resume": "Resume timer",
+  "task_action_pause": "Pause timer",
   "task_action_done": "Mark done",
   "task_action_stop": "Stop",
   "task_action_reopen": "Reopen",
@@ -589,7 +586,7 @@
       }
     }
   ],
-  "task_pause_description": "The task moves to the paused column and every timer on it stops.",
+  "task_pause_description": "The timer stops and the card stays where it is, marked paused.",
   "task_stop_title": [
     {
       "declarations": ["input code"],
@@ -599,14 +596,6 @@
     }
   ],
   "task_stop_description": "A stopped task moves to the cancelled column. It can be reopened later.",
-  "task_move_title": [
-    {
-      "declarations": ["input code"],
-      "match": {
-        "": "Move {code}?"
-      }
-    }
-  ],
   "task_move_description": [
     {
       "declarations": ["input from", "input to"],
@@ -704,7 +693,6 @@
       }
     }
   ],
-  "timer_stop_mine": "Stop my timer",
   "timer_stop_failed": "The timer couldn't be stopped.",
   "task_stopped_hidden": [
     {
@@ -1092,9 +1080,6 @@
       }
     }
   ],
-  "activity_task_started": "started the task",
-  "activity_task_resumed": "resumed the task",
-  "activity_task_paused": "paused the task",
   "activity_task_completed": "marked the task done",
   "activity_task_stopped": "stopped the task",
   "activity_task_reopened": "reopened the task",
@@ -1689,7 +1674,7 @@
     {
       "declarations": ["input name", "input code"],
       "match": {
-        "": "{name} started {code}"
+        "": "{name} started the timer on {code}"
       }
     }
   ],
@@ -1697,7 +1682,7 @@
     {
       "declarations": ["input name", "input code"],
       "match": {
-        "": "{name} paused {code}"
+        "": "{name} paused the timer on {code}"
       }
     }
   ],
@@ -1860,5 +1845,76 @@
   "calendar_instructions": "Drag a card to another day, or move it with the arrow keys.",
   "calendar_grid": "Days of the month",
   "calendar_late": "Late",
-  "calendar_due_soon": "Due soon"
+  "calendar_due_soon": "Due soon",
+  "board_column_custom": "Column",
+  "column_error_name_required": "This column needs a name.",
+  "column_error_fixed": "To do, Doing and Done keep their place on the board.",
+  "column_error_not_empty": "Move this column's cards out before removing it.",
+  "column_add_failed": "The column wasn't added. Try again.",
+  "column_remove_failed": "The column wasn't removed. Try again.",
+  "transfer_error_custom": "On another board a card goes to To do, Doing or Done.",
+  "settings_column_fixed": "Fixed",
+  "settings_column_add_label": "New column",
+  "settings_column_add": "Add column",
+  "settings_column_added": "Column added before Done.",
+  "settings_column_remove": [
+    {
+      "declarations": ["input column"],
+      "match": {
+        "": "Remove {column}"
+      }
+    }
+  ],
+  "settings_column_removed": "Column removed.",
+  "settings_column_remove_title": [
+    {
+      "declarations": ["input column"],
+      "match": {
+        "": "Remove {column}?"
+      }
+    }
+  ],
+  "settings_column_remove_description": "The column leaves the board. The cards' history keeps its name.",
+  "settings_column_card_count": [
+    {
+      "declarations": ["input count", "local countText = count: number"],
+      "match": {
+        "": "{countText} cards on the board"
+      }
+    }
+  ],
+  "activity_column_created": [
+    {
+      "declarations": ["input column"],
+      "match": {
+        "": "added the column {column}"
+      }
+    }
+  ],
+  "activity_column_deleted": [
+    {
+      "declarations": ["input column"],
+      "match": {
+        "": "removed the column {column}"
+      }
+    }
+  ],
+  "task_back_title": [
+    {
+      "declarations": ["input code"],
+      "match": {
+        "": "Move {code} back?"
+      }
+    }
+  ],
+  "task_back_confirm": "Move back",
+  "task_start_done_title": [
+    {
+      "declarations": ["input code"],
+      "match": {
+        "": "Start the timer on {code}?"
+      }
+    }
+  ],
+  "task_start_done_description": "This task is done. Start the timer on it anyway? It stays in Done."
 }

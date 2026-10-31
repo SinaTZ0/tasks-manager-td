@@ -8,8 +8,9 @@ import { findColumns } from "#/orpc/project/repository";
 import { createTask, moveTask, transitionTask } from "#/orpc/task/service";
 
 /*===== Status and Time =====*/
-// One running timer per person (docs/app.md rule 2), a card leaving doing stops its timers (rule 3), and stopping a
-// task needs a reason while pausing doesn't (rule 5).
+// One running clock per person (docs/app.md rule 2), the clock apart from the column (a pause leaves the card where
+// it is, marked paused once no clock runs on it), a finished card stops its clocks (rule 3), and stopping a task needs a
+// reason while pausing doesn't (rule 5).
 
 let fixture: Awaited<ReturnType<typeof createTestProject<"admin" | "ali" | "reza">>>;
 
@@ -65,22 +66,34 @@ describe("status and time", () => {
     ).rejects.toThrow("Failed query");
   });
 
-  it("stops every timer on a card that leaves doing, by an action or a drag", async () => {
+  it("pauses only the person's own clock, leaves the card in place, and stops every clock once it is done", async () => {
     const { projectId, users } = fixture;
-    const paused = await newTask("مکث");
-    await act({ userId: users.ali, taskId: paused.id, action: "start" });
-    await act({ userId: users.reza, taskId: paused.id, action: "start" });
-    expect(await act({ userId: users.admin, taskId: paused.id, action: "pause" })).toMatchObject({
-      kind: "success",
-      task: { runningSince: [] },
-    });
-    expect([...(await openLogs(users.ali)), ...(await openLogs(users.reza))]).toEqual([]);
+    const task = await newTask("مکث");
+    await act({ userId: users.ali, taskId: task.id, action: "start" });
+    await act({ userId: users.reza, taskId: task.id, action: "start" });
+    // Nobody pauses another's clock.
+    expect(await act({ userId: users.admin, taskId: task.id, action: "pause" })).toMatchObject({ kind: "invalid" });
 
-    const dragged = await newTask("کشیدن");
-    await act({ userId: users.ali, taskId: dragged.id, action: "start" });
-    const review = (await findColumns({ db, projectId })).find((column) => column.kind === "review");
-    if (!review) throw new Error("setup failed");
-    await moveTask({ db, actorId: users.ali, projectId, taskId: dragged.id, columnId: review.id, position: "a0" });
+    // Reza still works on it, so it isn't paused yet; once his clock stops too, it is, still in its column.
+    expect(await act({ userId: users.ali, taskId: task.id, action: "pause" })).toMatchObject({
+      task: { columnId: task.columnId, runningSince: [expect.any(Date)], pausedAt: null },
+    });
+    expect(await act({ userId: users.reza, taskId: task.id, action: "pause", reason: "جلسه" })).toMatchObject({
+      task: { columnId: task.columnId, runningSince: [], pausedAt: expect.any(Date) },
+    });
+
+    await act({ userId: users.ali, taskId: task.id, action: "start" });
+    const done = (await findColumns({ db, projectId })).find((column) => column.kind === "done");
+    if (!done) throw new Error("setup failed");
+    const moved = await moveTask({
+      db,
+      actorId: users.ali,
+      projectId,
+      taskId: task.id,
+      columnId: done.id,
+      position: "a0",
+    });
+    expect(moved).toMatchObject({ task: { runningSince: [], pausedAt: null } });
     expect(await openLogs(users.ali)).toEqual([]);
   });
 

@@ -23,7 +23,7 @@ What each thing is and how it relates. How to store it = implementer decides.
 
 - **User** — Team member. Admin, user or viewer (task-manager-plan.md → Decisions → Roles). User leaves team → deactivate, never delete.
 - **Board** — One project (or one for everything). Has many Columns, many Tasks, many members.
-- **Column** — Status column on board. Has order, optional WIP limit. Each column has a _kind_ (backlog, todo, doing, paused, review, done, cancelled) separate from its name. Name can change freely, kind keeps logic working.
+- **Column** — Status column on board. Has order, optional WIP limit. Each column has a _kind_ separate from its name. Name can change freely, kind keeps logic working. Every board always has **To Do**, **Doing** and **Done** (fixed, in that order, never moved or removed) and a hidden **Cancelled**. Admin adds own columns (kind _custom_, no logic of their own) anywhere around them, renames them, removes them once empty.
 - **Task** — The card. Lives in one Column. Has one **owner** (responsible for it) and one **assignee** (doing the work), can be same user. Has priority, due date, estimate, labels. Can have parent Task (sub-task).
 - **Dependency** — Task waits for other Task. Many-to-many between Tasks. No cycles.
 - **Comment** — Discussion on a Task. Can mention other users.
@@ -47,7 +47,9 @@ What each thing is and how it relates. How to store it = implementer decides.
 - See board with columns and cards
 - Drag card between columns (change status)
 - Drag card inside column (change order)
-- Drag columns left/right (change column order)
+- Drag columns left/right (change column order): admin only, custom columns only. To Do, Doing, Done keep their order.
+- Card going **back** along To Do → Doing → Done (Done → Doing, Done → To Do, Doing → To Do) asks to confirm first. Moves
+  in or out of custom columns don't ask.
 - Optimistic update: card moves now, server confirms later. Server rejects → card goes back.
 
 **Task**
@@ -60,13 +62,16 @@ What each thing is and how it relates. How to store it = implementer decides.
   while its owner or assignee isn't on that project) or copies it there (no comments, time or history)
 - Card shows: title, assignee avatar, priority color, due date, labels, blocked icon, timer icon
 
-**Status / Pause / Stop**
+**Status / Clock / Stop**
 
-- Move to **Doing** → timer can start
-- **Pause** → card goes to Paused column, timer stops, ask "why pause?" (optional note)
-- **Resume** → back to Doing
-- **Stop** → task cancelled, reason required, card hidden in Cancelled. Can reopen.
-- **Done** → record finish time, timer stops
+- The clock (timer) is separate from the column. It shows who is working on what, wherever the card sits.
+- **Start** → my clock runs on the card, card stays where it is. Card border goes **green**.
+- **Pause** → my clock stops, card stays, ask "why pause?" (optional note). Once no clock runs on it, card border goes
+  **yellow** (paused) until a clock starts again.
+- Starting the clock on a **Done** card asks first ("this task is done, start anyway?").
+- **Stop** → task cancelled, reason required, card hidden in Cancelled, its clocks stop. Can reopen.
+- **Done** → record finish time, its clocks stop, no longer paused
+- **Reopen** → back to To Do (from Done it asks first, like any step back)
 
 **Duration / Time**
 
@@ -147,7 +152,7 @@ What each thing is and how it relates. How to store it = implementer decides.
 
 1. Card in **one** column only.
 2. One running timer per user. Start new → old one auto-pauses.
-3. Card leaves Doing → timer auto-pauses.
+3. Card enters Done or Cancelled → every clock on it stops. Moving between other columns never touches the clock.
 4. Blocked card can't go Done until blockers are Done (or user forces it + leaves comment).
 5. Stop requires reason. Pause reason optional.
 6. Delegation never changes owner. Owner = responsible. Assignee = does the work.
@@ -166,7 +171,7 @@ What each thing is and how it relates. How to store it = implementer decides.
 - **Card drawer/modal** — details, checklist, sub-tasks, dependencies, timer, tabs: Comments | Activity | Time
 - **My Tasks** — assigned to me, delegated by me, watching
 - **Notifications** — bell dropdown
-- **Settings** — columns, labels, members, WIP limits
+- **Settings** — columns (add, rename, remove when empty), labels, members, WIP limits
 
 ---
 

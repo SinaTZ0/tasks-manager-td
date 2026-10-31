@@ -28,11 +28,8 @@
   "root_not_found_details": "صفحه‌ای که دنبالش هستید وجود ندارد یا جابه‌جا شده است.",
   "board_columns": "ستون‌های تخته",
   "board_columns_shown": "ستون‌های نمایان روی تخته",
-  "board_column_backlog": "صف",
   "board_column_todo": "برای انجام",
   "board_column_doing": "در حال انجام",
-  "board_column_paused": "مکث",
-  "board_column_review": "بازبینی",
   "board_column_done": "انجام‌شده",
   "board_column_empty": "کاری نیست",
   "notes_title": "یادداشت‌ها",
@@ -211,7 +208,7 @@
   "settings_members": "اعضا",
   "settings_members_description": "اعضا این تخته را می‌بینند و کارهایش به آن‌ها سپرده می‌شود. مدیران همه پروژه‌ها را می‌بینند.",
   "settings_columns": "ستون‌ها",
-  "settings_columns_description": "نام ستون را عوض کنید یا برایش سقف کار بگذارید. کار هر ستون به نوع آن بستگی دارد، نه به نامش.",
+  "settings_columns_description": "«برای انجام»، «در حال انجام» و «انجام‌شده» همیشه به همین ترتیب روی تخته‌اند. ستون‌های خودتان را اضافه کنید و روی تخته هر جا خواستید بکشید؛ ستون خالی را می‌شود حذف کرد.",
   "settings_column_name_label": "نام",
   "settings_column_wip_label": "سقف کار",
   "settings_save": "ذخیره",
@@ -569,9 +566,9 @@
     }
   ],
   "task_status": "وضعیت",
-  "task_action_start": "شروع",
-  "task_action_resume": "ادامه",
-  "task_action_pause": "مکث",
+  "task_action_start": "روشن کردن زمان‌سنج",
+  "task_action_resume": "ادامهٔ زمان‌سنج",
+  "task_action_pause": "مکث زمان‌سنج",
   "task_action_done": "تمام شد",
   "task_action_stop": "توقف",
   "task_action_reopen": "بازگشایی",
@@ -589,7 +586,7 @@
       }
     }
   ],
-  "task_pause_description": "کار به ستون مکث می‌رود و همه زمان‌سنج‌هایش متوقف می‌شوند.",
+  "task_pause_description": "زمان‌سنج خاموش می‌شود و کارت سر جایش می‌ماند، با نشان مکث.",
   "task_stop_title": [
     {
       "declarations": ["input code"],
@@ -599,14 +596,6 @@
     }
   ],
   "task_stop_description": "کار متوقف‌شده به ستون لغوشده می‌رود و بعداً دوباره باز می‌شود.",
-  "task_move_title": [
-    {
-      "declarations": ["input code"],
-      "match": {
-        "": "{code} جابه‌جا شود؟"
-      }
-    }
-  ],
   "task_move_description": [
     {
       "declarations": ["input from", "input to"],
@@ -704,7 +693,6 @@
       }
     }
   ],
-  "timer_stop_mine": "توقف زمان‌سنج من",
   "timer_stop_failed": "زمان‌سنج متوقف نشد.",
   "task_stopped_hidden": [
     {
@@ -1092,9 +1080,6 @@
       }
     }
   ],
-  "activity_task_started": "کار را شروع کرد",
-  "activity_task_resumed": "کار را از سر گرفت",
-  "activity_task_paused": "کار را به مکث برد",
   "activity_task_completed": "کار را تمام کرد",
   "activity_task_stopped": "کار را متوقف کرد",
   "activity_task_reopened": "کار را دوباره باز کرد",
@@ -1689,7 +1674,7 @@
     {
       "declarations": ["input name", "input code"],
       "match": {
-        "": "{name} کار {code} را شروع کرد"
+        "": "{name} زمان‌سنج {code} را روشن کرد"
       }
     }
   ],
@@ -1697,7 +1682,7 @@
     {
       "declarations": ["input name", "input code"],
       "match": {
-        "": "{name} کار {code} را به مکث برد"
+        "": "{name} زمان‌سنج {code} را به مکث برد"
       }
     }
   ],
@@ -1860,5 +1845,76 @@
   "calendar_instructions": "کارت را روی روز دیگری بکشید، یا با کلیدهای جهت جابه‌جایش کنید.",
   "calendar_grid": "روزهای ماه",
   "calendar_late": "دیرکرد",
-  "calendar_due_soon": "نزدیک سررسید"
+  "calendar_due_soon": "نزدیک سررسید",
+  "board_column_custom": "ستون",
+  "column_error_name_required": "این ستون نام می‌خواهد.",
+  "column_error_fixed": "«برای انجام»، «در حال انجام» و «انجام‌شده» جای خود را روی تخته نگه می‌دارند.",
+  "column_error_not_empty": "پیش از حذف این ستون، کارت‌هایش را به ستون دیگری ببرید.",
+  "column_add_failed": "ستون اضافه نشد. دوباره امتحان کنید.",
+  "column_remove_failed": "ستون حذف نشد. دوباره امتحان کنید.",
+  "transfer_error_custom": "روی تختهٔ دیگر، کارت به «برای انجام»، «در حال انجام» یا «انجام‌شده» می‌رود.",
+  "settings_column_fixed": "ثابت",
+  "settings_column_add_label": "ستون تازه",
+  "settings_column_add": "افزودن ستون",
+  "settings_column_added": "ستون پیش از «انجام‌شده» اضافه شد.",
+  "settings_column_remove": [
+    {
+      "declarations": ["input column"],
+      "match": {
+        "": "حذف {column}"
+      }
+    }
+  ],
+  "settings_column_removed": "ستون حذف شد.",
+  "settings_column_remove_title": [
+    {
+      "declarations": ["input column"],
+      "match": {
+        "": "{column} حذف شود؟"
+      }
+    }
+  ],
+  "settings_column_remove_description": "ستون از تخته برداشته می‌شود. تاریخچهٔ کارت‌ها نامش را نگه می‌دارد.",
+  "settings_column_card_count": [
+    {
+      "declarations": ["input count", "local countText = count: number"],
+      "match": {
+        "": "{countText} کارت روی تخته"
+      }
+    }
+  ],
+  "activity_column_created": [
+    {
+      "declarations": ["input column"],
+      "match": {
+        "": "ستون {column} را اضافه کرد"
+      }
+    }
+  ],
+  "activity_column_deleted": [
+    {
+      "declarations": ["input column"],
+      "match": {
+        "": "ستون {column} را حذف کرد"
+      }
+    }
+  ],
+  "task_back_title": [
+    {
+      "declarations": ["input code"],
+      "match": {
+        "": "{code} برگردد؟"
+      }
+    }
+  ],
+  "task_back_confirm": "برگرداندن",
+  "task_start_done_title": [
+    {
+      "declarations": ["input code"],
+      "match": {
+        "": "زمان‌سنج {code} روشن شود؟"
+      }
+    }
+  ],
+  "task_start_done_description": "این کار انجام شده است. با این حال زمان‌سنجش روشن شود؟ کارت در «انجام‌شده» می‌ماند."
 }

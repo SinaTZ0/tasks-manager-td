@@ -41,6 +41,8 @@ export const taskCardSchema = z.object({
   hasDescription: z.boolean(),
   /** When it entered the done column; null anywhere else. */
   completedAt: z.date().nullable(),
+  /** When its last clock stopped while the work goes on (the card's yellow border); null once a clock runs again. */
+  pausedAt: z.date().nullable(),
   /** The time its finished logs add up to. */
   spentSeconds: z.number().int(),
   /** When each of its running timers started (one per person working on it); the card adds them to the total live. */
@@ -65,7 +67,7 @@ export const taskDetailSchema = taskCardSchema.extend({
   createdAt: z.date(),
   updatedAt: z.date(),
   archivedAt: z.date().nullable(),
-  /** Why it is paused or stopped, while it is: the reason given, by whom and when. */
+  /** Why it is paused or stopped, while it is: the reason given (if any), by whom and when. */
   statusNote: z
     .object({
       action: z.enum(["pause", "stop"]),

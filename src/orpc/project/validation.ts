@@ -26,6 +26,11 @@ export const newProjectSchema = z.object({
 });
 
 /*===== Column =====*/
+/** A custom column's name: it has no kind's name to fall back on. */
+export const customColumnNameSchema = persianText()
+  .min(1, { error: () => m.column_error_name_required() })
+  .max(COLUMN_NAME_MAX_LENGTH, { error: () => m.column_error_name_too_long({ max: COLUMN_NAME_MAX_LENGTH }) });
+
 export const columnChangeSchema = z.object({
   // Empty text means "the kind's own name".
   name: persianText()

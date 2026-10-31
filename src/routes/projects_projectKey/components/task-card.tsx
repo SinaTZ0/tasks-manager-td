@@ -24,17 +24,35 @@ import type { Label, TaskCard as TaskCardData } from "#/orpc/task/contract";
 import { m } from "#/paraglide/messages";
 import { LabelTag } from "#/routes/projects_projectKey/components/label-tag";
 import { PriorityMark } from "#/routes/projects_projectKey/components/priority-mark";
+import { CLOCK_STATE_LED, clockStateOf, type ClockState } from "#/routes/projects_projectKey/task-status";
 
 /*===== Time Spent =====*/
 
-/** Whether the card prints its time spent: once a minute is logged, or while a timer runs. */
-const showsSpent = (task: TaskCardData) => task.runningSince.length > 0 || task.spentSeconds >= 60;
+/** Whether the card prints its time spent: once a minute is logged, or while a clock runs or is paused. */
+const showsSpent = (task: TaskCardData) => clockStateOf(task) !== "idle" || task.spentSeconds >= 60;
 
-/** The card's time spent as `h:mm`, the sum of its logs. */
+/** The card's time spent as `h:mm`, the sum of its logs, beside a steady yellow LED while its clock is paused. */
 function SpentReadout({ task }: { task: TaskCardData }) {
-  if (task.runningSince.length > 0) return <RunningReadout task={task} />;
-  return <SpentMarking seconds={task.spentSeconds} />;
+  const clock = clockStateOf(task);
+  if (clock === "running") return <RunningReadout task={task} />;
+  if (clock === "idle") return <SpentMarking seconds={task.spentSeconds} />;
+  return (
+    <span className="flex items-center gap-1.5">
+      <Led signal="attention" state="on" size="sm" label={CLOCK_STATE_LED.paused.label()} />
+      <SpentMarking seconds={task.spentSeconds} />
+    </span>
+  );
 }
+
+/**
+ * The card's border while its clock runs (green) or is paused (yellow). A ring beside the border draws it two pixels
+ * wide without moving the card's content; the LED on the footer says the same for those who don't see the colour.
+ */
+const CLOCK_BORDER: Record<ClockState, string> = {
+  running: "border-signal-positive ring-1 ring-signal-positive",
+  paused: "border-signal-attention ring-1 ring-signal-attention",
+  idle: "",
+};
 
 /** While a timer runs: a blinking green LED and the total, ticking. */
 function RunningReadout({ task }: { task: TaskCardData }) {
@@ -106,7 +124,8 @@ const PARTS_ON_HOVER =
  * code and priority on a printed strip, the title and labels on the face, people and dates on the footer. The title is
  * the link that opens the card's drawer; its hit area covers the whole card. The owner's cap shows beside the
  * assignee's only when they differ, since delegation never changes the owner. The time spent prints on the footer once
- * there is some, beside a blinking LED while someone's timer runs on it. A blocked card gets a yellow strip naming what
+ * there is some, beside a blinking LED while someone's clock runs on it and a steady one while it is paused; the card's
+ * border lights green or yellow for the same. A blocked card gets a yellow strip naming what
  * it waits for, so the dependency shows without opening it.
  *
  * On the board the card is also something to pick up (`SortableTaskCard` passes the drag props): `grip` and `menu` sit
@@ -157,6 +176,7 @@ export function TaskCard({
         "focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-ring hover:bg-accent",
         state === "placeholder" && "opacity-40",
         state === "overlay" && "cursor-grabbing bg-accent",
+        CLOCK_BORDER[clockStateOf(task)],
       )}
     >
       {/*------ Code Line ------*/}

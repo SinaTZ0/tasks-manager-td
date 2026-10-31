@@ -42,9 +42,14 @@ Made with the user on 2026-10-30. They answer the spec's open questions and over
 
 ### Rules That Follow From Them
 
-- **One column per kind.** Every project starts with the seven kinds (backlog, todo, doing, paused, review, done,
-  cancelled) and keeps exactly one column of each, so "Pause → the Paused column" always has one answer. Columns can
-  be renamed, reordered and given a WIP limit; the cancelled column is never drawn on the board.
+- **Fixed columns, custom columns.** Every project has To Do, Doing and Done (in that order, never moved or removed)
+  and a hidden Cancelled, one of each, so "Done → the Done column" always has one answer. An admin adds custom columns
+  (no logic of their own) anywhere, and removes one once no card on the board is in it. Every column can be renamed and
+  given a WIP limit; the cancelled column is never drawn on the board. (Changed after slice 21: the first build had
+  seven fixed kinds, Paused and Review among them.)
+- **The clock is not a column.** Start and pause work the person's own clock and leave the card where it is; the card's
+  border is green while a clock runs and yellow once the last one is paused. Entering Done or Cancelled stops its
+  clocks. A step back along the fixed columns, and starting a clock on a done card, ask to confirm.
 - **Project settings are admin-only**: members, columns, WIP limits. Labels can be added by any member, because tagging
   is part of everyday work; renaming or deleting one changes every task that has it, so that is an admin's.
 - **Owner**: whoever creates a task owns it (an admin, since slice 9). The owner or an admin can hand ownership to someone else; delegation never
@@ -95,7 +100,7 @@ Built once, in the slice that first needs them, and used by every procedure afte
 - **Accounts**: close public sign-up (Better-Auth's sign-up and the sign-up tab go; the Altcha captcha stays for
   public forms, as the template documents it). An admin page lists users and creates one (name, e-mail, password),
   promotes or demotes, deactivates or reactivates, with the last-admin guard; nobody changes their own account.
-- **Projects**: an admin creates a project (name, key), which gets the seven default columns. A member list per
+- **Projects**: an admin creates a project (name, key), which gets the default columns. A member list per
   project, edited by an admin.
 - **Activity**: the table, the trigger and the helper, recording project and membership changes from the start.
 - **Pages**: `/` becomes the projects list (a member with one project goes straight to it), `/projects/$projectKey`

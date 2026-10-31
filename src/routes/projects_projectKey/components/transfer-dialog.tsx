@@ -17,7 +17,7 @@ import { FormAlert } from "#/components/shared/form-alert/form-alert";
 import { describeApiFailure } from "#/lib/api-error";
 import { columnKindTitle } from "#/lib/column-title";
 import { orpc } from "#/orpc/client";
-import { COLUMN_KINDS, type ColumnKind } from "#/orpc/project/constants";
+import { SYSTEM_COLUMN_KINDS, type ColumnKind } from "#/orpc/project/constants";
 import { taskCode } from "#/orpc/task/constants";
 import { m } from "#/paraglide/messages";
 
@@ -52,7 +52,9 @@ export function TransferDialog({
   const queryClient = useQueryClient();
   const id = useId();
   const { mode } = request;
-  const defaultKind: ColumnKind = mode === "copy" && request.kind === "cancelled" ? "backlog" : request.kind;
+  // A custom column is this board's own: on another board the card starts in to do, as a copy of a stopped one does.
+  const defaultKind: ColumnKind =
+    request.kind === "custom" || (mode === "copy" && request.kind === "cancelled") ? "todo" : request.kind;
   const [targetId, setTargetId] = useState<string | null>(null);
   const [kind, setKind] = useState<ColumnKind>(defaultKind);
   const [failure, setFailure] = useState<{ message?: string; fields: Record<string, string> }>({ fields: {} });
@@ -60,7 +62,7 @@ export function TransferDialog({
   const { data: projects = [] } = useQuery({ ...orpc.project.list.queryOptions(), enabled: open });
   const targets = projects.filter((project) => project.id !== projectId);
   const projectItems = targets.map((project) => ({ value: project.id, label: `${project.name} (${project.key})` }));
-  const kindItems = COLUMN_KINDS.filter((item) => mode === "move" || item !== "cancelled").map((item) => ({
+  const kindItems = SYSTEM_COLUMN_KINDS.filter((item) => mode === "move" || item !== "cancelled").map((item) => ({
     value: item,
     label: columnKindTitle(item),
   }));

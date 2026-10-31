@@ -26,26 +26,42 @@ export const ESTIMATE_MAX_MINUTES = 999 * 60;
 /*===== Status Actions =====*/
 
 /**
- * What a person can do to a task's status, each tied to a column kind (docs/app.md → Status / Pause / Stop): start (or
- * resume) puts it in doing and starts their timer, pause parks it in paused, done finishes it, stop cancels it with a
- * reason, reopen brings a done or cancelled task back to todo.
+ * What a person can do to a task's status (docs/app.md → Status / Clock / Stop). Two of them work the person's own
+ * clock and leave the card where it is: start runs it (stopping any other they had running, rule 2), pause stops it.
+ * The others move the card: done finishes it, stop cancels it with a reason, reopen brings a done or cancelled task back
+ * to to do.
  */
 export const TASK_STATUS_ACTIONS = ["start", "pause", "done", "stop", "reopen"] as const;
 
 export type TaskStatusAction = (typeof TASK_STATUS_ACTIONS)[number];
 
-/** The column kinds each action may be taken from, and the kind it moves the task to. */
-export const STATUS_ACTION_RULES = {
-  start: { from: ["backlog", "todo", "doing", "paused", "review"], to: "doing" },
-  pause: { from: ["doing"], to: "paused" },
-  done: { from: ["backlog", "todo", "doing", "paused", "review"], to: "done" },
-  stop: { from: ["backlog", "todo", "doing", "paused", "review", "done"], to: "cancelled" },
+/** The actions that move the card: the column kinds each may be taken from, and the kind it moves the task to. */
+export const COLUMN_ACTION_RULES = {
+  done: { from: ["todo", "doing", "custom"], to: "done" },
+  stop: { from: ["todo", "doing", "custom", "done"], to: "cancelled" },
   reopen: { from: ["done", "cancelled"], to: "todo" },
-} as const satisfies Record<TaskStatusAction, { from: readonly ColumnKind[]; to: ColumnKind }>;
+} as const satisfies Record<"done" | "stop" | "reopen", { from: readonly ColumnKind[]; to: ColumnKind }>;
 
-/** Whether `action` can be taken on a task in a column of `kind`. */
-export function canTakeAction({ action, kind }: { action: TaskStatusAction; kind: ColumnKind }): boolean {
-  return (STATUS_ACTION_RULES[action].from as readonly ColumnKind[]).includes(kind);
+export type ColumnAction = keyof typeof COLUMN_ACTION_RULES;
+
+export const isColumnAction = (action: TaskStatusAction): action is ColumnAction => action in COLUMN_ACTION_RULES;
+
+/**
+ * Whether `action` can be taken on a task in a column of `kind`. A clock starts on any task but a cancelled one (a done
+ * one asks first, on the page), and only its own person pauses it: `timing` says whether the actor's clock runs on it.
+ */
+export function canTakeAction({
+  action,
+  kind,
+  timing,
+}: {
+  action: TaskStatusAction;
+  kind: ColumnKind;
+  timing: boolean;
+}): boolean {
+  if (action === "start") return !timing && kind !== "cancelled";
+  if (action === "pause") return timing;
+  return (COLUMN_ACTION_RULES[action].from as readonly ColumnKind[]).includes(kind);
 }
 
 /** Of a pause's or a stop's reason. */

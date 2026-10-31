@@ -1,61 +1,59 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { TimerOffIcon, type LucideProps } from "lucide-react";
-import { createElement, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { useState } from "react";
 
 import { Button } from "#/components/primitive/button/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "#/components/primitive/dialog/dialog";
 import { Display, DisplayLabel, DisplayValue } from "#/components/primitive/display/display";
 import { Led } from "#/components/primitive/led/led";
 import { Progress, ProgressLabel, ProgressValue } from "#/components/primitive/progress/progress";
-import { toast } from "#/components/primitive/toast/toast";
 import { useNow } from "#/hooks/use-now";
-import { describeApiFailure } from "#/lib/api-error";
 import { columnTitle } from "#/lib/column-title";
 import { formatClock, formatDuration, liveSeconds } from "#/lib/duration";
 import { formatDate } from "#/lib/locale";
 import { orpc } from "#/orpc/client";
-import type { ColumnKind } from "#/orpc/project/constants";
-import type { Column, Person, Project } from "#/orpc/project/contract";
-import { STATUS_ACTION_RULES, type TaskStatusAction } from "#/orpc/task/constants";
+import { isBackwardMove, type ColumnKind } from "#/orpc/project/constants";
+import type { Person, Project } from "#/orpc/project/contract";
+import { COLUMN_ACTION_RULES, isColumnAction, type TaskStatusAction } from "#/orpc/task/constants";
 import type { TaskDetail } from "#/orpc/task/contract";
 import { m } from "#/paraglide/messages";
+import { ConfirmDialog, type ConfirmRequest } from "#/routes/projects_projectKey/components/confirm-dialog";
 import { ReasonDialog, type ReasonRequest } from "#/routes/projects_projectKey/components/reason-dialog";
 import { entersGuardedColumn } from "#/routes/projects_projectKey/dependencies";
 import {
   asksReason,
   availableActions,
-  RUN_STATE_LED,
-  runStateOf,
+  CLOCK_STATE_LED,
+  clockStateOf,
   statusActionIcon,
   statusActionLabel,
 } from "#/routes/projects_projectKey/task-status";
 import { useTaskTransition } from "#/routes/projects_projectKey/use-board-moves";
 
-/*===== State Word =====*/
+/*===== State =====*/
 
-/** What the display prints for the task's state: its LED's word, or "stopped" or "idle" where no LED is lit. */
-function stateWord({ kind, running }: { kind: ColumnKind; running: boolean }): string {
-  const state = runStateOf({ kind, running });
-  if (state) return RUN_STATE_LED[state].label();
-  return kind === "cancelled" ? m.task_run_stopped() : m.task_run_idle();
+type PanelState = { word: string; signal: "positive" | "attention" | "action"; led: "blink" | "on" | "off" };
+
+/**
+ * What the display's LED and word say: the clock while it runs or is paused, else where the work stands (done,
+ * stopped, or not running).
+ */
+function stateOf({ task, kind }: { task: TaskDetail; kind: ColumnKind }): PanelState {
+  const clock = clockStateOf(task);
+  if (clock !== "idle") {
+    const led = CLOCK_STATE_LED[clock];
+    return { word: led.label(), signal: led.signal, led: led.state };
+  }
+  if (kind === "done") return { word: m.task_run_done(), signal: "positive", led: "on" };
+  return { word: kind === "cancelled" ? m.task_run_stopped() : m.task_run_idle(), signal: "action", led: "off" };
 }
 
 /*===== Task Status Panel =====*/
 
 /**
- * The drawer's transport: a display window with the task's state and its time spent, ticking while a timer runs; the
- * estimate meter under it; and keys for the status actions its column allows (docs/app.md → Status / Pause / Stop).
- * Start stops whatever else the viewer was timing (rule 2). While the viewer's own timer runs here, its key stops just
- * that timer instead and leaves the card in doing. A paused or stopped task prints who did it and why. A key that would
- * move the card to another column asks first: pause and stop through their reason dialog, the others through a plain
- * confirmation, so a stray click can't shift the card.
+ * The drawer's transport: a display window with the task's state and its time spent, ticking while a clock runs; the
+ * estimate meter under it; and keys for the status actions it allows (docs/app.md → Status / Clock / Stop). Start runs
+ * the viewer's own clock (stopping whatever else they were timing, rule 2) and pause stops it; neither moves the card.
+ * A paused or stopped task prints who did it and why. Pause and stop ask for their reason first; reopening a done task
+ * (a step back along the fixed columns) and starting the clock on one ask to confirm.
  */
 export function TaskStatusPanel({
   task,
@@ -69,12 +67,11 @@ export function TaskStatusPanel({
   project: Project;
   code: string;
   people: Map<string, Person>;
-  /** The codes of the tasks still holding it up: starting or finishing it asks why first (rule 4). */
+  /** The codes of the tasks still holding it up: finishing it asks why first (rule 4). */
   blockers: string[];
   /** A viewer sees the display and meter, with no keys. */
   readOnly: boolean;
 }) {
-  const queryClient = useQueryClient();
   const transition = useTaskTransition(project);
   const { data: myTimer } = useQuery(orpc.time.current.queryOptions());
   // Kept after the dialog closes, so it can play its way out showing what it asked.
@@ -84,35 +81,17 @@ export function TaskStatusPanel({
     open: boolean;
   } | null>(null);
   // Kept after closing for the same reason.
-  const [confirming, setConfirming] = useState<{
-    action: TaskStatusAction;
-    kind: ColumnKind;
-    from: Column;
-    to: Column;
-    open: boolean;
-  } | null>(null);
+  const [confirming, setConfirming] = useState<{ request: ConfirmRequest; run: () => void; open: boolean } | null>(
+    null,
+  );
   const now = useNow();
 
   const column = project.columns.find((item) => item.id === task.columnId);
-  const kind: ColumnKind = column?.kind ?? "backlog";
-  const running = task.runningSince.length > 0;
-  const timingHere = myTimer?.taskId === task.id;
-  const state = runStateOf({ kind, running });
+  const kind: ColumnKind = column?.kind ?? "todo";
+  const timing = myTimer?.taskId === task.id;
+  const paused = task.pausedAt !== null;
+  const state = stateOf({ task, kind });
   const seconds = liveSeconds({ ...task, now });
-
-  const stopMine = useMutation(
-    orpc.time.stop.mutationOptions({
-      onSettled: () =>
-        Promise.all([
-          queryClient.invalidateQueries({ queryKey: orpc.time.key() }),
-          queryClient.invalidateQueries({ queryKey: orpc.task.key() }),
-        ]),
-      onError: (error) => {
-        const failure = describeApiFailure({ error, fallback: m.timer_stop_failed() });
-        toast.add({ title: failure.message ?? m.timer_stop_failed(), type: "error" });
-      },
-    }),
-  );
 
   const take = (action: TaskStatusAction) => {
     if (asksReason(action)) {
@@ -122,18 +101,37 @@ export function TaskStatusPanel({
         open: true,
       });
     }
-    if (blockers.length > 0 && entersGuardedColumn({ from: kind, to: STATUS_ACTION_RULES[action].to })) {
-      return setAsking({
-        request: { kind: "force", code, blockers },
-        run: (forceComment) => transition({ taskId: task.id, action, forceComment }),
-        open: true,
-      });
+    if (!isColumnAction(action)) {
+      if (kind !== "done") return transition({ taskId: task.id, action });
+      const request = {
+        title: m.task_start_done_title({ code }),
+        description: m.task_start_done_description(),
+        confirm: statusActionLabel({ action, paused }),
+      };
+      return setConfirming({ request, run: () => transition({ taskId: task.id, action }), open: true });
     }
-    const target = project.columns.find((item) => item.kind === STATUS_ACTION_RULES[action].to);
-    if (column && target && target.id !== column.id) {
-      return setConfirming({ action, kind, from: column, to: target, open: true });
+
+    const to = COLUMN_ACTION_RULES[action].to;
+    const ahead = () => {
+      if (blockers.length > 0 && entersGuardedColumn({ from: kind, to })) {
+        return setAsking({
+          request: { kind: "force", code, blockers },
+          run: (forceComment) => transition({ taskId: task.id, action, forceComment }),
+          open: true,
+        });
+      }
+      transition({ taskId: task.id, action });
+    };
+    const target = project.columns.find((item) => item.kind === to);
+    if (column && target && isBackwardMove({ from: kind, to })) {
+      const request = {
+        title: m.task_back_title({ code }),
+        description: m.task_move_description({ from: columnTitle(column), to: columnTitle(target) }),
+        confirm: statusActionLabel({ action, paused }),
+      };
+      return setConfirming({ request, run: ahead, open: true });
     }
-    transition({ taskId: task.id, action });
+    ahead();
   };
 
   return (
@@ -142,16 +140,11 @@ export function TaskStatusPanel({
       <Display>
         <div className="flex items-center justify-between gap-4">
           <span className="flex items-center gap-2">
-            <Led
-              signal={state ? RUN_STATE_LED[state].signal : "action"}
-              state={state ? RUN_STATE_LED[state].state : "off"}
-            />
-            <DisplayLabel>{stateWord({ kind, running })}</DisplayLabel>
+            <Led signal={state.signal} state={state.led} />
+            <DisplayLabel>{state.word}</DisplayLabel>
           </span>
-          {/* Paused, done and stopped already name their column; the others print it. */}
-          {column && !["paused", "done", "cancelled"].includes(kind) && (
-            <DisplayLabel>{columnTitle(column)}</DisplayLabel>
-          )}
+          {/* Done and stopped already name their column; the others print it. */}
+          {column && kind !== "done" && kind !== "cancelled" && <DisplayLabel>{columnTitle(column)}</DisplayLabel>}
         </div>
         <div className="flex items-end justify-between gap-4">
           <DisplayLabel>{m.time_spent_label()}</DisplayLabel>
@@ -168,21 +161,7 @@ export function TaskStatusPanel({
       {/*------ Keys ------*/}
       {!readOnly && (
         <div className="flex flex-wrap gap-3">
-          {availableActions(kind).map((action) => {
-            if (action === "start" && timingHere) {
-              return (
-                <Button
-                  key="stop-mine"
-                  variant="secondary"
-                  size="sm"
-                  disabled={stopMine.isPending}
-                  onClick={() => stopMine.mutate(undefined)}
-                >
-                  <TimerOffIcon data-icon="inline-start" />
-                  {m.timer_stop_mine()}
-                </Button>
-              );
-            }
+          {availableActions({ kind, timing }).map((action) => {
             const Icon = statusActionIcon(action);
             return (
               <Button
@@ -192,7 +171,7 @@ export function TaskStatusPanel({
                 onClick={() => take(action)}
               >
                 <Icon data-icon="inline-start" />
-                {statusActionLabel({ action, kind })}
+                {statusActionLabel({ action, paused })}
               </Button>
             );
           })}
@@ -211,66 +190,14 @@ export function TaskStatusPanel({
         />
       )}
       {confirming && (
-        <MoveConfirmDialog
-          code={code}
-          {...confirming}
+        <ConfirmDialog
+          request={confirming.request}
+          open={confirming.open}
           onOpenChange={(open) => setConfirming({ ...confirming, open })}
-          onConfirm={() => transition({ taskId: task.id, action: confirming.action })}
+          onConfirm={confirming.run}
         />
       )}
     </section>
-  );
-}
-
-/*===== Move Confirm Dialog =====*/
-
-// The icon is looked up by action, so it is made with `createElement`: JSX would read it as a component made during
-// render. `data-*` isn't among an icon's typed props outside JSX, hence the props object.
-const INLINE_START_ICON = { "data-icon": "inline-start" } as LucideProps;
-
-/** Names the column the card leaves and the one it goes to; the confirm key carries the action's own name and icon. */
-function MoveConfirmDialog({
-  code,
-  kind,
-  action,
-  from,
-  to,
-  open,
-  onOpenChange,
-  onConfirm,
-}: {
-  code: string;
-  /** The card's column kind when asked, which names the action (start reads "resume" on a paused task). */
-  kind: ColumnKind;
-  action: TaskStatusAction;
-  from: Column;
-  to: Column;
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  onConfirm: () => void;
-}) {
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>{m.task_move_title({ code })}</DialogTitle>
-          <DialogDescription>
-            {m.task_move_description({ from: columnTitle(from), to: columnTitle(to) })}
-          </DialogDescription>
-        </DialogHeader>
-        <DialogFooter showCloseButton>
-          <Button
-            onClick={() => {
-              onConfirm();
-              onOpenChange(false);
-            }}
-          >
-            {createElement(statusActionIcon(action), INLINE_START_ICON)}
-            {statusActionLabel({ action, kind })}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
   );
 }
 

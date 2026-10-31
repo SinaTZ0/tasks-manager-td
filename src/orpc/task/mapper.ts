@@ -36,6 +36,7 @@ export function toTaskCard({
     labelIds,
     hasDescription: record.descriptionText.length > 0,
     completedAt: record.completedAt,
+    pausedAt: record.pausedAt,
     spentSeconds: time.spentSeconds,
     runningSince: time.runningSince,
     waitsFor,

@@ -5,13 +5,12 @@ import { m } from "#/paraglide/messages";
 
 // Message functions, not their text, so each request gets its own locale.
 const KIND_TITLES: Record<ColumnKind, () => string> = {
-  backlog: m.board_column_backlog,
   todo: m.board_column_todo,
   doing: m.board_column_doing,
-  paused: m.board_column_paused,
-  review: m.board_column_review,
   done: m.board_column_done,
   cancelled: m.board_column_cancelled,
+  // A custom column always has a name; this only shows if it somehow didn't.
+  custom: m.board_column_custom,
 };
 
 /** The kind's own name, in the reader's language. */

@@ -2,11 +2,13 @@ import { base } from "#/orpc/implementer.server";
 import { requireAdminMiddleware, requireUserMiddleware } from "#/orpc/middleware/auth/auth.middleware";
 import { provideDbMiddleware } from "#/orpc/middleware/db/db.middleware";
 import {
+  addColumn,
   changeColumn,
   createProject,
   getProject,
   listProjects,
   moveColumn,
+  removeColumn,
   renameProject,
   setProjectMember,
 } from "#/orpc/project/service";
@@ -79,6 +81,29 @@ export const moveColumnProcedure = base.project.moveColumn
   .handler(async ({ context, input, errors }) => {
     const result = await moveColumn({ db: context.db, actorId: context.user.id, ...input });
     if (result.kind === "not-found") throw errors.NOT_FOUND({ data: noData });
+    if (result.kind === "invalid") {
+      throw errors.INVALID_INPUT({ data: { errors: result.errors ?? [], fields: result.fields } });
+    }
+    return result.column;
+  });
+
+export const addColumnProcedure = base.project.addColumn
+  .use(requireAdminMiddleware)
+  .use(provideDbMiddleware)
+  .handler(async ({ context, input, errors }) => {
+    const result = await addColumn({ db: context.db, actorId: context.user.id, ...input });
+    if (result.kind === "not-found") throw errors.NOT_FOUND({ data: noData });
     if (result.kind === "invalid") throw errors.INVALID_INPUT({ data: { errors: [], fields: result.fields } });
     return result.column;
+  });
+
+export const removeColumnProcedure = base.project.removeColumn
+  .use(requireAdminMiddleware)
+  .use(provideDbMiddleware)
+  .handler(async ({ context, input, errors }) => {
+    const result = await removeColumn({ db: context.db, actorId: context.user.id, ...input });
+    if (result.kind === "not-found") throw errors.NOT_FOUND({ data: noData });
+    if (result.kind === "invalid") {
+      throw errors.INVALID_INPUT({ data: { errors: result.errors ?? [], fields: result.fields } });
+    }
   });

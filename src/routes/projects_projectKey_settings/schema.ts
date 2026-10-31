@@ -33,3 +33,11 @@ export const columnFormSchema = z.object({
 
 export type ColumnFormValues = z.input<typeof columnFormSchema>;
 export type ColumnFormOutput = z.output<typeof columnFormSchema>;
+
+export const newColumnFormSchema = z.object({
+  name: persianText()
+    .min(1, { error: () => m.column_error_name_required() })
+    .max(COLUMN_NAME_MAX_LENGTH, { error: () => m.column_error_name_too_long({ max: COLUMN_NAME_MAX_LENGTH }) }),
+});
+
+export type NewColumnFormValues = z.infer<typeof newColumnFormSchema>;

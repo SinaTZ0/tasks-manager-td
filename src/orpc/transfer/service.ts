@@ -171,7 +171,9 @@ export async function moveTaskToProject({
     }));
 
     /*------ Place ------*/
-    const kind = columnKind ?? (from.kind as ColumnKind);
+    // A custom column is this board's own; on another board the card starts in to do.
+    const kind = columnKind ?? (from.kind === "custom" ? "todo" : (from.kind as ColumnKind));
+    if (kind === "custom") return { kind: "invalid", fields: { columnKind: m.transfer_error_custom() } };
     const to = await findColumnByKind({ db: tx, projectId: target.id, kind });
     // Leaving doing stops its timers, entering or leaving done sets or clears when it finished, as on a board.
     const effects = await columnEffects({ db: tx, actorId, task, from: from.kind, to: kind });
@@ -191,7 +193,7 @@ export async function moveTaskToProject({
     const newCode = taskCode({ key: target.key, number });
     const fields = {
       before: { projectId, code: oldCode },
-      after: { projectId: target.id, code: newCode, columnKind: to.kind, columnName: to.name },
+      after: { projectId: target.id, code: newCode, columnId: to.id, columnKind: to.kind, columnName: to.name },
     };
     await recordActivity({
       db: tx,
@@ -240,8 +242,10 @@ export async function copyTaskToProject({
   // Read outside the transaction, so the bucket's copying holds no locks; the transaction reads the task again.
   const preview = await locate({ db, projectId, taskId, targetProjectId });
   if ("kind" in preview) return preview;
-  const kind = columnKind ?? (preview.from.kind === "cancelled" ? "backlog" : (preview.from.kind as ColumnKind));
+  const sourceKind = preview.from.kind as ColumnKind;
+  const kind = columnKind ?? (sourceKind === "cancelled" || sourceKind === "custom" ? "todo" : sourceKind);
   if (kind === "cancelled") return { kind: "invalid", fields: { columnKind: m.transfer_error_cancelled() } };
+  if (kind === "custom") return { kind: "invalid", fields: { columnKind: m.transfer_error_custom() } };
   const attachments = await findAttachments({ db, taskIds: [taskId] });
   const files = attachments
     .filter((item) => item.kind === "file")
@@ -321,7 +325,7 @@ export async function copyTaskToProject({
             projectId: target.id,
             taskId: record.id,
             before: { projectId, code: taskCode({ key: sourceKey, number: task.number }) },
-            after: { code, columnKind: to.kind, columnName: to.name },
+            after: { code, columnId: to.id, columnKind: to.kind, columnName: to.name },
             snapshot: { code, title: record.title },
           },
         ],

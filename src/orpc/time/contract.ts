@@ -21,9 +21,14 @@ export const timeLogSchema = z.object({
 
 export type TimeLog = z.infer<typeof timeLogSchema>;
 
-/** A stretch the task spent in one kind of column, from its history. `leftAt` is null for where it is now. */
+/**
+ * A stretch the task spent in one column, from its history, with the column's kind and its name then (null for a fixed
+ * column's own name). `leftAt` is null for where it is now.
+ */
 export const columnStaySchema = z.object({
+  columnId: z.string(),
   kind: z.enum(COLUMN_KINDS),
+  name: z.string().nullable(),
   enteredAt: z.date(),
   leftAt: z.date().nullable(),
 });
@@ -67,7 +72,7 @@ const projectErrors = { ...errors, ...projectAccessErrors };
 export const timeContract = {
   /** The viewer's own running timer, on whichever project. */
   current: oc.errors(errors).output(runningTimerSchema.nullable()),
-  /** Stops the viewer's running timer; the task stays where it is. */
+  /** Stops the viewer's running clock; the task stays where it is, paused. */
   stop: oc.errors(errors).output(z.void()),
   forTask: oc
     .errors(projectErrors)

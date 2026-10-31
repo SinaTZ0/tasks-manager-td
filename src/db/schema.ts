@@ -196,8 +196,9 @@ export const projectMember = pgTable(
 );
 
 /*===== Board Columns =====*/
-// Every project has exactly one column of each kind (`COLUMN_KINDS` in `src/orpc/project/constants.ts`), created with
-// the project, so "pause → the paused column" always has one answer. Logic looks columns up by kind, never by name.
+// Every project has exactly one column of each system kind (to do, doing, done, cancelled: `SYSTEM_COLUMN_KINDS` in
+// `src/orpc/project/constants.ts`), created with the project, so "done → the done column" always has one answer. An
+// admin adds `custom` columns, any number of them. Logic looks columns up by kind, never by name.
 
 export const boardColumn = pgTable(
   "board_column",
@@ -213,7 +214,11 @@ export const boardColumn = pgTable(
     position: positionKey("position").notNull(),
     wipLimit: integer("wip_limit"),
   },
-  (table) => [uniqueIndex("board_column_project_id_kind_idx").on(table.projectId, table.kind)],
+  (table) => [
+    uniqueIndex("board_column_project_id_kind_idx")
+      .on(table.projectId, table.kind)
+      .where(sql`${table.kind} <> 'custom'`),
+  ],
 );
 
 /*===== Tasks =====*/
@@ -260,6 +265,11 @@ export const task = pgTable(
       .$onUpdate(() => new Date()),
     /** When the task entered the done column; cleared when it leaves. Its age runs from `createdAt` to this. */
     completedAt: timestamp("completed_at"),
+    /**
+     * When its last running clock stopped without the task being finished: the card's yellow border. Cleared when a
+     * clock starts on it, and when it is done, stopped or archived.
+     */
+    pausedAt: timestamp("paused_at"),
     archivedAt: timestamp("archived_at"),
   },
   (table) => [

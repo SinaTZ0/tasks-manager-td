@@ -10,7 +10,8 @@ import { cn } from "#/lib/utils";
 import { orpc } from "#/orpc/client";
 import { m } from "#/paraglide/messages";
 import { ProjectPages } from "#/routes/projects_projectKey/components/project-pages";
-import { ensureProject, projectQuery } from "#/routes/projects_projectKey/queries";
+import { boardQuery, ensureProject, projectQuery } from "#/routes/projects_projectKey/queries";
+import { AddColumnForm } from "#/routes/projects_projectKey_settings/components/add-column-form";
 import { ColumnForm } from "#/routes/projects_projectKey_settings/components/column-form";
 import { MembersForm } from "#/routes/projects_projectKey_settings/components/members-form";
 import { ProjectNameForm } from "#/routes/projects_projectKey_settings/components/project-name-form";
@@ -25,6 +26,8 @@ export const Route = createFileRoute("/_site-layout/_app-layout/_admin-layout/pr
       ensureProject({ queryClient: context.queryClient, projectKey: params.projectKey }),
       context.queryClient.ensureQueryData(orpc.team.list.queryOptions()),
     ]);
+    // The column rows count the cards on the board: only an empty column can be removed.
+    await context.queryClient.ensureQueryData(boardQuery(project.id));
     return project;
   },
   head: (args) => pageMeta({ args, title: m.settings_title({ project: args.loaderData?.name ?? "" }), index: false }),
@@ -33,10 +36,15 @@ export const Route = createFileRoute("/_site-layout/_app-layout/_admin-layout/pr
 
 /*===== Page =====*/
 
-/** A project's settings, admin only: its name, its members, and its columns' names and WIP limits. */
+/**
+ * A project's settings, admin only: its name, its members, and its columns: their names and WIP limits, adding custom
+ * ones and removing empty ones.
+ */
 function SettingsPage() {
   const { projectKey } = Route.useParams();
   const { data: project } = useSuspenseQuery(projectQuery(projectKey));
+  const { data: board } = useSuspenseQuery(boardQuery(project.id));
+  const cardCount = (columnId: string) => board.tasks.filter((task) => task.columnId === columnId).length;
 
   return (
     <div className="mx-auto flex max-w-site flex-col gap-6 px-6 py-8">
@@ -89,14 +97,24 @@ function SettingsPage() {
               <Marking id={COLUMN_HEADINGS.wip} className="w-32 shrink-0">
                 {m.settings_column_wip_label()}
               </Marking>
-              {/* Keeps the headings over their fields: the row's save key sits here. */}
+              {/* Keeps the headings over their fields: the row's save and remove keys sit here. */}
               <span className={cn(buttonVariants({ variant: "secondary" }), "invisible")} aria-hidden="true">
                 {m.settings_save()}
               </span>
+              <span className="size-11 shrink-0" aria-hidden="true" />
             </div>
             {project.columns.map((column) => (
-              <ColumnForm key={column.id} projectId={project.id} column={column} headings={COLUMN_HEADINGS} />
+              <ColumnForm
+                key={column.id}
+                projectId={project.id}
+                column={column}
+                cardCount={cardCount(column.id)}
+                headings={COLUMN_HEADINGS}
+              />
             ))}
+          </div>
+          <div className="mt-6 border-t border-border pt-6">
+            <AddColumnForm projectId={project.id} />
           </div>
         </CardContent>
       </Card>

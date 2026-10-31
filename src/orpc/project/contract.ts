@@ -93,6 +93,10 @@ const notFoundErrors = {
 /*===== Procedures =====*/
 const adminErrors = { ...commonErrors, ...authErrors, ...roleErrors };
 
+const addColumnInputSchema = z.strictObject({ projectId: z.string(), name: z.string() });
+
+const removeColumnInputSchema = z.strictObject({ projectId: z.string(), columnId: z.string() });
+
 const moveColumnInputSchema = z.strictObject({
   projectId: z.string(),
   columnId: z.string(),
@@ -120,8 +124,19 @@ export const projectContract = {
     .errors({ ...adminErrors, ...notFoundErrors })
     .input(updateColumnInputSchema)
     .output(columnSchema),
+  /** Only a custom column moves: the fixed ones keep their order. */
   moveColumn: oc
     .errors({ ...adminErrors, ...notFoundErrors })
     .input(moveColumnInputSchema)
     .output(columnSchema),
+  /** Adds a custom column before done. */
+  addColumn: oc
+    .errors({ ...adminErrors, ...notFoundErrors })
+    .input(addColumnInputSchema)
+    .output(columnSchema),
+  /** Removes a custom column with no cards on the board. */
+  removeColumn: oc
+    .errors({ ...adminErrors, ...notFoundErrors })
+    .input(removeColumnInputSchema)
+    .output(z.void()),
 };

@@ -1,4 +1,4 @@
-import { generateNKeysBetween } from "fractional-indexing";
+import { generateKeyBetween, generateNKeysBetween } from "fractional-indexing";
 import { z } from "zod";
 
 import type { Database } from "#/db/client.server";
@@ -7,9 +7,11 @@ import { issuesToErrorData } from "#/lib/schema-issues";
 import { teamToday } from "#/lib/team-day";
 import { recordActivity } from "#/orpc/activity/service";
 import type { Column, Project, ProjectListItem, ProjectSummary } from "#/orpc/project/contract";
-import { COLUMN_KINDS } from "#/orpc/project/constants";
+import { SYSTEM_COLUMN_KINDS } from "#/orpc/project/constants";
 import { toColumn, toProjectSummary } from "#/orpc/project/mapper";
 import {
+  countLiveTasks,
+  deleteColumnRow,
   deleteMember,
   findActiveUsers,
   findAllProjects,
@@ -24,11 +26,17 @@ import {
   insertMembers,
   insertProject,
   isProjectMember,
+  rehomeArchivedTasks,
   updateColumnRow,
   updateProjectName,
   type ProjectRecord,
 } from "#/orpc/project/repository";
-import { columnChangeSchema, newProjectSchema, projectNameSchema } from "#/orpc/project/validation";
+import {
+  columnChangeSchema,
+  customColumnNameSchema,
+  newProjectSchema,
+  projectNameSchema,
+} from "#/orpc/project/validation";
 import { m } from "#/paraglide/messages";
 
 /*===== Types =====*/
@@ -36,7 +44,7 @@ import { m } from "#/paraglide/messages";
 // `role` is typed loosely because Better-Auth types additional fields as optional; the column is NOT NULL.
 export type ProjectViewer = { id: string; role?: string | null };
 
-type Invalid = { kind: "invalid"; fields: Record<string, string> };
+type Invalid = { kind: "invalid"; fields: Record<string, string>; errors?: string[] };
 
 /*===== Access =====*/
 /**
@@ -109,7 +117,7 @@ export async function getProject({
 type CreateResult = { kind: "success"; project: ProjectSummary } | Invalid;
 
 /**
- * Creates a project with its seven columns, one of each kind, and its first members. Only active accounts can join.
+ * Creates a project with its system columns (to do, doing, done, and the hidden cancelled one) and its first members. Only active accounts can join.
  *
  * @returns `invalid` with field messages for a bad value, a key another project uses, or an unknown member.
  */
@@ -135,10 +143,14 @@ export async function createProject({
 
   return db.transaction(async (tx): Promise<CreateResult> => {
     const record = await insertProject({ db: tx, values: { name, key, createdBy: actorId } });
-    const positions = generateNKeysBetween(null, null, COLUMN_KINDS.length);
+    const positions = generateNKeysBetween(null, null, SYSTEM_COLUMN_KINDS.length);
     await insertColumns({
       db: tx,
-      values: COLUMN_KINDS.map((kind, index) => ({ projectId: record.id, kind, position: positions[index] ?? "" })),
+      values: SYSTEM_COLUMN_KINDS.map((kind, index) => ({
+        projectId: record.id,
+        kind,
+        position: positions[index] ?? "",
+      })),
     });
     await insertMembers({ db: tx, projectId: record.id, userIds: memberIds });
     await recordActivity({
@@ -249,7 +261,7 @@ export async function setProjectMember({
 /*===== Columns =====*/
 type ColumnResult = { kind: "success"; column: Column } | { kind: "not-found" } | Invalid;
 
-/** Renames a column or changes its WIP limit. Its kind never changes. */
+/** Renames a column or changes its WIP limit. Its kind never changes, and a custom column always keeps a name. */
 export async function changeColumn({
   db,
   actorId,
@@ -272,6 +284,9 @@ export async function changeColumn({
     if (!current) return { kind: "not-found" };
 
     const { name, wipLimit } = parsed.data;
+    if (current.kind === "custom" && name === null) {
+      return { kind: "invalid", fields: { name: m.column_error_name_required() } };
+    }
     if (current.name === name && current.wipLimit === wipLimit) return { kind: "success", column: toColumn(current) };
 
     const record = await updateColumnRow({ db: tx, id: columnId, values: { name, wipLimit } });
@@ -294,8 +309,10 @@ export async function changeColumn({
 
 /*===== Column Order =====*/
 /**
- * Moves a column to a new place on the board. As with cards, a key another column took meanwhile is replaced with a
- * fresh one just after it.
+ * Moves a custom column to a new place on the board; the fixed columns keep their place and order. As with cards, a key
+ * another column took meanwhile is replaced with a fresh one just after it.
+ *
+ * @returns `invalid` for a key the board couldn't have made or a column that isn't custom.
  */
 export async function moveColumn({
   db,
@@ -317,6 +334,7 @@ export async function moveColumn({
     const columns = await findColumns({ db: tx, projectId });
     const current = columns.find((column) => column.id === columnId);
     if (!current) return { kind: "not-found" };
+    if (current.kind !== "custom") return { kind: "invalid", fields: {}, errors: [m.column_error_fixed()] };
 
     const taken = columns.filter((column) => column.id !== columnId).map((column) => column.position);
     const finalPosition = resolvePosition({ wanted: position, taken });
@@ -329,5 +347,101 @@ export async function moveColumn({
       entries: [{ action: "column.moved", projectId, snapshot: { columnId, kind: current.kind, name: current.name } }],
     });
     return { kind: "success", column: toColumn(record) };
+  });
+}
+
+/*===== Add Column =====*/
+/**
+ * Adds a custom column, just before the done column (where a review or test step usually sits); an admin drags it
+ * anywhere from there.
+ *
+ * @returns `invalid` for a missing or too long name.
+ */
+export async function addColumn({
+  db,
+  actorId,
+  projectId,
+  name: rawName,
+}: {
+  db: Database;
+  actorId: string;
+  projectId: string;
+  name: string;
+}): Promise<ColumnResult> {
+  const parsed = customColumnNameSchema.safeParse(rawName);
+  if (!parsed.success) return { kind: "invalid", fields: { name: parsed.error.issues[0]?.message ?? "" } };
+  if (!isUuid(projectId)) return { kind: "not-found" };
+
+  return db.transaction(async (tx): Promise<ColumnResult> => {
+    if (!(await findProjectById({ db: tx, id: projectId }))) return { kind: "not-found" };
+    const columns = await findColumns({ db: tx, projectId });
+    const done = columns.findIndex((column) => column.kind === "done");
+    const position = generateKeyBetween(columns[done - 1]?.position ?? null, columns[done]?.position ?? null);
+    const [record] = await insertColumns({
+      db: tx,
+      values: [{ projectId, kind: "custom", name: parsed.data, position }],
+    });
+    if (!record) throw new Error("addColumn: insert returned no row");
+    await recordActivity({
+      db: tx,
+      actorId,
+      entries: [
+        {
+          action: "column.created",
+          projectId,
+          after: { name: parsed.data },
+          snapshot: { columnId: record.id, kind: record.kind, name: record.name },
+        },
+      ],
+    });
+    return { kind: "success", column: toColumn(record) };
+  });
+}
+
+/*===== Remove Column =====*/
+/**
+ * Removes an empty custom column. A column with cards on the board stays until they are moved out; archived cards in it
+ * move to the to-do column, so a restore still has somewhere to put them.
+ *
+ * @returns `invalid` for a fixed column or one that still holds cards.
+ */
+export async function removeColumn({
+  db,
+  actorId,
+  projectId,
+  columnId,
+}: {
+  db: Database;
+  actorId: string;
+  projectId: string;
+  columnId: string;
+}): Promise<{ kind: "ok" } | { kind: "not-found" } | Invalid> {
+  if (!isUuid(projectId) || !isUuid(columnId)) return { kind: "not-found" };
+
+  return db.transaction(async (tx): Promise<{ kind: "ok" } | { kind: "not-found" } | Invalid> => {
+    const columns = await findColumns({ db: tx, projectId });
+    const current = columns.find((column) => column.id === columnId);
+    const todo = columns.find((column) => column.kind === "todo");
+    if (!current || !todo) return { kind: "not-found" };
+    if (current.kind !== "custom") return { kind: "invalid", fields: {}, errors: [m.column_error_fixed()] };
+    if ((await countLiveTasks({ db: tx, columnId })) > 0) {
+      return { kind: "invalid", fields: {}, errors: [m.column_error_not_empty()] };
+    }
+
+    await rehomeArchivedTasks({ db: tx, fromColumnId: columnId, toColumnId: todo.id });
+    await recordActivity({
+      db: tx,
+      actorId,
+      entries: [
+        {
+          action: "column.deleted",
+          projectId,
+          before: { name: current.name },
+          snapshot: { columnId, kind: current.kind, name: current.name },
+        },
+      ],
+    });
+    await deleteColumnRow({ db: tx, id: columnId });
+    return { kind: "ok" };
   });
 }

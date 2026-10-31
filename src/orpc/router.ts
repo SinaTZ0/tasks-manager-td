@@ -29,7 +29,9 @@ import {
   createProjectProcedure,
   getProjectProcedure,
   listProjectsProcedure,
+  addColumnProcedure,
   moveColumnProcedure,
+  removeColumnProcedure,
   renameProjectProcedure,
   setProjectMemberProcedure,
   updateColumnProcedure,
@@ -136,6 +138,8 @@ export const router = implementer.router({
     setMember: setProjectMemberProcedure,
     updateColumn: updateColumnProcedure,
     moveColumn: moveColumnProcedure,
+    addColumn: addColumnProcedure,
+    removeColumn: removeColumnProcedure,
   },
   push: {
     config: pushConfigProcedure,

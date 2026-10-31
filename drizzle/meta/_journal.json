@@ -50,6 +50,13 @@
       "when": 1793391510136,
       "tag": "0006_task-aliases",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1793404174124,
+      "tag": "0007_custom-columns",
+      "breakpoints": true
     }
   ]
 }
