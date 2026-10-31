@@ -71,32 +71,21 @@ different scroll positions, both pages would glide up or down across the screen.
 - To style only page navigations, scope rules with `:active-view-transition-type(page)`; for one direction, with
   `page-forward` or `page-back`.
 
-## Animating More
+## Only Between Pages
 
-The `react-view-transitions` skill (`.agents/skills/`) has the patterns, the pitfalls and how to check a transition
-frame by frame.
+View transitions animate moving from one page to another, and nothing else. Changes inside a page animate with CSS or
+Motion ([motion.md](./motion.md)): don't put React's `<ViewTransition>` in a page, and don't call
+`document.startViewTransition` for an in-page change. A view transition animates bitmaps of the page, so round ends
+stretch, named parts are drawn above every open modal, the page ignores clicks while one plays, and a second one cuts
+the running one off. React also only starts one inside a Transition, and query and mutation data never arrive in one.
 
 - **Morph an element between pages:** give it the same `view-transition-name` on both pages, built from the record's
   id (`note-42`), since a name must be unique on the page. The page fade then animates that element from its old box
   to its new one.
-- **Animate changes on the same page** with CSS transitions first: a panel that opens animates its height, a tab
-  switcher slides its indicator. A view transition animates bitmaps of the page, so round ends stretch and blur, the
-  whole page is captured, and a second one skips the one running, which makes quick clicks jump. Reach for React's
-  `<ViewTransition>` only when CSS can't follow the change: content swapped for content of another height (a form
-  replaced by its receipt), a filtered or reordered list. It works for state updates you start with `startTransition`;
-  query results and mutation data don't arrive in a Transition, so keep what is shown in local state and set it inside
-  one.
-- **Type every in-page transition.** Hydration also runs as a Transition, so a `<ViewTransition>` with a plain
-  `update` animates on page load whenever its content differs from the server HTML. Start the change with
-  `startTransition(() => { addTransitionType("form-swap"); update(); })`, and animate only that type:
-  `update={{ "form-swap": "form-card", default: "none" }}`.
-- **State that lives outside React** (an attribute on `<html>`, applied before paint like the theme) can start the
-  browser's transition itself, typed the same way: the board's head panel folds with
-  `document.startViewTransition({ update, types: ["board-panel"] })` (`src/lib/board-panel.ts`), and only that type
-  names the panel and the columns (`:active-view-transition-type(board-panel)`), so the page fade never pulls them out
-  of the page. Flush any React render the new state needs inside `update` (`flushSync`), or it lands after the capture.
-- **Focus and scroll go in `useLayoutEffect`** when the new content mounts. The browser captures the new state right
-  after layout effects; a `focus()` from `useEffect` scrolls mid-animation, and named elements end in the wrong place.
+- The board's head panel fold (`src/lib/board-panel.ts`) is the one in-page view transition left, and is moving to
+  a CSS height transition ([motion.md](./motion.md)).
+
+The `react-view-transitions` skill (`.agents/skills/`) has how to change the page fade and check it frame by frame.
 
 ## Don'ts
 
