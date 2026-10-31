@@ -32,7 +32,7 @@ translation ([i18n.md](./i18n.md)).
   formatting helpers, never typed into a message. Task codes (`TD-42`), shortcuts, timers, phone numbers, e-mail
   addresses and URLs are set `dir="ltr"` in every language, and codes and timers print in the mono face.
 - Product words, used the same way everywhere: کار (task), تخته (board), ستون (column), مالک (owner), مسئول
-  (assignee), واگذاری (delegation), وابستگی (dependency), مسدود (blocked), مکث (paused), زمان صرف‌شده (time spent).
+  (assignee), واگذاری (delegation), وابستگی (dependency), مسدود (blocked), زمان صرف‌شده (time spent).
 
 ## Brand
 
@@ -85,13 +85,13 @@ corners. Parts under 40px use the `-compact` pair (2px / 4px). How the parts are
 One meaning per colour, everywhere. A signal is an LED, a lit segment, or a cut that changes colour; it is never a
 text colour on the housing (yellow and green can't reach 4.5:1 there).
 
-| Signal | Token              | Means                                         |
-| ------ | ------------------ | --------------------------------------------- |
-| Orange | `signal-action`    | action, recording, focus inside a field       |
-| Yellow | `signal-attention` | attention: blocked, paused, invalid, over WIP |
-| Blue   | `signal-selection` | selected, the active tab or option            |
-| Green  | `signal-positive`  | running, done, healthy                        |
-| Grey   | `signal-off`       | the LED exists but is off                     |
+| Signal | Token              | Means                                   |
+| ------ | ------------------ | --------------------------------------- |
+| Orange | `signal-action`    | action, recording, focus inside a field |
+| Yellow | `signal-attention` | attention: blocked, invalid, over WIP   |
+| Blue   | `signal-selection` | selected, the active tab or option      |
+| Green  | `signal-positive`  | running, done, healthy                  |
+| Grey   | `signal-off`       | the LED exists but is off               |
 
 Blinking is reserved for live states (a running timer, a blocked task) and stops under reduced motion. Text that needs
 a status colour uses the `success` / `warning` / `info` / `destructive` text tokens and their `-surface` pairs.

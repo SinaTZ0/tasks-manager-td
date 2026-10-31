@@ -265,11 +265,6 @@ export const task = pgTable(
       .$onUpdate(() => new Date()),
     /** When the task entered the done column; cleared when it leaves. Its age runs from `createdAt` to this. */
     completedAt: timestamp("completed_at"),
-    /**
-     * When its last running clock stopped without the task being finished: the card's yellow border. Cleared when a
-     * clock starts on it, and when it is done, stopped or archived.
-     */
-    pausedAt: timestamp("paused_at"),
     archivedAt: timestamp("archived_at"),
   },
   (table) => [
@@ -536,8 +531,8 @@ export const pushSubscription = pgTable(
 
 /*===== Time Logs =====*/
 // One stretch of work by one person on one task (docs/app.md → TimeLog); the time spent on a task is the sum of its
-// logs. A timer's log is open (`endedAt` null) while it runs. A manual entry ("worked 2h yesterday") is written closed,
-// starting at noon UTC of the day it names, so it reads as that day in every time zone.
+// logs. A timer's log is open (`endedAt` null) while it runs. The timer is the only way time is logged now; the manual
+// entries ("worked 2h yesterday", written closed at noon UTC of the day they named) typed in before stay and still count.
 
 export const timeLog = pgTable(
   "time_log",

@@ -62,21 +62,20 @@ What each thing is and how it relates. How to store it = implementer decides.
   while its owner or assignee isn't on that project) or copies it there (no comments, time or history)
 - Card shows: title, assignee avatar, priority color, due date, labels, blocked icon, timer icon
 
-**Status / Clock / Stop**
+**Status / Clock / Cancel**
 
 - The clock (timer) is separate from the column. It shows who is working on what, wherever the card sits.
-- **Start** → my clock runs on the card, card stays where it is. Card border goes **green**.
-- **Pause** → my clock stops, card stays, ask "why pause?" (optional note). Once no clock runs on it, card border goes
-  **yellow** (paused) until a clock starts again.
-- Starting the clock on a **Done** card asks first ("this task is done, start anyway?").
-- **Stop** → task cancelled, reason required, card hidden in Cancelled, its clocks stop. Can reopen.
-- **Done** → record finish time, its clocks stop, no longer paused
+- The clock is a chronometer: two keys, **Start timer** and **Stop timer**. No questions, no confirms, no reset.
+- **Start timer** → my clock runs on the card, card stays where it is. Card border goes **green** while any clock runs.
+- **Stop timer** → my clock stops, card stays. The time so far stays; the next start adds to it.
+- **Cancel task** → task cancelled, reason required, card hidden in Cancelled, its clocks stop. Can reopen.
+- **Done** → record finish time, its clocks stop
 - **Reopen** → back to To Do (from Done it asks first, like any step back)
 
 **Duration / Time**
 
-- Start / pause / stop timer on card
-- Manual time entry ("worked 2h yesterday")
+- Start / stop timer on card. The timer is the only way time is logged.
+- Show: how much each person worked on the task
 - Show: estimate vs real time spent
 - Show: total age of card (created → done) and time in each column (from history)
 
@@ -151,10 +150,10 @@ What each thing is and how it relates. How to store it = implementer decides.
 ## Business Rules
 
 1. Card in **one** column only.
-2. One running timer per user. Start new → old one auto-pauses.
+2. One running timer per user. Start new → old one stops.
 3. Card enters Done or Cancelled → every clock on it stops. Moving between other columns never touches the clock.
 4. Blocked card can't go Done until blockers are Done (or user forces it + leaves comment).
-5. Stop requires reason. Pause reason optional.
+5. Cancelling a task requires a reason. Stopping the timer asks nothing.
 6. Delegation never changes owner. Owner = responsible. Assignee = does the work.
 7. Every change → Activity entry. No exceptions. Activity never edited, never deleted.
 8. App logic follows column _kind_, never column _name_.
@@ -168,7 +167,7 @@ What each thing is and how it relates. How to store it = implementer decides.
 - **Login**
 - **Boards list**
 - **Board** (main kanban) — columns, cards, filter bar, search
-- **Card drawer/modal** — three columns the user can resize: the work (timer, title, description, attachments), the tabs (Comments | Checklist | Dependencies | Activity | Time), and the details (priority, people, dates, labels, delegation)
+- **Card drawer/modal** — three columns the user can resize: the work (timer, title, description, attachments), the tabs (Comments | Checklist | Dependencies | Activity | Time), and the details (status: done / stop / reopen, then priority, people, dates, labels, delegation)
 - **My Tasks** — assigned to me, delegated by me, watching
 - **Notifications** — bell dropdown
 - **Settings** — columns (add, rename, remove when empty), labels, members, WIP limits

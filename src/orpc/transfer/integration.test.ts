@@ -2,14 +2,13 @@ import { and, eq } from "drizzle-orm";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 import { db } from "#/db/client.server";
-import { activity } from "#/db/schema";
+import { activity, timeLog } from "#/db/schema";
 import { createTestProject, deleteTestProject, testProjectKey } from "#/db/test-fixtures.server";
 import { plainTextToRichText } from "#/lib/rich-text";
 import { addComment, listComments } from "#/orpc/comment/service";
 import { addDependency } from "#/orpc/dependency/service";
 import { createProject } from "#/orpc/project/service";
 import { createTask, getTask } from "#/orpc/task/service";
-import { addTimeEntry } from "#/orpc/time/service";
 import { moveTaskToProject, resolveOldCode } from "#/orpc/transfer/service";
 
 /*===== Moving a Card =====*/
@@ -56,12 +55,10 @@ describe("moving a card to another project", () => {
     const waiting = await newTask({ title: "منتظر" });
     await addDependency({ db, actorId: users.admin, projectId, taskId: waiting.id, blockerId: card.id });
     await addComment({ db, actorId: users.ali, projectId, taskId: card.id, body: plainTextToRichText("یادداشت") });
-    await addTimeEntry({
-      db,
-      actorId: users.ali,
-      projectId,
-      input: { taskId: card.id, date: "2026-10-01", minutes: 90 },
-    });
+    const startedAt = new Date("2026-10-01T09:00:00Z");
+    await db
+      .insert(timeLog)
+      .values({ taskId: card.id, userId: users.ali, startedAt, endedAt: new Date(startedAt.getTime() + 90 * 60_000) });
 
     const moved = await moveTaskToProject({
       db,

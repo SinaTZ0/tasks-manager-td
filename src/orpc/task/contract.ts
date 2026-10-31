@@ -41,8 +41,6 @@ export const taskCardSchema = z.object({
   hasDescription: z.boolean(),
   /** When it entered the done column; null anywhere else. */
   completedAt: z.date().nullable(),
-  /** When its last clock stopped while the work goes on (the card's yellow border); null once a clock runs again. */
-  pausedAt: z.date().nullable(),
   /** The time its finished logs add up to. */
   spentSeconds: z.number().int(),
   /** When each of its running timers started (one per person working on it); the card adds them to the total live. */
@@ -67,10 +65,9 @@ export const taskDetailSchema = taskCardSchema.extend({
   createdAt: z.date(),
   updatedAt: z.date(),
   archivedAt: z.date().nullable(),
-  /** Why it is paused or stopped, while it is: the reason given (if any), by whom and when. */
+  /** Why it is stopped, while it is: the reason given, by whom and when. */
   statusNote: z
     .object({
-      action: z.enum(["pause", "stop"]),
       reason: z.string().nullable(),
       actorId: z.string(),
       at: z.date(),
@@ -182,7 +179,7 @@ export const taskContract = {
       }),
     )
     .output(taskCardSchema),
-  /** Start (or resume), pause, finish, stop or reopen: moves the task to that action's column (`STATUS_ACTION_RULES`). */
+  /** Start or stop the viewer's clock (the card stays), or finish, stop or reopen the task (`COLUMN_ACTION_RULES`). */
   transition: oc
     .errors(blockedErrors)
     .input(
@@ -190,7 +187,7 @@ export const taskContract = {
         projectId: z.string(),
         taskId: z.string(),
         action: z.enum(TASK_STATUS_ACTIONS),
-        /** Required to stop, optional to pause, ignored otherwise. */
+        /** Required to stop the task, ignored otherwise. */
         reason: z.string().optional(),
         forceComment: forceCommentSchema,
       }),

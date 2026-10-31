@@ -82,7 +82,7 @@ export const newLabelSchema = z.object({
 });
 
 /*===== Status Reason =====*/
-/** Why a task is paused or stopped. Stopping needs one (rule 5); an empty pause reason is no reason. */
+/** Why a task is stopped (rule 5). Empty is no reason, which the service refuses. */
 export const statusReasonSchema = persianText()
   .max(STATUS_REASON_MAX_LENGTH, { error: () => m.task_error_reason_too_long({ max: STATUS_REASON_MAX_LENGTH }) })
   .optional()

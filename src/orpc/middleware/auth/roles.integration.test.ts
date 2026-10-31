@@ -19,7 +19,7 @@ import {
   updateLabelProcedure,
   updateTaskProcedure,
 } from "#/orpc/task/procedure";
-import { addTimeEntryProcedure } from "#/orpc/time/procedure";
+import { stopTimerProcedure } from "#/orpc/time/procedure";
 
 /*===== Roles =====*/
 // Three levels (docs/task-manager-plan.md → slice 9): an admin does everything, a user can't create or archive a task,
@@ -86,7 +86,7 @@ describe("roles", () => {
       codeOf(call(addCommentProcedure, { projectId, taskId, body }, viewer)),
       codeOf(call(addDependencyProcedure, { projectId, taskId, blockerId: otherTaskId }, viewer)),
       codeOf(call(delegateTaskProcedure, { projectId, taskId, toId: users.ali }, viewer)),
-      codeOf(call(addTimeEntryProcedure, { projectId, taskId, date: "2026-10-29", minutes: 30 }, viewer)),
+      codeOf(call(stopTimerProcedure, undefined, viewer)),
     ]);
     expect(refused).toEqual(Array(refused.length).fill("FORBIDDEN"));
   });

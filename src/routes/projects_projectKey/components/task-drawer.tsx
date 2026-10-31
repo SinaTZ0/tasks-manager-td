@@ -39,6 +39,7 @@ import {
 import { TaskChecklist } from "#/routes/projects_projectKey/components/task-checklist";
 import { TaskDelegation } from "#/routes/projects_projectKey/components/task-delegation";
 import { TaskDependencies } from "#/routes/projects_projectKey/components/task-dependencies";
+import { TaskStatusField } from "#/routes/projects_projectKey/components/task-status-field";
 import { TaskStatusPanel } from "#/routes/projects_projectKey/components/task-status-panel";
 import { TaskTimeSection } from "#/routes/projects_projectKey/components/task-time-section";
 import { TaskWatchers } from "#/routes/projects_projectKey/components/task-watchers";
@@ -54,9 +55,9 @@ import { useTaskUpdate } from "#/routes/projects_projectKey/use-task-update";
 /**
  * A card's details in a panel floating over nearly the whole page, opened by `?task=TD-42` so it has a link. Closing it
  * drops the param. Under its header the card reads in three columns that scroll on their own and are resized by
- * dragging the rules between them: the work (status and timer keys, then what the task is), the tabs (comments,
- * checklist, dependencies, history, time), and the details people look things up in. Every field saves on its own, as
- * it changes.
+ * dragging the rules between them: the work (the timer, then what the task is), the tabs (comments, checklist,
+ * dependencies, history, time), and the details people look things up in, the task's status (done, stop, reopen)
+ * first. Every field saves on its own, as it changes.
  */
 export function TaskDrawer({
   code,
@@ -188,14 +189,7 @@ function TaskDetails({
           {/*------ Work ------*/}
           <ResizablePanel defaultSize="30%" minSize={280}>
             <DrawerColumn label={m.task_column_work()} className="gap-6">
-              <TaskStatusPanel
-                task={task}
-                project={project}
-                code={code}
-                people={people}
-                blockers={blockers}
-                readOnly={readOnly}
-              />
+              <TaskStatusPanel task={task} project={project} readOnly={readOnly} />
               <TaskTitleField key={task.title} task={task} update={update} readOnly={readOnly} />
               <TaskDescriptionField task={task} update={update} readOnly={readOnly} />
               <Separator />
@@ -232,6 +226,14 @@ function TaskDetails({
           {/*------ Details ------*/}
           <ResizablePanel defaultSize="24%" minSize={320} maxSize="34%">
             <DrawerColumn label={m.task_column_details()} tinted className="gap-5">
+              <TaskStatusField
+                task={task}
+                project={project}
+                code={code}
+                people={people}
+                blockers={blockers}
+                readOnly={readOnly}
+              />
               <PriorityField task={task} update={update} readOnly={readOnly} />
               <PersonField
                 task={task}
@@ -388,7 +390,7 @@ function TaskTabs({
         <TaskActivity task={task} project={project} people={people} />
       </TabsContent>
       <TabsContent value="time">
-        <TaskTimeSection task={task} project={project} people={people} viewerId={viewerId} readOnly={readOnly} />
+        <TaskTimeSection task={task} project={project} people={people} />
       </TabsContent>
     </Tabs>
   );

@@ -8,9 +8,8 @@ import { findColumns } from "#/orpc/project/repository";
 import { createTask, moveTask, transitionTask } from "#/orpc/task/service";
 
 /*===== Status and Time =====*/
-// One running clock per person (docs/app.md rule 2), the clock apart from the column (a pause leaves the card where
-// it is, marked paused once no clock runs on it), a finished card stops its clocks (rule 3), and stopping a task needs a
-// reason while pausing doesn't (rule 5).
+// One running clock per person (docs/app.md rule 2), the clock apart from the column (stopping it leaves the card where
+// it is), a finished card stops its clocks (rule 3), and stopping a task needs a reason (rule 5).
 
 let fixture: Awaited<ReturnType<typeof createTestProject<"admin" | "ali" | "reza">>>;
 
@@ -66,20 +65,20 @@ describe("status and time", () => {
     ).rejects.toThrow("Failed query");
   });
 
-  it("pauses only the person's own clock, leaves the card in place, and stops every clock once it is done", async () => {
+  it("stops only the person's own clock, leaves the card in place, and stops every clock once it is done", async () => {
     const { projectId, users } = fixture;
     const task = await newTask("مکث");
     await act({ userId: users.ali, taskId: task.id, action: "start" });
     await act({ userId: users.reza, taskId: task.id, action: "start" });
-    // Nobody pauses another's clock.
+    // Nobody stops another's clock.
     expect(await act({ userId: users.admin, taskId: task.id, action: "pause" })).toMatchObject({ kind: "invalid" });
 
-    // Reza still works on it, so it isn't paused yet; once his clock stops too, it is, still in its column.
+    // Reza's clock runs on after Ali's stops; the card stays in its column throughout.
     expect(await act({ userId: users.ali, taskId: task.id, action: "pause" })).toMatchObject({
-      task: { columnId: task.columnId, runningSince: [expect.any(Date)], pausedAt: null },
+      task: { columnId: task.columnId, runningSince: [expect.any(Date)] },
     });
-    expect(await act({ userId: users.reza, taskId: task.id, action: "pause", reason: "جلسه" })).toMatchObject({
-      task: { columnId: task.columnId, runningSince: [], pausedAt: expect.any(Date) },
+    expect(await act({ userId: users.reza, taskId: task.id, action: "pause" })).toMatchObject({
+      task: { columnId: task.columnId, runningSince: [] },
     });
 
     await act({ userId: users.ali, taskId: task.id, action: "start" });
@@ -93,11 +92,11 @@ describe("status and time", () => {
       columnId: done.id,
       position: "a0",
     });
-    expect(moved).toMatchObject({ task: { runningSince: [], pausedAt: null } });
+    expect(moved).toMatchObject({ task: { runningSince: [] } });
     expect(await openLogs(users.ali)).toEqual([]);
   });
 
-  it("needs a reason to stop a task but not to pause one", async () => {
+  it("needs a reason to stop a task but not to stop its clock", async () => {
     const { users } = fixture;
     const task = await newTask("توقف");
     await act({ userId: users.ali, taskId: task.id, action: "start" });

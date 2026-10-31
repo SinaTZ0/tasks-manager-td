@@ -17,22 +17,11 @@ import { m } from "#/paraglide/messages";
 
 /*===== Reason Dialog =====*/
 
-/** What a reason dialog asks: a pause's or a stop's reason (rule 5), or why a blocked task goes ahead (rule 4). */
-export type ReasonRequest =
-  { kind: "pause" | "stop"; code: string } | { kind: "force"; code: string; blockers: string[] };
+/** What a reason dialog asks: a stop's reason (rule 5), or why a blocked task goes ahead (rule 4). */
+export type ReasonRequest = { kind: "stop"; code: string } | { kind: "force"; code: string; blockers: string[] };
 
 function wordingOf(request: ReasonRequest) {
   switch (request.kind) {
-    case "pause":
-      return {
-        title: m.task_pause_title({ code: request.code }),
-        description: m.task_pause_description(),
-        label: m.task_reason_optional_label(),
-        hint: m.task_reason_hint(),
-        confirm: m.task_action_pause(),
-        required: false,
-        max: STATUS_REASON_MAX_LENGTH,
-      };
     case "stop":
       return {
         title: m.task_stop_title({ code: request.code }),
@@ -57,8 +46,8 @@ function wordingOf(request: ReasonRequest) {
 }
 
 /**
- * Asks why before an action that needs or takes a reason: a stop needs one and a pause may have one (rule 5); moving a
- * blocked task into doing or done needs one, which becomes a comment on it (rule 4). Confirming hands the reason over
+ * Asks why before an action that needs a reason: a stop (rule 5), or moving a blocked task into doing or done, whose
+ * reason becomes a comment on it (rule 4). Confirming hands the reason over
  * and closes; the action itself shows on the board at once. `finalFocus` says where focus goes after, since the card
  * that opened it may have moved to another column by then.
  */

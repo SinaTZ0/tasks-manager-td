@@ -27,21 +27,21 @@ a delegate on a task. The only thing a viewer can upload is their own profile pi
 
 ## Tasks
 
-| Action                                                      | Admin | User |
-| ----------------------------------------------------------- | :---: | :--: |
-| Create a task                                               |  ✅   |  ❌  |
-| Edit a task (title, description, priority, dates, estimate) |  ✅   |  ✅  |
-| Change the assignee                                         |  ✅   |  ✅  |
-| Hand ownership to someone else                              |  ✅   | 🟡²  |
-| Move a card, start, pause, finish, stop or reopen a task    |  ✅   |  ✅  |
-| Delegate a task                                             |  ✅   |  ✅  |
-| Add or remove a dependency                                  |  ✅   |  ✅  |
-| Archive a task                                              |  ✅   |  ❌  |
-| Restore an archived task                                    |  ✅   |  ❌  |
-| Delete an archived task for good                            |  ✅   |  ❌  |
-| Move or copy a task to another project                      |  ✅   |  ❌  |
-| Watch or unwatch a task                                     |  ✅   |  ✅  |
-| See "delegated by me"                                       |  ✅³  |  ✅  |
+| Action                                                        | Admin | User |
+| ------------------------------------------------------------- | :---: | :--: |
+| Create a task                                                 |  ✅   |  ❌  |
+| Edit a task (title, description, priority, dates, estimate)   |  ✅   |  ✅  |
+| Change the assignee                                           |  ✅   |  ✅  |
+| Hand ownership to someone else                                |  ✅   | 🟡²  |
+| Move a card, start, stop timer, finish, stop or reopen a task |  ✅   |  ✅  |
+| Delegate a task                                               |  ✅   |  ✅  |
+| Add or remove a dependency                                    |  ✅   |  ✅  |
+| Archive a task                                                |  ✅   |  ❌  |
+| Restore an archived task                                      |  ✅   |  ❌  |
+| Delete an archived task for good                              |  ✅   |  ❌  |
+| Move or copy a task to another project                        |  ✅   |  ❌  |
+| Watch or unwatch a task                                       |  ✅   |  ✅  |
+| See "delegated by me"                                         |  ✅³  |  ✅  |
 
 ² Only on a task they own.
 

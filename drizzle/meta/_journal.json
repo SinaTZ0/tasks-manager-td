@@ -57,6 +57,13 @@
       "when": 1793404174124,
       "tag": "0007_custom-columns",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1793407152639,
+      "tag": "0008_drop-task-paused",
+      "breakpoints": true
     }
   ]
 }

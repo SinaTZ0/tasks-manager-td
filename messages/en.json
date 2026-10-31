@@ -538,7 +538,7 @@
   "board_layout_wrap": "Several rows",
   "board_layout_per_row": "Columns per row",
   "task_error_action_unavailable": "This task can't do that from where it is now. Refresh the board and try again.",
-  "task_error_reason_required": "Write why the task is stopped.",
+  "task_error_reason_required": "Write why the task is cancelled.",
   "task_error_reason_too_long": [
     {
       "declarations": ["input max", "local maxText = max: number"],
@@ -547,55 +547,27 @@
       }
     }
   ],
-  "time_error_date_invalid": "Pick the day you worked.",
-  "time_error_date_future": "The day can't be in the future.",
-  "time_error_minutes_invalid": [
-    {
-      "declarations": ["input max", "local maxText = max: number"],
-      "match": {
-        "": "Enter a time between 1 minute and {maxText} hours, like 1:30 or 45m."
-      }
-    }
-  ],
-  "time_error_note_too_long": [
-    {
-      "declarations": ["input max", "local maxText = max: number"],
-      "match": {
-        "": "Keep the note under {maxText} characters."
-      }
-    }
-  ],
   "task_status": "Status",
+  "task_timer": "Timer",
   "task_action_start": "Start timer",
-  "task_action_resume": "Resume timer",
-  "task_action_pause": "Pause timer",
+  "task_action_pause": "Stop timer",
   "task_action_done": "Mark done",
-  "task_action_stop": "Stop",
+  "task_action_stop": "Cancel task",
   "task_action_reopen": "Reopen",
   "task_status_failed": "The task's status couldn't be changed.",
   "task_run_running": "Running",
-  "task_run_paused": "Paused",
   "task_run_done": "Done",
-  "task_run_stopped": "Stopped",
+  "task_run_stopped": "Cancelled",
   "task_run_idle": "Not running",
-  "task_pause_title": [
-    {
-      "declarations": ["input code"],
-      "match": {
-        "": "Pause {code}"
-      }
-    }
-  ],
-  "task_pause_description": "The timer stops and the card stays where it is, marked paused.",
   "task_stop_title": [
     {
       "declarations": ["input code"],
       "match": {
-        "": "Stop {code}"
+        "": "Cancel {code}"
       }
     }
   ],
-  "task_stop_description": "A stopped task moves to the cancelled column. It can be reopened later.",
+  "task_stop_description": "A cancelled task moves to the cancelled column. It can be reopened later.",
   "task_move_description": [
     {
       "declarations": ["input from", "input to"],
@@ -604,22 +576,13 @@
       }
     }
   ],
-  "task_reason_label": "Why is it stopped?",
-  "task_reason_optional_label": "Why pause? (optional)",
+  "task_reason_label": "Why is it cancelled?",
   "task_reason_hint": "Saved in the task's history.",
-  "task_paused_by": [
-    {
-      "declarations": ["input name", "input date"],
-      "match": {
-        "": "Paused by {name}, {date}"
-      }
-    }
-  ],
   "task_stopped_by": [
     {
       "declarations": ["input name", "input date"],
       "match": {
-        "": "Stopped by {name}, {date}"
+        "": "Cancelled by {name}, {date}"
       }
     }
   ],
@@ -641,6 +604,15 @@
   "board_show_cancelled": "Show cancelled",
   "time_spent_label": "Time spent",
   "time_title": "Time",
+  "time_by_person": "Time by person",
+  "time_person_meter_value": [
+    {
+      "declarations": ["input duration", "input share"],
+      "match": {
+        "": "{duration}, {share} of the task's time"
+      }
+    }
+  ],
   "time_age": "Age",
   "time_age_done": "Created to done",
   "time_in_column": [
@@ -669,21 +641,6 @@
       }
     }
   ],
-  "time_remove": [
-    {
-      "declarations": ["input date"],
-      "match": {
-        "": "Remove the entry of {date}"
-      }
-    }
-  ],
-  "time_remove_failed": "The entry couldn't be removed.",
-  "time_add_title": "Log time worked",
-  "time_add_date": "Day",
-  "time_add_duration": "Time worked",
-  "time_add_note": "Note (optional)",
-  "time_add_submit": "Add",
-  "time_add_failed": "The time couldn't be logged.",
   "timer_running_on": "Your timer is running on",
   "timer_stop": [
     {
@@ -698,7 +655,7 @@
     {
       "declarations": ["input code"],
       "match": {
-        "": "{code} is stopped. It's in the cancelled column: switch on \"Show cancelled\" to see it."
+        "": "{code} is cancelled. It's in the cancelled column: switch on \"Show cancelled\" to see it."
       }
     }
   ],
@@ -1081,7 +1038,7 @@
     }
   ],
   "activity_task_completed": "marked the task done",
-  "activity_task_stopped": "stopped the task",
+  "activity_task_stopped": "cancelled the task",
   "activity_task_reopened": "reopened the task",
   "activity_time_started": "started the timer",
   "activity_time_stopped": [
@@ -1687,7 +1644,7 @@
     {
       "declarations": ["input name", "input code"],
       "match": {
-        "": "{name} paused the timer on {code}"
+        "": "{name} stopped the timer on {code}"
       }
     }
   ],
@@ -1703,7 +1660,7 @@
     {
       "declarations": ["input name", "input code"],
       "match": {
-        "": "{name} stopped {code}"
+        "": "{name} cancelled {code}"
       }
     }
   ],
@@ -1912,14 +1869,5 @@
       }
     }
   ],
-  "task_back_confirm": "Move back",
-  "task_start_done_title": [
-    {
-      "declarations": ["input code"],
-      "match": {
-        "": "Start the timer on {code}?"
-      }
-    }
-  ],
-  "task_start_done_description": "This task is done. Start the timer on it anyway? It stays in Done."
+  "task_back_confirm": "Move back"
 }

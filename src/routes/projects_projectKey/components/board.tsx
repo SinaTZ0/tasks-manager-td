@@ -59,7 +59,6 @@ import { TaskCard } from "#/routes/projects_projectKey/components/task-card";
 import { restoreTaskMenuFocus, TaskMenu, taskMenuKey } from "#/routes/projects_projectKey/components/task-menu";
 import { TransferDialog, type TransferRequest } from "#/routes/projects_projectKey/components/transfer-dialog";
 import { blockersOf, entersGuardedColumn, kindsOf } from "#/routes/projects_projectKey/dependencies";
-import { asksReason, statusActionLabel } from "#/routes/projects_projectKey/task-status";
 import { useColumnMove, useTaskMove, useTaskTransition } from "#/routes/projects_projectKey/use-board-moves";
 
 /*===== Drag State =====*/
@@ -601,15 +600,14 @@ export function Board({
   /*------ Status ------*/
   const takeAction = ({ task, action }: { task: TaskCardData; action: TaskStatusAction }) => {
     const code = codeOf(task.id);
-    if (asksReason(action)) {
+    if (action === "stop") {
       return setAsking({
         taskId: task.id,
         request: { kind: action, code },
         run: (reason) => {
           transition({ taskId: task.id, action, reason });
           // A stopped card leaves the board unless the cancelled column is shown: say where it went.
-          if (action === "stop" && !showCancelled)
-            toast.add({ title: m.task_stopped_hidden({ code }), type: "success" });
+          if (!showCancelled) toast.add({ title: m.task_stopped_hidden({ code }), type: "success" });
         },
         open: true,
       });
@@ -620,16 +618,8 @@ export function Board({
     };
 
     /*------ Clock ------*/
-    // The clock leaves the card where it is; on a done card it asks first, since the work was meant to be over.
-    if (!isColumnAction(action)) {
-      if (kinds.get(task.columnId) !== "done") return run();
-      const request = {
-        title: m.task_start_done_title({ code }),
-        description: m.task_start_done_description(),
-        confirm: statusActionLabel({ action, paused: task.pausedAt !== null }),
-      };
-      return setConfirming({ taskId: task.id, request, run, open: true });
-    }
+    // A chronometer: the clock starts and stops at once, and leaves the card where it is.
+    if (!isColumnAction(action)) return run();
 
     /*------ Move ------*/
     const target = project.columns.find((column) => column.kind === COLUMN_ACTION_RULES[action].to);
@@ -745,7 +735,6 @@ export function Board({
                                 code={codeOf(task.id)}
                                 kind={column.kind}
                                 timing={myTimer?.taskId === task.id}
-                                paused={task.pausedAt !== null}
                                 columns={allColumns}
                                 currentColumnId={column.id}
                                 onMove={(target) => moveToEnd({ task, columnId: target })}
@@ -800,7 +789,6 @@ export function Board({
                           code={codeOf(task.id)}
                           kind="cancelled"
                           timing={false}
-                          paused={false}
                           columns={[]}
                           currentColumnId={cancelled.id}
                           onMove={() => {}}

@@ -14,7 +14,7 @@ export const timeLogSchema = z.object({
   startedAt: z.date(),
   /** Null while the timer runs. */
   endedAt: z.date().nullable(),
-  /** Typed in, not timed: its start is noon UTC of the day it names. */
+  /** Typed in, not timed (from before the timer was the only way): its start is noon UTC of the day it names. */
   manual: z.boolean(),
   note: z.string().nullable(),
 });
@@ -55,16 +55,6 @@ export const runningTimerSchema = z.object({
 
 export type RunningTimer = z.infer<typeof runningTimerSchema>;
 
-// Structure only. Limits, dates in the future and whose entry it is are the service's.
-const addEntryInputSchema = z.strictObject({
-  projectId: z.string(),
-  taskId: z.string(),
-  /** ISO date (`2026-10-29`) of the day worked. */
-  date: z.string(),
-  minutes: z.number().int(),
-  note: z.string().optional(),
-});
-
 /*===== Procedures =====*/
 const errors = { ...commonErrors, ...authErrors, ...roleErrors };
 const projectErrors = { ...errors, ...projectAccessErrors };
@@ -72,17 +62,10 @@ const projectErrors = { ...errors, ...projectAccessErrors };
 export const timeContract = {
   /** The viewer's own running timer, on whichever project. */
   current: oc.errors(errors).output(runningTimerSchema.nullable()),
-  /** Stops the viewer's running clock; the task stays where it is, paused. */
+  /** Stops the viewer's running clock; the task stays where it is. */
   stop: oc.errors(errors).output(z.void()),
   forTask: oc
     .errors(projectErrors)
     .input(z.strictObject({ projectId: z.string(), number: z.number().int() }))
     .output(taskTimeSchema),
-  /** A manual entry for the viewer ("worked 2h yesterday"). */
-  add: oc.errors(projectErrors).input(addEntryInputSchema).output(timeLogSchema),
-  /** Removes one of the viewer's own manual entries. */
-  remove: oc
-    .errors(projectErrors)
-    .input(z.strictObject({ projectId: z.string(), logId: z.string() }))
-    .output(z.void()),
 };

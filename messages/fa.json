@@ -538,7 +538,7 @@
   "board_layout_wrap": "چند ردیف",
   "board_layout_per_row": "ستون در هر ردیف",
   "task_error_action_unavailable": "این کار از ستونی که الان در آن است این عمل را نمی‌پذیرد. تخته را تازه کنید و دوباره امتحان کنید.",
-  "task_error_reason_required": "بنویسید چرا این کار متوقف می‌شود.",
+  "task_error_reason_required": "بنویسید چرا این کار لغو می‌شود.",
   "task_error_reason_too_long": [
     {
       "declarations": ["input max", "local maxText = max: number"],
@@ -547,55 +547,27 @@
       }
     }
   ],
-  "time_error_date_invalid": "روزی را که کار کردید انتخاب کنید.",
-  "time_error_date_future": "این روز نمی‌تواند در آینده باشد.",
-  "time_error_minutes_invalid": [
-    {
-      "declarations": ["input max", "local maxText = max: number"],
-      "match": {
-        "": "زمانی بین ۱ دقیقه و {maxText} ساعت وارد کنید، مثل 1:30 یا 45m."
-      }
-    }
-  ],
-  "time_error_note_too_long": [
-    {
-      "declarations": ["input max", "local maxText = max: number"],
-      "match": {
-        "": "یادداشت باید کمتر از {maxText} نویسه باشد."
-      }
-    }
-  ],
   "task_status": "وضعیت",
+  "task_timer": "زمان‌سنج",
   "task_action_start": "روشن کردن زمان‌سنج",
-  "task_action_resume": "ادامهٔ زمان‌سنج",
-  "task_action_pause": "مکث زمان‌سنج",
+  "task_action_pause": "خاموش کردن زمان‌سنج",
   "task_action_done": "تمام شد",
-  "task_action_stop": "توقف",
+  "task_action_stop": "لغو کار",
   "task_action_reopen": "بازگشایی",
   "task_status_failed": "وضعیت کار تغییر نکرد.",
   "task_run_running": "در حال اجرا",
-  "task_run_paused": "در مکث",
   "task_run_done": "تمام‌شده",
-  "task_run_stopped": "متوقف",
+  "task_run_stopped": "لغوشده",
   "task_run_idle": "خاموش",
-  "task_pause_title": [
-    {
-      "declarations": ["input code"],
-      "match": {
-        "": "مکث {code}"
-      }
-    }
-  ],
-  "task_pause_description": "زمان‌سنج خاموش می‌شود و کارت سر جایش می‌ماند، با نشان مکث.",
   "task_stop_title": [
     {
       "declarations": ["input code"],
       "match": {
-        "": "توقف {code}"
+        "": "لغو {code}"
       }
     }
   ],
-  "task_stop_description": "کار متوقف‌شده به ستون لغوشده می‌رود و بعداً دوباره باز می‌شود.",
+  "task_stop_description": "کار لغوشده به ستون لغوشده می‌رود و بعداً دوباره باز می‌شود.",
   "task_move_description": [
     {
       "declarations": ["input from", "input to"],
@@ -604,22 +576,13 @@
       }
     }
   ],
-  "task_reason_label": "چرا متوقف می‌شود؟",
-  "task_reason_optional_label": "چرا مکث؟ (اختیاری)",
+  "task_reason_label": "چرا لغو می‌شود؟",
   "task_reason_hint": "در تاریخچه کار ثبت می‌شود.",
-  "task_paused_by": [
-    {
-      "declarations": ["input name", "input date"],
-      "match": {
-        "": "مکث به دست {name}، {date}"
-      }
-    }
-  ],
   "task_stopped_by": [
     {
       "declarations": ["input name", "input date"],
       "match": {
-        "": "توقف به دست {name}، {date}"
+        "": "لغو به دست {name}، {date}"
       }
     }
   ],
@@ -641,6 +604,15 @@
   "board_show_cancelled": "نمایش لغوشده‌ها",
   "time_spent_label": "زمان صرف‌شده",
   "time_title": "زمان",
+  "time_by_person": "زمان هر نفر",
+  "time_person_meter_value": [
+    {
+      "declarations": ["input duration", "input share"],
+      "match": {
+        "": "{duration}، {share} از زمان این کار"
+      }
+    }
+  ],
   "time_age": "عمر کار",
   "time_age_done": "از ساخت تا پایان",
   "time_in_column": [
@@ -669,21 +641,6 @@
       }
     }
   ],
-  "time_remove": [
-    {
-      "declarations": ["input date"],
-      "match": {
-        "": "حذف ثبت {date}"
-      }
-    }
-  ],
-  "time_remove_failed": "این ثبت حذف نشد.",
-  "time_add_title": "ثبت زمان کار",
-  "time_add_date": "روز",
-  "time_add_duration": "مدت کار",
-  "time_add_note": "یادداشت (اختیاری)",
-  "time_add_submit": "افزودن",
-  "time_add_failed": "زمان ثبت نشد.",
   "timer_running_on": "زمان‌سنج شما روشن است روی",
   "timer_stop": [
     {
@@ -698,7 +655,7 @@
     {
       "declarations": ["input code"],
       "match": {
-        "": "{code} متوقف شد و به ستون لغوشده رفت. برای دیدنش «نمایش لغوشده‌ها» را روشن کنید."
+        "": "{code} لغو شد و به ستون لغوشده رفت. برای دیدنش «نمایش لغوشده‌ها» را روشن کنید."
       }
     }
   ],
@@ -1081,7 +1038,7 @@
     }
   ],
   "activity_task_completed": "کار را تمام کرد",
-  "activity_task_stopped": "کار را متوقف کرد",
+  "activity_task_stopped": "کار را لغو کرد",
   "activity_task_reopened": "کار را دوباره باز کرد",
   "activity_time_started": "زمان‌سنج را روشن کرد",
   "activity_time_stopped": [
@@ -1687,7 +1644,7 @@
     {
       "declarations": ["input name", "input code"],
       "match": {
-        "": "{name} زمان‌سنج {code} را به مکث برد"
+        "": "{name} زمان‌سنج {code} را خاموش کرد"
       }
     }
   ],
@@ -1703,7 +1660,7 @@
     {
       "declarations": ["input name", "input code"],
       "match": {
-        "": "{name} کار {code} را متوقف کرد"
+        "": "{name} کار {code} را لغو کرد"
       }
     }
   ],
@@ -1912,14 +1869,5 @@
       }
     }
   ],
-  "task_back_confirm": "برگرداندن",
-  "task_start_done_title": [
-    {
-      "declarations": ["input code"],
-      "match": {
-        "": "زمان‌سنج {code} روشن شود؟"
-      }
-    }
-  ],
-  "task_start_done_description": "این کار انجام شده است. با این حال زمان‌سنجش روشن شود؟ کارت در «انجام‌شده» می‌ماند."
+  "task_back_confirm": "برگرداندن"
 }

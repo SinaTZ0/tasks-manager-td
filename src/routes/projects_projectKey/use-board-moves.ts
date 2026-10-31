@@ -88,9 +88,9 @@ export function useTaskMove(projectId: string) {
 /*===== Status =====*/
 
 /**
- * How the board shows a status action before the server answers. Start and pause light the card's clock and leave it
- * in place (a pause leaves others' clocks running, which the refetch shows); done, stop and reopen send it to the
- * bottom of their column, and done and stop put its clocks out.
+ * How the board shows a status action before the server answers. Start and pause light or put out the card's clock and
+ * leave it in place (a pause leaves others' clocks running, which the refetch shows); done, stop and reopen send it to
+ * the bottom of their column, and done and stop put its clocks out.
  */
 function afterAction({
   task,
@@ -104,14 +104,12 @@ function afterAction({
   last: TaskCard | undefined;
 }): TaskCard {
   if (action === "start") {
-    return { ...task, pausedAt: null, runningSince: task.runningSince.length > 0 ? task.runningSince : [new Date()] };
+    return { ...task, runningSince: task.runningSince.length > 0 ? task.runningSince : [new Date()] };
   }
-  if (action === "pause") {
-    return task.runningSince.length > 1 ? task : { ...task, runningSince: [], pausedAt: new Date() };
-  }
+  if (action === "pause") return task.runningSince.length > 1 ? task : { ...task, runningSince: [] };
   if (!target || task.columnId === target.id) return task;
   const moved = { ...task, columnId: target.id, position: positionBetween(last?.position ?? null, null) };
-  return action === "reopen" ? moved : { ...moved, runningSince: [], pausedAt: null };
+  return action === "reopen" ? moved : { ...moved, runningSince: [] };
 }
 
 /**

@@ -121,13 +121,10 @@ async function toCard({ db, record }: { db: Database; record: TaskRecord }): Pro
   return card;
 }
 
-/** The history entries the drawer's status note is read from: a stop, and a clock stopping. */
-const NOTE_ENTRIES: readonly ActivityAction[] = ["task.stopped", "time.stopped"];
+/** The history entries the drawer's status note is read from. */
+const NOTE_ENTRIES: readonly ActivityAction[] = ["task.stopped"];
 
-/**
- * A task row as its drawer shows it. A stopped task carries its stop's reason; a paused one says who stopped the last
- * clock on it and why, when they said.
- */
+/** A task row as its drawer shows it. A stopped task carries its stop's reason, who stopped it and when. */
 async function toDetail({
   db,
   projectId,
@@ -147,19 +144,14 @@ async function toDetail({
   const comments = await countComments({ db, taskIds: [record.id] });
   const attachments = await findAttachments({ db, taskIds: [record.id] });
   const watchers = await getWatchers({ db, taskId: record.id });
-  const noteAction: "pause" | "stop" | null = column?.kind === "cancelled" ? "stop" : record.pausedAt ? "pause" : null;
-  const last = noteAction
-    ? entries.findLast((entry) => entry.action === (noteAction === "stop" ? "task.stopped" : "time.stopped"))
-    : undefined;
-  const statusNote =
-    noteAction && last
-      ? {
-          action: noteAction,
-          reason: ((last.after ?? {}) as { reason?: string | null }).reason ?? null,
-          actorId: last.actorId,
-          at: last.createdAt,
-        }
-      : null;
+  const last = column?.kind === "cancelled" ? entries.at(-1) : undefined;
+  const statusNote = last
+    ? {
+        reason: ((last.after ?? {}) as { reason?: string | null }).reason ?? null,
+        actorId: last.actorId,
+        at: last.createdAt,
+      }
+    : null;
   return toTaskDetail({
     record,
     labelIds: labelIds.get(record.id) ?? [],
@@ -248,8 +240,8 @@ export async function columnEffects({
     await closeTimers({ db, actorId, scope: { taskId: task.id }, cause: "finished" });
     await releaseDependents({ db, actorId, blocker: task });
   }
-  if (to === "done") return { completedAt: new Date(), pausedAt: null };
-  if (to === "cancelled") return { completedAt: null, pausedAt: null };
+  if (to === "done") return { completedAt: new Date() };
+  if (to === "cancelled") return { completedAt: null };
   if (from === "done") return { completedAt: null };
   return {};
 }
@@ -698,9 +690,9 @@ const STATUS_EVENT = {
 } as const satisfies Record<TaskStatusAction, WatchedEvent>;
 
 /**
- * Takes a status action (docs/app.md → Status / Clock / Stop). Start and pause work the actor's own clock and leave the
- * card where it is: start runs it, stopping any other they had running (rule 2), and pause stops it, with a reason if
- * they give one (rule 5). Done, stop and reopen move the task to the bottom of the action's column, with what that move
+ * Takes a status action (docs/app.md → Status / Clock / Cancel). Start and pause work the actor's own clock like a
+ * chronometer and leave the card where it is: start runs it, stopping any other they had running (rule 2), and pause
+ * stops it, with no questions. Done, stop and reopen move the task to the bottom of the action's column, with what that move
  * does to its clocks and finish time (`columnEffects`); stopping needs a reason. A task that still waits for others is
  * finished only with `forceComment` (rule 4).
  *
@@ -727,7 +719,7 @@ export async function transitionTask({
 }): Promise<TransitionResult> {
   const parsedReason = statusReasonSchema.safeParse(rawReason);
   if (!parsedReason.success) return { kind: "invalid", fields: issuesToErrorData(parsedReason.error.issues).fields };
-  const reason = action === "pause" || action === "stop" ? parsedReason.data : null;
+  const reason = action === "stop" ? parsedReason.data : null;
   if (action === "stop" && !reason) return { kind: "invalid", fields: { reason: m.task_error_reason_required() } };
   if (!isUuid(taskId)) return { kind: "not-found" };
 
@@ -743,11 +735,9 @@ export async function transitionTask({
     /*------ Clock ------*/
     if (!isColumnAction(action)) {
       if (action === "start") await startTimer({ db: tx, actorId, task: current });
-      else await closeTimers({ db: tx, actorId, scope: { userId: actorId }, cause: "paused", reason });
-      await notifyWatchers({ db: tx, actorId, projectId, task: current, event: STATUS_EVENT[action], note: reason });
-      // The clock changed whether the task is paused.
-      const record = await lockTask({ db: tx, projectId, id: taskId });
-      return { kind: "success", task: await toCard({ db: tx, record: record ?? current }) };
+      else await closeTimers({ db: tx, actorId, scope: { userId: actorId }, cause: "paused" });
+      await notifyWatchers({ db: tx, actorId, projectId, task: current, event: STATUS_EVENT[action] });
+      return { kind: "success", task: await toCard({ db: tx, record: current }) };
     }
 
     /*------ Move ------*/
@@ -842,7 +832,7 @@ export async function archiveTask({
     // An archived task holds nothing up any more.
     const column = await findColumn({ db: tx, projectId, columnId: current.columnId });
     if (!isReleased(column?.kind)) await releaseDependents({ db: tx, actorId, blocker: current });
-    await updateTaskRow({ db: tx, id: taskId, values: { archivedAt: new Date(), pausedAt: null } });
+    await updateTaskRow({ db: tx, id: taskId, values: { archivedAt: new Date() } });
     const code = taskCode({ key: await findProjectKey({ db: tx, projectId }), number: current.number });
     await recordActivity({
       db: tx,

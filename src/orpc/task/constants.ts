@@ -26,8 +26,9 @@ export const ESTIMATE_MAX_MINUTES = 999 * 60;
 /*===== Status Actions =====*/
 
 /**
- * What a person can do to a task's status (docs/app.md → Status / Clock / Stop). Two of them work the person's own
- * clock and leave the card where it is: start runs it (stopping any other they had running, rule 2), pause stops it.
+ * What a person can do to a task's status (docs/app.md → Status / Clock / Cancel). Two of them work the person's own
+ * clock like a chronometer and leave the card where it is: start runs it (stopping any other they had running, rule 2),
+ * pause stops it (the keys read "Stop timer"; `stop` cancels the task, its keys read "Cancel task").
  * The others move the card: done finishes it, stop cancels it with a reason, reopen brings a done or cancelled task back
  * to to do.
  */
@@ -47,8 +48,8 @@ export type ColumnAction = keyof typeof COLUMN_ACTION_RULES;
 export const isColumnAction = (action: TaskStatusAction): action is ColumnAction => action in COLUMN_ACTION_RULES;
 
 /**
- * Whether `action` can be taken on a task in a column of `kind`. A clock starts on any task but a cancelled one (a done
- * one asks first, on the page), and only its own person pauses it: `timing` says whether the actor's clock runs on it.
+ * Whether `action` can be taken on a task in a column of `kind`. A clock starts on any task but a cancelled one, and
+ * only its own person stops it: `timing` says whether the actor's clock runs on it.
  */
 export function canTakeAction({
   action,
@@ -64,7 +65,7 @@ export function canTakeAction({
   return (COLUMN_ACTION_RULES[action].from as readonly ColumnKind[]).includes(kind);
 }
 
-/** Of a pause's or a stop's reason. */
+/** Of a stop's reason. */
 export const STATUS_REASON_MAX_LENGTH = 500;
 
 /*===== Dependencies =====*/
@@ -76,11 +77,6 @@ export const RELEASED_KINDS = ["done", "cancelled"] as const satisfies readonly 
 
 /** Of a comment's plain text. */
 export const COMMENT_MAX_LENGTH = 10_000;
-
-/*===== Time =====*/
-/** A manual entry is at most a day's work. */
-export const TIME_ENTRY_MAX_MINUTES = 24 * 60;
-export const TIME_NOTE_MAX_LENGTH = 200;
 
 /** The code people use in chat: the project's key and the task's number (`TD-42`). */
 export function taskCode({ key, number }: { key: string; number: number }): string {

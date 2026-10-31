@@ -47,9 +47,11 @@ Made with the user on 2026-10-30. They answer the spec's open questions and over
   (no logic of their own) anywhere, and removes one once no card on the board is in it. Every column can be renamed and
   given a WIP limit; the cancelled column is never drawn on the board. (Changed after slice 21: the first build had
   seven fixed kinds, Paused and Review among them.)
-- **The clock is not a column.** Start and pause work the person's own clock and leave the card where it is; the card's
-  border is green while a clock runs and yellow once the last one is paused. Entering Done or Cancelled stops its
-  clocks. A step back along the fixed columns, and starting a clock on a done card, ask to confirm.
+- **The clock is not a column, and it is a chronometer.** Start timer and Stop timer work the person's own clock, at
+  once, and leave the card where it is; the card's border is green while a clock runs. Entering Done or Cancelled
+  stops its clocks. A step back along the fixed columns asks to confirm. (Changed 2026-10-31: pausing no longer asks
+  why, a done card's clock starts without a confirm, there is no yellow paused state, and time is no longer typed in;
+  the typed-in entries from before still count.)
 - **Project settings are admin-only**: members, columns, WIP limits. Labels can be added by any member, because tagging
   is part of everyday work; renaming or deleting one changes every task that has it, so that is an admin's.
 - **Owner**: whoever creates a task owns it (an admin, since slice 9). The owner or an admin can hand ownership to someone else; delegation never
