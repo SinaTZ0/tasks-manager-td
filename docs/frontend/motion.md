@@ -5,13 +5,14 @@ Everything that changes inside a page animates with CSS when CSS can follow the 
 (`motion/react`) when it can't. Movement is short (about 150–250ms), and none of it plays under
 `prefers-reduced-motion` ([app-identity.md](./app-identity.md) → Constraints).
 
-| The change                                                                     | Animated with                                |
-| ------------------------------------------------------------------------------ | -------------------------------------------- |
-| Moving to another page                                                         | The router's view transition                 |
-| A popup opening or closing (dialog, drawer, menu, popover, tooltip, toast)     | CSS, through Base UI's starting/ending style |
-| A tab's panel, a hover, a pressed key, a panel that opens or folds             | CSS                                          |
-| An item added to or removed from a list, a list filtered or reordered          | Motion                                       |
-| A card moving to another column, content swapped for content of another height | Motion                                       |
+| The change                                                                 | Animated with                                |
+| -------------------------------------------------------------------------- | -------------------------------------------- |
+| Moving to another page                                                     | The router's view transition                 |
+| A popup opening or closing (dialog, drawer, menu, popover, tooltip, toast) | CSS, through Base UI's starting/ending style |
+| A tab's panel, a hover, a pressed key, a panel that opens or folds         | CSS                                          |
+| Dragging and dropping a board card or column                               | dnd-kit's own animation, nothing added       |
+| An item added to or removed from a list, a list filtered or reordered      | Motion                                       |
+| Content swapped for content of another height                              | Motion                                       |
 
 No React `<ViewTransition>` and no `document.startViewTransition` inside a page: a view transition animates bitmaps
 of the page, lifts its parts above every open modal and blocks clicks while it plays (view-transitions.md → Only
@@ -37,16 +38,15 @@ Between Pages).
 ## Motion
 
 Use Motion only where CSS can't follow the change: elements that come and go from a list, and elements whose place
-or size changes because the layout around them changed.
+or size changes because the layout around them changed. The board's cards and columns are not among them: dnd-kit
+animates a drag and the list making room for it, and nothing else is added to them.
 
 - **Exits**: wrap what can leave in `<AnimatePresence initial={false}>`, give each child a stable `key`, and set
   `exit`. `initial={false}` keeps the first render, server rendering and hydration still: only later changes animate.
 - **Moves**: `layout` animates an element to its new place and size; `layoutId` (unique on the page, built from the
-  record's id) carries it between two parents, a card from one column to another. Each `layout` element is measured
-  on every render of its parent, so put it on what actually moves, not on everything.
+  record's id) carries it between two parents. Each `layout` element is measured on every render of its parent, so
+  put it on what actually moves, not on everything.
 - **Query data needs nothing special.** Motion animates the real element when React renders new data, whatever
   started the render: a refetch, a mutation's result or a search param.
-- **Drag and drop**: an element dnd-kit is dragging must not have `layout` at the same time: both set its transform.
-  Turn `layout` off while a drag is in progress.
 - **Reduced motion**: Motion runs under one `<MotionConfig reducedMotion="user">` near the root, which turns
   transforms and layout animation off when the person asks for less motion.
