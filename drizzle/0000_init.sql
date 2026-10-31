@@ -27,6 +27,20 @@ CREATE TABLE "activity" (
 	"seq" bigint GENERATED ALWAYS AS IDENTITY (sequence name "activity_seq_seq" INCREMENT BY 1 MINVALUE 1 MAXVALUE 9223372036854775807 START WITH 1 CACHE 1)
 );
 --> statement-breakpoint
+CREATE TABLE "attachment" (
+	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+	"task_id" uuid NOT NULL,
+	"kind" text NOT NULL,
+	"name" text NOT NULL,
+	"url" text,
+	"content_type" text,
+	"size" integer,
+	"preview_width" integer,
+	"preview_height" integer,
+	"added_by" text NOT NULL,
+	"created_at" timestamp DEFAULT now() NOT NULL
+);
+--> statement-breakpoint
 CREATE TABLE "board_column" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"project_id" uuid NOT NULL,
@@ -34,6 +48,17 @@ CREATE TABLE "board_column" (
 	"name" text,
 	"position" text collate "C" NOT NULL,
 	"wip_limit" integer
+);
+--> statement-breakpoint
+CREATE TABLE "checklist_item" (
+	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+	"task_id" uuid NOT NULL,
+	"text" text NOT NULL,
+	"position" text collate "C" NOT NULL,
+	"done_at" timestamp,
+	"done_by" text,
+	"created_by" text NOT NULL,
+	"created_at" timestamp DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
 CREATE TABLE "comment" (
@@ -98,11 +123,13 @@ CREATE TABLE "notification" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"user_id" text NOT NULL,
 	"kind" text NOT NULL,
-	"actor_id" text NOT NULL,
+	"actor_id" text,
 	"project_id" uuid NOT NULL,
 	"task_id" uuid,
+	"due_date" date,
 	"data" jsonb DEFAULT '{}'::jsonb NOT NULL,
 	"read_at" timestamp,
+	"pushed_at" timestamp,
 	"created_at" timestamp DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
@@ -121,6 +148,16 @@ CREATE TABLE "project_member" (
 	"user_id" text NOT NULL,
 	"added_at" timestamp DEFAULT now() NOT NULL,
 	CONSTRAINT "project_member_project_id_user_id_pk" PRIMARY KEY("project_id","user_id")
+);
+--> statement-breakpoint
+CREATE TABLE "push_subscription" (
+	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+	"user_id" text NOT NULL,
+	"endpoint" text NOT NULL,
+	"p256dh" text NOT NULL,
+	"auth" text NOT NULL,
+	"locale" text NOT NULL,
+	"created_at" timestamp DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
 CREATE TABLE "session" (
@@ -148,12 +185,26 @@ CREATE TABLE "task" (
 	"due_date" date,
 	"estimate_minutes" integer,
 	"owner_id" text NOT NULL,
-	"assignee_id" text,
 	"created_by" text NOT NULL,
 	"created_at" timestamp DEFAULT now() NOT NULL,
 	"updated_at" timestamp DEFAULT now() NOT NULL,
 	"completed_at" timestamp,
 	"archived_at" timestamp
+);
+--> statement-breakpoint
+CREATE TABLE "task_alias" (
+	"project_id" uuid NOT NULL,
+	"number" integer NOT NULL,
+	"task_id" uuid NOT NULL,
+	"created_at" timestamp DEFAULT now() NOT NULL,
+	CONSTRAINT "task_alias_project_id_number_pk" PRIMARY KEY("project_id","number")
+);
+--> statement-breakpoint
+CREATE TABLE "task_assignee" (
+	"task_id" uuid NOT NULL,
+	"user_id" text NOT NULL,
+	"created_at" timestamp DEFAULT now() NOT NULL,
+	CONSTRAINT "task_assignee_task_id_user_id_pk" PRIMARY KEY("task_id","user_id")
 );
 --> statement-breakpoint
 CREATE TABLE "task_dependency" (
@@ -169,6 +220,13 @@ CREATE TABLE "task_label" (
 	"task_id" uuid NOT NULL,
 	"label_id" uuid NOT NULL,
 	CONSTRAINT "task_label_task_id_label_id_pk" PRIMARY KEY("task_id","label_id")
+);
+--> statement-breakpoint
+CREATE TABLE "task_watcher" (
+	"task_id" uuid NOT NULL,
+	"user_id" text NOT NULL,
+	"created_at" timestamp DEFAULT now() NOT NULL,
+	CONSTRAINT "task_watcher_task_id_user_id_pk" PRIMARY KEY("task_id","user_id")
 );
 --> statement-breakpoint
 CREATE TABLE "time_log" (
@@ -210,7 +268,12 @@ CREATE TABLE "verification" (
 ALTER TABLE "account" ADD CONSTRAINT "account_user_id_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."user"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "activity" ADD CONSTRAINT "activity_project_id_project_id_fk" FOREIGN KEY ("project_id") REFERENCES "public"."project"("id") ON DELETE restrict ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "activity" ADD CONSTRAINT "activity_actor_id_user_id_fk" FOREIGN KEY ("actor_id") REFERENCES "public"."user"("id") ON DELETE restrict ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "attachment" ADD CONSTRAINT "attachment_task_id_task_id_fk" FOREIGN KEY ("task_id") REFERENCES "public"."task"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "attachment" ADD CONSTRAINT "attachment_added_by_user_id_fk" FOREIGN KEY ("added_by") REFERENCES "public"."user"("id") ON DELETE restrict ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "board_column" ADD CONSTRAINT "board_column_project_id_project_id_fk" FOREIGN KEY ("project_id") REFERENCES "public"."project"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "checklist_item" ADD CONSTRAINT "checklist_item_task_id_task_id_fk" FOREIGN KEY ("task_id") REFERENCES "public"."task"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "checklist_item" ADD CONSTRAINT "checklist_item_done_by_user_id_fk" FOREIGN KEY ("done_by") REFERENCES "public"."user"("id") ON DELETE restrict ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "checklist_item" ADD CONSTRAINT "checklist_item_created_by_user_id_fk" FOREIGN KEY ("created_by") REFERENCES "public"."user"("id") ON DELETE restrict ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "comment" ADD CONSTRAINT "comment_task_id_task_id_fk" FOREIGN KEY ("task_id") REFERENCES "public"."task"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "comment" ADD CONSTRAINT "comment_author_id_user_id_fk" FOREIGN KEY ("author_id") REFERENCES "public"."user"("id") ON DELETE restrict ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "delegation" ADD CONSTRAINT "delegation_task_id_task_id_fk" FOREIGN KEY ("task_id") REFERENCES "public"."task"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
@@ -228,24 +291,32 @@ ALTER TABLE "notification" ADD CONSTRAINT "notification_task_id_task_id_fk" FORE
 ALTER TABLE "project" ADD CONSTRAINT "project_created_by_user_id_fk" FOREIGN KEY ("created_by") REFERENCES "public"."user"("id") ON DELETE restrict ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "project_member" ADD CONSTRAINT "project_member_project_id_project_id_fk" FOREIGN KEY ("project_id") REFERENCES "public"."project"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "project_member" ADD CONSTRAINT "project_member_user_id_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."user"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "push_subscription" ADD CONSTRAINT "push_subscription_user_id_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."user"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "session" ADD CONSTRAINT "session_user_id_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."user"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "task" ADD CONSTRAINT "task_project_id_project_id_fk" FOREIGN KEY ("project_id") REFERENCES "public"."project"("id") ON DELETE restrict ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "task" ADD CONSTRAINT "task_column_id_board_column_id_fk" FOREIGN KEY ("column_id") REFERENCES "public"."board_column"("id") ON DELETE restrict ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "task" ADD CONSTRAINT "task_owner_id_user_id_fk" FOREIGN KEY ("owner_id") REFERENCES "public"."user"("id") ON DELETE restrict ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "task" ADD CONSTRAINT "task_assignee_id_user_id_fk" FOREIGN KEY ("assignee_id") REFERENCES "public"."user"("id") ON DELETE restrict ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "task" ADD CONSTRAINT "task_created_by_user_id_fk" FOREIGN KEY ("created_by") REFERENCES "public"."user"("id") ON DELETE restrict ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "task_alias" ADD CONSTRAINT "task_alias_project_id_project_id_fk" FOREIGN KEY ("project_id") REFERENCES "public"."project"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "task_alias" ADD CONSTRAINT "task_alias_task_id_task_id_fk" FOREIGN KEY ("task_id") REFERENCES "public"."task"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "task_assignee" ADD CONSTRAINT "task_assignee_task_id_task_id_fk" FOREIGN KEY ("task_id") REFERENCES "public"."task"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "task_assignee" ADD CONSTRAINT "task_assignee_user_id_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."user"("id") ON DELETE restrict ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "task_dependency" ADD CONSTRAINT "task_dependency_task_id_task_id_fk" FOREIGN KEY ("task_id") REFERENCES "public"."task"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "task_dependency" ADD CONSTRAINT "task_dependency_blocker_id_task_id_fk" FOREIGN KEY ("blocker_id") REFERENCES "public"."task"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "task_dependency" ADD CONSTRAINT "task_dependency_created_by_user_id_fk" FOREIGN KEY ("created_by") REFERENCES "public"."user"("id") ON DELETE restrict ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "task_label" ADD CONSTRAINT "task_label_task_id_task_id_fk" FOREIGN KEY ("task_id") REFERENCES "public"."task"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "task_label" ADD CONSTRAINT "task_label_label_id_label_id_fk" FOREIGN KEY ("label_id") REFERENCES "public"."label"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "task_watcher" ADD CONSTRAINT "task_watcher_task_id_task_id_fk" FOREIGN KEY ("task_id") REFERENCES "public"."task"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "task_watcher" ADD CONSTRAINT "task_watcher_user_id_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."user"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "time_log" ADD CONSTRAINT "time_log_task_id_task_id_fk" FOREIGN KEY ("task_id") REFERENCES "public"."task"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "time_log" ADD CONSTRAINT "time_log_user_id_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."user"("id") ON DELETE restrict ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "user" ADD CONSTRAINT "user_avatar_media_id_media_id_fk" FOREIGN KEY ("avatar_media_id") REFERENCES "public"."media"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
 CREATE INDEX "account_user_id_idx" ON "account" USING btree ("user_id");--> statement-breakpoint
 CREATE INDEX "activity_project_id_created_at_idx" ON "activity" USING btree ("project_id","created_at","seq");--> statement-breakpoint
 CREATE INDEX "activity_task_id_created_at_idx" ON "activity" USING btree ("task_id","created_at","seq");--> statement-breakpoint
-CREATE UNIQUE INDEX "board_column_project_id_kind_idx" ON "board_column" USING btree ("project_id","kind");--> statement-breakpoint
+CREATE INDEX "attachment_task_id_created_at_idx" ON "attachment" USING btree ("task_id","created_at");--> statement-breakpoint
+CREATE UNIQUE INDEX "board_column_project_id_kind_idx" ON "board_column" USING btree ("project_id","kind") WHERE "board_column"."kind" <> 'custom';--> statement-breakpoint
+CREATE INDEX "checklist_item_task_id_position_idx" ON "checklist_item" USING btree ("task_id","position");--> statement-breakpoint
 CREATE INDEX "comment_task_id_created_at_idx" ON "comment" USING btree ("task_id","created_at");--> statement-breakpoint
 CREATE INDEX "delegation_task_id_created_at_idx" ON "delegation" USING btree ("task_id","created_at");--> statement-breakpoint
 CREATE INDEX "delegation_from_id_idx" ON "delegation" USING btree ("from_id");--> statement-breakpoint
@@ -253,14 +324,21 @@ CREATE UNIQUE INDEX "label_project_id_name_idx" ON "label" USING btree ("project
 CREATE INDEX "media_attached_at_created_at_idx" ON "media" USING btree ("attached_at","created_at");--> statement-breakpoint
 CREATE INDEX "note_owner_id_created_at_idx" ON "note" USING btree ("owner_id","created_at");--> statement-breakpoint
 CREATE INDEX "notification_user_id_created_at_idx" ON "notification" USING btree ("user_id","created_at");--> statement-breakpoint
+CREATE INDEX "notification_unpushed_idx" ON "notification" USING btree ("user_id") WHERE "notification"."pushed_at" is null;--> statement-breakpoint
 CREATE INDEX "notification_unread_idx" ON "notification" USING btree ("user_id") WHERE "notification"."read_at" is null;--> statement-breakpoint
+CREATE UNIQUE INDEX "notification_due_once_idx" ON "notification" USING btree ("user_id","task_id","kind","due_date") WHERE "notification"."due_date" is not null;--> statement-breakpoint
 CREATE INDEX "project_member_user_id_idx" ON "project_member" USING btree ("user_id");--> statement-breakpoint
+CREATE UNIQUE INDEX "push_subscription_endpoint_idx" ON "push_subscription" USING btree ("endpoint");--> statement-breakpoint
+CREATE INDEX "push_subscription_user_id_idx" ON "push_subscription" USING btree ("user_id");--> statement-breakpoint
 CREATE INDEX "session_user_id_idx" ON "session" USING btree ("user_id");--> statement-breakpoint
 CREATE UNIQUE INDEX "task_project_id_number_idx" ON "task" USING btree ("project_id","number");--> statement-breakpoint
 CREATE INDEX "task_column_id_position_idx" ON "task" USING btree ("column_id","position");--> statement-breakpoint
 CREATE INDEX "task_project_id_archived_at_idx" ON "task" USING btree ("project_id","archived_at");--> statement-breakpoint
+CREATE INDEX "task_alias_task_id_idx" ON "task_alias" USING btree ("task_id");--> statement-breakpoint
+CREATE INDEX "task_assignee_user_id_idx" ON "task_assignee" USING btree ("user_id");--> statement-breakpoint
 CREATE INDEX "task_dependency_blocker_id_idx" ON "task_dependency" USING btree ("blocker_id");--> statement-breakpoint
 CREATE INDEX "task_label_label_id_idx" ON "task_label" USING btree ("label_id");--> statement-breakpoint
+CREATE INDEX "task_watcher_user_id_idx" ON "task_watcher" USING btree ("user_id");--> statement-breakpoint
 CREATE UNIQUE INDEX "time_log_one_open_per_user_idx" ON "time_log" USING btree ("user_id") WHERE "time_log"."ended_at" is null;--> statement-breakpoint
 CREATE INDEX "time_log_task_id_started_at_idx" ON "time_log" USING btree ("task_id","started_at");--> statement-breakpoint
 CREATE INDEX "verification_identifier_idx" ON "verification" USING btree ("identifier");--> statement-breakpoint
