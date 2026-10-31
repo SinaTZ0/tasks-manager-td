@@ -1,5 +1,3 @@
-import { flushSync } from "react-dom";
-
 /*===== Board Panel =====*/
 // Whether each person keeps a board's head panel (the project's name, display and keys) open or folded away, saved in
 // their browser like the board layout (`src/lib/board-layout.ts`) and the same on every project. A folded panel leaves
@@ -7,15 +5,13 @@ import { flushSync } from "react-dom";
 // The choice lives on <html> as `data-board-panel="closed"`, and the panel hides through the `board-panel-closed`
 // variant (src/styles.css). `BOARD_PANEL_INIT_SCRIPT`, inlined into the server-rendered <head>, applies it before
 // anything paints, so a folded panel never flashes open.
-// Folding animates as a view transition of type `board-panel`: the panel folds up into the header and the columns
-// slide up to take its place (src/styles.css → Board Panel). The state is the attribute on <html>, not React's, so this
-// starts the browser's transition itself; where there is none, or it won't take a type, the panel just folds.
+// Folding is a CSS transition on the panel itself (the board page, `projects-project-key.tsx` → Head Panel): it folds
+// up while the columns rise into its place.
 
 const STORAGE_KEY = "app-board-panel";
 // Notifies other components in this tab; the `storage` event only fires in other tabs.
 const CHANGE_EVENT = "app:board-panel-change";
 const CLOSED = "closed";
-const TRANSITION_TYPE = "board-panel";
 
 /*===== First Paint =====*/
 /** Runs before the page paints, so a folded panel stays folded on load. Mirrors `apply`. */
@@ -36,7 +32,7 @@ export const getBoardPanelClosed = () => document.documentElement.dataset.boardP
 /** What the server renders: it can't know the choice, so the key shows the panel open until hydration. */
 export const getBoardPanelClosedOnServer = () => false;
 
-/** Folds or opens the panel, animated where the browser can, and saves the choice. */
+/** Folds or opens the panel and saves the choice. */
 export function setBoardPanelClosed(closed: boolean) {
   try {
     if (closed) localStorage.setItem(STORAGE_KEY, CLOSED);
@@ -44,17 +40,8 @@ export function setBoardPanelClosed(closed: boolean) {
   } catch {
     // Not saved, but still applied for this page view.
   }
-  const update = () => {
-    apply(closed);
-    // The key's latched face is React's: render it now, so the new snapshot already shows it pressed or released.
-    flushSync(() => window.dispatchEvent(new Event(CHANGE_EVENT)));
-  };
-  try {
-    // Browsers from before transition types take only a callback and throw on the options object.
-    document.startViewTransition({ update, types: [TRANSITION_TYPE] });
-  } catch {
-    update();
-  }
+  apply(closed);
+  window.dispatchEvent(new Event(CHANGE_EVENT));
 }
 
 /** Subscribes to the choice changing, here and in other tabs. */

@@ -578,52 +578,6 @@
   }
 }
 
-/*------ Board Panel ------*/
-/* Folding a board's head panel away (type `board-panel`, src/lib/board-panel.ts). Only while it runs are the panel and
-   the columns named, so the router's page fade never pulls them out of the page. The panel folds up from its bottom
-   edge into the header, or unfolds down from it, while the columns' group slides to its new place, so the board
-   moves as one piece instead of jumping. */
-:root:active-view-transition-type(board-panel) #board-panel {
-  view-transition-name: board-panel;
-}
-:root:active-view-transition-type(board-panel) #board-columns {
-  view-transition-name: board-columns;
-}
-
-/* Panel and columns share one duration and easing, so the panel's folding edge stays on the columns' top edge. */
-::view-transition-group(board-columns) {
-  animation-duration: 240ms;
-  animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-}
-::view-transition-old(board-panel):only-child {
-  animation: 240ms cubic-bezier(0.4, 0, 0.2, 1) both board-panel-fold;
-}
-::view-transition-new(board-panel):only-child {
-  animation: 240ms cubic-bezier(0.4, 0, 0.2, 1) both board-panel-unfold;
-}
-
-/* Both ends are spelled out: `clip-path` won't interpolate from `none`, and the panel would flip halfway instead. */
-@keyframes board-panel-fold {
-  from {
-    clip-path: inset(0 0 0 0);
-  }
-  to {
-    opacity: 0;
-    clip-path: inset(0 0 100% 0);
-    transform: translateY(-0.75rem);
-  }
-}
-@keyframes board-panel-unfold {
-  from {
-    opacity: 0;
-    clip-path: inset(0 0 100% 0);
-    transform: translateY(-0.75rem);
-  }
-  to {
-    clip-path: inset(0 0 0 0);
-  }
-}
-
 /* The moulded surface of a housing: a fine bead-blast grain (`--grain`, a neutral mid-grey tile) laid over the
    housing's own colour with soft-light, so it reads as matte plastic in both themes without shifting the
    colour or the text contrast. Any background colour set beside it shows through. */
@@ -648,6 +602,25 @@
   }
   & > li:nth-child(even) {
     background-color: color-mix(in oklab, var(--foreground) 7%, transparent);
+  }
+}
+
+/* The board's head panel (src/lib/board-panel.ts), folding away: its one grid row shrinks to nothing around a
+   `min-h-0` box, so it folds up from its bottom edge while the columns below rise into its place. The clip cuts what
+   no longer fits, 4px below the box so the housing's 3px ledge still shows; `overflow: hidden` would cut the ledge.
+   Folded, it turns invisible, so its keys leave the tab order (visibility holds until the transition ends). */
+@utility board-panel-fold {
+  display: grid;
+  grid-template-rows: 1fr;
+  clip-path: inset(0 0 -4px 0);
+  transition-property: grid-template-rows, margin, opacity, visibility;
+  transition-duration: 240ms;
+  transition-timing-function: var(--ease-in-out);
+
+  :where([data-board-panel="closed"]) & {
+    grid-template-rows: 0fr;
+    opacity: 0;
+    visibility: hidden;
   }
 }
 

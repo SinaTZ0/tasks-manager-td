@@ -133,86 +133,90 @@ function BoardPage() {
       {/*===== Head Panel =====*/}
       {/* The project's front panel, laid out like a sampler's face: the model name and page keys beside the display
           glass, and one row of keys below that act on the board, each group under its printed name. A key in the
-          header folds it away (src/lib/board-panel.ts); the filters still apply, and the columns say "3 of 9". */}
-      <section id={BOARD_PANEL_ID} aria-label={project.name} className="board-panel-closed:hidden">
-        <Card>
-          <CardContent>
-            <div className="flex flex-col gap-5">
-              {/*------ Name and Display ------*/}
-              <div className="flex flex-wrap items-stretch gap-6">
-                {/* The model name, and the keys to the project's other pages stacked beside the glass, like the
+          header folds it away (src/lib/board-panel.ts); the filters still apply, and the columns say "3 of 9".
+          It folds up as the columns rise into its place (`board-panel-fold`, src/styles.css); folded, its negative
+          margin takes back the page's `gap-6`. */}
+      <section id={BOARD_PANEL_ID} aria-label={project.name} className="board-panel-fold board-panel-closed:-mb-6">
+        {/* A bare box, so the row can shrink to nothing: the card's own padding can't. */}
+        <div className="min-h-0">
+          <Card>
+            <CardContent>
+              <div className="flex flex-col gap-5">
+                {/*------ Name and Display ------*/}
+                <div className="flex flex-wrap items-stretch gap-6">
+                  {/* The model name, and the keys to the project's other pages stacked beside the glass, like the
                   mode keys at the edge of a sampler. */}
-                <div className="flex flex-col justify-between gap-4">
-                  <div className="flex flex-col">
-                    <h1 className="font-heading text-h1">{project.name}</h1>
-                    <span className="flex items-center gap-3">
-                      <Marking variant="code">{project.key}</Marking>
-                      <AvatarGroup>
-                        {project.members.map((member) => (
-                          <PersonAvatar key={member.id} name={member.name} src={member.avatarUrl} />
-                        ))}
-                      </AvatarGroup>
-                    </span>
-                  </div>
-                  <ProjectPages
-                    projectKey={project.key}
-                    current="board"
-                    isAdmin={isAdmin}
-                    filter={{ assignee, label, priority, due, blocked }}
-                    layout="grid"
-                  />
-                </div>
-                <BoardDisplay project={project} board={board} hidden={hidden} onHiddenChange={setHidden} />
-              </div>
-
-              {/*------ Keys ------*/}
-              {/* Rows start together so the groups' printed names line up; keys outside a group sit on the baseline. */}
-              <div className="flex flex-wrap items-start gap-x-6 gap-y-4">
-                {isAdmin && (
-                  <div className="self-end">
-                    <NewTaskDialog
-                      projectId={project.id}
+                  <div className="flex flex-col justify-between gap-4">
+                    <div className="flex flex-col">
+                      <h1 className="font-heading text-h1">{project.name}</h1>
+                      <span className="flex items-center gap-3">
+                        <Marking variant="code">{project.key}</Marking>
+                        <AvatarGroup>
+                          {project.members.map((member) => (
+                            <PersonAvatar key={member.id} name={member.name} src={member.avatarUrl} />
+                          ))}
+                        </AvatarGroup>
+                      </span>
+                    </div>
+                    <ProjectPages
                       projectKey={project.key}
-                      columns={columns}
-                      defaultColumnId={columns.find((column) => !hidden.has(column.id))?.id}
+                      current="board"
+                      isAdmin={isAdmin}
+                      filter={{ assignee, label, priority, due, blocked }}
+                      layout="grid"
                     />
                   </div>
-                )}
-                <PanelGroup label={m.board_panel_filter()}>
-                  <BoardFilters
-                    filter={{ assignee, label, priority, due, blocked }}
-                    people={assignable}
-                    labels={board.labels}
-                    onChange={setFilter}
-                  />
-                </PanelGroup>
-                <PanelGroup label={m.board_panel_view()}>
-                  <BoardLayoutPicker />
-                  <Toggle
-                    id={SHOW_CANCELLED_ID}
-                    size="md"
-                    signal="selection"
-                    aria-label={m.board_show_cancelled()}
-                    pressed={showCancelled}
-                    onPressedChange={(pressed) =>
-                      void navigate({
-                        search: (previous) => ({ ...previous, cancelled: pressed || undefined }),
-                        replace: true,
-                      })
-                    }
-                  >
-                    {m.board_mark_cancelled()}
-                  </Toggle>
-                </PanelGroup>
+                  <BoardDisplay project={project} board={board} hidden={hidden} onHiddenChange={setHidden} />
+                </div>
+
+                {/*------ Keys ------*/}
+                {/* Rows start together so the groups' printed names line up; keys outside a group sit on the baseline. */}
+                <div className="flex flex-wrap items-start gap-x-6 gap-y-4">
+                  {isAdmin && (
+                    <div className="self-end">
+                      <NewTaskDialog
+                        projectId={project.id}
+                        projectKey={project.key}
+                        columns={columns}
+                        defaultColumnId={columns.find((column) => !hidden.has(column.id))?.id}
+                      />
+                    </div>
+                  )}
+                  <PanelGroup label={m.board_panel_filter()}>
+                    <BoardFilters
+                      filter={{ assignee, label, priority, due, blocked }}
+                      people={assignable}
+                      labels={board.labels}
+                      onChange={setFilter}
+                    />
+                  </PanelGroup>
+                  <PanelGroup label={m.board_panel_view()}>
+                    <BoardLayoutPicker />
+                    <Toggle
+                      id={SHOW_CANCELLED_ID}
+                      size="md"
+                      signal="selection"
+                      aria-label={m.board_show_cancelled()}
+                      pressed={showCancelled}
+                      onPressedChange={(pressed) =>
+                        void navigate({
+                          search: (previous) => ({ ...previous, cancelled: pressed || undefined }),
+                          replace: true,
+                        })
+                      }
+                    >
+                      {m.board_mark_cancelled()}
+                    </Toggle>
+                  </PanelGroup>
+                </div>
               </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        </div>
       </section>
 
       {/*------ Columns ------*/}
-      {/* Named while the panel folds, so the columns slide into its place (src/styles.css → Board Panel). */}
-      <Card id="board-columns">
+      <Card>
         <CardContent>
           <Board
             project={project}

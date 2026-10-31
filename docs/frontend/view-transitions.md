@@ -82,8 +82,6 @@ the running one off. React also only starts one inside a Transition, and query a
 - **Morph an element between pages:** give it the same `view-transition-name` on both pages, built from the record's
   id (`note-42`), since a name must be unique on the page. The page fade then animates that element from its old box
   to its new one.
-- The board's head panel fold (`src/lib/board-panel.ts`) is the one in-page view transition left, and is moving to
-  a CSS height transition ([motion.md](./motion.md)).
 
 The `react-view-transitions` skill (`.agents/skills/`) has how to change the page fade and check it frame by frame.
 
