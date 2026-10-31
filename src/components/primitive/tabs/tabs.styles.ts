@@ -72,6 +72,11 @@ const twContentStyles = defineStyles({
   layout: "flex-1",
   typography: "text-body-sm",
   focus: "outline-none",
+  // A panel mounts when its tab is chosen, so it fades in; the first one, shown with the tabs, appears at once. CSS
+  // rather than a view transition: Base UI updates its own state while the old panel unmounts, which cuts React's
+  // animation off before it shows anything.
+  motion:
+    "group-data-switched/tabs:motion-safe:animate-in group-data-switched/tabs:motion-safe:duration-150 group-data-switched/tabs:motion-safe:fade-in-0",
 });
 
 /*===== Class Composition =====*/

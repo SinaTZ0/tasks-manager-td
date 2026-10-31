@@ -1,6 +1,6 @@
 import { Tabs as TabsPrimitive } from "@base-ui/react/tabs";
 import { type VariantProps } from "class-variance-authority";
-import { createContext, use } from "react";
+import { createContext, use, useState } from "react";
 import { cn } from "#/lib/utils";
 import { Led } from "../led/led";
 import {
@@ -13,12 +13,20 @@ import {
 
 /*===== Tabs =====*/
 
-function Tabs({ className, orientation = "horizontal", ...props }: TabsPrimitive.Root.Props) {
+function Tabs({ className, orientation = "horizontal", onValueChange, ...props }: TabsPrimitive.Root.Props) {
+  // Set once a tab has been chosen: only then does a panel fade in, not the one shown when the tabs first appear.
+  const [switched, setSwitched] = useState(false);
+
   return (
     <TabsPrimitive.Root
       data-slot="tabs"
       data-orientation={orientation}
+      data-switched={switched || undefined}
       className={cn(tabsClasses, className)}
+      onValueChange={(...args) => {
+        setSwitched(true);
+        onValueChange?.(...args);
+      }}
       {...props}
     />
   );
