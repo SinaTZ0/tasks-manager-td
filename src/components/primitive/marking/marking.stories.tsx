@@ -46,3 +46,12 @@ export const InContext: Story = {
     </div>
   ),
 };
+
+// On a strip in the secondary colour, the words print in the strip's own ink.
+export const OnSecondary: Story = {
+  render: () => (
+    <span className="flex justify-center bg-secondary px-6 py-0.5">
+      <Marking variant="secondary">پیگیری</Marking>
+    </span>
+  ),
+};

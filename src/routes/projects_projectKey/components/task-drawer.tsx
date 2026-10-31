@@ -1,9 +1,10 @@
 import { useQuery } from "@tanstack/react-query";
 import { CopyIcon, FolderInputIcon, PaperclipIcon } from "lucide-react";
-import { useState } from "react";
+import { type ReactNode, useState } from "react";
 
 import { Button } from "#/components/primitive/button/button";
 import { Marking } from "#/components/primitive/marking/marking";
+import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "#/components/primitive/resizable/resizable";
 import { Separator } from "#/components/primitive/separator/separator";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "#/components/primitive/sheet/sheet";
 import { Spinner } from "#/components/primitive/spinner/spinner";
@@ -12,7 +13,9 @@ import { ActivityFeed } from "#/components/shared/activity-feed/activity-feed";
 import { useShortcuts } from "#/hooks/use-shortcuts";
 import { columnTitle } from "#/lib/column-title";
 import { formatDate } from "#/lib/locale";
+import { cn } from "#/lib/utils";
 import { orpc } from "#/orpc/client";
+import type { ColumnKind } from "#/orpc/project/constants";
 import type { Person, Project } from "#/orpc/project/contract";
 import { taskCode } from "#/orpc/task/constants";
 import type { Board, TaskDetail } from "#/orpc/task/contract";
@@ -50,9 +53,10 @@ import { useTaskUpdate } from "#/routes/projects_projectKey/use-task-update";
 
 /**
  * A card's details in a panel floating over nearly the whole page, opened by `?task=TD-42` so it has a link. Closing it
- * drops the param. Under its header the card reads in three columns that scroll on their own: the work (status and
- * timer keys, then what the task is), the conversation (comments, history, time), and the details people look things
- * up in. Every field saves on its own, as it changes.
+ * drops the param. Under its header the card reads in three columns that scroll on their own and are resized by
+ * dragging the rules between them: the work (status and timer keys, then what the task is), the tabs (comments,
+ * checklist, dependencies, history, time), and the details people look things up in. Every field saves on its own, as
+ * it changes.
  */
 export function TaskDrawer({
   code,
@@ -178,129 +182,174 @@ function TaskDetails({
       {archived ? (
         <p className="p-6">{m.task_archived_notice()}</p>
       ) : (
-        // Each column scrolls on its own, so the thread stays in view while the checklist or a field is worked on.
-        <div className="grid min-h-0 flex-1 task-columns divide-x divide-border">
+        // Each column scrolls on its own, so the thread stays in view while a field is worked on. The work column is
+        // the narrowest: what's left in it is short, and the tabs beside it hold the long lists.
+        <ResizablePanelGroup className="min-h-0 flex-1">
           {/*------ Work ------*/}
-          <div className="flex min-h-0 flex-col gap-6 overflow-y-auto p-6">
-            <TaskStatusPanel
-              task={task}
-              project={project}
-              code={code}
-              people={people}
-              blockers={blockers}
-              readOnly={readOnly}
-            />
-            <TaskTitleField key={task.title} task={task} update={update} readOnly={readOnly} />
-            <TaskDescriptionField task={task} update={update} readOnly={readOnly} />
-            <Separator />
-            <TaskChecklist task={task} projectId={project.id} people={people} readOnly={readOnly} />
-            <Separator />
-            <TaskAttachments task={task} projectId={project.id} people={people} uploads={uploads} readOnly={readOnly} />
-            <Separator />
-            <TaskDependencies task={task} project={project} board={board} kinds={kinds} readOnly={readOnly} />
-          </div>
+          <ResizablePanel defaultSize="30%" minSize={280}>
+            <DrawerColumn label={m.task_column_work()} className="gap-6">
+              <TaskStatusPanel
+                task={task}
+                project={project}
+                code={code}
+                people={people}
+                blockers={blockers}
+                readOnly={readOnly}
+              />
+              <TaskTitleField key={task.title} task={task} update={update} readOnly={readOnly} />
+              <TaskDescriptionField task={task} update={update} readOnly={readOnly} />
+              <Separator />
+              <TaskAttachments
+                task={task}
+                projectId={project.id}
+                people={people}
+                uploads={uploads}
+                readOnly={readOnly}
+              />
+            </DrawerColumn>
+          </ResizablePanel>
+          <ResizableHandle withHandle />
 
-          {/*------ Conversation ------*/}
-          <div className="flex min-h-0 flex-col overflow-y-auto p-6">
-            <TaskTabs
-              task={task}
-              project={project}
-              people={people}
-              viewerId={viewerId}
-              readOnly={readOnly}
-              tab={tab}
-              onTabChange={setTab}
-            />
-          </div>
+          {/*------ Tabs ------*/}
+          {/* Never narrower than its row of five tabs (the English one is the longest), which doesn't wrap. */}
+          <ResizablePanel defaultSize="46%" minSize={600}>
+            <DrawerColumn label={m.task_column_tracking()}>
+              <TaskTabs
+                task={task}
+                project={project}
+                board={board}
+                kinds={kinds}
+                people={people}
+                viewerId={viewerId}
+                readOnly={readOnly}
+                tab={tab}
+                onTabChange={setTab}
+              />
+            </DrawerColumn>
+          </ResizablePanel>
+          <ResizableHandle withHandle />
 
           {/*------ Details ------*/}
-          <div className="flex min-h-0 flex-col gap-5 overflow-y-auto bg-muted/40 p-6">
-            <PriorityField task={task} update={update} readOnly={readOnly} />
-            <PersonField
-              task={task}
-              update={update}
-              field="assignee"
-              members={project.members}
-              people={people}
-              canEdit={canEdit}
-            />
-            <PersonField
-              task={task}
-              update={update}
-              field="owner"
-              members={project.members}
-              people={people}
-              canEdit={canHandOver}
-              explainLock={canEdit}
-            />
-            <DueDateField
-              task={task}
-              update={update}
-              readOnly={readOnly}
-              finished={column?.kind === "done" || column?.kind === "cancelled"}
-            />
-            <EstimateField key={task.estimateMinutes} task={task} update={update} readOnly={readOnly} />
-            <Separator />
-            <LabelPicker
-              task={task}
-              update={update}
-              projectId={project.id}
-              labels={board.labels}
-              tasks={board.tasks}
-              isAdmin={isAdmin}
-              readOnly={readOnly}
-            />
-            <Separator />
-            <TaskDelegation task={task} project={project} code={code} readOnly={readOnly} />
-            <Separator />
-            <TaskWatchers task={task} projectId={project.id} viewerId={viewerId} />
-            {isAdmin && (
-              <>
-                <Separator />
-                {/*------ Other Projects ------*/}
-                <div className="flex flex-col items-start gap-2">
-                  <Button variant="secondary" size="sm" onClick={() => setTransfer({ mode: "move", open: true })}>
-                    <FolderInputIcon data-icon="inline-start" />
-                    {m.transfer_move()}
-                  </Button>
-                  <Button variant="secondary" size="sm" onClick={() => setTransfer({ mode: "copy", open: true })}>
-                    <CopyIcon data-icon="inline-start" />
-                    {m.transfer_copy()}
-                  </Button>
-                </div>
-                {transfer && column && (
-                  <TransferDialog
-                    key={transfer.mode}
-                    projectId={project.id}
-                    request={{ taskId: task.id, code, kind: column.kind, mode: transfer.mode }}
-                    open={transfer.open}
-                    onOpenChange={(open) => setTransfer({ ...transfer, open })}
-                    // The moved card has left this board: its drawer closes.
-                    onMoved={onArchived}
-                  />
-                )}
-                <Separator />
-                <ArchiveTaskButton projectId={project.id} task={task} code={code} onArchived={onArchived} />
-              </>
-            )}
-          </div>
-        </div>
+          <ResizablePanel defaultSize="24%" minSize={320} maxSize="34%">
+            <DrawerColumn label={m.task_column_details()} tinted className="gap-5">
+              <PriorityField task={task} update={update} readOnly={readOnly} />
+              <PersonField
+                task={task}
+                update={update}
+                field="assignee"
+                members={project.members}
+                people={people}
+                canEdit={canEdit}
+              />
+              <PersonField
+                task={task}
+                update={update}
+                field="owner"
+                members={project.members}
+                people={people}
+                canEdit={canHandOver}
+                explainLock={canEdit}
+              />
+              <DueDateField
+                task={task}
+                update={update}
+                readOnly={readOnly}
+                finished={column?.kind === "done" || column?.kind === "cancelled"}
+              />
+              <EstimateField key={task.estimateMinutes} task={task} update={update} readOnly={readOnly} />
+              <Separator />
+              <LabelPicker
+                task={task}
+                update={update}
+                projectId={project.id}
+                labels={board.labels}
+                tasks={board.tasks}
+                isAdmin={isAdmin}
+                readOnly={readOnly}
+              />
+              <Separator />
+              <TaskDelegation task={task} project={project} code={code} readOnly={readOnly} />
+              <Separator />
+              <TaskWatchers task={task} projectId={project.id} viewerId={viewerId} />
+              {isAdmin && (
+                <>
+                  <Separator />
+                  {/*------ Other Projects ------*/}
+                  <div className="flex flex-col items-start gap-2">
+                    <Button variant="secondary" size="sm" onClick={() => setTransfer({ mode: "move", open: true })}>
+                      <FolderInputIcon data-icon="inline-start" />
+                      {m.transfer_move()}
+                    </Button>
+                    <Button variant="secondary" size="sm" onClick={() => setTransfer({ mode: "copy", open: true })}>
+                      <CopyIcon data-icon="inline-start" />
+                      {m.transfer_copy()}
+                    </Button>
+                  </div>
+                  {transfer && column && (
+                    <TransferDialog
+                      key={transfer.mode}
+                      projectId={project.id}
+                      request={{ taskId: task.id, code, kind: column.kind, mode: transfer.mode }}
+                      open={transfer.open}
+                      onOpenChange={(open) => setTransfer({ ...transfer, open })}
+                      // The moved card has left this board: its drawer closes.
+                      onMoved={onArchived}
+                    />
+                  )}
+                  <Separator />
+                  <ArchiveTaskButton projectId={project.id} task={task} code={code} onArchived={onArchived} />
+                </>
+              )}
+            </DrawerColumn>
+          </ResizablePanel>
+        </ResizablePanelGroup>
       )}
     </div>
+  );
+}
+
+/*===== Column =====*/
+
+/**
+ * One of the drawer's columns: a thin strip in the secondary colour, printed with what the column holds, then its
+ * contents, which scroll under the strip so the name stays in view. The strip is print only; the column is a region
+ * named the same, for screen readers. `tinted` lays the details column's muted plate under both.
+ */
+function DrawerColumn({
+  label,
+  tinted = false,
+  className,
+  children,
+}: {
+  label: string;
+  tinted?: boolean;
+  /** Spacing between the column's parts. */
+  className?: string;
+  children: ReactNode;
+}) {
+  return (
+    <section aria-label={label} className={cn("flex h-full flex-col", tinted && "bg-muted/40")}>
+      <div aria-hidden="true" className="flex shrink-0 items-center justify-center bg-secondary px-6 py-0.5">
+        <Marking variant="secondary">{label}</Marking>
+      </div>
+      <div className={cn("flex min-h-0 flex-1 flex-col overflow-y-auto p-6", className)}>{children}</div>
+    </section>
   );
 }
 
 /*===== Tabs =====*/
 
 /**
- * The drawer's middle column: the comment thread, the task's history, and its time, one at a time. Comments come first:
- * they are what people come back to a card for.
+ * The drawer's middle column: the comment thread, the checklist, the dependencies, the task's history, and its time,
+ * one at a time. Comments come first: they are what people come back to a card for.
  */
-type TaskTab = "comments" | "activity" | "time";
+type TaskTab = "comments" | "checklist" | "dependencies" | "activity" | "time";
 
 function TaskTabs({
   task,
   project,
+  board,
+  kinds,
   people,
   viewerId,
   readOnly,
@@ -309,6 +358,8 @@ function TaskTabs({
 }: {
   task: TaskDetail;
   project: Project;
+  board: Board;
+  kinds: Map<string, ColumnKind>;
   people: Map<string, Person>;
   viewerId: string;
   readOnly: boolean;
@@ -319,11 +370,19 @@ function TaskTabs({
     <Tabs value={tab} onValueChange={(value) => onTabChange(value as TaskTab)}>
       <TabsList aria-label={m.task_tabs()}>
         <TabsTrigger value="comments">{m.task_tab_comments()}</TabsTrigger>
+        <TabsTrigger value="checklist">{m.task_tab_checklist()}</TabsTrigger>
+        <TabsTrigger value="dependencies">{m.task_tab_dependencies()}</TabsTrigger>
         <TabsTrigger value="activity">{m.task_tab_activity()}</TabsTrigger>
         <TabsTrigger value="time">{m.task_tab_time()}</TabsTrigger>
       </TabsList>
       <TabsContent value="comments">
         <TaskComments task={task} project={project} viewerId={viewerId} readOnly={readOnly} />
+      </TabsContent>
+      <TabsContent value="checklist">
+        <TaskChecklist task={task} projectId={project.id} people={people} readOnly={readOnly} />
+      </TabsContent>
+      <TabsContent value="dependencies">
+        <TaskDependencies task={task} project={project} board={board} kinds={kinds} readOnly={readOnly} />
       </TabsContent>
       <TabsContent value="activity">
         <TaskActivity task={task} project={project} people={people} />

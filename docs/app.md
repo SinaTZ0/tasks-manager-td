@@ -168,7 +168,7 @@ What each thing is and how it relates. How to store it = implementer decides.
 - **Login**
 - **Boards list**
 - **Board** (main kanban) — columns, cards, filter bar, search
-- **Card drawer/modal** — details, checklist, sub-tasks, dependencies, timer, tabs: Comments | Activity | Time
+- **Card drawer/modal** — three columns the user can resize: the work (timer, title, description, attachments), the tabs (Comments | Checklist | Dependencies | Activity | Time), and the details (priority, people, dates, labels, delegation)
 - **My Tasks** — assigned to me, delegated by me, watching
 - **Notifications** — bell dropdown
 - **Settings** — columns (add, rename, remove when empty), labels, members, WIP limits

@@ -11,6 +11,8 @@ const twVariant = {
   code: readoutClasses,
   // A value the part shows (a count, a date, time spent), in full ink so it reads apart from the markings
   reading: readingClasses,
+  // A marking on a secondary plate (a strip in `bg-secondary`): the words print in the plate's own ink
+  secondary: "font-heading text-marking tracking-marking text-secondary-foreground",
 };
 
 const markingVariants = cva("", {
