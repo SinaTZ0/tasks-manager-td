@@ -1,12 +1,13 @@
 import { Avatar as AvatarPrimitive } from "@base-ui/react/avatar";
+import type { VariantProps } from "class-variance-authority";
 import type { ComponentProps } from "react";
 import { cn } from "#/lib/utils";
 
 import {
   avatarBadgeClasses,
   avatarFallbackClasses,
-  avatarGroupClasses,
   avatarGroupCountClasses,
+  avatarGroupVariants,
   avatarImageClasses,
   avatarVariants,
 } from "./avatar.styles";
@@ -71,8 +72,19 @@ function AvatarBadge({ className, ...props }: ComponentProps<"span">) {
   return <span data-slot="avatar-badge" className={cn(avatarBadgeClasses, className)} {...props} />;
 }
 
-function AvatarGroup({ className, ...props }: ComponentProps<"div">) {
-  return <div data-slot="avatar-group" className={cn(avatarGroupClasses, className)} {...props} />;
+function AvatarGroup({
+  className,
+  orientation,
+  ...props
+}: ComponentProps<"div"> & VariantProps<typeof avatarGroupVariants>) {
+  return (
+    <div
+      data-slot="avatar-group"
+      data-orientation={orientation}
+      className={cn(avatarGroupVariants({ orientation }), className)}
+      {...props}
+    />
+  );
 }
 
 /** The "+3" plate after a group: a flat plate, not a keycap, because it isn't a person. */

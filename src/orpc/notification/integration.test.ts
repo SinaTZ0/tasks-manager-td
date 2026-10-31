@@ -41,7 +41,7 @@ describe("due-date reminders", () => {
       db,
       actorId: users.admin,
       projectId,
-      input: { title: "دیرکرد", assigneeId: users.ali, dueDate: late },
+      input: { title: "دیرکرد", assigneeIds: [users.ali], dueDate: late },
     });
     if (created.kind !== "success") throw new Error("setup failed");
 
@@ -67,7 +67,7 @@ describe("due-date reminders", () => {
       db,
       actorId: users.admin,
       projectId,
-      input: { title: "تمام‌شده", assigneeId: users.ali, dueDate: addDays({ date: teamToday(), days: -1 }) },
+      input: { title: "تمام‌شده", assigneeIds: [users.ali], dueDate: addDays({ date: teamToday(), days: -1 }) },
     });
     if (created.kind !== "success") throw new Error("setup failed");
     await transitionTask({ db, actorId: users.ali, projectId, taskId: created.task.id, action: "done" });

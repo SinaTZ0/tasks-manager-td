@@ -54,7 +54,7 @@ describe("status and time", () => {
 
     expect(await act({ userId: users.ali, taskId: first.id, action: "start" })).toMatchObject({
       kind: "success",
-      task: { runningSince: [expect.any(Date)] },
+      task: { running: [{ userId: users.ali, since: expect.any(Date) }] },
     });
     expect(await act({ userId: users.ali, taskId: second.id, action: "start" })).toMatchObject({ kind: "success" });
     expect(await openLogs(users.ali)).toEqual([{ taskId: second.id }]);
@@ -75,10 +75,10 @@ describe("status and time", () => {
 
     // Reza's clock runs on after Ali's stops; the card stays in its column throughout.
     expect(await act({ userId: users.ali, taskId: task.id, action: "pause" })).toMatchObject({
-      task: { columnId: task.columnId, runningSince: [expect.any(Date)] },
+      task: { columnId: task.columnId, running: [{ userId: users.reza, since: expect.any(Date) }] },
     });
     expect(await act({ userId: users.reza, taskId: task.id, action: "pause" })).toMatchObject({
-      task: { columnId: task.columnId, runningSince: [] },
+      task: { columnId: task.columnId, running: [] },
     });
 
     await act({ userId: users.ali, taskId: task.id, action: "start" });
@@ -92,7 +92,7 @@ describe("status and time", () => {
       columnId: done.id,
       position: "a0",
     });
-    expect(moved).toMatchObject({ task: { runningSince: [] } });
+    expect(moved).toMatchObject({ task: { running: [] } });
     expect(await openLogs(users.ali)).toEqual([]);
   });
 

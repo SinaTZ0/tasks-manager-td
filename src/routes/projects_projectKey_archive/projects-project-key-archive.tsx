@@ -18,7 +18,7 @@ import { toast } from "#/components/primitive/toast/toast";
 import { PageHead } from "#/components/shared/page-head/page-head";
 import { describeApiFailure } from "#/lib/api-error";
 import { columnTitle } from "#/lib/column-title";
-import { formatDate } from "#/lib/locale";
+import { formatDate, formatList } from "#/lib/locale";
 import { pageMeta } from "#/lib/seo";
 import { orpc } from "#/orpc/client";
 import type { Project } from "#/orpc/project/contract";
@@ -83,7 +83,7 @@ function ArchivePage() {
                   key={task.id}
                   task={task}
                   project={project}
-                  assigneeName={task.assigneeId ? people.get(task.assigneeId)?.name : undefined}
+                  assigneeNames={task.assigneeIds.flatMap((id) => people.get(id)?.name ?? [])}
                 />
               ))}
             </ul>
@@ -96,15 +96,15 @@ function ArchivePage() {
 
 /*===== Row =====*/
 
-/** One archived task: its code and title (opening its read-only drawer), column, assignee, when, and its keys. */
+/** One archived task: its code and title (opening its read-only drawer), column, assignees, when, and its keys. */
 function ArchivedRow({
   task,
   project,
-  assigneeName,
+  assigneeNames,
 }: {
   task: ArchivedTask;
   project: Project;
-  assigneeName: string | undefined;
+  assigneeNames: string[];
 }) {
   const { viewer } = useRouteContext({ from: "/_site-layout/_app-layout" });
   const queryClient = useQueryClient();
@@ -150,7 +150,9 @@ function ArchivedRow({
           <span className="truncate font-semibold">{task.title}</span>
         </Link>
         <span className="text-body-sm text-muted-foreground">
-          {[column && columnTitle(column), assigneeName ?? m.task_unassigned()].filter(Boolean).join(" · ")}
+          {[column && columnTitle(column), assigneeNames.length > 0 ? formatList(assigneeNames) : m.task_unassigned()]
+            .filter(Boolean)
+            .join(" · ")}
         </span>
       </div>
       <span className="text-caption text-muted-foreground">

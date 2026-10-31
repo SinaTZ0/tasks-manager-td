@@ -31,7 +31,7 @@ a delegate on a task. The only thing a viewer can upload is their own profile pi
 | ------------------------------------------------------------- | :---: | :--: |
 | Create a task                                                 |  ✅   |  ❌  |
 | Edit a task (title, description, priority, dates, estimate)   |  ✅   |  ✅  |
-| Change the assignee                                           |  ✅   |  ✅  |
+| Change the assignees                                          |  ✅   |  ✅  |
 | Hand ownership to someone else                                |  ✅   | 🟡²  |
 | Move a card, start, stop timer, finish, stop or reopen a task |  ✅   |  ✅  |
 | Delegate a task                                               |  ✅   |  ✅  |

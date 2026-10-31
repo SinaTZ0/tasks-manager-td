@@ -52,6 +52,10 @@ const dayOf = (iso: string | null) =>
 /** What an entry says after its actor's name: one or more clauses, and text it quoted (a reason, a note, a comment). */
 type Sentence = { clauses: string[]; quote?: string | null; forced?: boolean };
 
+/** A list of ids as an entry stored it; anything else is no ids. */
+const ids = (value: unknown): string[] =>
+  Array.isArray(value) ? value.filter((id): id is string => typeof id === "string") : [];
+
 /**
  * The changes of a `task.updated` entry, one clause each. People are stored by id; `people` names them, and someone
  * who has left the project reads as "someone".
@@ -92,11 +96,23 @@ function taskUpdateClauses({ item, nameOf }: { item: ActivityItem; nameOf: (id: 
       case "ownerId":
         clauses.push(m.activity_task_owner({ name: nameOf(next) }));
         break;
+      // Entries from before a task could have several assignees name the one.
       case "assigneeId":
         clauses.push(
           typeof next === "string" ? m.activity_task_assigned({ name: nameOf(next) }) : m.activity_task_unassigned(),
         );
         break;
+      case "assigneeIds": {
+        const previous = ids(before?.assigneeIds);
+        const current = ids(next);
+        const added = current.filter((id) => !previous.includes(id));
+        const removed = previous.filter((id) => !current.includes(id));
+        if (added.length > 0) clauses.push(m.activity_task_assigned({ name: formatList(added.map(nameOf)) }));
+        if (removed.length > 0) {
+          clauses.push(m.activity_task_assignees_removed({ names: formatList(removed.map(nameOf)) }));
+        }
+        break;
+      }
       case "labels": {
         const names = Array.isArray(next) ? next.filter((name): name is string => typeof name === "string") : [];
         clauses.push(
@@ -227,7 +243,8 @@ function describe({ item, people }: { item: ActivityItem; people: Map<string, Pe
       return { clauses: [m.activity_task_deleted()] };
     case "task.delegated":
       return {
-        clauses: [m.activity_task_delegated({ name: nameOf(after?.assigneeId) })],
+        // `assigneeId` on entries from before a task could have several assignees.
+        clauses: [m.activity_task_delegated({ name: nameOf(after?.toId ?? after?.assigneeId) })],
         quote: textOf(after, "note"),
       };
     case "task.transferred":

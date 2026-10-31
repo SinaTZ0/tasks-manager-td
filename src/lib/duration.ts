@@ -48,13 +48,13 @@ export function formatClock(seconds: number): string {
  */
 export function liveSeconds({
   spentSeconds,
-  runningSince,
+  running,
   now,
 }: {
   spentSeconds: number;
-  runningSince: readonly Date[];
+  running: readonly { since: Date }[];
   now: number | null;
 }): number {
   if (now === null) return spentSeconds;
-  return runningSince.reduce((total, since) => total + Math.max(0, (now - since.getTime()) / 1000), spentSeconds);
+  return running.reduce((total, { since }) => total + Math.max(0, (now - since.getTime()) / 1000), spentSeconds);
 }

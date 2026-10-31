@@ -52,7 +52,7 @@ export function BoardDisplay({
     return {
       counts: perColumn,
       total: live.length,
-      running: live.filter((task) => task.runningSince.length > 0).length,
+      running: live.filter((task) => task.running.length > 0).length,
       blocked: live.filter(
         (task) => isHolding(kinds.get(task.columnId)) && blockersOf({ task, tasks, kinds }).length > 0,
       ).length,

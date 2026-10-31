@@ -387,7 +387,7 @@
   "task_description_empty": "هنوز توضیحی ندارد.",
   "task_priority_label": "اولویت",
   "task_owner_label": "مالک",
-  "task_assignee_label": "مسئول",
+  "task_assignee_label": "مسئولان",
   "task_owner_locked": "فقط مالک یا مدیر می‌تواند آن را واگذار کند.",
   "task_estimate_label": "تخمین زمان",
   "task_estimate_hint": "ساعت و دقیقه، مثل ۱:۳۰، یا ۲ برای دو ساعت.",
@@ -715,7 +715,7 @@
   "dependency_save_failed": "وابستگی ذخیره نشد.",
   "dependency_state_waiting": "مانع",
   "dependency_state_released": "تمام",
-  "delegation_error_already_assigned": "این کار همین حالا با اوست.",
+  "delegation_error_already_assigned": "او همین حالا مسئول این کار است.",
   "delegation_error_note_too_long": [
     {
       "declarations": ["input max", "local maxText = max: number"],
@@ -747,7 +747,7 @@
       }
     }
   ],
-  "delegation_dialog_description": "او انجام‌دهنده‌ی کار می‌شود و اعلان می‌گیرد. مالک کار عوض نمی‌شود.",
+  "delegation_dialog_description": "او به مسئولان کار اضافه می‌شود، اگر خودتان مسئول باشید به جای شما، و اعلان می‌گیرد. بقیه‌ی مسئولان و مالک کار می‌مانند.",
   "delegation_to_label": "چه کسی انجامش دهد",
   "delegation_to_placeholder": "یک نفر را انتخاب کنید",
   "delegation_note_label": "یادداشت (اختیاری)",
@@ -997,6 +997,14 @@
       "declarations": ["input name"],
       "match": {
         "": "کار را به {name} سپرد"
+      }
+    }
+  ],
+  "activity_task_assignees_removed": [
+    {
+      "declarations": ["input names"],
+      "match": {
+        "": "{names} را از کار برداشت"
       }
     }
   ],
@@ -1723,7 +1731,7 @@
     {
       "declarations": ["input names"],
       "match": {
-        "": "{names} عضو ویرایشگر آن پروژه نیست. اول عضوش کنید، یا مالک یا مسئول کارت را عوض کنید."
+        "": "{names} عضو ویرایشگر آن پروژه نیست. اول عضوش کنید، یا مالک یا مسئولان کارت را عوض کنید."
       }
     }
   ],

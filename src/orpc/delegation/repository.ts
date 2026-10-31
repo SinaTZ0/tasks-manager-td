@@ -1,8 +1,8 @@
-import { and, asc, desc, eq, exists, inArray, isNull, ne, or, sql } from "drizzle-orm";
+import { and, asc, desc, eq, exists, inArray, isNull, not, or, sql } from "drizzle-orm";
 import { alias } from "drizzle-orm/pg-core";
 
 import type { Database } from "#/db/client.server";
-import { boardColumn, delegation, project, projectMember, task, user } from "#/db/schema";
+import { boardColumn, delegation, project, projectMember, task, taskAssignee, user } from "#/db/schema";
 
 /*===== Types =====*/
 type NewDelegationRecord = typeof delegation.$inferInsert;
@@ -24,7 +24,6 @@ export type DelegatedTaskRow = {
   dueDate: string | null;
   columnKind: string;
   columnName: string | null;
-  assigneeName: string | null;
   ownerId: string;
 };
 
@@ -56,7 +55,7 @@ export function findHandoffs({ db, taskIds }: { db: Database; taskIds: string[] 
 }
 
 /**
- * The live tasks a person handed on, or owns and someone handed on, that someone else now has: "delegated by me"
+ * The live tasks a person handed on, or owns and someone handed on, that they aren't doing themselves: "delegated by me"
  * (docs/app.md → Assign & Delegate). Only from projects they are on, unless they are an admin, who sees every project.
  */
 export function findDelegatedBy({
@@ -68,7 +67,12 @@ export function findDelegatedBy({
   userId: string;
   admin: boolean;
 }): Promise<DelegatedTaskRow[]> {
-  const assignee = alias(user, "assignee");
+  const assigned = exists(
+    db
+      .select({ one: sql`1` })
+      .from(taskAssignee)
+      .where(and(eq(taskAssignee.taskId, task.id), eq(taskAssignee.userId, userId))),
+  );
   const handedOn = (fromId?: string) =>
     exists(
       db
@@ -96,17 +100,15 @@ export function findDelegatedBy({
       dueDate: task.dueDate,
       columnKind: boardColumn.kind,
       columnName: boardColumn.name,
-      assigneeName: assignee.name,
       ownerId: task.ownerId,
     })
     .from(task)
     .innerJoin(project, eq(project.id, task.projectId))
     .innerJoin(boardColumn, eq(boardColumn.id, task.columnId))
-    .leftJoin(assignee, eq(assignee.id, task.assigneeId))
     .where(
       and(
         isNull(task.archivedAt),
-        or(isNull(task.assigneeId), ne(task.assigneeId, userId)),
+        not(assigned),
         or(and(eq(task.ownerId, userId), handedOn()), handedOn(userId)),
         admin ? undefined : member,
       ),

@@ -64,6 +64,13 @@
       "when": 1793407152639,
       "tag": "0008_drop-task-paused",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1793408751153,
+      "tag": "0009_task-assignees",
+      "breakpoints": true
     }
   ]
 }

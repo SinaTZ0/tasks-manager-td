@@ -24,7 +24,7 @@ What each thing is and how it relates. How to store it = implementer decides.
 - **User** — Team member. Admin, user or viewer (task-manager-plan.md → Decisions → Roles). User leaves team → deactivate, never delete.
 - **Board** — One project (or one for everything). Has many Columns, many Tasks, many members.
 - **Column** — Status column on board. Has order, optional WIP limit. Each column has a _kind_ separate from its name. Name can change freely, kind keeps logic working. Every board always has **To Do**, **Doing** and **Done** (fixed, in that order, never moved or removed) and a hidden **Cancelled**. Admin adds own columns (kind _custom_, no logic of their own) anywhere around them, renames them, removes them once empty.
-- **Task** — The card. Lives in one Column. Has one **owner** (responsible for it) and one **assignee** (doing the work), can be same user. Has priority, due date, estimate, labels. Can have parent Task (sub-task).
+- **Task** — The card. Lives in one Column. Has one **owner** (responsible for it) and any number of **assignees** (doing the work); the owner can be one of them. Has priority, due date, estimate, labels. Can have parent Task (sub-task).
 - **Dependency** — Task waits for other Task. Many-to-many between Tasks. No cycles.
 - **Comment** — Discussion on a Task. Can mention other users.
 - **TimeLog** — One stretch of work by one user on one Task. Many per Task. Real time spent = sum of these.
@@ -59,8 +59,9 @@ What each thing is and how it relates. How to store it = implementer decides.
 - New task: the orange key above the board (or `n`) asks for a title and a column (the first on the board by default),
   creates the task, and opens it to fill in the rest
 - Admin moves a card to another project (new number there; the old code still opens it; dependencies dropped; refused
-  while its owner or assignee isn't on that project) or copies it there (no comments, time or history)
-- Card shows: title, assignee avatar, priority color, due date, labels, blocked icon, timer icon
+  while its owner or an assignee isn't on that project) or copies it there (no comments, time or history)
+- Card shows: title, assignees' avatars (down its edge, a steady LED on whoever's clock runs), priority color, due date,
+  labels, blocked icon, timer icon
 
 **Status / Clock / Cancel**
 
@@ -89,8 +90,9 @@ What each thing is and how it relates. How to store it = implementer decides.
 
 **Assign & Delegate**
 
-- Assign task to user
-- Delegate: "you do this now" → assignee changes, Delegation recorded, new assignee notified
+- Assign task to one or more users
+- Delegate: "you do this now" → new person joins the assignees (in my place, if I was one), Delegation recorded, they
+  are notified
 - Owner stays the same. Owner still sees task in "Delegated by me" view
 - See full chain: Sina → Ali → Reza
 

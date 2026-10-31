@@ -6,7 +6,7 @@ import { Card, CardContent } from "#/components/primitive/card/card";
 import { Marking } from "#/components/primitive/marking/marking";
 import { PageHead } from "#/components/shared/page-head/page-head";
 import { columnTitle } from "#/lib/column-title";
-import { formatDate } from "#/lib/locale";
+import { formatDate, formatList } from "#/lib/locale";
 import { pageMeta } from "#/lib/seo";
 import { orpc } from "#/orpc/client";
 import type { DelegatedTask } from "#/orpc/delegation/contract";
@@ -79,7 +79,9 @@ function DelegatedRow({ task }: { task: DelegatedTask }) {
       </div>
       <div className="col-span-2 flex flex-col gap-0.5">
         <span className="text-caption text-muted-foreground">{m.task_assignee_label()}</span>
-        <span className="text-body-sm font-semibold">{task.assigneeName ?? m.task_unassigned()}</span>
+        <span className="text-body-sm font-semibold">
+          {task.assigneeNames.length > 0 ? formatList(task.assigneeNames) : m.task_unassigned()}
+        </span>
       </div>
       <div className="col-span-5 flex min-w-0 flex-col gap-0.5">
         <span className="text-caption text-muted-foreground">

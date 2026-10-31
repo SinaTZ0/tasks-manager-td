@@ -1,7 +1,7 @@
 import { and, asc, count, eq, inArray, isNull, ne, notInArray } from "drizzle-orm";
 
 import type { Database } from "#/db/client.server";
-import { account, boardColumn, task, user } from "#/db/schema";
+import { account, boardColumn, task, taskAssignee, user } from "#/db/schema";
 
 /*===== Types =====*/
 export type UserRecord = typeof user.$inferSelect;
@@ -48,18 +48,19 @@ export async function countOpenTasks({
 }): Promise<Map<string, number>> {
   if (userIds.length === 0) return new Map();
   const rows = await db
-    .select({ userId: task.assigneeId, open: count() })
-    .from(task)
+    .select({ userId: taskAssignee.userId, open: count() })
+    .from(taskAssignee)
+    .innerJoin(task, eq(task.id, taskAssignee.taskId))
     .innerJoin(boardColumn, eq(boardColumn.id, task.columnId))
     .where(
       and(
-        inArray(task.assigneeId, userIds),
+        inArray(taskAssignee.userId, userIds),
         isNull(task.archivedAt),
         notInArray(boardColumn.kind, ["done", "cancelled"]),
       ),
     )
-    .groupBy(task.assigneeId);
-  return new Map(rows.flatMap((row) => (row.userId ? [[row.userId, row.open] as const] : [])));
+    .groupBy(taskAssignee.userId);
+  return new Map(rows.map((row) => [row.userId, row.open] as const));
 }
 
 /*===== Writes =====*/

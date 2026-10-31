@@ -41,4 +41,4 @@ export function availableActions({ kind, timing }: { kind: ColumnKind; timing: b
 /*===== Clock =====*/
 
 /** Whether anyone's clock runs on the task: the card draws it as a green border and a blinking LED. */
-export const isRunning = (task: Pick<TaskCard, "runningSince">) => task.runningSince.length > 0;
+export const isRunning = (task: Pick<TaskCard, "running">) => task.running.length > 0;

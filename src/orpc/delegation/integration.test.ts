@@ -22,7 +22,7 @@ afterAll(async () => {
 });
 
 describe("delegation", () => {
-  it("hands a task on without changing its owner, and keeps the chain", async () => {
+  it("hands a task on in the giver's place, without changing its owner, and keeps the chain", async () => {
     const { projectId, users } = fixture;
     const created = await createTask({ db, actorId: users.sina, projectId, input: { title: "گزارش ماهانه" } });
     if (created.kind !== "success") throw new Error("setup failed");
@@ -32,20 +32,22 @@ describe("delegation", () => {
     expect(await hand(users.sina, users.ali)).toEqual({ kind: "ok" });
     expect(await hand(users.ali, users.reza)).toEqual({ kind: "ok" });
     expect(await hand(users.ali, users.reza)).toMatchObject({ kind: "invalid", fields: { toId: expect.any(String) } });
+    // Ali handed his part on and left; the owner, on none of it, only adds someone.
+    expect(await hand(users.sina, users.ali)).toEqual({ kind: "ok" });
 
     const task = await getTask({ db, projectId, number: created.task.number });
-    expect(task).toMatchObject({ ownerId: users.sina, assigneeId: users.reza });
+    expect(task).toMatchObject({ ownerId: users.sina, assigneeIds: [users.reza, users.ali] });
     expect(task?.handoffs.map((handoff) => [handoff.fromName, handoff.toName])).toEqual([
       [users.sina, users.ali],
       [users.ali, users.reza],
+      [users.sina, users.ali],
     ]);
 
-    // The owner still finds it, and so does Ali, who handed it on without owning it.
-    for (const id of [users.sina, users.ali]) {
-      const mine = await listDelegatedBy({ db, user: { id } });
-      expect(mine.map((item) => item.id)).toContain(taskId);
+    // The owner still finds it; Ali and Reza, doing it now, don't.
+    expect((await listDelegatedBy({ db, user: { id: users.sina } })).map((item) => item.id)).toContain(taskId);
+    for (const id of [users.ali, users.reza]) {
+      expect((await listDelegatedBy({ db, user: { id } })).map((item) => item.id)).not.toContain(taskId);
     }
-    expect((await listDelegatedBy({ db, user: { id: users.reza } })).map((item) => item.id)).not.toContain(taskId);
   });
 
   it("tells only the person a notification is for, and only they can mark it read", async () => {
@@ -54,7 +56,7 @@ describe("delegation", () => {
       db,
       actorId: users.sina,
       projectId,
-      input: { title: "بازبینی قرارداد", assigneeId: users.reza },
+      input: { title: "بازبینی قرارداد", assigneeIds: [users.reza] },
     });
 
     const forReza = await listNotifications({ db, userId: users.reza });

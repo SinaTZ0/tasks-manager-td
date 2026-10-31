@@ -36,6 +36,7 @@ import { toLabel, toMyTask, toTaskCard, toTaskDetail } from "#/orpc/task/mapper"
 import {
   deleteTaskRow,
   findActiveMemberIds,
+  findAssigneeIdsByTask,
   findArchivedTasks,
   findOpenTasksAssignedTo,
   findColumn,
@@ -54,6 +55,7 @@ import {
   insertLabel,
   insertTask,
   lockTask,
+  replaceTaskAssignees,
   replaceTaskLabels,
   takeTaskNumber,
   updateLabelRow,
@@ -92,6 +94,7 @@ const isUuid = (value: string) => z.guid().safeParse(value).success;
 async function toCards({ db, records }: { db: Database; records: TaskRecord[] }): Promise<TaskCard[]> {
   // One after the other: inside a transaction both would share one connection, which runs one query at a time.
   const taskIds = records.map((record) => record.id);
+  const assigneeIds = await findAssigneeIdsByTask({ db, taskIds });
   const labelIds = await findLabelIdsByTask({ db, taskIds });
   const totals = await findTimeTotals({ db, taskIds });
   const waitsFor = await findWaitsFor({ db, taskIds });
@@ -102,6 +105,7 @@ async function toCards({ db, records }: { db: Database; records: TaskRecord[] })
     const checklist = checklists.get(record.id);
     return toTaskCard({
       record,
+      assigneeIds: assigneeIds.get(record.id) ?? [],
       labelIds: labelIds.get(record.id) ?? [],
       time: totals.get(record.id),
       waitsFor: waitsFor.get(record.id) ?? [],
@@ -134,6 +138,7 @@ async function toDetail({
   projectId: string;
   record: TaskRecord;
 }): Promise<TaskDetail> {
+  const assigneeIds = await findAssigneeIdsByTask({ db, taskIds: [record.id] });
   const labelIds = await findLabelIdsByTask({ db, taskIds: [record.id] });
   const totals = await findTimeTotals({ db, taskIds: [record.id] });
   const waitsFor = await findWaitsFor({ db, taskIds: [record.id] });
@@ -154,6 +159,7 @@ async function toDetail({
     : null;
   return toTaskDetail({
     record,
+    assigneeIds: assigneeIds.get(record.id) ?? [],
     labelIds: labelIds.get(record.id) ?? [],
     time: totals.get(record.id),
     waitsFor: waitsFor.get(record.id) ?? [],
@@ -300,13 +306,15 @@ export async function getBoard({
     findLabels({ db, projectId }),
     findWatchedTaskIds({ db, projectId, userId: viewerId }),
   ]);
-  const personIds = new Set(
-    records.flatMap((record) => [record.ownerId, record.createdBy, ...(record.assigneeId ? [record.assigneeId] : [])]),
-  );
+  const tasks = await toCards({ db, records });
+  const personIds = new Set([
+    ...records.flatMap((record) => [record.ownerId, record.createdBy]),
+    ...tasks.flatMap((card) => card.assigneeIds),
+  ]);
   const people = await findPeople({ db, ids: [...personIds] });
 
   return {
-    tasks: await toCards({ db, records }),
+    tasks,
     labels: labels.map(toLabel),
     people: people.map(toPerson),
     watching,
@@ -331,8 +339,8 @@ export async function getTask({
 
 /*===== References =====*/
 /**
- * Checks that the people and labels a change names belong to the project: an owner or assignee must be an active
- * member who isn't a viewer (a viewer only reads), a label one of the project's.
+ * Checks that the people and labels a change names belong to the project: an owner or assignees must be active
+ * members who aren't viewers (a viewer only reads), a label one of the project's.
  *
  * @returns Field messages for the ones that don't.
  */
@@ -343,13 +351,14 @@ async function checkReferences({
 }: {
   db: Database;
   projectId: string;
-  change: Pick<TaskChange, "ownerId" | "assigneeId" | "labelIds">;
+  change: Pick<TaskChange, "ownerId" | "assigneeIds" | "labelIds">;
 }): Promise<Record<string, string>> {
   const fields: Record<string, string> = {};
-  const people = [change.ownerId, change.assigneeId].filter((id): id is string => !!id);
+  const assigneeIds = change.assigneeIds ?? [];
+  const people = [...(change.ownerId ? [change.ownerId] : []), ...assigneeIds];
   const active = await findActiveMemberIds({ db, projectId, ids: people, editorsOnly: true });
   if (change.ownerId && !active.has(change.ownerId)) fields.ownerId = m.task_error_person_unusable();
-  if (change.assigneeId && !active.has(change.assigneeId)) fields.assigneeId = m.task_error_person_unusable();
+  if (assigneeIds.some((id) => !active.has(id))) fields.assigneeIds = m.task_error_person_unusable();
 
   if (change.labelIds && change.labelIds.length > 0) {
     const known = new Set((await findLabels({ db, projectId })).map((row) => row.id));
@@ -365,24 +374,25 @@ async function labelNames({ db, projectId, ids }: { db: Database; projectId: str
 }
 
 /*===== Assigned =====*/
-/** "Assigned to you": what the task's new assignee is told (nobody, when they assigned themselves). */
-function assignedEntry({
+/** "Assigned to you": what each new assignee is told (`notify` leaves out whoever assigned themselves). */
+function assignedEntries({
   record,
+  userIds,
   projectId,
   key,
 }: {
   record: TaskRecord;
+  userIds: string[];
   projectId: string;
   key: string;
-}): NotificationEntry {
-  if (!record.assigneeId) throw new Error("assignedEntry: the task has no assignee");
-  return {
-    userId: record.assigneeId,
+}): NotificationEntry[] {
+  return userIds.map((userId) => ({
+    userId,
     kind: "assigned",
     projectId,
     taskId: record.id,
     data: { projectKey: key, taskCode: taskCode({ key, number: record.number }), taskTitle: record.title },
-  };
+  }));
 }
 
 /*===== Create =====*/
@@ -408,7 +418,16 @@ export async function createTask({
 }): Promise<CreateResult> {
   const parsed = newTaskSchema.safeParse(input);
   if (!parsed.success) return { kind: "invalid", fields: issuesToErrorData(parsed.error.issues).fields };
-  const { columnId, title, description, priority, dueDate, estimateMinutes, assigneeId, labelIds = [] } = parsed.data;
+  const {
+    columnId,
+    title,
+    description,
+    priority,
+    dueDate,
+    estimateMinutes,
+    assigneeIds = [],
+    labelIds = [],
+  } = parsed.data;
 
   /*------ Column ------*/
   // Stopped work lands in the cancelled column through "stop", never by being created there.
@@ -422,7 +441,7 @@ export async function createTask({
     column = await findColumnByKind({ db, projectId, kind: "todo" });
   }
 
-  const fields = await checkReferences({ db, projectId, change: { assigneeId, labelIds } });
+  const fields = await checkReferences({ db, projectId, change: { assigneeIds, labelIds } });
   if (Object.keys(fields).length > 0) return { kind: "invalid", fields };
 
   return db.transaction(async (tx): Promise<CreateResult> => {
@@ -442,10 +461,10 @@ export async function createTask({
         dueDate: dueDate ?? null,
         estimateMinutes: estimateMinutes ?? null,
         ownerId: actorId,
-        assigneeId: assigneeId ?? null,
         createdBy: actorId,
       },
     });
+    await replaceTaskAssignees({ db: tx, taskId: record.id, userIds: assigneeIds });
     await replaceTaskLabels({ db: tx, taskId: record.id, labelIds });
 
     const key = await findProjectKey({ db: tx, projectId });
@@ -463,10 +482,8 @@ export async function createTask({
         },
       ],
     });
-    if (record.assigneeId) {
-      await notify({ db: tx, actorId, entries: [assignedEntry({ record, projectId, key })] });
-    }
-    return { kind: "success", task: toTaskCard({ record, labelIds }) };
+    await notify({ db: tx, actorId, entries: assignedEntries({ record, userIds: assigneeIds, projectId, key }) });
+    return { kind: "success", task: toTaskCard({ record, assigneeIds, labelIds }) };
   });
 }
 
@@ -535,11 +552,24 @@ export async function updateTask({
         note("description", current.descriptionText, text);
       }
     }
-    for (const key of ["priority", "dueDate", "estimateMinutes", "ownerId", "assigneeId"] as const) {
+    for (const key of ["priority", "dueDate", "estimateMinutes", "ownerId"] as const) {
       const next = change[key];
       if (next !== undefined && next !== current[key]) {
         Object.assign(values, { [key]: next });
         note(key, current[key], next);
+      }
+    }
+
+    // The history names assignees by id, like the owner: a name is looked up when the entry is read.
+    const assigneeIds = (await findAssigneeIdsByTask({ db: tx, taskIds: [taskId] })).get(taskId) ?? [];
+    let joined: string[] = [];
+    if (change.assigneeIds && change.assigneeIds.join() !== assigneeIds.join()) {
+      // Those who stay keep their place, so a list in another order is the same people.
+      const kept = assigneeIds.filter((id) => change.assigneeIds?.includes(id));
+      joined = change.assigneeIds.filter((id) => !assigneeIds.includes(id));
+      if (joined.length > 0 || kept.length < assigneeIds.length) {
+        await replaceTaskAssignees({ db: tx, taskId, userIds: change.assigneeIds });
+        note("assigneeIds", assigneeIds, [...kept, ...joined]);
       }
     }
 
@@ -559,7 +589,8 @@ export async function updateTask({
       return { kind: "success", task: await toDetail({ db: tx, projectId, record: current }) };
     }
 
-    // Labels live in their own table; the row is still touched so `updatedAt` says when the task last changed.
+    // Labels and assignees live in their own tables; the row is still touched so `updatedAt` says when the task last
+    // changed.
     const record = await updateTaskRow({ db: tx, id: taskId, values: { ...values, updatedAt: new Date() } });
     const key = await findProjectKey({ db: tx, projectId });
     const code = taskCode({ key, number: current.number });
@@ -568,9 +599,7 @@ export async function updateTask({
       actorId: actor.id,
       entries: [{ action: "task.updated", projectId, taskId, before, after, snapshot: { code, title: record.title } }],
     });
-    if (values.assigneeId) {
-      await notify({ db: tx, actorId: actor.id, entries: [assignedEntry({ record, projectId, key })] });
-    }
+    await notify({ db: tx, actorId: actor.id, entries: assignedEntries({ record, userIds: joined, projectId, key }) });
     return { kind: "success", task: await toDetail({ db: tx, projectId, record }) };
   });
 }
@@ -857,7 +886,7 @@ export async function listArchivedTasks({
   const cards = await toCards({ db, records });
   const people = await findPeople({
     db,
-    ids: [...new Set(records.flatMap((record) => [record.ownerId, ...(record.assigneeId ? [record.assigneeId] : [])]))],
+    ids: [...new Set(cards.flatMap((card) => [card.ownerId, ...card.assigneeIds]))],
   });
   return {
     tasks: cards.map((card, index) => ({ ...card, archivedAt: records[index]?.archivedAt ?? new Date(0) })),

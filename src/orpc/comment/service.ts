@@ -73,7 +73,7 @@ async function notifyMentions({
   db: Database;
   actorId: string;
   projectId: string;
-  task: { id: string; number: number; title: string; ownerId: string; assigneeId: string | null };
+  task: { id: string; number: number; title: string; ownerId: string };
   doc: RichTextDoc;
   text: string;
   already?: string[];

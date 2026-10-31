@@ -54,7 +54,18 @@ const twBadgeStyles = defineStyles({
 
 // Caps in a group keep their own cuts, so they sit side by side instead of overlapping
 const twGroupStyles = defineStyles({
-  layout: "group/avatar-group flex items-center gap-2",
+  layout: "group/avatar-group flex items-center",
+});
+
+// A column of caps (a card's people, top to bottom) needs a wider gap: the corner LED hangs below a cap.
+const twGroupOrientation = defineStyles({
+  horizontal: { layout: "flex-row gap-2" },
+  vertical: { layout: "flex-col gap-2.5" },
+});
+
+const avatarGroupVariants = cva(joinStyles(twGroupStyles), {
+  variants: { orientation: composeStyles(twGroupOrientation) },
+  defaultVariants: { orientation: "horizontal" },
 });
 
 const twGroupCountStyles = defineStyles({
@@ -73,14 +84,13 @@ const twGroupCountStyles = defineStyles({
 const avatarImageClasses = joinStyles(twImageStyles);
 const avatarFallbackClasses = joinStyles(twFallbackStyles);
 const avatarBadgeClasses = joinStyles(twBadgeStyles);
-const avatarGroupClasses = joinStyles(twGroupStyles);
 const avatarGroupCountClasses = joinStyles(twGroupCountStyles);
 
 export {
   avatarBadgeClasses,
   avatarFallbackClasses,
-  avatarGroupClasses,
   avatarGroupCountClasses,
+  avatarGroupVariants,
   avatarImageClasses,
   avatarVariants,
   twSize,

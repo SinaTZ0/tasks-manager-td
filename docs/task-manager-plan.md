@@ -54,6 +54,9 @@ Made with the user on 2026-10-30. They answer the spec's open questions and over
   the typed-in entries from before still count.)
 - **Project settings are admin-only**: members, columns, WIP limits. Labels can be added by any member, because tagging
   is part of everyday work; renaming or deleting one changes every task that has it, so that is an admin's.
+- **Assignees**: a task has any number of assignees, the owner possibly among them. The card shows them in a tray
+  down its starting edge, a steady LED on the cap of each whose clock runs. Delegating adds the new person in the
+  giver's place if the giver was an assignee, else beside the others. (Changed 2026-10-31: a task had one assignee.)
 - **Owner**: whoever creates a task owns it (an admin, since slice 9). The owner or an admin can hand ownership to someone else; delegation never
   does (rule 6).
 - **Comments are soft-deleted**: a deleted comment leaves "comment deleted" in the thread, and its text stays in the
@@ -160,8 +163,8 @@ Built once, in the slice that first needs them, and used by every procedure afte
 
 ### 6. Assign, Delegate and Notifications ✓
 
-- Assign a task from the drawer's assignee field; delegate with a note from the drawer's "Delegate" key. The assignee
-  changes, the owner doesn't (rule 6), and a `delegation` row is kept. Any member of the project may hand a task on,
+- Assign a task from the drawer's assignees field; delegate with a note from the drawer's "Delegate" key. The new person
+  joins the assignees (in the giver's place if the giver was one), the owner doesn't change (rule 6), and a `delegation` row is kept. Any member of the project may hand a task on,
   like assigning it, and it is accepted at once.
 - The hand-off chain in the drawer (Sina → Ali → Reza), each hand-off with its note. A "Delegated by me" page
   (`/delegated`, in the header's navigation): live tasks the viewer handed on, or owns and someone handed on, that

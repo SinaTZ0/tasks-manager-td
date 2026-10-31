@@ -11,12 +11,14 @@ const NO_COUNTS: TaskCard["counts"] = { comments: 0, attachments: 0, checklistDo
 
 export function toTaskCard({
   record,
+  assigneeIds,
   labelIds,
-  time = { spentSeconds: 0, runningSince: [] },
+  time = { spentSeconds: 0, running: [] },
   waitsFor = [],
   counts = NO_COUNTS,
 }: {
   record: TaskRecord;
+  assigneeIds: string[];
   labelIds: string[];
   time?: TimeTotals | undefined;
   waitsFor?: string[];
@@ -32,12 +34,12 @@ export function toTaskCard({
     dueDate: record.dueDate,
     estimateMinutes: record.estimateMinutes,
     ownerId: record.ownerId,
-    assigneeId: record.assigneeId,
+    assigneeIds,
     labelIds,
     hasDescription: record.descriptionText.length > 0,
     completedAt: record.completedAt,
     spentSeconds: time.spentSeconds,
-    runningSince: time.runningSince,
+    running: time.running,
     waitsFor,
     counts,
   };
@@ -49,12 +51,13 @@ export function toMyTask({ row, time }: { row: AssignedTaskRow; time: TimeTotals
     priority: oneOf({ allowed: TASK_PRIORITIES, value: row.priority, what: "task priority" }),
     columnKind: oneOf({ allowed: COLUMN_KINDS, value: row.columnKind, what: "column kind" }),
     spentSeconds: time?.spentSeconds ?? 0,
-    runningSince: time?.runningSince ?? [],
+    running: time?.running ?? [],
   };
 }
 
 export function toTaskDetail({
   record,
+  assigneeIds,
   labelIds,
   time,
   waitsFor,
@@ -66,6 +69,7 @@ export function toTaskDetail({
   comments,
 }: {
   record: TaskRecord;
+  assigneeIds: string[];
   labelIds: string[];
   time: TimeTotals | undefined;
   waitsFor: string[];
@@ -84,7 +88,7 @@ export function toTaskDetail({
     checklistTotal: checklist.length,
   };
   return {
-    ...toTaskCard({ record, labelIds, time, waitsFor, counts }),
+    ...toTaskCard({ record, assigneeIds, labelIds, time, waitsFor, counts }),
     description: (record.description as RichTextDoc | null) ?? null,
     createdBy: record.createdBy,
     createdAt: record.createdAt,

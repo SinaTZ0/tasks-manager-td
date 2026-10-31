@@ -1,10 +1,19 @@
-import { useState, type KeyboardEvent } from "react";
+import { useId, useState, type KeyboardEvent } from "react";
 
+import { Checkbox } from "#/components/primitive/checkbox/checkbox";
 import { DatePicker } from "#/components/primitive/date-picker/date-picker";
-import { Field, FieldDescription, FieldError, FieldLabel } from "#/components/primitive/field/field";
+import {
+  Field,
+  FieldDescription,
+  FieldError,
+  FieldLabel,
+  FieldLegend,
+  FieldSet,
+} from "#/components/primitive/field/field";
 import { Input } from "#/components/primitive/input/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "#/components/primitive/select/select";
 import { DueMark, dueState } from "#/components/shared/due-mark/due-mark";
+import { PersonAvatar } from "#/components/shared/person-avatar/person-avatar";
 import { formatDuration, parseDuration } from "#/lib/duration";
 import { priorityName } from "#/lib/priority-name";
 import type { Person } from "#/orpc/project/contract";
@@ -15,9 +24,6 @@ import type { useTaskUpdate } from "#/routes/projects_projectKey/use-task-update
 
 /*===== Types =====*/
 type Update = ReturnType<typeof useTaskUpdate>;
-
-/** The select's value for "nobody", since a select item can't hold null. */
-const NOBODY = "none";
 
 /*===== Priority =====*/
 export function PriorityField({ task, update, readOnly }: { task: TaskDetail; update: Update; readOnly: boolean }) {
@@ -49,50 +55,104 @@ export function PriorityField({ task, update, readOnly }: { task: TaskDetail; up
 
 /*===== People =====*/
 
+/** The project's active editors (a viewer only reads), with anyone in `keep` who has left since, so they still show. */
+function choicesOf({ members, people, keep }: { members: Person[]; people: Map<string, Person>; keep: string[] }) {
+  const choices = members.filter((member) => member.status === "active" && member.role !== "viewer");
+  for (const id of keep) {
+    const person = people.get(id);
+    if (person && !choices.some((member) => member.id === id)) choices.push(person);
+  }
+  return choices;
+}
+
 /**
- * Picks the assignee or the owner from the project's active members, viewers left out (they only read). Someone who
- * has left stays shown as the current value until it changes. The owner can only be handed over by the owner or an
- * admin (rule 6), so for anyone else the owner's select is read-only.
+ * The task's assignees: a check key per active editor of the project, each with their cap, saved as soon as it is
+ * pressed. Several people may do one task; the owner may be one of them. Someone who has left stays listed while they
+ * are on it, so they can be taken off.
  */
-export function PersonField({
+export function AssigneesField({
   task,
   update,
-  field,
   members,
   people,
-  canEdit = true,
-  explainLock = true,
+  canEdit,
 }: {
   task: TaskDetail;
   update: Update;
-  field: "assignee" | "owner";
   members: Person[];
   people: Map<string, Person>;
-  canEdit?: boolean;
-  /** Say why a locked owner can't be changed; not for a viewer, who changes nothing anyway. */
-  explainLock?: boolean;
+  canEdit: boolean;
 }) {
-  const current = field === "owner" ? task.ownerId : task.assigneeId;
-  const choices = members.filter((member) => member.status === "active" && member.role !== "viewer");
-  const currentPerson = current ? people.get(current) : undefined;
-  if (currentPerson && !choices.some((member) => member.id === currentPerson.id)) choices.push(currentPerson);
+  const baseId = useId();
+  const choices = choicesOf({ members, people, keep: task.assigneeIds });
+  const toggle = (userId: string, on: boolean) =>
+    update.save({
+      assigneeIds: on ? [...task.assigneeIds, userId] : task.assigneeIds.filter((id) => id !== userId),
+    });
 
-  const items = [
-    ...(field === "assignee" ? [{ value: NOBODY, label: m.task_unassigned() }] : []),
-    ...choices.map((person) => ({ value: person.id, label: person.name })),
-  ];
-  const id = `task-${field}`;
+  return (
+    <FieldSet>
+      <FieldLegend variant="label">{m.task_assignee_label()}</FieldLegend>
+      <ul className="flex flex-col gap-2.5">
+        {choices.map((person) => {
+          const id = `${baseId}-${person.id}`;
+          return (
+            <li key={person.id}>
+              <Field orientation="horizontal">
+                <Checkbox
+                  id={id}
+                  checked={task.assigneeIds.includes(person.id)}
+                  disabled={!canEdit}
+                  onCheckedChange={(checked) => toggle(person.id, checked)}
+                />
+                <FieldLabel htmlFor={id}>
+                  <PersonAvatar name={person.name} src={person.avatarUrl} decorative />
+                  {person.name}
+                </FieldLabel>
+              </Field>
+            </li>
+          );
+        })}
+      </ul>
+    </FieldSet>
+  );
+}
+
+/**
+ * Picks the owner from the project's active editors. Someone who has left stays shown as the current value until it
+ * changes. The owner can only be handed over by the owner or an admin (rule 6), so for anyone else the select is
+ * read-only.
+ */
+export function OwnerField({
+  task,
+  update,
+  members,
+  people,
+  canEdit,
+  explainLock,
+}: {
+  task: TaskDetail;
+  update: Update;
+  members: Person[];
+  people: Map<string, Person>;
+  canEdit: boolean;
+  /** Say why a locked owner can't be changed; not for a viewer, who changes nothing anyway. */
+  explainLock: boolean;
+}) {
+  const items = choicesOf({ members, people, keep: [task.ownerId] }).map((person) => ({
+    value: person.id,
+    label: person.name,
+  }));
+  const id = "task-owner";
 
   const onChange = (value: string | null) => {
-    if (!value || value === (current ?? NOBODY)) return;
-    if (field === "owner") update.save({ ownerId: value });
-    else update.save({ assigneeId: value === NOBODY ? null : value });
+    if (value && value !== task.ownerId) update.save({ ownerId: value });
   };
 
   return (
     <Field>
-      <FieldLabel htmlFor={id}>{field === "owner" ? m.task_owner_label() : m.task_assignee_label()}</FieldLabel>
-      <Select items={items} value={current ?? NOBODY} onValueChange={onChange} disabled={!canEdit}>
+      <FieldLabel htmlFor={id}>{m.task_owner_label()}</FieldLabel>
+      <Select items={items} value={task.ownerId} onValueChange={onChange} disabled={!canEdit}>
         <SelectTrigger id={id} className="w-full">
           <SelectValue />
         </SelectTrigger>
@@ -104,7 +164,7 @@ export function PersonField({
           ))}
         </SelectContent>
       </Select>
-      {field === "owner" && !canEdit && explainLock && <FieldDescription>{m.task_owner_locked()}</FieldDescription>}
+      {!canEdit && explainLock && <FieldDescription>{m.task_owner_locked()}</FieldDescription>}
     </Field>
   );
 }

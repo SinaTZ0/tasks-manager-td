@@ -8,7 +8,7 @@ import type { ColumnKind } from "#/orpc/project/constants";
 import type { Person } from "#/orpc/project/contract";
 import { toPerson } from "#/orpc/project/mapper";
 import { taskCode } from "#/orpc/task/constants";
-import { findProjectKey, lockTask } from "#/orpc/task/repository";
+import { findAssigneeIdsByTask, findProjectKey, lockTask } from "#/orpc/task/repository";
 import {
   deleteWatcher,
   findPossibleWatchers,
@@ -21,8 +21,8 @@ import {
 type NotFound = { kind: "not-found" };
 type Watchers = { kind: "success"; watchers: Person[] };
 
-/** The task fields watching needs: who already hears about it as owner or assignee. */
-type WatchedTask = { id: string; number: number; title: string; ownerId: string; assigneeId: string | null };
+/** The task fields watching needs: its owner, who already hears about it. */
+type WatchedTask = { id: string; number: number; title: string; ownerId: string };
 
 const isUuid = (value: string) => z.guid().safeParse(value).success;
 
@@ -78,7 +78,8 @@ export async function autoWatch({
   task: WatchedTask;
   userIds: string[];
 }): Promise<void> {
-  const ids = [...new Set(userIds)].filter((id) => id !== task.ownerId && id !== task.assigneeId);
+  const assignees = (await findAssigneeIdsByTask({ db, taskIds: [task.id] })).get(task.id) ?? [];
+  const ids = [...new Set(userIds)].filter((id) => id !== task.ownerId && !assignees.includes(id));
   await insertWatchers({ db, taskId: task.id, userIds: await findPossibleWatchers({ db, projectId, ids }) });
 }
 

@@ -11,7 +11,8 @@ type NewTimeLogRecord = typeof timeLog.$inferInsert;
 export type ClosedLog = TimeLogRecord & { projectId: string; key: string; number: number; title: string };
 
 /** A task's time: the closed logs' total, and when each of its running timers started. */
-export type TimeTotals = { spentSeconds: number; runningSince: Date[] };
+/** A task's finished time, and the clocks running on it: whose, and since when. */
+export type TimeTotals = { spentSeconds: number; running: { userId: string; since: Date }[] };
 
 /*===== Locks =====*/
 /**
@@ -113,7 +114,7 @@ export async function findTimeTotals({
   const entry = (taskId: string) => {
     let value = totals.get(taskId);
     if (!value) {
-      value = { spentSeconds: 0, runningSince: [] };
+      value = { spentSeconds: 0, running: [] };
       totals.set(taskId, value);
     }
     return value;
@@ -129,10 +130,11 @@ export async function findTimeTotals({
     .where(and(inArray(timeLog.taskId, taskIds), isNotNull(timeLog.endedAt)))
     .groupBy(timeLog.taskId);
   const running = await db
-    .select({ taskId: timeLog.taskId, startedAt: timeLog.startedAt })
+    .select({ taskId: timeLog.taskId, userId: timeLog.userId, startedAt: timeLog.startedAt })
     .from(timeLog)
-    .where(and(inArray(timeLog.taskId, taskIds), isNull(timeLog.endedAt)));
+    .where(and(inArray(timeLog.taskId, taskIds), isNull(timeLog.endedAt)))
+    .orderBy(asc(timeLog.startedAt));
   for (const row of closed) entry(row.taskId).spentSeconds = Math.round(Number(row.seconds));
-  for (const row of running) entry(row.taskId).runningSince.push(row.startedAt);
+  for (const row of running) entry(row.taskId).running.push({ userId: row.userId, since: row.startedAt });
   return totals;
 }

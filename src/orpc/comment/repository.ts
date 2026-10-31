@@ -14,7 +14,6 @@ export type CommentWithTask = {
     number: number;
     title: string;
     ownerId: string;
-    assigneeId: string | null;
     archivedAt: Date | null;
   };
 };
@@ -116,7 +115,6 @@ export async function lockComment({
         number: task.number,
         title: task.title,
         ownerId: task.ownerId,
-        assigneeId: task.assigneeId,
         archivedAt: task.archivedAt,
       },
     })

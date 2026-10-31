@@ -253,8 +253,6 @@ export const task = pgTable(
     ownerId: text("owner_id")
       .notNull()
       .references(() => user.id, { onDelete: "restrict" }),
-    /** Doing the work. */
-    assigneeId: text("assignee_id").references(() => user.id, { onDelete: "restrict" }),
     createdBy: text("created_by")
       .notNull()
       .references(() => user.id, { onDelete: "restrict" }),
@@ -272,6 +270,28 @@ export const task = pgTable(
     // The board reads a project's live tasks, column by column, in order.
     index("task_column_id_position_idx").on(table.columnId, table.position),
     index("task_project_id_archived_at_idx").on(table.projectId, table.archivedAt),
+  ],
+);
+
+/*===== Task Assignees =====*/
+// Who is doing the work (docs/app.md → Task): none, one or several people, each an editor on the project. The owner
+// may be one of them. `createdAt` keeps the order they joined in, which is the order the card shows them.
+
+export const taskAssignee = pgTable(
+  "task_assignee",
+  {
+    taskId: uuid("task_id")
+      .notNull()
+      .references(() => task.id, { onDelete: "cascade" }),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "restrict" }),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+  },
+  // The primary key serves a task's crew; the index serves "the tasks a person is on" (My Tasks, the team page).
+  (table) => [
+    primaryKey({ columns: [table.taskId, table.userId] }),
+    index("task_assignee_user_id_idx").on(table.userId),
   ],
 );
 
@@ -431,8 +451,9 @@ export const taskWatcher = pgTable(
 );
 
 /*===== Delegations =====*/
-// "You do this now" (docs/app.md → Delegation): a task handed from one person to another, with a note. The assignee
-// changes; the owner never does (rule 6). A task's delegations in order are its hand-off chain (Sina → Ali → Reza).
+// "You do this now" (docs/app.md → Delegation): a task handed from one person to another, with a note. The new person
+// joins the assignees, in place of the one handing it on if they were one; the owner never changes (rule 6). A task's
+// delegations in order are its hand-off chain (Sina → Ali → Reza).
 
 export const delegation = pgTable(
   "delegation",
@@ -445,11 +466,11 @@ export const delegation = pgTable(
     fromId: text("from_id")
       .notNull()
       .references(() => user.id, { onDelete: "restrict" }),
-    /** The new assignee. */
+    /** Who joined the task's assignees. */
     toId: text("to_id")
       .notNull()
       .references(() => user.id, { onDelete: "restrict" }),
-    /** Who was doing it before, if anyone. */
+    /** The assignee who handed their part on and left the task's assignees, if the hand-off came from one. */
     previousAssigneeId: text("previous_assignee_id").references(() => user.id, { onDelete: "restrict" }),
     note: text("note"),
     createdAt: timestamp("created_at").notNull().defaultNow(),

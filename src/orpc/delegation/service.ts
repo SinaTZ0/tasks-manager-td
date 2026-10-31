@@ -9,7 +9,15 @@ import { delegationNoteSchema } from "#/orpc/delegation/validation";
 import { notify } from "#/orpc/notification/service";
 import { COLUMN_KINDS } from "#/orpc/project/constants";
 import { TASK_PRIORITIES, taskCode } from "#/orpc/task/constants";
-import { findActiveMemberIds, findPeople, findProjectKey, lockTask, updateTaskRow } from "#/orpc/task/repository";
+import {
+  findActiveMemberIds,
+  findAssigneeIdsByTask,
+  findPeople,
+  findProjectKey,
+  lockTask,
+  replaceTaskAssignees,
+  updateTaskRow,
+} from "#/orpc/task/repository";
 import { notifyWatchers } from "#/orpc/watcher/service";
 import { m } from "#/paraglide/messages";
 
@@ -28,10 +36,11 @@ export const toHandoff = (row: HandoffRow): Handoff => ({
 
 /*===== Delegate =====*/
 /**
- * "You do this now" (docs/app.md → Assign & Delegate): makes another active member the task's assignee, keeps the
- * hand-off with its note, and tells the new assignee and the card's watchers. The owner never changes (rule 6), so they still find the task on
- * their "delegated by me" page. Delegation is accepted at once: there is nothing for the new assignee to confirm. Any
- * member of the project may hand a task on, like assigning it.
+ * "You do this now" (docs/app.md → Assign & Delegate): another active member joins the task's assignees, and the one
+ * handing it on leaves them if they were one (they handed their part on); the hand-off is kept with its note, and the
+ * new assignee and the card's watchers are told. The others on the task stay. The owner never changes (rule 6), so
+ * they still find the task on their "delegated by me" page. Delegation is accepted at once: there is nothing for the
+ * new assignee to confirm. Any member of the project may hand a task on, like assigning it.
  *
  * @returns `not-found` for a task the project doesn't have or an archived one; `invalid` for a person who can't take
  * it or already has it, or a note too long.
@@ -61,13 +70,16 @@ export async function delegateTask({
   return db.transaction(async (tx): Promise<Result> => {
     const current = await lockTask({ db: tx, projectId, id: taskId });
     if (!current || current.archivedAt) return { kind: "not-found" };
-    if (current.assigneeId === toId)
-      return { kind: "invalid", fields: { toId: m.delegation_error_already_assigned() } };
+    const assigneeIds = (await findAssigneeIdsByTask({ db: tx, taskIds: [taskId] })).get(taskId) ?? [];
+    if (assigneeIds.includes(toId)) return { kind: "invalid", fields: { toId: m.delegation_error_already_assigned() } };
 
-    const record = await updateTaskRow({ db: tx, id: taskId, values: { assigneeId: toId, updatedAt: new Date() } });
+    const handedOver = assigneeIds.includes(actorId);
+    const nextIds = [...assigneeIds.filter((id) => id !== actorId), toId];
+    await replaceTaskAssignees({ db: tx, taskId, userIds: nextIds });
+    const record = await updateTaskRow({ db: tx, id: taskId, values: { updatedAt: new Date() } });
     await insertDelegation({
       db: tx,
-      values: { taskId, fromId: actorId, toId, previousAssigneeId: current.assigneeId, note },
+      values: { taskId, fromId: actorId, toId, previousAssigneeId: handedOver ? actorId : null, note },
     });
 
     const key = await findProjectKey({ db: tx, projectId });
@@ -80,8 +92,8 @@ export async function delegateTask({
           action: "task.delegated",
           projectId,
           taskId,
-          before: { assigneeId: current.assigneeId },
-          after: { assigneeId: toId, note },
+          before: { assigneeIds },
+          after: { toId, assigneeIds: nextIds, note },
           snapshot: { code, title: record.title },
         },
       ],
@@ -129,7 +141,15 @@ export async function listDelegatedBy({
   user: { id: string; role?: string | null | undefined };
 }): Promise<DelegatedTask[]> {
   const rows = await findDelegatedBy({ db, userId: user.id, admin: user.role === "admin" });
-  const handoffs = await findHandoffs({ db, taskIds: rows.map((row) => row.id) });
+  const taskIds = rows.map((row) => row.id);
+  const handoffs = await findHandoffs({ db, taskIds });
+  const assignees = await findAssigneeIdsByTask({ db, taskIds });
+  const names = new Map(
+    (await findPeople({ db, ids: [...new Set([...assignees.values()].flat())] })).map((person) => [
+      person.id,
+      person.name,
+    ]),
+  );
   // Oldest first, so the last one seen for a task is its latest.
   const last = new Map(handoffs.map((row) => [row.taskId, row]));
 
@@ -148,7 +168,7 @@ export async function listDelegatedBy({
           dueDate: row.dueDate,
           columnKind: oneOf({ allowed: COLUMN_KINDS, value: row.columnKind, what: "column kind" }),
           columnName: row.columnName,
-          assigneeName: row.assigneeName,
+          assigneeNames: (assignees.get(row.id) ?? []).flatMap((id) => names.get(id) ?? []),
           owned: row.ownerId === user.id,
           last: toHandoff(latest),
         },

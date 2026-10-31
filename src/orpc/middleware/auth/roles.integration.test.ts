@@ -117,7 +117,7 @@ describe("roles", () => {
 
   it("never gives a viewer a task", async () => {
     const { projectId, users } = fixture;
-    const assign = call(updateTaskProcedure, { projectId, taskId, assigneeId: users.vera }, as(users.admin));
+    const assign = call(updateTaskProcedure, { projectId, taskId, assigneeIds: [users.vera] }, as(users.admin));
     expect(await codeOf(assign)).toBe("INVALID_INPUT");
     const own = call(updateTaskProcedure, { projectId, taskId, ownerId: users.vera }, as(users.admin));
     expect(await codeOf(own)).toBe("INVALID_INPUT");

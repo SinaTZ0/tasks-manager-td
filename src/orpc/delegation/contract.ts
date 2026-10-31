@@ -31,7 +31,8 @@ export const delegatedTaskSchema = z.object({
   columnKind: z.enum(COLUMN_KINDS),
   /** Null until an admin renames the column: the page prints the kind's own name. */
   columnName: z.string().nullable(),
-  assigneeName: z.string().nullable(),
+  /** Who is doing it now, in the order they joined; empty when nobody is. */
+  assigneeNames: z.array(z.string()),
   /** Whether the viewer owns it (else they handed it on without owning it). */
   owned: z.boolean(),
   /** The latest hand-off. */
@@ -46,8 +47,9 @@ const errors = { ...commonErrors, ...authErrors, ...roleErrors, ...projectAccess
 
 export const delegationContract = {
   /**
-   * "You do this now": makes `toId` the assignee and keeps the hand-off. Refused (`INVALID_INPUT` on `toId`) for
-   * someone who isn't an active member or already has it; on `note` for one too long.
+   * "You do this now": `toId` joins the assignees, in the viewer's place if they were one, and the hand-off is kept.
+   * Refused (`INVALID_INPUT` on `toId`) for someone who isn't an active member or is already an assignee; on `note`
+   * for one too long.
    */
   delegate: oc
     .errors(errors)
@@ -60,6 +62,6 @@ export const delegationContract = {
       }),
     )
     .output(z.void()),
-  /** The live tasks the viewer handed on or owns and someone handed on, now with someone else, latest first. */
+  /** The live tasks the viewer handed on or owns and someone handed on, that they aren't doing, latest first. */
   mine: oc.errors({ ...commonErrors, ...authErrors }).output(z.array(delegatedTaskSchema)),
 };

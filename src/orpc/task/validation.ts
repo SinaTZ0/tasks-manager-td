@@ -61,7 +61,11 @@ export const taskChangeSchema = z.object({
   dueDate: dueDateSchema.optional(),
   estimateMinutes: estimateSchema.optional(),
   ownerId: z.string().optional(),
-  assigneeId: z.string().nullable().optional(),
+  /** The whole list of assignees, in order: an update replaces it. */
+  assigneeIds: z
+    .array(z.string())
+    .transform((ids) => [...new Set(ids)])
+    .optional(),
   labelIds: z
     .array(z.string())
     .transform((ids) => [...new Set(ids)])

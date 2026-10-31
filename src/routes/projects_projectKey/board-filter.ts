@@ -39,7 +39,7 @@ export function cardFilter({
   const assignee = filter.assignee === ASSIGNEE_ME ? viewerId : filter.assignee;
   const weekEnd = teamWeekEnd(today);
   return (task) => {
-    if (assignee === ASSIGNEE_NOBODY ? task.assigneeId !== null : assignee && task.assigneeId !== assignee)
+    if (assignee === ASSIGNEE_NOBODY ? task.assigneeIds.length > 0 : assignee && !task.assigneeIds.includes(assignee))
       return false;
     if (filter.label && !task.labelIds.includes(filter.label)) return false;
     if (filter.priority && task.priority !== filter.priority) return false;

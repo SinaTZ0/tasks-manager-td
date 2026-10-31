@@ -82,6 +82,23 @@ export const WithBadge: Story = {
   ),
 };
 
+/** A card's people, top to bottom, whose clock runs lit in the corner. */
+export const VerticalGroup: Story = {
+  render: () => (
+    <AvatarGroup orientation="vertical">
+      {["س", "م"].map((initial) => (
+        <Avatar key={initial} size="sm">
+          <AvatarFallback>{initial}</AvatarFallback>
+          {initial === "س" && <AvatarBadge />}
+        </Avatar>
+      ))}
+      <AvatarGroupCount>
+        <bdi dir="ltr">+2</bdi>
+      </AvatarGroupCount>
+    </AvatarGroup>
+  ),
+};
+
 export const Group: Story = {
   render: () => (
     <AvatarGroup>

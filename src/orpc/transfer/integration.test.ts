@@ -42,7 +42,7 @@ afterAll(async () => {
   await db.$client.end();
 });
 
-const newTask = async (input: { title: string; assigneeId?: string }) => {
+const newTask = async (input: { title: string; assigneeIds?: string[] }) => {
   const created = await createTask({ db, actorId: fixture.users.admin, projectId: fixture.projectId, input });
   if (created.kind !== "success") throw new Error("setup failed");
   return created.task;
@@ -51,7 +51,7 @@ const newTask = async (input: { title: string; assigneeId?: string }) => {
 describe("moving a card to another project", () => {
   it("keeps its comments and time, drops its dependencies, and answers to its old code", async () => {
     const { projectId, users } = fixture;
-    const card = await newTask({ title: "انتقال", assigneeId: users.ali });
+    const card = await newTask({ title: "انتقال", assigneeIds: [users.ali] });
     const waiting = await newTask({ title: "منتظر" });
     await addDependency({ db, actorId: users.admin, projectId, taskId: waiting.id, blockerId: card.id });
     await addComment({ db, actorId: users.ali, projectId, taskId: card.id, body: plainTextToRichText("یادداشت") });
@@ -88,7 +88,7 @@ describe("moving a card to another project", () => {
 
   it("refuses a card whose assignee isn't on the target", async () => {
     const { projectId, users } = fixture;
-    const card = await newTask({ title: "رضا", assigneeId: users.reza });
+    const card = await newTask({ title: "رضا", assigneeIds: [users.reza] });
 
     const moved = await moveTaskToProject({
       db,

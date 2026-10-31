@@ -1,5 +1,6 @@
 import { ORPCError } from "@orpc/client";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useRouteContext } from "@tanstack/react-router";
 
 import { toast } from "#/components/primitive/toast/toast";
 import { describeApiFailure } from "#/lib/api-error";
@@ -88,29 +89,36 @@ export function useTaskMove(projectId: string) {
 /*===== Status =====*/
 
 /**
- * How the board shows a status action before the server answers. Start and pause light or put out the card's clock and
- * leave it in place (a pause leaves others' clocks running, which the refetch shows); done, stop and reopen send it to
- * the bottom of their column, and done and stop put its clocks out.
+ * How the board shows a status action before the server answers. Start and pause light or put out the viewer's clock
+ * on the card and leave it in place (others' clocks run on); done, stop and reopen send it to the bottom of their
+ * column, and done and stop put its clocks out.
  */
 function afterAction({
   task,
   action,
   target,
   last,
+  viewerId,
 }: {
   task: TaskCard;
   action: TaskStatusAction;
   target: Project["columns"][number] | undefined;
   last: TaskCard | undefined;
+  viewerId: string;
 }): TaskCard {
-  if (action === "start") {
-    return { ...task, runningSince: task.runningSince.length > 0 ? task.runningSince : [new Date()] };
-  }
-  if (action === "pause") return task.runningSince.length > 1 ? task : { ...task, runningSince: [] };
+  const others = task.running.filter((clock) => clock.userId !== viewerId);
+  if (action === "start") return { ...task, running: [...others, { userId: viewerId, since: new Date() }] };
+  if (action === "pause") return { ...task, running: others };
   if (!target || task.columnId === target.id) return task;
   const moved = { ...task, columnId: target.id, position: positionBetween(last?.position ?? null, null) };
-  return action === "reopen" ? moved : { ...moved, runningSince: [] };
+  return action === "reopen" ? moved : { ...moved, running: [] };
 }
+
+/** Starting a clock stops the viewer's clock on any other card (rule 2). */
+const withoutViewerClock = ({ task, viewerId }: { task: TaskCard; viewerId: string }): TaskCard =>
+  task.running.some((clock) => clock.userId === viewerId)
+    ? { ...task, running: task.running.filter((clock) => clock.userId !== viewerId) }
+    : task;
 
 /**
  * Takes a status action on a task (start, pause, done, stop, reopen), from its card menu or its drawer. Like a move,
@@ -119,6 +127,7 @@ function afterAction({
  */
 export function useTaskTransition(project: Pick<Project, "id" | "columns">) {
   const queryClient = useQueryClient();
+  const { viewer } = useRouteContext({ from: "/_site-layout/_app-layout" });
   const key = boardQuery(project.id).queryKey;
 
   const mutation = useMutation(
@@ -151,7 +160,13 @@ export function useTaskTransition(project: Pick<Project, "id" | "columns">) {
     if (previous) {
       const last = target && previous.tasks.findLast((task) => task.columnId === target.id && task.id !== taskId);
       const tasks = previous.tasks
-        .map((task) => (task.id === taskId ? afterAction({ task, action, target, last }) : task))
+        .map((task) =>
+          task.id === taskId
+            ? afterAction({ task, action, target, last, viewerId: viewer.id })
+            : action === "start"
+              ? withoutViewerClock({ task, viewerId: viewer.id })
+              : task,
+        )
         .toSorted(byPosition);
       queryClient.setQueryData<Board>(key, { ...previous, tasks });
     }

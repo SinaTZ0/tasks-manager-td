@@ -24,9 +24,10 @@ import { useBoardAccess } from "#/routes/projects_projectKey/access";
 import { ArchiveTaskButton } from "#/routes/projects_projectKey/components/archive-task-button";
 import { LabelPicker } from "#/routes/projects_projectKey/components/label-picker";
 import {
+  AssigneesField,
   DueDateField,
   EstimateField,
-  PersonField,
+  OwnerField,
   PriorityField,
 } from "#/routes/projects_projectKey/components/task-meta-fields";
 import { TaskDescriptionField } from "#/routes/projects_projectKey/components/task-description-field";
@@ -151,7 +152,12 @@ function TaskDetails({
               requestAnimationFrame(() => document.getElementById(COMMENT_COMPOSER_ID)?.focus());
             },
           },
-          { code: "KeyM", run: () => task.assigneeId !== viewerId && update.save({ assigneeId: viewerId }) },
+          // Joins the assignees; the others stay.
+          {
+            code: "KeyM",
+            run: () =>
+              !task.assigneeIds.includes(viewerId) && update.save({ assigneeIds: [...task.assigneeIds, viewerId] }),
+          },
         ],
   );
 
@@ -235,18 +241,10 @@ function TaskDetails({
                 readOnly={readOnly}
               />
               <PriorityField task={task} update={update} readOnly={readOnly} />
-              <PersonField
+              <AssigneesField task={task} update={update} members={project.members} people={people} canEdit={canEdit} />
+              <OwnerField
                 task={task}
                 update={update}
-                field="assignee"
-                members={project.members}
-                people={people}
-                canEdit={canEdit}
-              />
-              <PersonField
-                task={task}
-                update={update}
-                field="owner"
                 members={project.members}
                 people={people}
                 canEdit={canHandOver}

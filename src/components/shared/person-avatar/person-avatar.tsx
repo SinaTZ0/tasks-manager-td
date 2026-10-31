@@ -1,4 +1,4 @@
-import { Avatar, AvatarFallback, AvatarImage } from "#/components/primitive/avatar/avatar";
+import { Avatar, AvatarBadge, AvatarFallback, AvatarImage } from "#/components/primitive/avatar/avatar";
 
 /*===== Person Avatar =====*/
 
@@ -6,7 +6,8 @@ import { Avatar, AvatarFallback, AvatarImage } from "#/components/primitive/avat
  * A teammate as a keycap with their initial. The initial alone names no one, so the full name is in a tooltip and,
  * for screen readers, in `sr-only` text. `owner` uses the graphite cap, so an owner reads apart from an assignee
  * without colour alone. Where the name is printed right beside the cap, pass `decorative` so it isn't read twice. With
- * `src` (their profile picture) the picture fills the cap; the initial shows while it loads or if it fails.
+ * `src` (their profile picture) the picture fills the cap; the initial shows while it loads or if it fails. `badge`
+ * lights a steady LED in the cap's corner, and is what a screen reader hears for it (a clock that runs, say).
  */
 export function PersonAvatar({
   name,
@@ -14,12 +15,14 @@ export function PersonAvatar({
   size = "sm",
   owner = false,
   decorative = false,
+  badge,
 }: {
   name: string;
   src?: string | null | undefined;
   size?: "default" | "sm" | "lg";
   owner?: boolean;
   decorative?: boolean;
+  badge?: string | undefined;
 }) {
   const initial = Array.from(name.trim())[0] ?? "?";
 
@@ -35,6 +38,11 @@ export function PersonAvatar({
         <span aria-hidden="true">{initial}</span>
         {!decorative && <span className="sr-only">{name}</span>}
       </AvatarFallback>
+      {badge && (
+        <AvatarBadge>
+          <span className="sr-only">{badge}</span>
+        </AvatarBadge>
+      )}
     </Avatar>
   );
 }

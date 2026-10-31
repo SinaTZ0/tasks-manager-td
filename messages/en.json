@@ -387,7 +387,7 @@
   "task_description_empty": "No description yet.",
   "task_priority_label": "Priority",
   "task_owner_label": "Owner",
-  "task_assignee_label": "Assignee",
+  "task_assignee_label": "Assignees",
   "task_owner_locked": "Only the owner or an admin can hand it over.",
   "task_estimate_label": "Estimate",
   "task_estimate_hint": "Hours and minutes, like 1:30, or 2 for two hours.",
@@ -715,7 +715,7 @@
   "dependency_save_failed": "The dependency couldn't be saved.",
   "dependency_state_waiting": "blocking",
   "dependency_state_released": "done",
-  "delegation_error_already_assigned": "They already have this task.",
+  "delegation_error_already_assigned": "They are already on this task.",
   "delegation_error_note_too_long": [
     {
       "declarations": ["input max", "local maxText = max: number"],
@@ -747,7 +747,7 @@
       }
     }
   ],
-  "delegation_dialog_description": "They become the assignee and get a notification. The owner stays the same.",
+  "delegation_dialog_description": "They join the assignees, in your place if you are one, and get a notification. The others on it and the owner stay.",
   "delegation_to_label": "Who does it now",
   "delegation_to_placeholder": "Choose a person",
   "delegation_note_label": "Note (optional)",
@@ -997,6 +997,14 @@
       "declarations": ["input name"],
       "match": {
         "": "assigned the task to {name}"
+      }
+    }
+  ],
+  "activity_task_assignees_removed": [
+    {
+      "declarations": ["input names"],
+      "match": {
+        "": "took {names} off the task"
       }
     }
   ],
@@ -1723,7 +1731,7 @@
     {
       "declarations": ["input names"],
       "match": {
-        "": "{names} isn't an editor on that project. Add them first, or change the card's owner or assignee."
+        "": "{names} isn't an editor on that project. Add them first, or change the card's owner or assignees."
       }
     }
   ],

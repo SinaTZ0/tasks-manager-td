@@ -24,6 +24,9 @@ export type Label = z.infer<typeof labelSchema>;
 /** A stored Tiptap document. The server checks its structure (`parseRichText`) before storing it. */
 const richTextSchema = z.custom<RichTextDoc>((value) => typeof value === "object" && value !== null);
 
+/** A clock running on a task: whose, and since when. */
+const runningClockSchema = z.object({ userId: z.string(), since: z.date() });
+
 /** What a card on the board shows. */
 export const taskCardSchema = z.object({
   id: z.string(),
@@ -36,15 +39,16 @@ export const taskCardSchema = z.object({
   dueDate: z.string().nullable(),
   estimateMinutes: z.number().int().nullable(),
   ownerId: z.string(),
-  assigneeId: z.string().nullable(),
+  /** Who is doing the work, in the order they joined; the owner may be one of them. */
+  assigneeIds: z.array(z.string()),
   labelIds: z.array(z.string()),
   hasDescription: z.boolean(),
   /** When it entered the done column; null anywhere else. */
   completedAt: z.date().nullable(),
   /** The time its finished logs add up to. */
   spentSeconds: z.number().int(),
-  /** When each of its running timers started (one per person working on it); the card adds them to the total live. */
-  runningSince: z.array(z.date()),
+  /** Its running timers (one per person working on it), earliest first: the card adds them to the total live. */
+  running: z.array(runningClockSchema),
   /** The live tasks it waits for (done ones too): it is blocked while any of them is not done or cancelled. */
   waitsFor: z.array(z.string()),
   /** What the card's badges count: its comments (deleted ones left out), its checklist's steps and its attachments. */
@@ -109,7 +113,7 @@ const taskFieldsSchema = z.strictObject({
   dueDate: z.string().nullable(),
   estimateMinutes: z.number().int().nullable(),
   ownerId: z.string(),
-  assigneeId: z.string().nullable(),
+  assigneeIds: z.array(z.string()),
   labelIds: z.array(z.string()),
 });
 
@@ -134,7 +138,7 @@ export const myTaskSchema = z.object({
   /** Null until an admin renames the column: the page prints the kind's own name. */
   columnName: z.string().nullable(),
   spentSeconds: z.number().int(),
-  runningSince: z.array(z.date()),
+  running: z.array(runningClockSchema),
 });
 
 export type MyTask = z.infer<typeof myTaskSchema>;

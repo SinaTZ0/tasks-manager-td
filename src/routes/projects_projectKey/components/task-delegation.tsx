@@ -28,7 +28,8 @@ import { m } from "#/paraglide/messages";
 
 /**
  * The drawer's hand-offs (docs/app.md → Assign & Delegate): who has had the task, in order (Sina → Ali → Reza), each
- * hand-off's note, and a key to hand it on. Handing on makes someone else the assignee and tells them; the owner stays.
+ * hand-off's note, and a key to hand it on. Handing on adds someone to the assignees, in the viewer's place if they
+ * were one, and tells them; the others on it and the owner stay.
  */
 export function TaskDelegation({
   task,
@@ -108,7 +109,7 @@ function HandoffChain({ handoffs }: { handoffs: Handoff[] }) {
 
 /*===== Delegate Dialog =====*/
 
-/** Picks who does it now (any active member but the current assignee) and what they should know. */
+/** Picks who joins the task (any active editor not on it yet) and what they should know. */
 function DelegateDialog({
   task,
   project,
@@ -129,7 +130,7 @@ function DelegateDialog({
   const [errors, setErrors] = useState<Record<string, string>>({});
   const items = project.members
     // A viewer only reads: they can't be handed a task.
-    .filter((member) => member.status === "active" && member.role !== "viewer" && member.id !== task.assigneeId)
+    .filter((member) => member.status === "active" && member.role !== "viewer" && !task.assigneeIds.includes(member.id))
     .map((member) => ({ value: member.id, label: member.name }));
 
   const delegate = useMutation(

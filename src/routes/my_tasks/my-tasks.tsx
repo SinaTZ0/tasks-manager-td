@@ -82,7 +82,7 @@ function MyTasksPage() {
 /** One task: its code and title (opening its card), its column, its due date and its time, ticking while it runs. */
 function MyTaskRow({ task }: { task: MyTask }) {
   const code = taskCode({ key: task.projectKey, number: task.number });
-  const running = task.runningSince.length > 0;
+  const running = task.running.length > 0;
 
   return (
     <li className="grid grid-cols-12 items-center gap-4 py-3">

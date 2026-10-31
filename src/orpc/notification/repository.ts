@@ -1,7 +1,7 @@
-import { and, count, desc, eq, inArray, isNull, lte, notInArray, or } from "drizzle-orm";
+import { and, count, desc, eq, exists, inArray, isNull, lte, not, notInArray, or, sql } from "drizzle-orm";
 
 import type { Database } from "#/db/client.server";
-import { boardColumn, notification, project, projectMember, task, user } from "#/db/schema";
+import { boardColumn, notification, project, projectMember, task, taskAssignee, user } from "#/db/schema";
 
 /*===== Types =====*/
 type NewNotificationRecord = typeof notification.$inferInsert;
@@ -99,6 +99,11 @@ export function findDueTasksFor({
   userId: string;
   until: string;
 }): Promise<DueTaskRow[]> {
+  const assignees = (who?: string) =>
+    db
+      .select({ one: sql`1` })
+      .from(taskAssignee)
+      .where(and(eq(taskAssignee.taskId, task.id), who ? eq(taskAssignee.userId, who) : undefined));
   return db
     .select({
       id: task.id,
@@ -117,7 +122,7 @@ export function findDueTasksFor({
         isNull(task.archivedAt),
         lte(task.dueDate, until),
         notInArray(boardColumn.kind, ["done", "cancelled"]),
-        or(eq(task.assigneeId, userId), and(isNull(task.assigneeId), eq(task.ownerId, userId))),
+        or(exists(assignees(userId)), and(not(exists(assignees())), eq(task.ownerId, userId))),
       ),
     ) as Promise<DueTaskRow[]>;
 }

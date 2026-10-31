@@ -54,16 +54,16 @@ describe("tasks", () => {
       actor: { id: users.ali, role: "user" },
       projectId,
       taskId: first.task.id,
-      input: { title: "اول، بازنویسی", assigneeId: users.reza },
+      input: { title: "اول، بازنویسی", assigneeIds: [users.reza] },
     });
-    expect(updated).toMatchObject({ kind: "success", task: { assigneeId: users.reza } });
+    expect(updated).toMatchObject({ kind: "success", task: { assigneeIds: [users.reza] } });
 
     expect(await historyOf(first.task.id)).toEqual([
       expect.objectContaining({ action: "task.created" }),
       {
         action: "task.updated",
-        before: { title: "اول", assigneeId: null },
-        after: { title: "اول، بازنویسی", assigneeId: users.reza },
+        before: { title: "اول", assigneeIds: [] },
+        after: { title: "اول، بازنویسی", assigneeIds: [users.reza] },
       },
     ]);
   });
@@ -203,7 +203,7 @@ describe("tasks", () => {
       db,
       actorId: users.admin,
       projectId,
-      input: { title: "مال رضا", assigneeId: users.reza },
+      input: { title: "مال رضا", assigneeIds: [users.ali, users.reza] },
     });
     if (created.kind !== "success") throw new Error("setup failed");
     const mine = async () => (await listMyTasks({ db, userId: users.reza })).map((task) => task.id);

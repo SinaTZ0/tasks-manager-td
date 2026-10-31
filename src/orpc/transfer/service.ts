@@ -17,6 +17,7 @@ import {
   findColumn,
   findColumnByKind,
   findLabelByName,
+  findAssigneeIdsByTask,
   findLabelIdsByTask,
   findLabels,
   findLastPosition,
@@ -133,7 +134,7 @@ async function matchLabels({
  * went. Admin-only, like creating a card: the procedure checks the role.
  *
  * @returns Its new place; `not-found` for a task the project doesn't have or an archived one; `invalid` for a missing
- * or same target, or an owner or assignee who isn't an active editor on the target (named in the message).
+ * or same target, or an owner or assignees who aren't active editors on the target (named in the message).
  */
 export async function moveTaskToProject({
   db,
@@ -150,7 +151,8 @@ export async function moveTaskToProject({
 
     /*------ People ------*/
     // The target must have the people the card names: a card can't be owned or done by someone off its project.
-    const named = [...new Set([task.ownerId, ...(task.assigneeId ? [task.assigneeId] : [])])];
+    const assigneeIds = (await findAssigneeIdsByTask({ db: tx, taskIds: [task.id] })).get(task.id) ?? [];
+    const named = [...new Set([task.ownerId, ...assigneeIds])];
     const onTarget = await findActiveMemberIds({ db: tx, projectId: target.id, ids: named, editorsOnly: true });
     const missing = named.filter((id) => !onTarget.has(id));
     if (missing.length > 0) {
@@ -277,7 +279,6 @@ export async function copyTaskToProject({
           dueDate: task.dueDate,
           estimateMinutes: task.estimateMinutes,
           ownerId: actorId,
-          assigneeId: null,
           createdBy: actorId,
           completedAt: kind === "done" ? new Date() : null,
         },

@@ -1,7 +1,7 @@
-import { and, asc, desc, eq, inArray, isNotNull, isNull, ne, notInArray, sql } from "drizzle-orm";
+import { and, asc, desc, eq, exists, inArray, isNotNull, isNull, ne, notInArray, sql, type SQL } from "drizzle-orm";
 
 import type { Database } from "#/db/client.server";
-import { boardColumn, label, project, projectMember, task, taskLabel, user } from "#/db/schema";
+import { boardColumn, label, project, projectMember, task, taskAssignee, taskLabel, user } from "#/db/schema";
 import { EDITOR_ROLES } from "#/lib/user-constants";
 
 /*===== Types =====*/
@@ -249,8 +249,64 @@ export function findOpenTasksAssignedTo({ db, userId }: { db: Database; userId: 
     .innerJoin(boardColumn, eq(boardColumn.id, task.columnId))
     .innerJoin(projectMember, and(eq(projectMember.projectId, task.projectId), eq(projectMember.userId, userId)))
     .where(
-      and(eq(task.assigneeId, userId), isNull(task.archivedAt), notInArray(boardColumn.kind, ["done", "cancelled"])),
+      and(assignedTo({ db, userId }), isNull(task.archivedAt), notInArray(boardColumn.kind, ["done", "cancelled"])),
     );
+}
+
+/*===== Assignees =====*/
+/** A condition on `task` rows: the person is one of the task's assignees. */
+export function assignedTo({ db, userId }: { db: Database; userId: string }): SQL {
+  return exists(
+    db
+      .select({ one: sql`1` })
+      .from(taskAssignee)
+      .where(and(eq(taskAssignee.taskId, task.id), eq(taskAssignee.userId, userId))),
+  );
+}
+
+/** The assignees of each task, in the order they joined, as `taskId → userIds`. A task with none has no entry. */
+export async function findAssigneeIdsByTask({
+  db,
+  taskIds,
+}: {
+  db: Database;
+  taskIds: string[];
+}): Promise<Map<string, string[]>> {
+  const byTask = new Map<string, string[]>();
+  if (taskIds.length === 0) return byTask;
+  const rows = await db
+    .select({ taskId: taskAssignee.taskId, userId: taskAssignee.userId })
+    .from(taskAssignee)
+    .where(inArray(taskAssignee.taskId, taskIds))
+    .orderBy(asc(taskAssignee.createdAt), asc(taskAssignee.userId));
+  for (const row of rows) byTask.set(row.taskId, [...(byTask.get(row.taskId) ?? []), row.userId]);
+  return byTask;
+}
+
+/**
+ * Makes `userIds` a task's assignees. Those who stay keep their place; newcomers join at the end, in the order given.
+ */
+export async function replaceTaskAssignees({
+  db,
+  taskId,
+  userIds,
+}: {
+  db: Database;
+  taskId: string;
+  userIds: string[];
+}): Promise<void> {
+  await db
+    .delete(taskAssignee)
+    .where(
+      and(eq(taskAssignee.taskId, taskId), userIds.length > 0 ? notInArray(taskAssignee.userId, userIds) : undefined),
+    );
+  if (userIds.length === 0) return;
+  // One timestamp apart each, so newcomers added together keep the order given.
+  const now = Date.now();
+  await db
+    .insert(taskAssignee)
+    .values(userIds.map((userId, index) => ({ taskId, userId, createdAt: new Date(now + index) })))
+    .onConflictDoNothing();
 }
 
 /*===== Labels =====*/
