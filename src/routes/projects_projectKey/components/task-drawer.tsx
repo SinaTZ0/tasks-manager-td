@@ -59,8 +59,45 @@ import { useTaskUpdate } from "#/routes/projects_projectKey/use-task-update";
  * dragging the rules between them: the work (the timer, then what the task is), the tabs (comments, checklist,
  * dependencies, history, time), and the details people look things up in, the task's status (done, stop, reopen)
  * first. Every field saves on its own, as it changes.
+ *
+ * The page keeps it mounted whether a task is open or not, so the sheet sees `open` change and plays its CSS enter and
+ * exit (`sheet.styles.ts`): Base UI skips the enter of a sheet that mounts already open, and one unmounted with the
+ * param would vanish at once. A link opened in a new tab still shows the drawer open without animating in.
  */
 export function TaskDrawer({
+  code,
+  project,
+  board,
+  people,
+  onClose,
+}: {
+  /** The open task's code from `?task=`, or `undefined` while the drawer is closed. */
+  code: string | undefined;
+  project: Project;
+  board: Board;
+  people: Map<string, Person>;
+  /** Closes it: the page drops `?task=` from its own address (the board's, the calendar's). */
+  onClose: () => void;
+}) {
+  // The last task shown stays in the panel while it plays its way out after the param is gone.
+  const [lastCode, setLastCode] = useState(code);
+  if (code !== undefined && code !== lastCode) setLastCode(code);
+  const shown = code ?? lastCode;
+
+  return (
+    <Sheet open={code !== undefined} onOpenChange={(open) => !open && onClose()}>
+      <SheetContent size="page" className="overflow-hidden">
+        {/* Keyed by the task, so moving to another task (a dependency's link) starts its details afresh. */}
+        {shown && (
+          <DrawerBody key={shown} code={shown} project={project} board={board} people={people} onClose={onClose} />
+        )}
+      </SheetContent>
+    </Sheet>
+  );
+}
+
+/** One task's details, or what the panel says while it loads or when there is no such task. */
+function DrawerBody({
   code,
   project,
   board,
@@ -71,7 +108,6 @@ export function TaskDrawer({
   project: Project;
   board: Board;
   people: Map<string, Person>;
-  /** Closes it: the page drops `?task=` from its own address (the board's, the calendar's). */
   onClose: () => void;
 }) {
   // Filled by the page's loader for a link; `useQuery` rather than suspense so a missing task says so in the panel.
@@ -79,23 +115,15 @@ export function TaskDrawer({
     ...taskQuery({ projectId: project.id, number: taskNumberOf(code) }),
     retry: false,
   });
-  const close = onClose;
 
+  if (task) return <TaskDetails task={task} project={project} board={board} people={people} onArchived={onClose} />;
   return (
-    <Sheet open onOpenChange={(open) => !open && close()}>
-      <SheetContent size="page" className="overflow-hidden">
-        {task ? (
-          <TaskDetails task={task} project={project} board={board} people={people} onArchived={close} />
-        ) : (
-          <SheetHeader>
-            <SheetTitle>{code}</SheetTitle>
-            <SheetDescription>
-              {isPending ? <Spinner aria-label={m.common_loading()} /> : m.task_not_found()}
-            </SheetDescription>
-          </SheetHeader>
-        )}
-      </SheetContent>
-    </Sheet>
+    <SheetHeader>
+      <SheetTitle>{code}</SheetTitle>
+      <SheetDescription>
+        {isPending ? <Spinner aria-label={m.common_loading()} /> : m.task_not_found()}
+      </SheetDescription>
+    </SheetHeader>
   );
 }
 

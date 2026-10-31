@@ -230,16 +230,13 @@ function BoardPage() {
         </CardContent>
       </Card>
 
-      {openTask && (
-        <TaskDrawer
-          key={openTask}
-          code={openTask}
-          project={project}
-          board={board}
-          people={people}
-          onClose={() => void navigate({ search: (previous) => ({ ...previous, task: undefined }) })}
-        />
-      )}
+      <TaskDrawer
+        code={openTask}
+        project={project}
+        board={board}
+        people={people}
+        onClose={() => void navigate({ search: (previous) => ({ ...previous, task: undefined }) })}
+      />
     </div>
   );
 }

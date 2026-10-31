@@ -191,16 +191,13 @@ function CalendarPage() {
         onMonthChange={showMonth}
       />
 
-      {search.task && (
-        <TaskDrawer
-          key={search.task}
-          code={search.task}
-          project={project}
-          board={board}
-          people={people}
-          onClose={() => void navigate({ search: (previous) => ({ ...previous, task: undefined }) })}
-        />
-      )}
+      <TaskDrawer
+        code={search.task}
+        project={project}
+        board={board}
+        people={people}
+        onClose={() => void navigate({ search: (previous) => ({ ...previous, task: undefined }) })}
+      />
     </div>
   );
 }
