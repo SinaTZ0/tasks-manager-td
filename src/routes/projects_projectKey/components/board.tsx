@@ -11,6 +11,7 @@ import {
   useSensors,
   type Active,
   type Announcements,
+  type Collision,
   type CollisionDetection,
   type DragEndEvent,
   type DragOverEvent,
@@ -388,15 +389,26 @@ export function Board({
       }
 
       const targets = args.droppableContainers.filter((target) => typeOf(target) !== "column");
-      // A pointer picks the column it is over, then the closest card in it; the keyboard has no pointer, so it takes
-      // the closest target in the direction it moved.
-      const pointerHits = pointerWithin({ ...args, droppableContainers: targets });
-      let hits = pointerHits.length > 0 ? pointerHits : closestCorners({ ...args, droppableContainers: targets });
-      const zone = hits.find((hit) => String(hit.id).startsWith("zone:"));
-      if (pointerHits.length > 0 && zone) {
-        const lane = lanesRef.current[String(zone.id).slice("zone:".length)] ?? [];
-        const cards = targets.filter((target) => lane.includes(String(target.id)));
-        hits = cards.length > 0 ? closestCenter({ ...args, droppableContainers: cards }) : [zone];
+      let hits: Collision[];
+      if (args.pointerCoordinates) {
+        // A pointer picks the column it is over, anywhere on it (its header and padding too), then the closest card
+        // in it. Over no column (a gap, under a short column) it keeps the last target. Falling back to the closest
+        // card there picked one in the other column; crossing over changed the columns' heights, so the closest card
+        // was back in the first one, and the card flew back and forth in one chain of renders until React stopped
+        // the board ("Maximum update depth exceeded").
+        const columnTargets = args.droppableContainers.filter((target) => typeOf(target) === "column");
+        const columnId = pointerWithin({ ...args, droppableContainers: columnTargets })[0]?.id;
+        const lane = columnId === undefined ? undefined : lanesRef.current[String(columnId)];
+        const cards = targets.filter((target) => lane?.includes(String(target.id)));
+        hits =
+          columnId === undefined || lane === undefined
+            ? []
+            : cards.length > 0
+              ? closestCenter({ ...args, droppableContainers: cards })
+              : [{ id: zoneId(String(columnId)) }];
+      } else {
+        // The keyboard has no pointer: it takes the closest target in the direction it moved.
+        hits = closestCorners({ ...args, droppableContainers: targets });
       }
 
       const overId = hits[0]?.id ?? null;

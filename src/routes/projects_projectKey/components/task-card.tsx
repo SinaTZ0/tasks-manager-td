@@ -63,9 +63,10 @@ const SPINE_SLOTS = 3;
  * The tray down the card's starting edge that holds its people, top to bottom: the owner's graphite cap, then the
  * other assignees, then a count of the rest. The maker of a task is assigned from the start (docs/app.md rule 2), so the
  * owner is usually one of the assignees and leads them; an owner who isn't (they handed the work on) stands apart
- * behind a rule. Nobody assigned leaves an empty seat.
+ * behind a rule. Nobody assigned leaves an empty seat. Without `tooltips` (a card being dragged) the caps name no one
+ * on pointing.
  */
-function CardSpine({ task, people }: { task: TaskCardData; people: Map<string, Person> }) {
+function CardSpine({ task, people, tooltips }: { task: TaskCardData; people: Map<string, Person>; tooltips: boolean }) {
   const crew = task.assigneeIds.filter((id) => id !== task.ownerId).flatMap((id) => people.get(id) ?? []);
   const owner = people.get(task.ownerId);
   const ownerAssigned = task.assigneeIds.includes(task.ownerId);
@@ -73,6 +74,15 @@ function CardSpine({ task, people }: { task: TaskCardData; people: Map<string, P
   const ownerShown = owner !== undefined && (ownerAssigned || crew.length > 0);
   const shown = crew.length > SPINE_SLOTS ? crew.slice(0, SPINE_SLOTS - 1) : crew;
   const hidden = crew.slice(shown.length);
+  const names = formatList(hidden.map((person) => person.name));
+  const count = (
+    <AvatarGroupCount>
+      <span aria-hidden="true" dir="ltr">
+        +{formatNumber(hidden.length)}
+      </span>
+      <span className="sr-only">{names}</span>
+    </AvatarGroupCount>
+  );
 
   return (
     <div className="flex w-9.5 shrink-0 flex-col items-center rounded-s-card border-e border-border/60 bg-tray py-3">
@@ -87,28 +97,22 @@ function CardSpine({ task, people }: { task: TaskCardData; people: Map<string, P
         <AvatarGroup orientation="vertical" className="relative z-10">
           {ownerShown && (
             <>
-              <PersonAvatar name={owner.name} src={owner.avatarUrl} owner />
+              <PersonAvatar name={owner.name} src={owner.avatarUrl} owner tooltip={tooltips} />
               {!ownerAssigned && <span aria-hidden="true" className="h-px w-4 bg-border" />}
             </>
           )}
           {shown.map((person) => (
-            <PersonAvatar key={person.id} name={person.name} src={person.avatarUrl} />
+            <PersonAvatar key={person.id} name={person.name} src={person.avatarUrl} tooltip={tooltips} />
           ))}
-          {hidden.length > 0 && (
-            <Tooltip>
-              <TooltipTrigger
-                render={
-                  <AvatarGroupCount>
-                    <span aria-hidden="true" dir="ltr">
-                      +{formatNumber(hidden.length)}
-                    </span>
-                    <span className="sr-only">{formatList(hidden.map((person) => person.name))}</span>
-                  </AvatarGroupCount>
-                }
-              />
-              <TooltipContent aria-hidden="true">{formatList(hidden.map((person) => person.name))}</TooltipContent>
-            </Tooltip>
-          )}
+          {hidden.length > 0 &&
+            (tooltips ? (
+              <Tooltip>
+                <TooltipTrigger render={count} />
+                <TooltipContent aria-hidden="true">{names}</TooltipContent>
+              </Tooltip>
+            ) : (
+              count
+            ))}
         </AvatarGroup>
       )}
     </div>
@@ -140,7 +144,10 @@ const PARTS_ON_HOVER =
  *
  * On the board the card is also something to pick up (`SortableTaskCard` passes the drag props): `grip` and `menu` sit
  * on the code line, above the stretched link, and show while the card is pointed at or focused. `state` dims the card left behind while
- * its copy is dragged (`placeholder`) and makes that copy inert (`overlay`).
+ * its copy is dragged (`placeholder`) and makes that copy inert (`overlay`). Neither has tooltips: nobody can point at
+ * them, and the placeholder re-mounts each time it crosses into another column, where each popup would set up its
+ * store and re-render again on the way out.
+
  */
 export function TaskCard({
   task,
@@ -188,7 +195,7 @@ export function TaskCard({
         state === "overlay" && "cursor-grabbing bg-accent",
       )}
     >
-      <CardSpine task={task} people={people} />
+      <CardSpine task={task} people={people} tooltips={state === "idle"} />
       <div className="flex min-w-0 flex-1 flex-col">
         {/*------ Code Line ------*/}
         {/* The grip and menu print only while the pointer is over the card or focus is inside it (always on a touch

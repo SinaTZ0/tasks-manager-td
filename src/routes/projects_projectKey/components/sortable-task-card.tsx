@@ -33,7 +33,8 @@ export function CardGrip({ code, ...props }: { code: string } & Omit<ComponentPr
  * A card that can be dragged within its column and to others (the board's `DndContext` does the moving). Only the
  * grip takes the keyboard listeners: the title is a link stretched over the card, and Enter on it must open the
  * drawer, not start a drag. While dragged, the card stays in the list as a dimmed placeholder under the moving copy.
- * It renders its own list item, which is what slides while the list makes room.
+ * It renders its own list item, which is what slides while the list makes room. The placeholder re-mounts in each
+ * column it crosses into, so it leaves the menu out (see `TaskCard`'s `state`).
  */
 export function SortableTaskCard({
   task,
@@ -98,7 +99,7 @@ export function SortableTaskCard({
             />
           )
         }
-        menu={menu}
+        menu={isDragging ? undefined : menu}
       />
     </li>
   );

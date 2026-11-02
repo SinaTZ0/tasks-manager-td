@@ -8,7 +8,8 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "#/components/primitive/
  * in a tooltip, and screen readers get it as `sr-only` text. `owner` uses the graphite cap, so an owner reads apart
  * from an assignee without colour alone. Where the name is printed right beside the cap, pass `decorative`: no tooltip,
  * and nothing read twice. With `src` (their profile picture) the picture fills the cap; the initial shows while it
- * loads or if it fails.
+ * loads or if it fails. `tooltip={false}` keeps the name for screen readers but drops the tooltip, for a cap nobody
+ * can point at (a card being dragged).
  */
 export function PersonAvatar({
   name,
@@ -16,12 +17,14 @@ export function PersonAvatar({
   size = "sm",
   owner = false,
   decorative = false,
+  tooltip = true,
 }: {
   name: string;
   src?: string | null | undefined;
   size?: "default" | "sm" | "lg";
   owner?: boolean;
   decorative?: boolean;
+  tooltip?: boolean;
 }) {
   const initial = Array.from(name.trim())[0] ?? "?";
 
@@ -34,7 +37,7 @@ export function PersonAvatar({
       </AvatarFallback>
     </Avatar>
   );
-  if (decorative) return avatar;
+  if (decorative || !tooltip) return avatar;
 
   return (
     <Tooltip>
