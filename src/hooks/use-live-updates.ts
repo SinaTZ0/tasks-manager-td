@@ -48,10 +48,18 @@ function refetchProject({ queryClient, projectId }: { queryClient: QueryClient; 
   ]);
 }
 
+/** Waits `ms`, or less if `signal` aborts. Its abort listener goes with it: a tab offline for days retries thousands of times. */
 const sleep = (ms: number, signal: AbortSignal) =>
   new Promise<void>((resolve) => {
-    const timer = setTimeout(resolve, ms);
-    signal.addEventListener("abort", () => (clearTimeout(timer), resolve()), { once: true });
+    const stop = () => {
+      clearTimeout(timer);
+      resolve();
+    };
+    const timer = setTimeout(() => {
+      signal.removeEventListener("abort", stop);
+      resolve();
+    }, ms);
+    signal.addEventListener("abort", stop, { once: true });
   });
 
 /*===== Live Updates =====*/

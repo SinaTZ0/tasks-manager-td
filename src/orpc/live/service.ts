@@ -52,13 +52,15 @@ export async function* streamLiveEvents({
       wake?.();
     },
   });
+  // One abort listener for the stream's whole life, not one per wait: a stream stays open for weeks, and a listener
+  // added on every wait would pile up with each change heard (and Node's EventTarget gets slower with each one).
+  signal.addEventListener("abort", () => wake?.(), { once: true });
 
   yield { type: "ready" };
   while (!signal.aborted) {
     if (queue.length === 0) {
       await new Promise<void>((resolve) => {
         wake = resolve;
-        signal.addEventListener("abort", () => resolve(), { once: true });
       });
       wake = null;
     }
