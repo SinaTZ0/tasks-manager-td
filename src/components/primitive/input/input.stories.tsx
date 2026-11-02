@@ -55,6 +55,11 @@ export const Disabled: Story = {
   args: { disabled: true, defaultValue: "بازبینی طرح صفحه ورود" },
 };
 
+// Reads as printed text until pointed at; hover or focus it and the cut and plate come up.
+export const Quiet: Story = {
+  args: { quiet: true, defaultValue: "۱:۳۰", dir: "ltr", variant: "code", "aria-label": "تخمین زمان" },
+};
+
 // Every state side by side, as they sit on a form.
 export const States: Story = {
   render: () => (

@@ -54,9 +54,10 @@ const twKeycapShared = defineStyles({
   layout: "relative isolate inline-flex shrink-0 items-center justify-center",
   appearance: "border-0 bg-transparent",
   typography: "font-heading text-button whitespace-nowrap",
-  // The molded face. `rounded-[inherit]` keeps it on the part's radius whatever size sets it.
+  // The molded face. `rounded-[inherit]` keeps it on the part's radius whatever size sets it. A press is quick; a key
+  // that changes material (a latching key lighting orange) fades its colour more slowly, so the change is seen.
   appearanceFace:
-    "after:pointer-events-none after:absolute after:inset-0 after:-z-1 after:rounded-[inherit] after:transition-[inset,box-shadow,filter] after:duration-75 after:ease-instrument",
+    "after:pointer-events-none after:absolute after:inset-0 after:-z-1 after:rounded-[inherit] after:transition-[inset,box-shadow,filter,background-color] after:ease-instrument after:[--tw-duration:75ms,75ms,75ms,200ms]",
   interaction: "cursor-pointer outline-none select-none",
   hover: "hover:after:brightness-105",
   // The focus ring sits outside the cut, so it never hides the void that defines the part

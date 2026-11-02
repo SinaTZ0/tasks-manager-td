@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { ArrowLeftIcon, CalendarIcon, PlusIcon } from "lucide-react";
+import { useState } from "react";
 
 import { Input } from "#/components/primitive/input/input";
 import { Button } from "./button";
@@ -130,6 +131,18 @@ export const IconSizes: Story = {
       ))}
     </div>
   ),
+};
+
+/** A latching key whose legend changes: the colour fades and the width glides to the new legend. */
+export const GlidingLegend: Story = {
+  render: function Render(args) {
+    const [on, setOn] = useState(false);
+    return (
+      <Button {...args} glide variant={on ? "highlight" : "secondary"} onClick={() => setOn(!on)}>
+        {on ? "در حال کار ۰:۱۲:۰۵" : "شروع کار"}
+      </Button>
+    );
+  },
 };
 
 export const Disabled: Story = {

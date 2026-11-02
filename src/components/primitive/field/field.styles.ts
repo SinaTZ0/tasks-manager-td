@@ -49,6 +49,12 @@ const twOrientation = defineStyles({
     // Nudges a checkbox or radio down to line up with the first line of the label.
     geometryControl: "has-[>[data-slot=field-content]]:[&>[role=checkbox],[role=radio]]:mt-px",
   },
+  // The label in a fixed column at the start and the control beside it, so a stack of rows lines its values up like a
+  // spec sheet (a task's details). A description or an error sits under the control, in its column.
+  row: {
+    layout:
+      "grid grid-cols-[6rem_minmax(0,1fr)] items-center gap-1 gap-x-4 *:data-[slot=field-description]:col-start-2 *:data-[slot=field-error]:col-start-2",
+  },
   responsive: {
     layout:
       "flex-col *:w-full @md/field-group:flex-row @md/field-group:items-center @md/field-group:*:w-auto @md/field-group:has-[>[data-slot=field-content]]:items-start @md/field-group:*:data-[slot=field-label]:flex-auto [&>.sr-only]:w-auto",

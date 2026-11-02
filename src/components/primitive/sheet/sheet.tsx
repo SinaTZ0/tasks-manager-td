@@ -14,6 +14,7 @@ import {
   sheetHeaderClasses,
   sheetOverlayClasses,
   sheetTitleClasses,
+  sheetTitlePageClasses,
 } from "./sheet.styles";
 
 /*===== Sheet =====*/
@@ -44,6 +45,8 @@ function SheetOverlay({ className, ...props }: SheetPrimitive.Backdrop.Props) {
  * The sliding panel. `side` is logical: `start` and `end` follow the reading direction (right and left in Persian),
  * so the mobile menu opens from the inline start edge. `size="page"` ignores `side`: the panel floats over nearly the whole
  * page, for content with room for columns (a task's details).
+ * Its width can be narrowed with the `--sheet-page-width` custom property in `style` (never wider than the page), and
+ * it glides to a new one.
  */
 function SheetContent({
   className,
@@ -82,16 +85,39 @@ function SheetContent({
   );
 }
 
-function SheetHeader({ className, ...props }: ComponentProps<"div">) {
-  return <div data-slot="sheet-header" className={cn(sheetHeaderClasses, className)} {...props} />;
+/**
+ * The sheet's head, ruled off from its body. `tabbed` drops the padding under its last row, so folder tabs there
+ * stand on the rule and an open one joins the body below.
+ */
+function SheetHeader({ className, tabbed = false, ...props }: ComponentProps<"div"> & { tabbed?: boolean }) {
+  return (
+    <div
+      data-slot="sheet-header"
+      data-tabbed={tabbed ? "" : undefined}
+      className={cn(sheetHeaderClasses, className)}
+      {...props}
+    />
+  );
 }
 
 function SheetFooter({ className, ...props }: ComponentProps<"div">) {
   return <div data-slot="sheet-footer" className={cn(sheetFooterClasses, className)} {...props} />;
 }
 
-function SheetTitle({ className, ...props }: SheetPrimitive.Title.Props) {
-  return <SheetPrimitive.Title data-slot="sheet-title" className={cn(sheetTitleClasses, className)} {...props} />;
+/** The sheet's name. `size="page"` sets it large, as the heading of a page sheet. */
+function SheetTitle({
+  className,
+  size = "default",
+  ...props
+}: SheetPrimitive.Title.Props & { size?: "default" | "page" }) {
+  return (
+    <SheetPrimitive.Title
+      data-slot="sheet-title"
+      data-clickable={props.onClick ? "" : undefined}
+      className={cn(sheetTitleClasses, size === "page" && sheetTitlePageClasses, className)}
+      {...props}
+    />
+  );
 }
 
 function SheetDescription({ className, ...props }: SheetPrimitive.Description.Props) {

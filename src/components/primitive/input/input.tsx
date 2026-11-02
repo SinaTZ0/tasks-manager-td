@@ -3,11 +3,15 @@ import { cn } from "#/lib/utils";
 import type { ComponentProps } from "react";
 import { type VariantProps } from "class-variance-authority";
 
-import { inputControlClasses, inputVariants } from "./input.styles";
+import { inputControlClasses, inputVariants, quietPlateClasses } from "./input.styles";
 
 /*===== Input =====*/
 
-export type InputProps = ComponentProps<"input"> & VariantProps<typeof inputVariants>;
+export type InputProps = ComponentProps<"input"> &
+  VariantProps<typeof inputVariants> & {
+    /** Reads as text until pointed at or focused: for a sheet of values read more than changed. */
+    quiet?: boolean;
+  };
 
 /**
  * A text field: a recessed plate seated in a cut. An `<input>` can't draw pseudo-elements, so a wrapper span carries
@@ -17,9 +21,9 @@ export type InputProps = ComponentProps<"input"> & VariantProps<typeof inputVari
  * belongs on the outer box. Every other prop, the ref included, goes to the native input. `variant="code"` prints the
  * value in the instrument mono, for codes and numbers.
  */
-function Input({ className, variant, ...props }: InputProps) {
+function Input({ className, variant, quiet = false, ...props }: InputProps) {
   return (
-    <span data-slot="input-control" className={cn(inputControlClasses, className)}>
+    <span data-slot="input-control" className={cn(inputControlClasses, quiet && quietPlateClasses, className)}>
       <InputPrimitive data-slot="input" {...props} className={inputVariants({ variant })} />
     </span>
   );

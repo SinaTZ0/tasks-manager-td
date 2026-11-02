@@ -14,9 +14,26 @@ const twSharedStyles = defineStyles({
 
 // A toggle is a latch key: the same keycap as a button, but it stays sunk while on (the recipe's `data-pressed`
 // state) and lights its LED. `default` is the light key; `outline` the flat plate for quieter toolbars.
+//
+// `tab` is no keycap but a folder tab standing on a ruled edge, for switches that open what sits under them (the task
+// drawer's columns). Off, it is a tray, sunk and dim; on, it takes the border and the leaf colour (`bg-leaf`) of the
+// panel under it and steps down one pixel over the rule, so it joins the panel it opened. The parent draws the rule
+// (`border-b`), stands the tabs on it (`items-end`) and lays the panel on `bg-leaf`.
 const twVariant = defineStyles({
   default: { appearance: joinStyles(twKeycapTone.light) },
   outline: { appearance: joinStyles(twKeycapTone.flat) },
+  tab: {
+    layout: "relative isolate inline-flex shrink-0 items-center justify-center",
+    geometry: "rounded-t-chassis border border-b-0 border-transparent",
+    typography: "font-heading text-button whitespace-nowrap",
+    appearance:
+      "bg-transparent text-muted-foreground after:pointer-events-none after:absolute after:inset-0 after:-z-1 after:rounded-[inherit] after:bg-tray after:shadow-tray",
+    interaction: "cursor-pointer transition-colors duration-75 outline-none select-none",
+    hover: "hover:text-foreground",
+    state:
+      "data-pressed:-mb-px data-pressed:border-border data-pressed:text-foreground data-pressed:after:bg-leaf data-pressed:after:shadow-none",
+    focus: "focus-visible:z-10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring",
+  },
 });
 
 /*===== Geometry =====*/
@@ -55,10 +72,18 @@ const toggleVariants = cva(joinStyles(twSharedStyles), {
     variant: composeStyles(twVariant),
     size: composeStyles(twSize),
   },
-  // Scale (radius, bevel, cut width, press depth) follows the size, as on Button
+  // Scale (radius, bevel, cut width, press depth) follows the size, as on Button. A tab is no keycap.
   compoundVariants: [
-    { size: ["default", "lg"], className: keycapVariants({ tone: null, scale: "regular" }) },
-    { size: ["sm", "md"], className: keycapVariants({ tone: null, scale: "compact" }) },
+    {
+      variant: ["default", "outline"],
+      size: ["default", "lg"],
+      className: keycapVariants({ tone: null, scale: "regular" }),
+    },
+    {
+      variant: ["default", "outline"],
+      size: ["sm", "md"],
+      className: keycapVariants({ tone: null, scale: "compact" }),
+    },
     { variant: "default", size: ["default", "lg"], className: "after:shadow-keycap" },
     { variant: "default", size: ["sm", "md"], className: "after:shadow-keycap-compact" },
   ],

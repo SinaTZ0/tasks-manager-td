@@ -56,3 +56,9 @@ export const Invalid: Story = {
 export const Disabled: Story = {
   args: { value: "2026-10-30", disabled: true },
 };
+
+// Reads as printed text until pointed at, for a sheet of values (a task's details).
+export const Quiet: Story = {
+  ...Playground,
+  args: { value: "2026-10-30", quiet: true },
+};

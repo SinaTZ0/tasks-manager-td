@@ -112,6 +112,11 @@ export const Key: Story = {
   args: { variant: "key", size: "sm" },
 };
 
+// A value read far more often than changed: printed text with its chevron until pointed at, focused or open
+export const Quiet: Story = {
+  args: { variant: "quiet", size: "sm" },
+};
+
 export const Invalid: Story = {
   args: { "aria-invalid": true },
 };

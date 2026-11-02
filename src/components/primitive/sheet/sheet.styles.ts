@@ -30,11 +30,12 @@ const twContentStyles = defineStyles({
     "data-[side=start]:inset-y-0 data-[side=start]:inset-s-0 data-[side=start]:h-full data-[side=start]:w-[min(88vw,24rem)] data-[side=start]:border-e data-[side=start]:data-ending-style:translate-x-10 data-[side=start]:data-starting-style:translate-x-10 ltr:data-[side=start]:data-ending-style:-translate-x-10 ltr:data-[side=start]:data-starting-style:-translate-x-10",
   stateEnd:
     "data-[side=end]:inset-y-0 data-[side=end]:inset-e-0 data-[side=end]:h-full data-[side=end]:w-[min(88vw,24rem)] data-[side=end]:border-s data-[side=end]:data-ending-style:-translate-x-10 data-[side=end]:data-starting-style:-translate-x-10 ltr:data-[side=end]:data-ending-style:translate-x-10 ltr:data-[side=end]:data-starting-style:translate-x-10",
-  // `data-size="page"` (a task's details) is no side panel: it floats over nearly the whole page, a margin of desk on
-  // all four sides so it reads as lifted on top, and grows in place instead of sliding. It carries no `data-side`, so
-  // none of the edge styles above apply.
+  // `data-size="page"` (a task's details) is no side panel: it floats over the page, centred, a margin of desk on all
+  // four sides so it reads as lifted on top, and grows in place instead of sliding. It carries no `data-side`, so none
+  // of the edge styles above apply. It is as wide as the page unless `--sheet-page-width` asks for less; a change of
+  // that width glides, so the panel can widen as its content grows.
   statePage:
-    "data-[size=page]:inset-4 data-[size=page]:rounded-housing data-[size=page]:border data-[size=page]:data-ending-style:scale-[0.98] data-[size=page]:data-starting-style:scale-[0.98] data-[size=page]:lg:inset-6",
+    "data-[size=page]:inset-x-0 data-[size=page]:inset-y-4 data-[size=page]:mx-auto data-[size=page]:w-[min(calc(100%-2rem),var(--sheet-page-width,100%))] data-[size=page]:rounded-housing data-[size=page]:border data-[size=page]:transition-[opacity,scale,width] data-[size=page]:duration-250 data-[size=page]:data-ending-style:scale-[0.98] data-[size=page]:data-starting-style:scale-[0.98] data-[size=page]:lg:inset-y-6 data-[size=page]:lg:w-[min(calc(100%-3rem),var(--sheet-page-width,100%))]",
   motion: "motion-reduce:transition-none",
 });
 
@@ -47,7 +48,7 @@ const twCloseStyles = defineStyles({
 // Header and footer are printed strips ruled off from the body, like a card's
 const twHeaderStyles = defineStyles({
   layout: "flex flex-col gap-1",
-  geometry: "border-b p-6 pe-16",
+  geometry: "border-b p-6 pe-16 data-tabbed:pb-0",
   appearance: "border-border",
 });
 const twFooterStyles = defineStyles({
@@ -56,6 +57,9 @@ const twFooterStyles = defineStyles({
   appearance: "border-border",
 });
 const twTitleStyles = defineStyles({ typography: "font-heading text-h4", appearance: "text-foreground" });
+// A page sheet's title is the page's own heading (a task's title), set large; a pressable one (edited in place) takes
+// the text cursor.
+const twTitlePage = defineStyles({ typography: "text-h2 text-balance", interaction: "data-clickable:cursor-text" });
 const twDescriptionStyles = defineStyles({ typography: "text-body-sm", appearance: "text-muted-foreground" });
 
 export const sheetOverlayClasses = joinStyles(twOverlayStyles);
@@ -64,4 +68,5 @@ export const sheetCloseClasses = joinStyles(twCloseStyles);
 export const sheetHeaderClasses = joinStyles(twHeaderStyles);
 export const sheetFooterClasses = joinStyles(twFooterStyles);
 export const sheetTitleClasses = joinStyles(twTitleStyles);
+export const sheetTitlePageClasses = joinStyles(twTitlePage);
 export const sheetDescriptionClasses = joinStyles(twDescriptionStyles);

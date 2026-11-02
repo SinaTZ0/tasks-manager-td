@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { useState } from "react";
 
-import { markingClasses } from "../instrument.styles";
+import { markingClasses, readoutClasses } from "../instrument.styles";
 import { ToggleGroup, ToggleGroupItem } from "./toggle-group";
 
 /*===== Meta =====*/
@@ -11,7 +11,7 @@ const meta = {
   args: { "aria-label": "اولویت" },
   argTypes: {
     size: { control: "select", options: ["sm", "default", "lg"] },
-    variant: { control: "select", options: ["default", "outline"] },
+    variant: { control: "select", options: ["default", "outline", "tab"] },
     signal: { control: "select", options: ["action", "attention", "selection", "positive"] },
     spacing: { control: { type: "number", min: 0, max: 6 } },
   },
@@ -91,6 +91,33 @@ export const SeparateKeys: Story = {
       <ToggleGroupItem value="doing">در حال انجام</ToggleGroupItem>
       <ToggleGroupItem value="done">انجام شده</ToggleGroupItem>
     </ToggleGroup>
+  ),
+};
+
+// Folder tabs standing on a ruled edge, for switches that open the panels under them (the task drawer's columns). An
+// open tab joins the panel; each can print a short summary of what it holds.
+export const Tabs: Story = {
+  render: () => (
+    <div className="flex w-120 flex-col">
+      <ToggleGroup
+        aria-label="ستون‌ها"
+        multiple
+        variant="tab"
+        size="md"
+        spacing={1}
+        defaultValue={["work", "tracking"]}
+        className="w-full border-b border-border"
+      >
+        <ToggleGroupItem value="work">
+          کار <span className={readoutClasses}>۲/۵</span>
+        </ToggleGroupItem>
+        <ToggleGroupItem value="tracking">
+          پیگیری <span className={readoutClasses}>۰:۲۴:۰۳</span>
+        </ToggleGroupItem>
+        <ToggleGroupItem value="details">مشخصات</ToggleGroupItem>
+      </ToggleGroup>
+      <div className="h-24 border-x border-b border-border bg-leaf" />
+    </div>
   ),
 };
 

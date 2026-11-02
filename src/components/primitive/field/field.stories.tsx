@@ -109,6 +109,35 @@ export const Horizontal: Story = {
   ),
 };
 
+// Rows of a spec sheet: each label in a fixed column, the values lined up beside them, read as text until pointed at
+// (quiet controls), as in a task's details.
+export const Rows: Story = {
+  render: () => (
+    <FieldGroup className="max-w-md">
+      <Field orientation="row">
+        <FieldLabel htmlFor="row-owner">مالک</FieldLabel>
+        <Select items={people} defaultValue="sara">
+          <SelectTrigger id="row-owner" variant="quiet" size="sm" className="w-full">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {people.map((person) => (
+              <SelectItem key={person.value} value={person.value}>
+                {person.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </Field>
+      <Field orientation="row">
+        <FieldLabel htmlFor="row-estimate">تخمین زمان</FieldLabel>
+        <Input id="row-estimate" quiet variant="code" dir="ltr" defaultValue="۱:۳۰" />
+        <FieldDescription>ساعت و دقیقه، مثل ۱:۳۰</FieldDescription>
+      </Field>
+    </FieldGroup>
+  ),
+};
+
 export const FormSection: Story = {
   render: (args) => (
     <FieldSet>

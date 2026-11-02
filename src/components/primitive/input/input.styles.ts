@@ -27,6 +27,18 @@ const twFieldPlateState = defineStyles({
   disabled: "has-disabled:cursor-not-allowed has-disabled:text-muted-foreground has-disabled:after:bg-field-disabled",
 });
 
+// A quiet plate reads as printed text until it is pointed at: the cut and plate stay hidden, and come up on hover, on
+// focus, while its popup is open, or when its value is invalid (so the yellow cut still shows). For a sheet of values
+// read far more often than changed (a task's details). A disabled one stays text on hover.
+const twQuietPlate = defineStyles({
+  appearance: "before:opacity-0 after:opacity-0",
+  hover: "hover:before:opacity-100 hover:after:opacity-100",
+  focus: "has-[:focus-visible]:before:opacity-100 has-[:focus-visible]:after:opacity-100",
+  state: "has-data-popup-open:before:opacity-100 has-data-popup-open:after:opacity-100",
+  invalid: "has-[[aria-invalid=true]]:before:opacity-100 has-[[aria-invalid=true]]:after:opacity-100",
+  disabled: "has-disabled:hover:before:opacity-0 has-disabled:hover:after:opacity-0",
+});
+
 /*===== Native Control =====*/
 
 // The native element is transparent inside the plate and draws no focus ring of its own: the cut shows focus.
@@ -61,6 +73,7 @@ const twInputStyles = defineStyles({
 /*===== Class Composition =====*/
 
 const fieldPlateClasses = `${joinStyles(twFieldPlate)} ${joinStyles(twFieldPlateState)}`;
+const quietPlateClasses = joinStyles(twQuietPlate);
 const nativeControlClasses = joinStyles(twNativeControl);
 const inputControlClasses = `${fieldPlateClasses} ${joinStyles(twInputControl)}`;
 const inputClasses = `${nativeControlClasses} ${joinStyles(twInputStyles)}`;
@@ -84,6 +97,7 @@ export {
   twInputVariant,
   inputControlClasses,
   nativeControlClasses,
+  quietPlateClasses,
   twFieldPlate,
   twFieldPlateState,
   twNativeControl,

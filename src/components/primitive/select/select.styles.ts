@@ -35,6 +35,17 @@ const twTriggerVariant = defineStyles({
     typography: "text-body-lg",
     appearance: "text-foreground after:bg-field after:shadow-field",
   },
+  // `quiet` is the field plate hidden until the trigger is pointed at, focused or open (or invalid), so a value read far
+  // more often than changed prints as text with its chevron (input.styles.ts → quiet plate).
+  quiet: {
+    typography: "text-body-lg",
+    appearance: "text-foreground before:opacity-0 after:bg-field after:opacity-0 after:shadow-field",
+    hover: "hover:before:opacity-100 hover:after:opacity-100",
+    state:
+      "focus-visible:before:opacity-100 focus-visible:after:opacity-100 aria-invalid:before:opacity-100 aria-invalid:after:opacity-100 data-popup-open:before:opacity-100 data-popup-open:after:opacity-100",
+    disabled:
+      "disabled:hover:before:opacity-0 disabled:hover:after:opacity-0 data-disabled:hover:before:opacity-0 data-disabled:hover:after:opacity-0",
+  },
   key: {
     typography: "font-heading text-button",
     appearance: "text-keycap-foreground after:bg-keycap after:shadow-keycap-compact",

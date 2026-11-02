@@ -1,4 +1,4 @@
-import { fieldPlateClasses, nativeControlClasses } from "../input/input.styles";
+import { fieldPlateClasses, nativeControlClasses, quietPlateClasses } from "../input/input.styles";
 import { defineStyles, joinStyles } from "../styles";
 
 /*===== Field =====*/
@@ -24,6 +24,13 @@ const twValueStyles = defineStyles({
   state: "data-placeholder:text-muted-foreground",
 });
 
+// A quiet date (input.styles.ts → quiet plate) keeps its clear key out of the way until the field is pointed at or
+// focused, so a date being read has the whole row; the key takes its place again as soon as it can be used.
+const twQuietStyles = defineStyles({
+  layout:
+    "[&>[data-slot=date-picker-clear]]:hidden hover:[&>[data-slot=date-picker-clear]]:inline-flex has-data-popup-open:[&>[data-slot=date-picker-clear]]:inline-flex has-[:focus-visible]:[&>[data-slot=date-picker-clear]]:inline-flex",
+});
+
 /*===== Popover =====*/
 
 // The module hugs the calendar instead of the popover's default width; "today" is printed under it.
@@ -39,6 +46,7 @@ const twFooterStyles = defineStyles({
 /*===== Class Composition =====*/
 
 const datePickerClasses = `${fieldPlateClasses} ${joinStyles(twFieldStyles)}`;
+const datePickerQuietClasses = `${quietPlateClasses} ${joinStyles(twQuietStyles)}`;
 const datePickerTriggerClasses = `${nativeControlClasses} ${joinStyles(twTriggerStyles)}`;
 const datePickerValueClasses = joinStyles(twValueStyles);
 const datePickerContentClasses = joinStyles(twContentStyles);
@@ -48,6 +56,7 @@ export {
   datePickerClasses,
   datePickerContentClasses,
   datePickerFooterClasses,
+  datePickerQuietClasses,
   datePickerTriggerClasses,
   datePickerValueClasses,
 };

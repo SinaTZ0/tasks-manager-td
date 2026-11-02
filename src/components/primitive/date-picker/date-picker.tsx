@@ -11,6 +11,7 @@ import {
   datePickerClasses,
   datePickerContentClasses,
   datePickerFooterClasses,
+  datePickerQuietClasses,
   datePickerTriggerClasses,
   datePickerValueClasses,
 } from "./date-picker.styles";
@@ -40,6 +41,8 @@ export type DatePickerProps = {
   placeholder?: string;
   "aria-invalid"?: boolean;
   "aria-describedby"?: string;
+  /** Reads as text until pointed at or focused, as a quiet input does. */
+  quiet?: boolean;
   /** Layout only (width, margins, grid placement), as on an input. */
   className?: string;
 };
@@ -55,6 +58,7 @@ function DatePicker({
   id,
   disabled,
   placeholder,
+  quiet = false,
   className,
   "aria-invalid": invalid,
   "aria-describedby": describedBy,
@@ -69,7 +73,7 @@ function DatePicker({
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
-      <span data-slot="date-picker" className={cn(datePickerClasses, className)}>
+      <span data-slot="date-picker" className={cn(datePickerClasses, quiet && datePickerQuietClasses, className)}>
         {/*------ Trigger ------*/}
         <PopoverTrigger
           id={id}
@@ -87,7 +91,13 @@ function DatePicker({
 
         {/*------ Clear ------*/}
         {value && !disabled && (
-          <Button variant="ghost" size="icon-xs" aria-label={m.date_field_clear()} onClick={() => onChange(null)}>
+          <Button
+            data-slot="date-picker-clear"
+            variant="ghost"
+            size="icon-xs"
+            aria-label={m.date_field_clear()}
+            onClick={() => onChange(null)}
+          >
             <XIcon />
           </Button>
         )}
