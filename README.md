@@ -42,7 +42,7 @@ linted and formatted before each commit, and commit messages must follow
 | `pnpm test`                    | Vitest (integration tests need the database)     |
 | `pnpm test:e2e`                | Playwright against the production build          |
 | `pnpm storybook`               | Component previews on port 6006                  |
-| `pnpm db:reset`                | Rebuilds the local database from the schema      |
+| `pnpm db:reset`                | Wipes the local database and applies `drizzle/`  |
 | `pnpm services`                | Starts `compose.dev.yaml` and creates the bucket |
 | `pnpm errors`                  | The error viewer on port 8000, with `go run`     |
 
@@ -69,12 +69,8 @@ docs/                              start at backend-flow.md or frontend-flow.md
 
 ## Status
 
-- Done: the template is set up and renamed; the design system is in place (tokens in `src/styles.css`, the
-  instrument recipe, restyled and new primitives with stories); docs filled in (app-identity, components, the product
-  spec, the design reference).
-- Next: the header, footer, home and sign-in pages in the new look (`docs/customize-template.md` lists the open
-  steps), then the first feature (boards and tasks) by copying the shape of the `note` example, which is deleted
-  once tasks exist.
-- Before the first deploy: generate one migration (`pnpm db:generate --name init`, with
-  `src/db/activity-append-only.sql` appended), and go
-  through "Before Going Live" in `docs/deployment.md`.
+- Done: the design system (tokens in `src/styles.css`, the instrument recipe, primitives with stories) and every slice
+  of `docs/task-manager-plan.md`, phases 1 to 3.
+- Running on the server as a demo: its data doesn't need keeping, but every schema change ships as a migration in
+  `drizzle/` (CLAUDE.md → Demo).
+- Before going live: "Before Going Live" in `docs/deployment.md`.

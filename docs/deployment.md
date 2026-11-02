@@ -550,6 +550,8 @@ lock the app out. That's why the time limit lives in the container instead.
 
 ## Before Going Live
 
+- End the demo (CLAUDE.md → Demo): from then on a migration keeps the data it changes (a backfill, a rename over two
+  deploys). Start the real data on a fresh database, or keep the demo's.
 - Turn on email verification and password reset once the project can send email (`src/lib/auth.server.ts`).
 - Add a Content-Security-Policy in the app (the inline theme script in `__root.tsx` needs a nonce or hash). Its
   `connect-src` must allow `https://<ERRORS_DOMAIN>`, or browser errors can't be reported. Caddy sets the other

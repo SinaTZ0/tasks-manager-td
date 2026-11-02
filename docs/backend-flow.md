@@ -30,8 +30,7 @@ or a task also records the change with `recordActivity` (`src/orpc/activity/serv
 
 3. **Database**: if the feature stores data, add its tables to `src/db/schema.ts` and run `pnpm db:push`. Before
    committing, generate the migration with `pnpm db:generate --name <what-changed>` and commit it
-   ([architecture.md](./backend/architecture.md) → Database). Until launch, run `pnpm db:reset` instead
-   (CLAUDE.md → Before Launch).
+   ([architecture.md](./backend/architecture.md) → Database).
 4. **Repository**: write `repository.ts`, with one focused read or write per function. Queries for a user's records
    filter by the owner ([architecture.md](./backend/architecture.md) → Auth).
 5. **Service**: write the rules and orchestration in `service.ts`. It receives `db` and its inputs through one object

@@ -215,14 +215,14 @@ return { id: result.id };
 
 - Drizzle tables live in `src/db/schema.ts`, Better-Auth's tables included. A change to Better-Auth's user fields
   (`additionalFields` in `auth.server.ts`) needs the matching column there.
-- Until launch (CLAUDE.md → Before Launch) there are no migrations: `pnpm db:reset` rebuilds the local database from
-  the schema (`drizzle-kit push --force`) plus the SQL a push can't express (`src/db/activity-append-only.sql`), and
-  seeds the admin. At launch, `pnpm db:generate --name init` makes the first migration, with that SQL file appended
-  after a `--> statement-breakpoint`. The rest of this list is for after launch.
 - While building, sync the local database with `pnpm db:push`. Before committing, run
   `pnpm db:generate --name <what-changed>`, review the SQL in `drizzle/`, and commit it with the schema change.
   Production only runs those files. The details, including renames and changes that span two deploys, are in
-  [deployment.md](../deployment.md) → Database Changes.
+  [deployment.md](../deployment.md) → Database Changes. While the app is a demo (CLAUDE.md → Demo), a migration may
+  drop the data it changes instead of moving it.
+- SQL Drizzle can't generate goes into a migration by hand: the activity table's append-only trigger is at the end of
+  `drizzle/0000_init.sql`, after a `--> statement-breakpoint`.
+- `pnpm db:reset` wipes the local database, applies `drizzle/` with the migrator production uses, and seeds the admin.
 - Back what a query filters and sorts by with an index (`note_owner_id_created_at_idx`).
 - A column that holds one of a fixed set of values (a status, a kind) is `text`, with the set as a `const` array in
   the feature's `constants.ts`: adding a value then needs no migration. The repository narrows what it reads with
