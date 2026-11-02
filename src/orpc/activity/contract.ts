@@ -16,7 +16,7 @@ const fieldsSchema = z.record(z.string(), z.unknown());
 export const activityItemSchema = z.object({
   id: z.string(),
   action: z.enum(ACTIVITY_ACTIONS),
-  /** Who made the change: a timer they stopped can be someone else's (`after.userId`). */
+  /** Who made the change. */
   actorId: z.string(),
   actorName: z.string(),
   actorAvatarUrl: z.string().nullable(),

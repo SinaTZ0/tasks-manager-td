@@ -42,13 +42,12 @@ export type ProjectSummary = z.infer<typeof projectSummarySchema>;
 
 /**
  * What a project's board holds right now, as the project list shows it. Only live tasks count (archived ones are off
- * the board): `open` is every task not done or cancelled, `doing` those in the doing column, `running` the timers
- * running on its tasks, and `late` the open tasks past their due date in the team's today.
+ * the board): `open` is every task not done or cancelled, `doing` those in the doing column, and `late` the open tasks
+ * past their due date in the team's today.
  */
 export const projectReadingsSchema = z.object({
   open: z.number(),
   doing: z.number(),
-  running: z.number(),
   late: z.number(),
 });
 

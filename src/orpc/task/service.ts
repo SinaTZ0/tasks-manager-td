@@ -25,10 +25,8 @@ import {
   BLOCKED_ENTRY_KINDS,
   canTakeAction,
   COLUMN_ACTION_RULES,
-  isColumnAction,
   RELEASED_KINDS,
   taskCode,
-  type ColumnAction,
   type TaskStatusAction,
 } from "#/orpc/task/constants";
 import type { ArchivedTask, Board, Label, MyTask, TaskCard, TaskDetail } from "#/orpc/task/contract";
@@ -71,8 +69,6 @@ import {
   taskChangeSchema,
   type TaskChange,
 } from "#/orpc/task/validation";
-import { findRunningTimer, findTimeTotals } from "#/orpc/time/repository";
-import { closeTimers, startTimer } from "#/orpc/time/service";
 import { findWatchedTaskIds } from "#/orpc/watcher/repository";
 import { getWatchers, notifyWatchers } from "#/orpc/watcher/service";
 import { m } from "#/paraglide/messages";
@@ -90,13 +86,12 @@ export type TaskActor = { id: string; role?: string | null | undefined };
 const isUuid = (value: string) => z.guid().safeParse(value).success;
 
 /*===== Cards =====*/
-/** Task rows as cards, with their labels, time and badge counts, each read once for all of them. */
+/** Task rows as cards, with their labels and badge counts, each read once for all of them. */
 async function toCards({ db, records }: { db: Database; records: TaskRecord[] }): Promise<TaskCard[]> {
   // One after the other: inside a transaction both would share one connection, which runs one query at a time.
   const taskIds = records.map((record) => record.id);
   const assigneeIds = await findAssigneeIdsByTask({ db, taskIds });
   const labelIds = await findLabelIdsByTask({ db, taskIds });
-  const totals = await findTimeTotals({ db, taskIds });
   const waitsFor = await findWaitsFor({ db, taskIds });
   const comments = await countComments({ db, taskIds });
   const attachments = await countAttachments({ db, taskIds });
@@ -107,7 +102,6 @@ async function toCards({ db, records }: { db: Database; records: TaskRecord[] })
       record,
       assigneeIds: assigneeIds.get(record.id) ?? [],
       labelIds: labelIds.get(record.id) ?? [],
-      time: totals.get(record.id),
       waitsFor: waitsFor.get(record.id) ?? [],
       counts: {
         comments: comments.get(record.id) ?? 0,
@@ -140,7 +134,6 @@ async function toDetail({
 }): Promise<TaskDetail> {
   const assigneeIds = await findAssigneeIdsByTask({ db, taskIds: [record.id] });
   const labelIds = await findLabelIdsByTask({ db, taskIds: [record.id] });
-  const totals = await findTimeTotals({ db, taskIds: [record.id] });
   const waitsFor = await findWaitsFor({ db, taskIds: [record.id] });
   const column = await findColumn({ db, projectId, columnId: record.columnId });
   const entries = await findTaskActivities({ db, taskId: record.id, actions: NOTE_ENTRIES });
@@ -161,7 +154,6 @@ async function toDetail({
     record,
     assigneeIds: assigneeIds.get(record.id) ?? [],
     labelIds: labelIds.get(record.id) ?? [],
-    time: totals.get(record.id),
     waitsFor: waitsFor.get(record.id) ?? [],
     statusNote,
     handoffs,
@@ -222,9 +214,8 @@ async function releaseDependents({
 }
 
 /**
- * What a task's change of column kind does besides moving it: entering done or cancelled stops every clock on it and
- * ends its pause (rule 3) and releases the tasks it was the last to hold up, entering done records when it finished and
- * leaving done clears that. Runs in the move's transaction, before the row changes.
+ * What a task's change of column kind does besides moving it: entering done or cancelled releases the tasks it was the
+ * last to hold up, entering done records when it finished and leaving done clears that. Runs in the move's transaction, before the row changes.
  *
  * @returns The task fields to write with the move.
  */
@@ -243,7 +234,6 @@ export async function columnEffects({
 }): Promise<Partial<TaskRecord>> {
   if (from === to) return {};
   if (isReleased(to) && !isReleased(from)) {
-    await closeTimers({ db, actorId, scope: { taskId: task.id }, cause: "finished" });
     await releaseDependents({ db, actorId, blocker: task });
   }
   if (to === "done") return { completedAt: new Date() };
@@ -425,9 +415,11 @@ export async function createTask({
     priority,
     dueDate,
     estimateMinutes,
-    assigneeIds = [],
+    assigneeIds: chosenIds = [],
     labelIds = [],
   } = parsed.data;
+  // Whoever creates a task is on it: only assignees run a clock on a task, so its maker can start working at once.
+  const assigneeIds = chosenIds.includes(actorId) ? chosenIds : [actorId, ...chosenIds];
 
   /*------ Column ------*/
   // Stopped work lands in the cancelled column through "stop", never by being created there.
@@ -707,26 +699,22 @@ const STATUS_ENTRY = {
   done: "task.completed",
   stop: "task.stopped",
   reopen: "task.reopened",
-} as const satisfies Record<ColumnAction, ActivityAction>;
+} as const satisfies Record<TaskStatusAction, ActivityAction>;
 
 /** What a status action is called in a watcher's notification. */
 const STATUS_EVENT = {
-  start: "started",
-  pause: "paused",
   done: "completed",
   stop: "stopped",
   reopen: "reopened",
 } as const satisfies Record<TaskStatusAction, WatchedEvent>;
 
 /**
- * Takes a status action (docs/app.md → Status / Clock / Cancel). Start and pause work the actor's own clock like a
- * chronometer and leave the card where it is: start runs it, stopping any other they had running (rule 2), and pause
- * stops it, with no questions. Done, stop and reopen move the task to the bottom of the action's column, with what that move
- * does to its clocks and finish time (`columnEffects`); stopping needs a reason. A task that still waits for others is
- * finished only with `forceComment` (rule 4).
+ * Takes a status action (docs/app.md → Status / Cancel). Done, stop and reopen move the task to the bottom of the
+ * action's column, with what that move does to its finish time (`columnEffects`); stopping needs a reason. A task that
+ * still waits for others is finished only with `forceComment` (rule 4).
  *
- * @returns `invalid` for a missing or too long reason, or an action the task doesn't allow now (someone moved it, or
- * the clock changed, meanwhile); `not-found` for a task the project doesn't have or one that is archived; `blocked`
+ * @returns `invalid` for a missing or too long reason, or an action the task doesn't allow now (someone moved it
+ * meanwhile); `not-found` for a task the project doesn't have or one that is archived; `blocked`
  * without a comment.
  */
 export async function transitionTask({
@@ -756,17 +744,8 @@ export async function transitionTask({
     const current = await lockTask({ db: tx, projectId, id: taskId });
     if (!current || current.archivedAt) return { kind: "not-found" };
     const from = await findColumn({ db: tx, projectId, columnId: current.columnId });
-    const timing = (await findRunningTimer({ db: tx, userId: actorId }))?.taskId === taskId;
-    if (!from || !canTakeAction({ action, kind: from.kind as ColumnKind, timing })) {
+    if (!from || !canTakeAction({ action, kind: from.kind as ColumnKind })) {
       return { kind: "invalid", fields: { action: m.task_error_action_unavailable() } };
-    }
-
-    /*------ Clock ------*/
-    if (!isColumnAction(action)) {
-      if (action === "start") await startTimer({ db: tx, actorId, task: current });
-      else await closeTimers({ db: tx, actorId, scope: { userId: actorId }, cause: "paused" });
-      await notifyWatchers({ db: tx, actorId, projectId, task: current, event: STATUS_EVENT[action] });
-      return { kind: "success", task: await toCard({ db: tx, record: current }) };
     }
 
     /*------ Move ------*/
@@ -815,12 +794,11 @@ const mineRank = (kind: string) => {
 };
 
 /**
- * The open tasks assigned to someone, across the projects they are on (`findOpenTasksAssignedTo`), with their time.
+ * The open tasks assigned to someone, across the projects they are on (`findOpenTasksAssignedTo`).
  * Ordered for the page: by project name, then the ones in doing first, then by due date (none last), then by code.
  */
 export async function listMyTasks({ db, userId }: { db: Database; userId: string }): Promise<MyTask[]> {
   const rows = await findOpenTasksAssignedTo({ db, userId });
-  const totals = await findTimeTotals({ db, taskIds: rows.map((row) => row.id) });
   return rows
     .toSorted(
       (a, b) =>
@@ -831,7 +809,7 @@ export async function listMyTasks({ db, userId }: { db: Database; userId: string
         mineRank(a.columnKind) - mineRank(b.columnKind) ||
         a.number - b.number,
     )
-    .map((row) => toMyTask({ row, time: totals.get(row.id) }));
+    .map((row) => toMyTask({ row }));
 }
 
 /*===== Archive =====*/
@@ -857,7 +835,6 @@ export async function archiveTask({
     if (!current) return { kind: "not-found" };
     if (current.archivedAt) return { kind: "ok" };
 
-    await closeTimers({ db: tx, actorId, scope: { taskId }, cause: "archived" });
     // An archived task holds nothing up any more.
     const column = await findColumn({ db: tx, projectId, columnId: current.columnId });
     if (!isReleased(column?.kind)) await releaseDependents({ db: tx, actorId, blocker: current });

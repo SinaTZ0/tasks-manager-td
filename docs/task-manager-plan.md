@@ -47,15 +47,14 @@ Made with the user on 2026-10-30. They answer the spec's open questions and over
   (no logic of their own) anywhere, and removes one once no card on the board is in it. Every column can be renamed and
   given a WIP limit; the cancelled column is never drawn on the board. (Changed after slice 21: the first build had
   seven fixed kinds, Paused and Review among them.)
-- **The clock is not a column, and it is a chronometer.** Start working and Stop working (once Start timer and Stop timer) work the person's own clock, at
-  once, and leave the card where it is; the card's border is green while a clock runs. Entering Done or Cancelled
-  stops its clocks. A step back along the fixed columns asks to confirm. (Changed 2026-10-31: pausing no longer asks
-  why, a done card's clock starts without a confirm, there is no yellow paused state, and time is no longer typed in;
-  the typed-in entries from before still count.)
+- **No clock.** The Doing column says a task is under way and its assignees say who; how long it took is read from its
+  history (its age, and its time in each column). A task's maker is assigned to it from the start. A step back along
+  the fixed columns asks to confirm. (Why: a per-person stopwatch beside the columns asked the same question as the
+  Doing column and had to be remembered.)
 - **Project settings are admin-only**: members, columns, WIP limits. Labels can be added by any member, because tagging
   is part of everyday work; renaming or deleting one changes every task that has it, so that is an admin's.
 - **Assignees**: a task has any number of assignees, the owner possibly among them. The card shows them in a tray
-  down its starting edge, a steady LED on the cap of each whose clock runs. Delegating adds the new person in the
+  down its starting edge, the owner's graphite cap first. Delegating adds the new person in the
   giver's place if the giver was an assignee, else beside the others. (Changed 2026-10-31: a task had one assignee.)
 - **Owner**: whoever creates a task owns it (an admin, since slice 9). The owner or an admin can hand ownership to someone else; delegation never
   does (rule 6).
@@ -138,17 +137,12 @@ Built once, in the slice that first needs them, and used by every procedure afte
 
 ### 4. Status and Time ✓
 
-- Start, pause (optional reason), resume, stop (required reason), reopen, done, wired to the column kinds
-  (`STATUS_ACTION_RULES`): start and resume go to doing and start the person's timer, pause goes to paused, done to
-  done, stop to cancelled, reopen (from done or cancelled) to todo. They are on the card's menu and the drawer's keys.
-- One running timer per user, enforced by the database (at most one open time log per user); starting another closes
-  the old one in the same transaction (rule 2). Leaving a doing column closes the task's open logs (rule 3), by an
-  action or a drag. The header shows the person's running timer on every page, with a key that stops just that timer
-  and leaves the card where it is.
-- Manual time entry ("worked 2h yesterday"); estimate against time spent on the card (the progress meter's threshold);
-  card age and time in each column in the drawer. A person can remove their own typed-in entries; timed ones stay.
+- Done, stop (required reason) and reopen, wired to the column kinds (`COLUMN_ACTION_RULES`): done to done, stop to
+  cancelled, reopen (from done or cancelled) to todo. They are on the card's menu and the drawer's keys. There is no
+  clock: the doing column says a task is under way.
+- Time is read from the history: the card's age and its time in each column, in the drawer (`time.forTask`).
 - A "show cancelled" switch on the board (`?cancelled=true`), so stopped tasks can be found and reopened.
-- **Tests**: rules 2, 3 and 5.
+- **Tests**: rule 5; the columns a task has been in, read from its history.
 
 ### 5. Dependencies ✓
 
@@ -215,14 +209,14 @@ follows the backend flow, then the frontend flow; desktop first (the phone layou
 - **Making someone a viewer** keeps their open tasks assigned to them; the team page says how many they have, so the
   admin can hand them on.
 - **Pages**: a user sees no "new task", quick add or archive keys; a viewer sees the board without dragging, the drawer
-  with every field read-only, no comment box, no timer keys. Each hidden key is also refused by the server.
+  with every field read-only, no comment box, no status keys. Each hidden key is also refused by the server.
 - **Tests**: a viewer can't change anything (one mutation of each feature is enough); a user can't create or archive a
   task; a viewer can't be assigned.
 
 ### 10. My Tasks ✓
 
 - `/my-tasks` (a nav item, not for viewers): every live task assigned to me across my projects, grouped by project,
-  the ones in doing first, then by due date. Each row shows the code, title, column, due date and running timer, and
+  the ones in doing first, then by due date. Each row shows the code, title, column and due date, and
   opens the card's drawer on its board.
 - One procedure (`task.mine`) that reads only the viewer's projects.
 - **Tests**: tasks from a project I've left don't show.
@@ -328,7 +322,7 @@ ask the user before building that slice.
 - Admins only, like creating a card: "Move to project…" and "Copy to project…" in the card's menu and the drawer,
   picking a project and a column kind (the same kind by default).
 - **Move**: the task takes the next number in the target (`TGQ-12` becomes `WEB-31`); its comments, checklist,
-  attachments, time logs, hand-offs and history go with it. Labels are matched by name in the target, missing ones
+  attachments, hand-offs and history go with it. Labels are matched by name in the target, missing ones
   created; dependencies on tasks of the old project are removed (each one an Activity entry); an owner or assignee who
   isn't a member of the target makes the move refuse, with a message naming them. The old code keeps working: a link
   to `TGQ-12` opens `WEB-31` (a small alias table). Both projects' histories get an entry.

@@ -19,8 +19,8 @@ import {
 
 /*===== Database Schema =====*/
 // Single source of truth for tables, read by Drizzle Kit (`drizzle.config.ts`) and the
-// runtime client (`client.server.ts`). Every change ships as a migration: `pnpm db:generate --name <what-changed>`, then
-// `pnpm db:migrate` (docs/backend/architecture.md, Database).
+// runtime client (`client.server.ts`). Until launch there are no migrations: `pnpm db:reset` rebuilds the local
+// database from it; after launch every change ships as a migration (docs/backend/architecture.md, Database).
 
 /*===== Column Types =====*/
 /**
@@ -550,41 +550,6 @@ export const pushSubscription = pgTable(
   ],
 );
 
-/*===== Time Logs =====*/
-// One stretch of work by one person on one task (docs/app.md → TimeLog); the time spent on a task is the sum of its
-// logs. A timer's log is open (`endedAt` null) while it runs. The timer is the only way time is logged now; the manual
-// entries ("worked 2h yesterday", written closed at noon UTC of the day they named) typed in before stay and still count.
-
-export const timeLog = pgTable(
-  "time_log",
-  {
-    id: uuid("id").primaryKey().defaultRandom(),
-    /** A hard-deleted task takes its logs with it; the history keeps what they were. */
-    taskId: uuid("task_id")
-      .notNull()
-      .references(() => task.id, { onDelete: "cascade" }),
-    userId: text("user_id")
-      .notNull()
-      .references(() => user.id, { onDelete: "restrict" }),
-    startedAt: timestamp("started_at").notNull(),
-    /** Null while the timer runs. */
-    endedAt: timestamp("ended_at"),
-    /** Typed in, not timed. */
-    manual: boolean("manual").notNull().default(false),
-    note: text("note"),
-    createdAt: timestamp("created_at").notNull().defaultNow(),
-  },
-  (table) => [
-    // One running timer per person (rule 2): the database refuses a second open log, whatever the code does.
-    uniqueIndex("time_log_one_open_per_user_idx")
-      .on(table.userId)
-      .where(sql`${table.endedAt} is null`),
-    index("time_log_task_id_started_at_idx").on(table.taskId, table.startedAt),
-    check("time_log_ends_after_start", sql`${table.endedAt} is null or ${table.endedAt} >= ${table.startedAt}`),
-    check("time_log_manual_is_closed", sql`not ${table.manual} or ${table.endedAt} is not null`),
-  ],
-);
-
 /*===== Labels =====*/
 // A coloured tag that belongs to one project; any member adds them. The colours are a fixed set of theme tokens
 // (`LABEL_COLORS`), none of them a signal colour, so a label never reads as a status.
@@ -622,7 +587,7 @@ export const taskLabel = pgTable(
 
 /*===== Activity =====*/
 // The history of every change (docs/app.md rule 7), written in the same transaction as the change by `recordActivity`
-// (`src/orpc/activity/service.ts`). Append-only: a trigger (at the end of drizzle/0000_init.sql) refuses updates and
+// (`src/orpc/activity/service.ts`). Append-only: a trigger (`activity-append-only.sql`) refuses updates and
 // deletes. `taskId` has no foreign key, so an archived task can be hard-deleted and its history stays; `snapshot`
 // keeps what the entry needs to read well later (a task's code and title, a column's name), since those change.
 
@@ -644,7 +609,7 @@ export const activity = pgTable(
     createdAt: timestamp("created_at").notNull().defaultNow(),
     /**
      * Write order. The entries of one transaction share `created_at` (Postgres's `now()` is the transaction's start),
-     * so "started the task" and "started the timer" are told apart by this, not by the random id.
+     * so the entries of one change keep the order they were written in by this, not by the random id.
      */
     seq: bigint("seq", { mode: "number" }).notNull().generatedAlwaysAsIdentity(),
   },

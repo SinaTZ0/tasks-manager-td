@@ -16,9 +16,9 @@ import {
 export type ConfirmRequest = { title: string; description: string; confirm: ReactNode };
 
 /**
- * Asks before a step back or a step out of the usual (a card going back along the fixed columns, a clock started on a
- * done task). Confirming runs it and closes; closing any other way leaves everything as it was. `finalFocus` says where
- * focus goes after, since the card that asked may have moved by then.
+ * Asks before a step back or a step out of the usual (a card going back along the fixed columns). Confirming runs it
+ * and closes; closing any other way leaves everything as it was. `finalFocus` says where focus goes after, since the
+ * card that asked may have moved by then.
  */
 export function ConfirmDialog({
   request,

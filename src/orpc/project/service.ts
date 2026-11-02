@@ -91,7 +91,7 @@ export async function listProjects({
   const byProject = new Map(readings.map(({ projectId, ...counts }) => [projectId, counts]));
   return records.map((record) => ({
     ...toProjectSummary({ record, members }),
-    readings: byProject.get(record.id) ?? { open: 0, doing: 0, running: 0, late: 0 },
+    readings: byProject.get(record.id) ?? { open: 0, doing: 0, late: 0 },
   }));
 }
 

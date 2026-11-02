@@ -24,7 +24,7 @@ const SEGMENTS = 8;
  * channel (its name, its card count in large digits, and a level meter of its share of the board's cards) and each
  * channel is also the key that shows or hides its column (`?hide=`), lit while the column is on the board. The last
  * column shown can't be let go: an empty board would look broken. Beside the channels, the counts that need someone:
- * timers running, tasks blocked, tasks late.
+ * tasks blocked, tasks late.
  *
  * The counts are the board's own, whatever the filters hide: the columns below say "3 of 9" while filtered.
  */
@@ -43,7 +43,7 @@ export function BoardDisplay({
   const columns = project.columns.filter((column) => column.kind !== "cancelled");
 
   /*------ Readings ------*/
-  const { counts, total, running, blocked, late } = useMemo(() => {
+  const { counts, total, blocked, late } = useMemo(() => {
     const kinds = kindsOf(project);
     const tasks = new Map(board.tasks.map((task) => [task.id, task]));
     const live = board.tasks.filter((task) => kinds.get(task.columnId) !== "cancelled");
@@ -52,7 +52,6 @@ export function BoardDisplay({
     return {
       counts: perColumn,
       total: live.length,
-      running: live.filter((task) => task.running.length > 0).length,
       blocked: live.filter(
         (task) => isHolding(kinds.get(task.columnId)) && blockersOf({ task, tasks, kinds }).length > 0,
       ).length,
@@ -99,11 +98,6 @@ export function BoardDisplay({
         <div className="flex flex-col gap-1 border-s border-glass-muted/30 ps-6">
           <DisplayLabel>{m.board_display_now()}</DisplayLabel>
           <dl className="flex flex-col gap-1 py-1">
-            <Reading
-              label={m.task_run_running()}
-              value={running}
-              led={<Led signal="positive" state={running > 0 ? "blink" : "off"} size="sm" />}
-            />
             <Reading
               label={m.board_stat_blocked()}
               value={blocked}

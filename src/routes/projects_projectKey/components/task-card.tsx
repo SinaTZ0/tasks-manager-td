@@ -13,9 +13,8 @@ import type { PointerEventHandler, ReactNode } from "react";
 import { AvatarGroup, AvatarGroupCount } from "#/components/primitive/avatar/avatar";
 import { Led } from "#/components/primitive/led/led";
 import { Marking } from "#/components/primitive/marking/marking";
+import { Tooltip, TooltipContent, TooltipTrigger } from "#/components/primitive/tooltip/tooltip";
 import { PersonAvatar } from "#/components/shared/person-avatar/person-avatar";
-import { useNow } from "#/hooks/use-now";
-import { formatDuration, liveSeconds } from "#/lib/duration";
 import { DueMark } from "#/components/shared/due-mark/due-mark";
 import { formatList, formatNumber } from "#/lib/locale";
 import { cn } from "#/lib/utils";
@@ -25,43 +24,6 @@ import type { Label, TaskCard as TaskCardData } from "#/orpc/task/contract";
 import { m } from "#/paraglide/messages";
 import { LabelTag } from "#/routes/projects_projectKey/components/label-tag";
 import { PriorityMark } from "#/routes/projects_projectKey/components/priority-mark";
-import { isRunning } from "#/routes/projects_projectKey/task-status";
-
-/*===== Time Spent =====*/
-
-/** Whether the card prints its time spent: once a minute is logged, or while a clock runs. */
-const showsSpent = (task: TaskCardData) => isRunning(task) || task.spentSeconds >= 60;
-
-/** The card's time spent as `h:mm`, the sum of its logs, ticking while a clock runs. */
-function SpentReadout({ task }: { task: TaskCardData }) {
-  return isRunning(task) ? <RunningReadout task={task} /> : <SpentMarking seconds={task.spentSeconds} />;
-}
-
-/**
- * The card's border while a clock runs on it: green, from a ring beside the border that draws it two pixels wide
- * without moving the card's content. The LED on the footer says the same for those who don't see the colour.
- */
-const RUNNING_BORDER = "border-signal-positive ring-1 ring-signal-positive";
-
-/** While a timer runs: a blinking green LED and the total, ticking. */
-function RunningReadout({ task }: { task: TaskCardData }) {
-  const now = useNow();
-  return (
-    <span className="flex items-center gap-1.5">
-      <Led signal="positive" state="blink" size="sm" label={m.task_run_running()} />
-      <SpentMarking seconds={liveSeconds({ ...task, now })} />
-    </span>
-  );
-}
-
-function SpentMarking({ seconds }: { seconds: number }) {
-  return (
-    <Marking variant="reading">
-      <span className="sr-only">{m.time_spent_label()}: </span>
-      {formatDuration(Math.floor(seconds / 60))}
-    </Marking>
-  );
-}
 
 /*===== Count Badge =====*/
 
@@ -98,49 +60,54 @@ function CountBadge({
 const SPINE_SLOTS = 3;
 
 /**
- * The tray down the card's starting edge that holds its people, top to bottom: the owner's graphite cap behind a rule
- * when the owner isn't one of the assignees, then the assignees, those whose clock runs first (a steady LED in the
- * cap's corner says so), then a count of the rest. Nobody assigned leaves an empty seat.
+ * The tray down the card's starting edge that holds its people, top to bottom: the owner's graphite cap, then the
+ * other assignees, then a count of the rest. The maker of a task is assigned from the start (docs/app.md rule 2), so the
+ * owner is usually one of the assignees and leads them; an owner who isn't (they handed the work on) stands apart
+ * behind a rule. Nobody assigned leaves an empty seat.
  */
 function CardSpine({ task, people }: { task: TaskCardData; people: Map<string, Person> }) {
-  const runningIds = new Set(task.running.map((clock) => clock.userId));
-  const crew = task.assigneeIds
-    .toSorted((a, b) => Number(runningIds.has(b)) - Number(runningIds.has(a)))
-    .flatMap((id) => people.get(id) ?? []);
+  const crew = task.assigneeIds.filter((id) => id !== task.ownerId).flatMap((id) => people.get(id) ?? []);
   const owner = people.get(task.ownerId);
+  const ownerAssigned = task.assigneeIds.includes(task.ownerId);
+  // An owner who doesn't do the work shows only beside someone who does.
+  const ownerShown = owner !== undefined && (ownerAssigned || crew.length > 0);
   const shown = crew.length > SPINE_SLOTS ? crew.slice(0, SPINE_SLOTS - 1) : crew;
   const hidden = crew.slice(shown.length);
 
   return (
     <div className="flex w-9.5 shrink-0 flex-col items-center rounded-s-card border-e border-border/60 bg-tray py-3">
-      {crew.length === 0 ? (
+      {!ownerShown && crew.length === 0 ? (
         // An empty cut where a cap would sit.
         <span className="size-6 rounded-chassis-compact bg-cut opacity-55 shadow-cut">
           <span className="sr-only">{m.task_unassigned()}</span>
         </span>
       ) : (
-        <AvatarGroup orientation="vertical">
-          {owner && !task.assigneeIds.includes(owner.id) && (
+        // Raised over the title link's stretched ::after, which covers the card, so pointing at a cap reaches it and
+        // shows the person's name.
+        <AvatarGroup orientation="vertical" className="relative z-10">
+          {ownerShown && (
             <>
               <PersonAvatar name={owner.name} src={owner.avatarUrl} owner />
-              <span aria-hidden="true" className="h-px w-4 bg-border" />
+              {!ownerAssigned && <span aria-hidden="true" className="h-px w-4 bg-border" />}
             </>
           )}
           {shown.map((person) => (
-            <PersonAvatar
-              key={person.id}
-              name={person.name}
-              src={person.avatarUrl}
-              badge={runningIds.has(person.id) ? m.task_run_running() : undefined}
-            />
+            <PersonAvatar key={person.id} name={person.name} src={person.avatarUrl} />
           ))}
           {hidden.length > 0 && (
-            <AvatarGroupCount title={formatList(hidden.map((person) => person.name))}>
-              <span aria-hidden="true" dir="ltr">
-                +{formatNumber(hidden.length)}
-              </span>
-              <span className="sr-only">{formatList(hidden.map((person) => person.name))}</span>
-            </AvatarGroupCount>
+            <Tooltip>
+              <TooltipTrigger
+                render={
+                  <AvatarGroupCount>
+                    <span aria-hidden="true" dir="ltr">
+                      +{formatNumber(hidden.length)}
+                    </span>
+                    <span className="sr-only">{formatList(hidden.map((person) => person.name))}</span>
+                  </AvatarGroupCount>
+                }
+              />
+              <TooltipContent aria-hidden="true">{formatList(hidden.map((person) => person.name))}</TooltipContent>
+            </Tooltip>
           )}
         </AvatarGroup>
       )}
@@ -168,9 +135,8 @@ const PARTS_ON_HOVER =
  * A card on the board, as a small housing module (the approved design, docs/frontend/reference/…/task-card.tsx): its
  * people in a tray down the starting edge (`CardSpine`), the code and priority on a printed strip, the title and labels
  * on the face, readouts and dates on the footer. The title is the link that opens the card's drawer; its hit area
- * covers the whole card. The time spent prints on the footer once there is some, beside a blinking LED while someone's
- * clock runs on it, and the card's border lights green for the same. A blocked card gets a yellow strip naming what it
- * waits for, so the dependency shows without opening it.
+ * covers the whole card. A blocked card gets a yellow strip naming what it waits for, so the dependency shows without
+ * opening it.
  *
  * On the board the card is also something to pick up (`SortableTaskCard` passes the drag props): `grip` and `menu` sit
  * on the code line, above the stretched link, and show while the card is pointed at or focused. `state` dims the card left behind while
@@ -209,13 +175,7 @@ export function TaskCard({
   const taskLabels = task.labelIds.map((id) => labels.get(id)).filter((label) => label !== undefined);
   const { comments, attachments, checklistDone, checklistTotal } = task.counts;
   const hasReadouts =
-    comments > 0 ||
-    attachments > 0 ||
-    checklistTotal > 0 ||
-    showsSpent(task) ||
-    task.hasDescription ||
-    watching ||
-    task.dueDate !== null;
+    comments > 0 || attachments > 0 || checklistTotal > 0 || task.hasDescription || watching || task.dueDate !== null;
 
   return (
     <article
@@ -226,7 +186,6 @@ export function TaskCard({
         "focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-ring hover:bg-accent",
         state === "placeholder" && "opacity-40",
         state === "overlay" && "cursor-grabbing bg-accent",
-        isRunning(task) && RUNNING_BORDER,
       )}
     >
       <CardSpine task={task} people={people} />
@@ -321,11 +280,6 @@ export function TaskCard({
                     value={`${formatNumber(checklistDone)}/${formatNumber(checklistTotal)}`}
                     complete={checklistDone === checklistTotal}
                   />
-                </FooterCell>
-              )}
-              {showsSpent(task) && (
-                <FooterCell>
-                  <SpentReadout task={task} />
                 </FooterCell>
               )}
               {(task.hasDescription || watching) && (

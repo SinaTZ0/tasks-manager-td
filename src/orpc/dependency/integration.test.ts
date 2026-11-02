@@ -43,16 +43,16 @@ describe("dependencies", () => {
     expect(await link(a.id, a.id)).toMatchObject({ kind: "invalid" });
   });
 
-  it("lets a blocked task start only when forced, and keeps the reason as a comment", async () => {
+  it("lets a blocked task finish only when forced, and keeps the reason as a comment", async () => {
     const { projectId, users } = fixture;
     const waiting = await newTask("منتظر");
     const blocker = await newTask("مانع");
     await link(waiting.id, blocker.id);
 
-    const start = (forceComment?: string) =>
-      transitionTask({ db, actorId: users.ali, projectId, taskId: waiting.id, action: "start", forceComment });
-    expect(await start()).toEqual({ kind: "blocked", blockerIds: [blocker.id] });
-    expect(await start("فوری است، مشتری منتظر است")).toMatchObject({ kind: "success" });
+    const finish = (forceComment?: string) =>
+      transitionTask({ db, actorId: users.ali, projectId, taskId: waiting.id, action: "done", forceComment });
+    expect(await finish()).toEqual({ kind: "blocked", blockerIds: [blocker.id] });
+    expect(await finish("فوری است، مشتری منتظر است")).toMatchObject({ kind: "success" });
 
     const comments = await db.select({ text: comment.bodyText }).from(comment).where(eq(comment.taskId, waiting.id));
     expect(comments).toEqual([{ text: "فوری است، مشتری منتظر است" }]);

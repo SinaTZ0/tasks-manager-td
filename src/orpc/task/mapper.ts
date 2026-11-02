@@ -4,7 +4,6 @@ import { COLUMN_KINDS } from "#/orpc/project/constants";
 import { LABEL_COLORS, TASK_PRIORITIES } from "#/orpc/task/constants";
 import type { Label, MyTask, TaskCard, TaskDetail } from "#/orpc/task/contract";
 import type { AssignedTaskRow, LabelRecord, TaskRecord } from "#/orpc/task/repository";
-import type { TimeTotals } from "#/orpc/time/repository";
 
 /*===== Public Shapes =====*/
 const NO_COUNTS: TaskCard["counts"] = { comments: 0, attachments: 0, checklistDone: 0, checklistTotal: 0 };
@@ -13,14 +12,12 @@ export function toTaskCard({
   record,
   assigneeIds,
   labelIds,
-  time = { spentSeconds: 0, running: [] },
   waitsFor = [],
   counts = NO_COUNTS,
 }: {
   record: TaskRecord;
   assigneeIds: string[];
   labelIds: string[];
-  time?: TimeTotals | undefined;
   waitsFor?: string[];
   counts?: TaskCard["counts"] | undefined;
 }): TaskCard {
@@ -38,20 +35,16 @@ export function toTaskCard({
     labelIds,
     hasDescription: record.descriptionText.length > 0,
     completedAt: record.completedAt,
-    spentSeconds: time.spentSeconds,
-    running: time.running,
     waitsFor,
     counts,
   };
 }
 
-export function toMyTask({ row, time }: { row: AssignedTaskRow; time: TimeTotals | undefined }): MyTask {
+export function toMyTask({ row }: { row: AssignedTaskRow }): MyTask {
   return {
     ...row,
     priority: oneOf({ allowed: TASK_PRIORITIES, value: row.priority, what: "task priority" }),
     columnKind: oneOf({ allowed: COLUMN_KINDS, value: row.columnKind, what: "column kind" }),
-    spentSeconds: time?.spentSeconds ?? 0,
-    running: time?.running ?? [],
   };
 }
 
@@ -59,7 +52,6 @@ export function toTaskDetail({
   record,
   assigneeIds,
   labelIds,
-  time,
   waitsFor,
   statusNote,
   handoffs,
@@ -71,7 +63,6 @@ export function toTaskDetail({
   record: TaskRecord;
   assigneeIds: string[];
   labelIds: string[];
-  time: TimeTotals | undefined;
   waitsFor: string[];
   statusNote: TaskDetail["statusNote"];
   handoffs: TaskDetail["handoffs"];
@@ -88,7 +79,7 @@ export function toTaskDetail({
     checklistTotal: checklist.length,
   };
   return {
-    ...toTaskCard({ record, assigneeIds, labelIds, time, waitsFor, counts }),
+    ...toTaskCard({ record, assigneeIds, labelIds, waitsFor, counts }),
     description: (record.description as RichTextDoc | null) ?? null,
     createdBy: record.createdBy,
     createdAt: record.createdAt,

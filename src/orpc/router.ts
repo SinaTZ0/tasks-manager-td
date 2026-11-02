@@ -62,7 +62,7 @@ import {
   setTeamMemberRoleProcedure,
   setTeamMemberStatusProcedure,
 } from "#/orpc/team/procedure";
-import { currentTimerProcedure, stopTimerProcedure, taskTimeProcedure } from "#/orpc/time/procedure";
+import { taskTimeProcedure } from "#/orpc/time/procedure";
 import {
   copyTaskToProjectProcedure,
   moveTaskToProjectProcedure,
@@ -172,8 +172,6 @@ export const router = implementer.router({
     setStatus: setTeamMemberStatusProcedure,
   },
   time: {
-    current: currentTimerProcedure,
-    stop: stopTimerProcedure,
     forTask: taskTimeProcedure,
   },
   transfer: {

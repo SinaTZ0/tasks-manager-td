@@ -24,8 +24,6 @@ export type NotificationKind = (typeof NOTIFICATION_KINDS)[number];
  */
 export const WATCHED_EVENTS = [
   "commented",
-  "started",
-  "paused",
   "completed",
   "stopped",
   "reopened",

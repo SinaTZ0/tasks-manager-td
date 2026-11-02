@@ -22,7 +22,6 @@ import { ToggleGroup, ToggleGroupItem } from "#/components/primitive/toggle-grou
 import { ActivityFeed } from "#/components/shared/activity-feed/activity-feed";
 import { useNow } from "#/hooks/use-now";
 import { useShortcuts } from "#/hooks/use-shortcuts";
-import { formatClock, liveSeconds } from "#/lib/duration";
 import { formatDate, formatNumber } from "#/lib/locale";
 import { cn } from "#/lib/utils";
 import { orpc } from "#/orpc/client";
@@ -51,14 +50,13 @@ import { TaskChecklist } from "#/routes/projects_projectKey/components/task-chec
 import { TaskDelegation } from "#/routes/projects_projectKey/components/task-delegation";
 import { TaskDependencies } from "#/routes/projects_projectKey/components/task-dependencies";
 import { TaskStatusTrack } from "#/routes/projects_projectKey/components/task-status-track";
-import { TaskTimeSection } from "#/routes/projects_projectKey/components/task-time-section";
+import { formatSpan, secondsBetween, TaskTimeSection } from "#/routes/projects_projectKey/components/task-time-section";
 import { TaskWatchers } from "#/routes/projects_projectKey/components/task-watchers";
 import { TaskTitle } from "#/routes/projects_projectKey/components/task-title-field";
 import { TransferDialog, type TransferMode } from "#/routes/projects_projectKey/components/transfer-dialog";
 import { blockersOf, kindsOf } from "#/routes/projects_projectKey/dependencies";
 import { taskQuery } from "#/routes/projects_projectKey/queries";
 import { taskNumberOf } from "#/routes/projects_projectKey/search-params";
-import { isRunning } from "#/routes/projects_projectKey/task-status";
 import { useTaskUpdate } from "#/routes/projects_projectKey/use-task-update";
 
 /*===== Task Drawer =====*/
@@ -328,11 +326,11 @@ function TaskDetails({
           {columns.includes("work") && columns.length > 1 && <ResizableHandle withHandle />}
 
           {/*------ Tracking ------*/}
-          {/* Never narrower than a person's time meter with their name and time beside it. */}
+          {/* Never narrower than a dependency's row with its code, title and keys. */}
           {columns.includes("tracking") && (
             <ResizablePanel id="tracking" defaultSize={sizes.tracking} minSize={360}>
               <DrawerColumn label={m.task_column_tracking()} entering={entering.includes("tracking")} className="gap-8">
-                <TaskTimeSection task={task} project={project} people={people} />
+                <TaskTimeSection task={task} project={project} />
                 <Separator variant="perforated" className="-mx-6" />
                 <TaskDependencies task={task} project={project} board={board} kinds={kinds} readOnly={readOnly} />
                 <Separator variant="perforated" className="-mx-6" />
@@ -455,7 +453,7 @@ const COLUMN_TABS: Record<DrawerColumnKey, { label: () => string; icon: LucideIc
 /**
  * The folder tabs at the foot of the header that switch the drawer's columns on and off, in the columns' own order. An
  * open tab joins its column; each prints what it holds, so a closed one still says something: the checklist's
- * progress, the time spent (ticking while a clock runs), the people on it. The summaries are print only: each column
+ * progress, how old the task is, the people on it. The summaries are print only: each column
  * says the same in full. One always stays open: pressing the last open tab again does nothing.
  */
 function ColumnTabs({
@@ -476,7 +474,7 @@ function ColumnTabs({
       task.checklist.length > 0 ? (
         <Marking variant="reading">{`${formatNumber(done)}/${formatNumber(task.checklist.length)}`}</Marking>
       ) : null,
-    tracking: <TimeSpent task={task} />,
+    tracking: <TaskAge task={task} />,
     details:
       task.assigneeIds.length > 0 ? (
         <span className="flex items-center gap-1">
@@ -518,11 +516,12 @@ function ColumnTabs({
   );
 }
 
-/** The task's time spent for its tab: ticking while a clock runs on it, nothing before anyone has worked on it. */
-function TimeSpent({ task }: { task: TaskDetail }) {
+/** How old the task is, for its tab: created to done, or to now (nothing while the page hydrates). */
+function TaskAge({ task }: { task: TaskDetail }) {
   const now = useNow();
-  if (task.spentSeconds === 0 && !isRunning(task)) return null;
-  return <Marking variant="clock">{formatClock(liveSeconds({ ...task, now }))}</Marking>;
+  const end = task.completedAt?.getTime() ?? now;
+  if (end === null) return null;
+  return <Marking variant="reading">{formatSpan(secondsBetween(task.createdAt, end))}</Marking>;
 }
 
 /*===== Column =====*/

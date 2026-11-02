@@ -1,13 +1,12 @@
 import { ORPCError } from "@orpc/client";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useRouteContext } from "@tanstack/react-router";
 
 import { toast } from "#/components/primitive/toast/toast";
 import { describeApiFailure } from "#/lib/api-error";
 import { orpc } from "#/orpc/client";
 import type { Project } from "#/orpc/project/contract";
 import { positionBetween } from "#/lib/position";
-import { COLUMN_ACTION_RULES, isColumnAction, type TaskStatusAction } from "#/orpc/task/constants";
+import { COLUMN_ACTION_RULES, type TaskStatusAction } from "#/orpc/task/constants";
 import type { Board, TaskCard } from "#/orpc/task/contract";
 import { m } from "#/paraglide/messages";
 import { boardQuery, projectQuery } from "#/routes/projects_projectKey/queries";
@@ -48,7 +47,7 @@ export function useTaskMove(projectId: string) {
           queryClient.invalidateQueries({ queryKey: orpc.task.board.key() }),
           // An open drawer prints the card's column.
           queryClient.invalidateQueries({ queryKey: orpc.task.get.key() }),
-          // Entering done stops the card's clocks (rule 3).
+          // The drawer's time lists the columns the card has been in.
           queryClient.invalidateQueries({ queryKey: orpc.time.key() }),
         ]),
     }),
@@ -89,45 +88,29 @@ export function useTaskMove(projectId: string) {
 /*===== Status =====*/
 
 /**
- * How the board shows a status action before the server answers. Start and pause light or put out the viewer's clock
- * on the card and leave it in place (others' clocks run on); done, stop and reopen send it to the bottom of their
- * column, and done and stop put its clocks out.
+ * How the board shows a status action before the server answers: done, stop and reopen send the card to the bottom of
+ * their column.
  */
 function afterAction({
   task,
-  action,
   target,
   last,
-  viewerId,
 }: {
   task: TaskCard;
-  action: TaskStatusAction;
   target: Project["columns"][number] | undefined;
   last: TaskCard | undefined;
-  viewerId: string;
 }): TaskCard {
-  const others = task.running.filter((clock) => clock.userId !== viewerId);
-  if (action === "start") return { ...task, running: [...others, { userId: viewerId, since: new Date() }] };
-  if (action === "pause") return { ...task, running: others };
   if (!target || task.columnId === target.id) return task;
-  const moved = { ...task, columnId: target.id, position: positionBetween(last?.position ?? null, null) };
-  return action === "reopen" ? moved : { ...moved, running: [] };
+  return { ...task, columnId: target.id, position: positionBetween(last?.position ?? null, null) };
 }
 
-/** Starting a clock stops the viewer's clock on any other card (rule 2). */
-const withoutViewerClock = ({ task, viewerId }: { task: TaskCard; viewerId: string }): TaskCard =>
-  task.running.some((clock) => clock.userId === viewerId)
-    ? { ...task, running: task.running.filter((clock) => clock.userId !== viewerId) }
-    : task;
-
 /**
- * Takes a status action on a task (start, pause, done, stop, reopen), from its card menu or its drawer. Like a move,
- * the board shows it at once (`afterAction`). A refused action puts the board back and says why. The drawer, the
- * task's time and the header's timer are refetched afterwards.
+ * Takes a status action on a task (done, stop, reopen), from its card menu or its drawer. Like a move, the board shows
+ * it at once (`afterAction`). A refused action puts the board back and says why. The drawer and the task's time are
+ * refetched afterwards.
  */
 export function useTaskTransition(project: Pick<Project, "id" | "columns">) {
   const queryClient = useQueryClient();
-  const { viewer } = useRouteContext({ from: "/_site-layout/_app-layout" });
   const key = boardQuery(project.id).queryKey;
 
   const mutation = useMutation(
@@ -154,19 +137,11 @@ export function useTaskTransition(project: Pick<Project, "id" | "columns">) {
   }) => {
     void queryClient.cancelQueries({ queryKey: key });
     const previous = queryClient.getQueryData<Board>(key);
-    const target = isColumnAction(action)
-      ? project.columns.find((column) => column.kind === COLUMN_ACTION_RULES[action].to)
-      : undefined;
+    const target = project.columns.find((column) => column.kind === COLUMN_ACTION_RULES[action].to);
     if (previous) {
       const last = target && previous.tasks.findLast((task) => task.columnId === target.id && task.id !== taskId);
       const tasks = previous.tasks
-        .map((task) =>
-          task.id === taskId
-            ? afterAction({ task, action, target, last, viewerId: viewer.id })
-            : action === "start"
-              ? withoutViewerClock({ task, viewerId: viewer.id })
-              : task,
-        )
+        .map((task) => (task.id === taskId ? afterAction({ task, target, last }) : task))
         .toSorted(byPosition);
       queryClient.setQueryData<Board>(key, { ...previous, tasks });
     }

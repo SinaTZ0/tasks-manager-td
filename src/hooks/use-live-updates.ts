@@ -41,12 +41,10 @@ const isAboutProject = (projectId: string) => (query: Query) =>
 function refetchProject({ queryClient, projectId }: { queryClient: QueryClient; projectId: string }) {
   return Promise.all([
     queryClient.invalidateQueries({ predicate: isAboutProject(projectId) }),
-    // Read by key or across projects, so they can't be told apart by input: the project page, My Tasks, hand-offs,
-    // and the header's timer (pausing a task stops everyone's timer on it).
+    // Read by key or across projects, so they can't be told apart by input: the project page, My Tasks and hand-offs.
     queryClient.invalidateQueries({ queryKey: orpc.project.key() }),
     queryClient.invalidateQueries({ queryKey: orpc.task.mine.key() }),
     queryClient.invalidateQueries({ queryKey: orpc.delegation.key() }),
-    queryClient.invalidateQueries({ queryKey: orpc.time.current.key() }),
   ]);
 }
 

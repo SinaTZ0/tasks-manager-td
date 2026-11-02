@@ -35,11 +35,6 @@ export const ACTIVITY_ACTIONS = [
   "task.completed",
   "task.stopped",
   "task.reopened",
-  /*------ Time ------*/
-  "time.started",
-  "time.stopped",
-  "time.added",
-  "time.removed",
   /*------ Dependencies ------*/
   "dependency.added",
   "dependency.removed",

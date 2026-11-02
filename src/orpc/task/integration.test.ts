@@ -47,7 +47,8 @@ describe("tasks", () => {
     const second = await createTask({ db, actorId: users.ali, projectId, input: { title: "دوم" } });
     if (first.kind !== "success" || second.kind !== "success") throw new Error("setup failed");
     expect([first.task.number, second.task.number]).toEqual([1, 2]);
-    expect(first.task).toMatchObject({ title: "اول", ownerId: users.ali });
+    // Its maker is on it from the start (rule 2).
+    expect(first.task).toMatchObject({ title: "اول", ownerId: users.ali, assigneeIds: [users.ali] });
 
     const updated = await updateTask({
       db,
@@ -62,7 +63,7 @@ describe("tasks", () => {
       expect.objectContaining({ action: "task.created" }),
       {
         action: "task.updated",
-        before: { title: "اول", assigneeIds: [] },
+        before: { title: "اول", assigneeIds: [users.ali] },
         after: { title: "اول، بازنویسی", assigneeIds: [users.reza] },
       },
     ]);

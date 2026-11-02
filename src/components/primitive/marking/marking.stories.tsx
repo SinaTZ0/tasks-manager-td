@@ -43,11 +43,6 @@ export const InContext: Story = {
         <Marking>چک‌لیست</Marking>
         <Marking variant="reading">۱/۲</Marking>
       </span>
-      <span className="flex items-center gap-2">
-        <Led signal="positive" state="blink" size="sm" />
-        <Marking>زمان</Marking>
-        <Marking variant="clock">۰:۲۴:۰۳</Marking>
-      </span>
     </div>
   ),
 };

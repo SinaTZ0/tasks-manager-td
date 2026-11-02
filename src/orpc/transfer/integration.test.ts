@@ -2,7 +2,7 @@ import { and, eq } from "drizzle-orm";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 import { db } from "#/db/client.server";
-import { activity, timeLog } from "#/db/schema";
+import { activity } from "#/db/schema";
 import { createTestProject, deleteTestProject, testProjectKey } from "#/db/test-fixtures.server";
 import { plainTextToRichText } from "#/lib/rich-text";
 import { addComment, listComments } from "#/orpc/comment/service";
@@ -49,16 +49,12 @@ const newTask = async (input: { title: string; assigneeIds?: string[] }) => {
 };
 
 describe("moving a card to another project", () => {
-  it("keeps its comments and time, drops its dependencies, and answers to its old code", async () => {
+  it("keeps its comments, drops its dependencies, and answers to its old code", async () => {
     const { projectId, users } = fixture;
     const card = await newTask({ title: "انتقال", assigneeIds: [users.ali] });
     const waiting = await newTask({ title: "منتظر" });
     await addDependency({ db, actorId: users.admin, projectId, taskId: waiting.id, blockerId: card.id });
     await addComment({ db, actorId: users.ali, projectId, taskId: card.id, body: plainTextToRichText("یادداشت") });
-    const startedAt = new Date("2026-10-01T09:00:00Z");
-    await db
-      .insert(timeLog)
-      .values({ taskId: card.id, userId: users.ali, startedAt, endedAt: new Date(startedAt.getTime() + 90 * 60_000) });
 
     const moved = await moveTaskToProject({
       db,
@@ -70,7 +66,7 @@ describe("moving a card to another project", () => {
     expect(moved).toEqual({ kind: "success", projectKey: targetKey, number: 1 });
 
     const now = await getTask({ db, projectId: targetId, number: 1 });
-    expect(now).toMatchObject({ id: card.id, spentSeconds: 90 * 60 });
+    expect(now).toMatchObject({ id: card.id });
     expect(await listComments({ db, projectId: targetId, taskId: card.id })).toHaveLength(1);
     // The task left behind no longer waits for it, and the old project's history says so.
     expect(await getTask({ db, projectId, number: waiting.number })).toMatchObject({ waitsFor: [] });

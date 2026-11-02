@@ -9,14 +9,13 @@ import { formatDate } from "#/lib/locale";
 import { positionBetween } from "#/lib/position";
 import { isBackwardMove, type ColumnKind } from "#/orpc/project/constants";
 import type { Person, Project } from "#/orpc/project/contract";
-import { COLUMN_ACTION_RULES, type ColumnAction } from "#/orpc/task/constants";
+import { COLUMN_ACTION_RULES, type TaskStatusAction } from "#/orpc/task/constants";
 import type { Board, TaskDetail } from "#/orpc/task/contract";
 import { m } from "#/paraglide/messages";
 import { ConfirmDialog, type ConfirmRequest } from "#/routes/projects_projectKey/components/confirm-dialog";
 import { ReasonDialog, type ReasonRequest } from "#/routes/projects_projectKey/components/reason-dialog";
-import { TaskWorkKey } from "#/routes/projects_projectKey/components/task-work-key";
 import { entersGuardedColumn } from "#/routes/projects_projectKey/dependencies";
-import { isRunning, statusActionLabel } from "#/routes/projects_projectKey/task-status";
+import { statusActionLabel } from "#/routes/projects_projectKey/task-status";
 import { useTaskMove, useTaskTransition } from "#/routes/projects_projectKey/use-board-moves";
 
 type Column = Project["columns"][number];
@@ -24,9 +23,8 @@ type Column = Project["columns"][number];
 /*===== Task Status Track =====*/
 
 /**
- * Where the task stands, under its title: a tray holding the viewer's work key, then the board's own columns as a
- * track (the ones passed lit, the current one a latched key whose LED blinks while someone works on it, the ones ahead
- * a press away), then the next step as its own key ("Send to “Review”", or "Mark done" before the done column), and
+ * Where the task stands, under its title: a tray holding the board's own columns as a track (the ones passed lit, the
+ * current one a latched key whose LED blinks while the task is in doing, the ones ahead a press away), then the next step as its own key ("Send to “Review”", or "Mark done" before the done column), and
  * cancelling apart from it as a small graphite key. A done or cancelled task offers to reopen instead. A cancelled task
  * shows only that column, with who stopped it and why under the tray.
  *
@@ -70,7 +68,8 @@ export function TaskStatusTrack({
   const steps = project.columns.filter((item) => item.kind !== "cancelled");
   const here = steps.findIndex((item) => item.id === task.columnId);
   const next = here === -1 ? undefined : steps[here + 1];
-  const live = isRunning(task);
+  // Work under way: the doing column is how people say they are on a task.
+  const live = kind === "doing";
 
   /*------ Guards ------*/
   /** Goes ahead with `run`, first asking why when a task still waiting for others enters doing or done (rule 4). */
@@ -111,7 +110,7 @@ export function TaskStatusTrack({
   };
 
   /** Cancels (asking for the reason) or reopens the task. */
-  const take = (action: Exclude<ColumnAction, "done">) => {
+  const take = (action: Exclude<TaskStatusAction, "done">) => {
     if (action === "stop") {
       return setAsking({
         request: { kind: action, code },
@@ -132,8 +131,6 @@ export function TaskStatusTrack({
     <div className="flex flex-col gap-3">
       {/*------ Tray ------*/}
       <div className="flex flex-wrap items-center gap-x-5 gap-y-3 rounded-chassis bg-tray px-3 py-2.5 shadow-tray">
-        {!readOnly && <TaskWorkKey task={task} project={project} />}
-
         <Stepper aria-label={m.task_status()}>
           {cancelled && column ? (
             <StepperItem state="current" signal="attention">

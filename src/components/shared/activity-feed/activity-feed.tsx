@@ -4,7 +4,7 @@ import { Marking } from "#/components/primitive/marking/marking";
 import { PersonAvatar } from "#/components/shared/person-avatar/person-avatar";
 import { isolate } from "#/lib/bidi";
 import { columnKindTitle, columnTitle } from "#/lib/column-title";
-import { formatClock, formatDuration } from "#/lib/duration";
+import { formatDuration } from "#/lib/duration";
 import { formatDate, formatList, formatRelativeDays, isoToDate } from "#/lib/locale";
 import { daysBetween, TEAM_TIME_ZONE, teamToday } from "#/lib/team-day";
 import { priorityName } from "#/lib/priority-name";
@@ -267,43 +267,6 @@ function describe({ item, people }: { item: ActivityItem; people: Map<string, Pe
     case "task.reopened":
       return { clauses: [m.activity_task_reopened()] };
 
-    /*------ Time ------*/
-    case "time.started":
-      return { clauses: [m.activity_time_started()] };
-    case "time.stopped": {
-      const duration = isolate(formatClock(numberOf(after, "seconds") ?? 0));
-      // Finishing or archiving a task stops everyone's clock on it, so the clock can be someone else's. A pause may
-      // carry its reason.
-      const owner = after?.userId;
-      return {
-        clauses: [
-          owner === undefined || owner === item.actorId
-            ? m.activity_time_stopped({ duration })
-            : m.activity_time_stopped_other({ name: nameOf(owner), duration }),
-        ],
-        quote: textOf(after, "reason"),
-      };
-    }
-    case "time.added":
-      return {
-        clauses: [
-          m.activity_time_added({
-            duration: isolate(formatDuration(numberOf(after, "minutes") ?? 0)),
-            date: dayOf(textOf(after, "date")),
-          }),
-        ],
-        quote: textOf(after, "note"),
-      };
-    case "time.removed":
-      return {
-        clauses: [
-          m.activity_time_removed({
-            duration: isolate(formatDuration(numberOf(before, "minutes") ?? 0)),
-            date: dayOf(textOf(before, "date")),
-          }),
-        ],
-      };
-
     /*------ Dependencies ------*/
     case "dependency.added":
       return { clauses: [m.activity_dependency_added({ code: isolate(textOf(after, "blockerCode") ?? "?") })] };
@@ -342,7 +305,7 @@ function describe({ item, people }: { item: ActivityItem; people: Map<string, Pe
 
 /**
  * A list of history entries, in the order given: who did it, what they did as a sentence in the reader's language, and
- * when. `people` names the people an entry stores by id (an owner, an assignee, a timer's owner); the actor's own name
+ * when. `people` names the people an entry stores by id (an owner, an assignee); the actor's own name
  * comes with the entry. With `showTask` (a project's feed) each task entry also links to its card on the board, which
  * needs `projectKey`.
  */

@@ -6,7 +6,6 @@ import { BoardPanelToggle } from "#/components/shared/board-panel-toggle/board-p
 import { HeaderSearch } from "#/components/shared/header-search/header-search";
 import { NotificationBell, notificationsQuery } from "#/components/shared/notification-bell/notification-bell";
 import { SiteFooter } from "#/components/shared/site-footer/site-footer";
-import { RunningTimer } from "#/components/shared/running-timer/running-timer";
 import { ShortcutHelp } from "#/components/shared/shortcut-help/shortcut-help";
 import { SiteHeader } from "#/components/shared/site-header/site-header";
 import { useLiveUpdates } from "#/hooks/use-live-updates";
@@ -16,16 +15,11 @@ import { m } from "#/paraglide/messages";
 
 /*===== Route =====*/
 export const Route = createFileRoute("/_site-layout")({
-  // The header needs the viewer, and a signed-in viewer's running timer and notifications, on every page, so they load
-  // before any page renders.
+  // The header needs the viewer, and a signed-in viewer's notifications, on every page, so they load before any page
+  // renders.
   beforeLoad: async ({ context }) => {
     const viewer = await context.queryClient.ensureQueryData(orpc.session.viewer.queryOptions());
-    if (viewer) {
-      await Promise.all([
-        context.queryClient.ensureQueryData(orpc.time.current.queryOptions()),
-        context.queryClient.ensureQueryData(notificationsQuery()),
-      ]);
-    }
+    if (viewer) await context.queryClient.ensureQueryData(notificationsQuery());
     return viewer;
   },
   component: SiteLayout,
@@ -63,7 +57,6 @@ function SiteLayout() {
       <SiteHeader
         viewer={viewer}
         search={viewer && <HeaderSearch />}
-        timer={viewer && <RunningTimer />}
         bell={viewer && <NotificationBell />}
         pageKeys={onBoard && <BoardPanelToggle />}
       />

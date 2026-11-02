@@ -15,13 +15,7 @@ export type MarkingProps = ComponentProps<"span"> & VariantProps<typeof markingV
 function Marking({ className, variant, children, ...props }: MarkingProps) {
   return (
     <span data-slot="marking" {...props} className={cn(markingVariants({ variant }), className)}>
-      {variant === "code" || variant === "clock" ? (
-        <bdi dir="ltr">{children}</bdi>
-      ) : variant === "reading" ? (
-        <bdi>{children}</bdi>
-      ) : (
-        children
-      )}
+      {variant === "code" ? <bdi dir="ltr">{children}</bdi> : variant === "reading" ? <bdi>{children}</bdi> : children}
     </span>
   );
 }

@@ -27,7 +27,6 @@ What each thing is and how it relates. How to store it = implementer decides.
 - **Task** — The card. Lives in one Column. Has one **owner** (responsible for it) and any number of **assignees** (doing the work); the owner can be one of them. Has priority, due date, estimate, labels. Can have parent Task (sub-task).
 - **Dependency** — Task waits for other Task. Many-to-many between Tasks. No cycles.
 - **Comment** — Discussion on a Task. Can mention other users.
-- **TimeLog** — One stretch of work by one user on one Task. Many per Task. Real time spent = sum of these.
 - **Delegation** — Record of Task handed from one user to another, with note. Chain of these = full hand-off history.
 - **Activity** — Record of every change on Task or Board: who, what, before, after, when. Append only, never edited.
 - **Label** — Colored tag, belongs to Board. Task has many.
@@ -57,28 +56,22 @@ What each thing is and how it relates. How to store it = implementer decides.
 - Create / edit / archive task
 - Title, description (markdown), priority, due date, labels
 - New task: the orange key above the board (or `n`) asks for a title and a column (the first on the board by default),
-  creates the task, and opens it to fill in the rest
+  creates the task with its maker as an assignee, and opens it to fill in the rest
 - Admin moves a card to another project (new number there; the old code still opens it; dependencies dropped; refused
   while its owner or an assignee isn't on that project) or copies it there (no comments, time or history)
-- Card shows: title, assignees' avatars (down its edge, a steady LED on whoever's clock runs), priority color, due date,
-  labels, blocked icon, timer icon
+- Card shows: title, owner and assignees' avatars (down its edge), priority color, due date, labels, blocked icon
 
-**Status / Clock / Cancel**
+**Status / Cancel**
 
-- The clock (timer) is separate from the column. It shows who is working on what, wherever the card sits.
-- The clock is a chronometer: one latching key, **Start working**; while it runs it lights orange and reads **Working**, and pressing it again stops it. In the card menu the two read **Start working** and **Stop working**. No questions, no confirms, no reset.
-- **Start working** → my clock runs on the card, card stays where it is. Card border goes **green** while any clock runs.
-- **Stop working** → my clock stops, card stays. The time so far stays; the next start adds to it.
-- **Cancel task** → task cancelled, reason required, card hidden in Cancelled, its clocks stop. Can reopen.
-- **Done** → record finish time, its clocks stop
+- No clock: nobody starts or stops a timer. A card in **Doing** is work under way, and its assignees are who is on it.
+- **Cancel task** → task cancelled, reason required, card hidden in Cancelled. Can reopen.
+- **Done** → record finish time
 - **Reopen** → back to To Do (from Done it asks first, like any step back)
 
 **Duration / Time**
 
-- Start / stop timer on card. The timer is the only way time is logged.
-- Show: how much each person worked on the task
-- Show: estimate vs real time spent
-- Show: total age of card (created → done) and time in each column (from history)
+- Read from the history, never typed or timed: total age of card (created → done) and time in each column, Doing
+  among them.
 
 **Dependency**
 
@@ -135,7 +128,7 @@ What each thing is and how it relates. How to store it = implementer decides.
 
 - **Recurring tasks** — every Monday create "weekly report" card
 - **Templates** — card templates (bug, feature, chore) with pre-filled checklist
-- **Reports** — time spent per user / per label / per week, cycle time, throughput
+- **Reports** — time in Doing per user / per label / per week, cycle time, throughput
 - **Calendar view** — cards by due date
 - **List / table view** — not everyone likes kanban
 - **Swimlanes** — group rows by assignee or priority
@@ -152,10 +145,10 @@ What each thing is and how it relates. How to store it = implementer decides.
 ## Business Rules
 
 1. Card in **one** column only.
-2. One running timer per user. Start new → old one stops.
-3. Card enters Done or Cancelled → every clock on it stops. Moving between other columns never touches the clock.
+2. A task's maker is one of its assignees from the start.
+3. Card enters Done → its finish time is recorded; leaving Done clears it.
 4. Blocked card can't go Done until blockers are Done (or user forces it + leaves comment).
-5. Cancelling a task requires a reason. Stopping the timer asks nothing.
+5. Cancelling a task requires a reason.
 6. Delegation never changes owner. Owner = responsible. Assignee = does the work.
 7. Every change → Activity entry. No exceptions. Activity never edited, never deleted.
 8. App logic follows column _kind_, never column _name_.
@@ -169,7 +162,7 @@ What each thing is and how it relates. How to store it = implementer decides.
 - **Login**
 - **Boards list**
 - **Board** (main kanban) — columns, cards, filter bar, search
-- **Card drawer/modal** — a header with the code, the title (edited in place) and the status track: the Start working key, then the board's columns in order (the ones passed lit, the current one latched, any other a press away, following the same rules as a drag), the next step as its own key (Send to the next column, or Mark done before Done; Reopen once done or cancelled) and Cancel apart from it. Under it, up to three columns the user can resize, each switched on and off by a folder tab on the header's edge that prints a summary of what it holds: the work (description, checklist, attachments and the comment thread; the only one on at first), the tracking (time with the clock's face, dependencies, history, one under the other), and the details (priority, people, dates, labels, delegation, as label and value rows)
+- **Card drawer/modal** — a header with the code, the title (edited in place) and the status track: the board's columns in order (the ones passed lit, the current one latched, its LED blinking while in Doing, any other a press away, following the same rules as a drag), the next step as its own key (Send to the next column, or Mark done before Done; Reopen once done or cancelled) and Cancel apart from it. Under it, up to three columns the user can resize, each switched on and off by a folder tab on the header's edge that prints a summary of what it holds: the work (description, checklist, attachments and the comment thread; the only one on at first), the tracking (the card's age and time in each column, dependencies, history, one under the other), and the details (priority, people, dates, labels, delegation, as label and value rows)
 - **My Tasks** — assigned to me, delegated by me, watching
 - **Notifications** — bell dropdown
 - **Settings** — columns (add, rename, remove when empty), labels, members, WIP limits

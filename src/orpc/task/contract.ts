@@ -24,9 +24,6 @@ export type Label = z.infer<typeof labelSchema>;
 /** A stored Tiptap document. The server checks its structure (`parseRichText`) before storing it. */
 const richTextSchema = z.custom<RichTextDoc>((value) => typeof value === "object" && value !== null);
 
-/** A clock running on a task: whose, and since when. */
-const runningClockSchema = z.object({ userId: z.string(), since: z.date() });
-
 /** What a card on the board shows. */
 export const taskCardSchema = z.object({
   id: z.string(),
@@ -45,10 +42,6 @@ export const taskCardSchema = z.object({
   hasDescription: z.boolean(),
   /** When it entered the done column; null anywhere else. */
   completedAt: z.date().nullable(),
-  /** The time its finished logs add up to. */
-  spentSeconds: z.number().int(),
-  /** Its running timers (one per person working on it), earliest first: the card adds them to the total live. */
-  running: z.array(runningClockSchema),
   /** The live tasks it waits for (done ones too): it is blocked while any of them is not done or cancelled. */
   waitsFor: z.array(z.string()),
   /** What the card's badges count: its comments (deleted ones left out), its checklist's steps and its attachments. */
@@ -124,7 +117,7 @@ const createTaskInputSchema = taskFieldsSchema
 
 const updateTaskInputSchema = taskFieldsSchema.partial().extend({ projectId: z.string(), taskId: z.string() });
 
-/** An open task assigned to the viewer, as "My Tasks" lists it: what it is, where it sits, and its time. */
+/** An open task assigned to the viewer, as "My Tasks" lists it: what it is and where it sits. */
 export const myTaskSchema = z.object({
   id: z.string(),
   projectKey: z.string(),
@@ -137,8 +130,6 @@ export const myTaskSchema = z.object({
   columnKind: z.enum(COLUMN_KINDS),
   /** Null until an admin renames the column: the page prints the kind's own name. */
   columnName: z.string().nullable(),
-  spentSeconds: z.number().int(),
-  running: z.array(runningClockSchema),
 });
 
 export type MyTask = z.infer<typeof myTaskSchema>;
@@ -183,7 +174,7 @@ export const taskContract = {
       }),
     )
     .output(taskCardSchema),
-  /** Start or stop the viewer's clock (the card stays), or finish, stop or reopen the task (`COLUMN_ACTION_RULES`). */
+  /** Finishes, stops or reopens the task (`COLUMN_ACTION_RULES`). */
   transition: oc
     .errors(blockedErrors)
     .input(

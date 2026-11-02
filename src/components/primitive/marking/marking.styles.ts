@@ -9,10 +9,6 @@ const twVariant = {
   default: markingClasses,
   // Codes, ids, counts and shortcuts in the instrument mono
   code: readoutClasses,
-  // A ticking time (`0:24:03`): a code whose digits are all one width, so it keeps its width as the seconds change.
-  // Persian digits come from Vazirmatn, whose own digits differ in width; this spreads them a little, as a readout
-  // may, but nothing beside it jumps.
-  clock: `${readoutClasses} tabular-nums`,
   // A value the part shows (a count, a date, time spent), in full ink so it reads apart from the markings
   reading: readingClasses,
 };

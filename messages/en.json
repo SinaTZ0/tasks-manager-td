@@ -548,19 +548,10 @@
     }
   ],
   "task_status": "Status",
-  "task_timer": "Timer",
-  "task_action_start": "Start working",
-  "task_action_pause": "Stop working",
   "task_action_done": "Mark done",
   "task_action_stop": "Cancel task",
   "task_action_reopen": "Reopen",
-  "task_work_running": "Working",
-  "task_work_running_label": "Working. Press to stop.",
   "task_status_failed": "The task's status couldn't be changed.",
-  "task_run_running": "Running",
-  "task_run_done": "Done",
-  "task_run_stopped": "Cancelled",
-  "task_run_idle": "Not running",
   "task_stop_title": [
     {
       "declarations": ["input code"],
@@ -588,33 +579,9 @@
       }
     }
   ],
-  "task_estimate_meter": "Spent against estimate",
-  "task_estimate_meter_value": [
-    {
-      "declarations": [
-        "input spent",
-        "local spentText = spent: number",
-        "input estimate",
-        "local estimateText = estimate: number"
-      ],
-      "match": {
-        "": "{spentText} of {estimateText} minutes"
-      }
-    }
-  ],
   "board_project_pages": "Project pages",
   "board_show_cancelled": "Show cancelled",
-  "time_spent_label": "Time spent",
   "time_title": "Time",
-  "time_by_person": "Time by person",
-  "time_person_meter_value": [
-    {
-      "declarations": ["input duration", "input share"],
-      "match": {
-        "": "{duration}, {share} of the task's time"
-      }
-    }
-  ],
   "time_age": "Age",
   "time_age_done": "Created to done",
   "time_in_column": [
@@ -633,26 +600,6 @@
       }
     }
   ],
-  "time_logs": "Logged time",
-  "time_logs_empty": "No time logged yet.",
-  "time_log_manual": [
-    {
-      "declarations": ["input date"],
-      "match": {
-        "": "{date}, typed in"
-      }
-    }
-  ],
-  "timer_running_on": "Your timer is running on",
-  "timer_stop": [
-    {
-      "declarations": ["input code"],
-      "match": {
-        "": "Stop your timer on {code}"
-      }
-    }
-  ],
-  "timer_stop_failed": "The timer couldn't be stopped.",
   "task_stopped_hidden": [
     {
       "declarations": ["input code"],
@@ -1050,39 +997,6 @@
   "activity_task_completed": "marked the task done",
   "activity_task_stopped": "cancelled the task",
   "activity_task_reopened": "reopened the task",
-  "activity_time_started": "started the timer",
-  "activity_time_stopped": [
-    {
-      "declarations": ["input duration"],
-      "match": {
-        "": "stopped the timer after {duration}"
-      }
-    }
-  ],
-  "activity_time_stopped_other": [
-    {
-      "declarations": ["input name", "input duration"],
-      "match": {
-        "": "stopped {name}'s timer after {duration}"
-      }
-    }
-  ],
-  "activity_time_added": [
-    {
-      "declarations": ["input duration", "input date"],
-      "match": {
-        "": "logged {duration} on {date}"
-      }
-    }
-  ],
-  "activity_time_removed": [
-    {
-      "declarations": ["input duration", "input date"],
-      "match": {
-        "": "removed {duration} logged for {date}"
-      }
-    }
-  ],
   "activity_dependency_added": [
     {
       "declarations": ["input code"],
@@ -1653,22 +1567,6 @@
       "declarations": ["input name", "input code"],
       "match": {
         "": "{name} commented on {code}"
-      }
-    }
-  ],
-  "notification_watched_started": [
-    {
-      "declarations": ["input name", "input code"],
-      "match": {
-        "": "{name} started the timer on {code}"
-      }
-    }
-  ],
-  "notification_watched_paused": [
-    {
-      "declarations": ["input name", "input code"],
-      "match": {
-        "": "{name} stopped the timer on {code}"
       }
     }
   ],

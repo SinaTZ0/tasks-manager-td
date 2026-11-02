@@ -177,7 +177,7 @@ export async function moveTaskToProject({
     const kind = columnKind ?? (from.kind === "custom" ? "todo" : (from.kind as ColumnKind));
     if (kind === "custom") return { kind: "invalid", fields: { columnKind: m.transfer_error_custom() } };
     const to = await findColumnByKind({ db: tx, projectId: target.id, kind });
-    // Leaving doing stops its timers, entering or leaving done sets or clears when it finished, as on a board.
+    // Entering or leaving done sets or clears when it finished, as on a board.
     const effects = await columnEffects({ db: tx, actorId, task, from: from.kind, to: kind });
     const labelIds = await matchLabels({ db: tx, actorId, task, targetProjectId: target.id });
     const number = await takeTaskNumber({ db: tx, projectId: target.id });

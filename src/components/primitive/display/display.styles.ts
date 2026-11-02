@@ -12,7 +12,7 @@ const twDisplayStyles = defineStyles({
   typography: "font-mono",
 });
 
-// `inline` is a one-line window the height of a compact key, for a live value in a row of keys (the header's timer);
+// `inline` is a one-line window the height of a compact key, for a live value in a row of keys;
 // `row` is one the height of a 40px key, for a value between keys that step it (the calendar's month).
 const twSize = defineStyles({
   inline: { layout: "flex-row items-center gap-3", geometry: "h-8 px-3" },

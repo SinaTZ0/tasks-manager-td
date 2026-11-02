@@ -27,7 +27,6 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { useQuery } from "@tanstack/react-query";
 import { GripVerticalIcon } from "lucide-react";
 import {
   useId,
@@ -45,10 +44,9 @@ import { toast } from "#/components/primitive/toast/toast";
 import { columnTitle } from "#/lib/column-title";
 import { cn } from "#/lib/utils";
 import { positionBetween } from "#/lib/position";
-import { orpc } from "#/orpc/client";
 import { isBackwardMove } from "#/orpc/project/constants";
 import type { Column, Person, Project } from "#/orpc/project/contract";
-import { COLUMN_ACTION_RULES, isColumnAction, taskCode, type TaskStatusAction } from "#/orpc/task/constants";
+import { COLUMN_ACTION_RULES, taskCode, type TaskStatusAction } from "#/orpc/task/constants";
 import type { Board as BoardData, Label, TaskCard as TaskCardData } from "#/orpc/task/contract";
 import { m } from "#/paraglide/messages";
 import { BoardColumn } from "#/routes/projects_projectKey/components/board-column";
@@ -261,10 +259,9 @@ export const SHOW_CANCELLED_ID = "show-cancelled";
  * The board's columns and cards, and every way of moving them (docs/app.md → Board & Drag): drag a card within its
  * column or to another, by pointer or keyboard; send it to the bottom of another column from its menu; and, for an
  * admin, drag a custom column by its grip (to do, doing and done keep their order). A move shows at once and is saved
- * behind it (`use-board-moves.ts`). Each card's menu also takes its status actions (start or pause the viewer's clock,
- * done, stop, reopen), asking for a reason where one is due. A card going back along the fixed columns (done to doing,
- * say) asks first, and so does starting the clock on a done card. A card that still waits for others enters doing or
- * done only once the person says why (rule 4); its strip names what it waits for.
+ * behind it (`use-board-moves.ts`). Each card's menu also takes its status actions (done, stop, reopen), asking for a
+ * reason where one is due. A card going back along the fixed columns (done to doing, say) asks first. A card that still
+ * waits for others enters doing or done only once the person says why (rule 4); its strip names what it waits for.
  *
  * Columns the person hid (`hiddenColumns`) are left out, though a card's menu can still send a card to one. The
  * cancelled column is shown only on request (`showCancelled`), after the others and outside the dragging: nothing
@@ -323,9 +320,6 @@ export function Board({
     run: () => void;
     open: boolean;
   } | null>(null);
-  // Which card the viewer's own clock runs on: its menu offers pause there. Only menus read it, so it can wait for the
-  // browser.
-  const { data: myTimer } = useQuery(orpc.time.current.queryOptions());
   const moveColumn = useColumnMove({ projectId: project.id, projectKey });
   const [drag, setDrag] = useState<Drag | null>(null);
   const droppedOrder = drag?.type === "dropped-column" && drag.until === project.columns ? drag.order : null;
@@ -617,10 +611,6 @@ export function Board({
       transition({ taskId: task.id, action, forceComment });
     };
 
-    /*------ Clock ------*/
-    // A chronometer: the clock starts and stops at once, and leaves the card where it is.
-    if (!isColumnAction(action)) return run();
-
     /*------ Move ------*/
     const target = project.columns.find((column) => column.kind === COLUMN_ACTION_RULES[action].to);
     const ahead = () => (target && guard({ task, toColumnId: target.id, run })) || run();
@@ -734,7 +724,6 @@ export function Board({
                                 taskId={task.id}
                                 code={codeOf(task.id)}
                                 kind={column.kind}
-                                timing={myTimer?.taskId === task.id}
                                 columns={allColumns}
                                 currentColumnId={column.id}
                                 onMove={(target) => moveToEnd({ task, columnId: target })}
@@ -788,7 +777,6 @@ export function Board({
                           taskId={task.id}
                           code={codeOf(task.id)}
                           kind="cancelled"
-                          timing={false}
                           columns={[]}
                           currentColumnId={cancelled.id}
                           onMove={() => {}}

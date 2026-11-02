@@ -83,11 +83,11 @@ function ProjectsPage() {
 
 /**
  * A whole-card link to the project's board, as a small module: its name and key, a display of what its board holds
- * right now (open tasks, those in progress, timers running, tasks late; an LED lights beside the last two when they
- * aren't zero), and its members' caps.
+ * right now (open tasks, those in progress, tasks late; an LED lights beside the last two when they aren't zero), and
+ * its members' caps.
  */
 function ProjectCard({ project }: { project: ProjectListItem }) {
-  const { open, doing, running, late } = project.readings;
+  const { open, doing, late } = project.readings;
   return (
     <Card className="flex-1" render={<Link to="/projects/$projectKey" params={{ projectKey: project.key }} />}>
       <CardHeader>
@@ -101,13 +101,12 @@ function ProjectCard({ project }: { project: ProjectListItem }) {
       <CardContent>
         <div className="flex flex-col gap-4">
           <Display size="sm">
-            <dl className="grid grid-cols-4 gap-3">
+            <dl className="grid grid-cols-3 gap-3">
               <Reading label={m.projects_reading_open()} value={open} />
-              <Reading label={columnKindTitle("doing")} value={doing} />
               <Reading
-                label={m.task_run_running()}
-                value={running}
-                led={<Led signal="positive" state={running > 0 ? "blink" : "off"} size="sm" />}
+                label={columnKindTitle("doing")}
+                value={doing}
+                led={<Led signal="positive" state={doing > 0 ? "blink" : "off"} size="sm" />}
               />
               <Reading
                 label={m.board_stat_late()}

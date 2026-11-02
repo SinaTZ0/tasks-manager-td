@@ -7,9 +7,7 @@ import { Led } from "#/components/primitive/led/led";
 import { Marking } from "#/components/primitive/marking/marking";
 import { DueMark } from "#/components/shared/due-mark/due-mark";
 import { PageHead } from "#/components/shared/page-head/page-head";
-import { useNow } from "#/hooks/use-now";
 import { columnTitle } from "#/lib/column-title";
-import { formatClock, liveSeconds } from "#/lib/duration";
 import { pageMeta } from "#/lib/seo";
 import { orpc } from "#/orpc/client";
 import { taskCode } from "#/orpc/task/constants";
@@ -79,10 +77,9 @@ function MyTasksPage() {
 
 /*===== Row =====*/
 
-/** One task: its code and title (opening its card), its column, its due date and its time, ticking while it runs. */
+/** One task: its code and title (opening its card), its column and its due date. */
 function MyTaskRow({ task }: { task: MyTask }) {
   const code = taskCode({ key: task.projectKey, number: task.number });
-  const running = task.running.length > 0;
 
   return (
     <li className="grid grid-cols-12 items-center gap-4 py-3">
@@ -90,7 +87,7 @@ function MyTaskRow({ task }: { task: MyTask }) {
         to="/projects/$projectKey"
         params={{ projectKey: task.projectKey }}
         search={{ task: code }}
-        className="col-span-6 flex min-w-0 items-baseline gap-2 rounded-chassis outline-none hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+        className="col-span-8 flex min-w-0 items-baseline gap-2 rounded-chassis outline-none hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
       >
         <Marking variant="code">{code}</Marking>
         <span className="truncate font-semibold">{task.title}</span>
@@ -106,29 +103,6 @@ function MyTaskRow({ task }: { task: MyTask }) {
           <span className="text-muted-foreground">{m.my_tasks_no_due()}</span>
         )}
       </span>
-      <span className="col-span-2 flex items-center justify-end gap-2">
-        {running ? <RunningTime task={task} /> : task.spentSeconds >= 60 && <Spent seconds={task.spentSeconds} />}
-      </span>
     </li>
-  );
-}
-
-/** While a timer runs on the task: a blinking LED and its total, ticking. */
-function RunningTime({ task }: { task: MyTask }) {
-  const now = useNow();
-  return (
-    <>
-      <Led signal="positive" state="blink" size="sm" label={m.task_run_running()} />
-      <Spent seconds={liveSeconds({ ...task, now })} />
-    </>
-  );
-}
-
-function Spent({ seconds }: { seconds: number }) {
-  return (
-    <Marking variant="code">
-      <span className="sr-only">{m.time_spent_label()}: </span>
-      <bdi dir="ltr">{formatClock(seconds)}</bdi>
-    </Marking>
   );
 }

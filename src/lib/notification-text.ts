@@ -14,10 +14,6 @@ function watchedSentence(item: Notification): string {
   switch (item.event) {
     case "commented":
       return m.notification_watched_commented({ name, code });
-    case "started":
-      return m.notification_watched_started({ name, code });
-    case "paused":
-      return m.notification_watched_paused({ name, code });
     case "completed":
       return m.notification_watched_completed({ name, code });
     case "stopped":
@@ -38,10 +34,10 @@ function watchedSentence(item: Notification): string {
   }
 }
 
-/** The extra line a notification shows under its title: a hand-off's note, a comment's excerpt, a pause's reason. */
+/** The extra line a notification shows under its title: a hand-off's note, a comment's excerpt, a stop's reason. */
 export function notificationDetail(item: Notification): string | null {
   if (item.kind === "delegated") return item.note;
-  if (item.kind === "watched" && (item.event === "commented" || item.event === "paused" || item.event === "stopped")) {
+  if (item.kind === "watched" && (item.event === "commented" || item.event === "stopped")) {
     return item.note;
   }
   return null;

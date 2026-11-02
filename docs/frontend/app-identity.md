@@ -93,7 +93,7 @@ text colour on the housing (yellow and green can't reach 4.5:1 there).
 | Green  | `signal-positive`  | running, done, healthy                  |
 | Grey   | `signal-off`       | the LED exists but is off               |
 
-Blinking is reserved for live states (a running timer, a blocked task) and stops under reduced motion. Text that needs
+Blinking is reserved for live states (work under way, a blocked task) and stops under reduced motion. Text that needs
 a status colour uses the `success` / `warning` / `info` / `destructive` text tokens and their `-surface` pairs.
 
 ### Type

@@ -16,7 +16,7 @@ export const boardQuery = (projectId: string) => orpc.task.board.queryOptions({ 
 export const taskQuery = ({ projectId, number }: { projectId: string; number: number }) =>
   orpc.task.get.queryOptions({ input: { projectId, number } });
 
-/** One task's time logs and the columns it has been in, for its drawer. */
+/** The columns one task has been in, for its drawer. */
 export const timeQuery = ({ projectId, number }: { projectId: string; number: number }) =>
   orpc.time.forTask.queryOptions({ input: { projectId, number } });
 

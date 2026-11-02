@@ -1,7 +1,7 @@
 import { useSyncExternalStore } from "react";
 
 /*===== Now =====*/
-// One shared clock for everything that shows live time (running timers on cards, the drawer, the header), ticking once
+// One shared clock for everything that shows live time (how long a task has been open or in its column), ticking once
 // a second while anything listens.
 
 const listeners = new Set<() => void>();
