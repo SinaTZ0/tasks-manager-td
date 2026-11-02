@@ -683,10 +683,14 @@ export function Board({
       accessibility={{ announcements, screenReaderInstructions: { draggable: m.board_drag_instructions() } }}
     >
       {/* Browsers make a scrolling box keyboard-focusable themselves, so it gets the focus ring but no `tabIndex`. */}
+      {/* The board scrolls sideways only; the page scrolls it down. `overflow-x: auto` alone turns the other axis to
+          `auto` too, and when a dragged card enters another column, dnd-kit keeps its old offset for a frame or two,
+          so its placeholder pokes out under the board: a vertical scrollbar flashed, narrowed every column and made
+          dnd-kit measure again. `hidden` clips at the same edge `auto` does, with no scrollbar. */}
       <section
         aria-label={m.board_columns()}
         className={cn(
-          "-m-2 flex items-start gap-3 overflow-x-auto p-2 outline-none focus-visible:outline-2 focus-visible:outline-ring focus-visible:outline-solid",
+          "-m-2 flex items-start gap-3 overflow-x-auto overflow-y-hidden p-2 outline-none focus-visible:outline-2 focus-visible:outline-ring focus-visible:outline-solid",
           // The person's layout (src/lib/board-layout.ts): wrapped columns form a grid.
           "board-wrap:grid board-wrap:board-grid",
         )}
