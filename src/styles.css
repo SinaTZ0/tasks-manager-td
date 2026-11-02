@@ -611,6 +611,19 @@
   }
 }
 
+/* An old ticket's tear line: a row of round holes punched across the sheet, in the text colour thinned so it reads on
+   the leaf and the housing in both themes. The notches at its ends are the separator's own (separator.styles.ts). */
+@utility perforation {
+  background-image: radial-gradient(
+    circle,
+    color-mix(in oklab, var(--muted-foreground) 75%, transparent) 2px,
+    transparent 2.5px
+  );
+  background-size: 10px 100%;
+  background-position: center;
+  background-repeat: repeat-x;
+}
+
 /* The board's head panel (src/lib/board-panel.ts), folding away: its one grid row shrinks to nothing around a
    `min-h-0` box, so it folds up from its bottom edge while the columns below rise into its place. The clip cuts what
    no longer fits, 4px below the box so the housing's 3px ledge still shows; `overflow: hidden` would cut the ledge.

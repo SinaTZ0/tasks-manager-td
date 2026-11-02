@@ -7,7 +7,7 @@ import { separatorVariants } from "./separator.styles";
 
 export type SeparatorProps = SeparatorPrimitive.Props & VariantProps<typeof separatorVariants>;
 
-/** A printed rule: a hairline by default, or `dashed` for a break between sections of a long panel. */
+/** A printed rule: a hairline by default, or `perforated`, an old ticket's tear line, between the sections of a long panel. */
 function Separator({ className, orientation = "horizontal", variant, ...props }: SeparatorProps) {
   return (
     <SeparatorPrimitive

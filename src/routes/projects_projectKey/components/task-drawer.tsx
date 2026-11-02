@@ -309,9 +309,9 @@ function TaskDetails({
             <ResizablePanel id="work" defaultSize={sizes.work} minSize={440}>
               <DrawerColumn label={m.task_column_work()} entering={entering.includes("work")} className="gap-8">
                 <TaskDescriptionField task={task} update={update} readOnly={readOnly} />
-                <Separator variant="dashed" />
+                <Separator variant="perforated" className="-mx-6" />
                 <TaskChecklist task={task} projectId={project.id} people={people} readOnly={readOnly} />
-                <Separator variant="dashed" />
+                <Separator variant="perforated" className="-mx-6" />
                 <TaskAttachments
                   task={task}
                   projectId={project.id}
@@ -319,7 +319,7 @@ function TaskDetails({
                   uploads={uploads}
                   readOnly={readOnly}
                 />
-                <Separator variant="dashed" />
+                <Separator variant="perforated" className="-mx-6" />
                 {/* Last, so the thread grows down the column with its editor under it. */}
                 <TaskComments task={task} project={project} viewerId={viewerId} readOnly={readOnly} />
               </DrawerColumn>
@@ -333,9 +333,9 @@ function TaskDetails({
             <ResizablePanel id="tracking" defaultSize={sizes.tracking} minSize={360}>
               <DrawerColumn label={m.task_column_tracking()} entering={entering.includes("tracking")} className="gap-8">
                 <TaskTimeSection task={task} project={project} people={people} />
-                <Separator variant="dashed" />
+                <Separator variant="perforated" className="-mx-6" />
                 <TaskDependencies task={task} project={project} board={board} kinds={kinds} readOnly={readOnly} />
-                <Separator variant="dashed" />
+                <Separator variant="perforated" className="-mx-6" />
                 <TaskHistory task={task} project={project} people={people} />
               </DrawerColumn>
             </ResizablePanel>
@@ -370,7 +370,7 @@ function TaskDetails({
                   finished={column?.kind === "done" || column?.kind === "cancelled"}
                 />
                 <EstimateField key={task.estimateMinutes} task={task} update={update} readOnly={readOnly} />
-                <Separator variant="dashed" />
+                <Separator variant="perforated" className="-mx-6" />
                 <LabelPicker
                   task={task}
                   update={update}
@@ -380,13 +380,13 @@ function TaskDetails({
                   isAdmin={isAdmin}
                   readOnly={readOnly}
                 />
-                <Separator variant="dashed" />
+                <Separator variant="perforated" className="-mx-6" />
                 <TaskDelegation task={task} project={project} code={code} readOnly={readOnly} />
-                <Separator variant="dashed" />
+                <Separator variant="perforated" className="-mx-6" />
                 <TaskWatchers task={task} projectId={project.id} viewerId={viewerId} />
                 {isAdmin && (
                   <>
-                    <Separator variant="dashed" />
+                    <Separator variant="perforated" className="-mx-6" />
                     {/*------ Other Projects ------*/}
                     <div className="flex flex-col items-start gap-2">
                       <Button variant="secondary" size="sm" onClick={() => setTransfer({ mode: "move", open: true })}>
@@ -409,7 +409,7 @@ function TaskDetails({
                         onMoved={onArchived}
                       />
                     )}
-                    <Separator variant="dashed" />
+                    <Separator variant="perforated" className="-mx-6" />
                     <ArchiveTaskButton projectId={project.id} task={task} code={code} onArchived={onArchived} />
                   </>
                 )}
@@ -528,8 +528,9 @@ function TimeSpent({ task }: { task: TaskDetail }) {
 /*===== Column =====*/
 
 /**
- * One of the drawer's columns, scrolling on its own: a region named for screen readers (its tab names it on screen),
- * printed on the leaf its open tab joins.
+ * One of the drawer's columns, scrolling on its own: a region named for screen readers (its tab names it on screen).
+ * Each column is an old ticket seated in a tray, the way the board's cards sit in theirs: a rounded leaf with its
+ * sections parted by tear lines, whose notches bite into the ticket's sides and show the tray under it.
  */
 function DrawerColumn({
   label,
@@ -548,12 +549,25 @@ function DrawerColumn({
     <section
       aria-label={label}
       className={cn(
-        "h-full overflow-y-auto bg-leaf p-6",
+        "h-full overflow-y-auto bg-tray p-4 shadow-tray",
         entering && "duration-250 motion-safe:animate-in motion-safe:fade-in-0",
       )}
     >
-      {/* A column alone spans the whole drawer; its contents keep a reading width in the middle of it. */}
-      <div className={cn("mx-auto flex w-full max-w-4xl flex-col", className)}>{children}</div>
+      {/*------ Ticket ------*/}
+      {/* At least the column's height, so a short one is still a whole ticket; clipped, so the tear lines' notches show
+          as half circles bitten out of its sides. */}
+      <div className="min-h-full overflow-hidden rounded-card bg-leaf p-6 shadow-sm">
+        {/* A column alone spans the whole drawer; its sections keep a reading width in the middle of it, while the
+            tear lines between them run from side to side. */}
+        <div
+          className={cn(
+            "flex flex-col [&>:not([data-slot=separator])]:mx-auto [&>:not([data-slot=separator])]:w-full [&>:not([data-slot=separator])]:max-w-4xl",
+            className,
+          )}
+        >
+          {children}
+        </div>
+      </div>
     </section>
   );
 }

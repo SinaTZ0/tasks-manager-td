@@ -7,7 +7,7 @@ const meta = {
   title: "Primitive/Separator",
   component: Separator,
   argTypes: {
-    variant: { control: "inline-radio", options: ["default", "dashed"] },
+    variant: { control: "inline-radio", options: ["default", "perforated"] },
   },
 } satisfies Meta<typeof Separator>;
 
@@ -37,15 +37,16 @@ export const Vertical: Story = {
   ),
 };
 
-export const Dashed: Story = {
-  args: { variant: "dashed" },
+// The notches show as bites out of the sheet's sides: the rule runs edge to edge (`-mx-6`) in a parent that clips.
+export const Perforated: Story = {
+  args: { variant: "perforated" },
   render: (args) => (
-    <div className="flex max-w-sm flex-col gap-6 text-sm">
+    <div className="flex max-w-sm flex-col gap-6 overflow-hidden rounded-chassis border border-border bg-leaf p-6 text-sm">
       <section className="flex flex-col gap-2">
         <h3 className="font-heading text-h4">چک‌لیست</h3>
         <p>۲ از ۵ مورد انجام شده</p>
       </section>
-      <Separator {...args} />
+      <Separator {...args} className="-mx-6" />
       <section className="flex flex-col gap-2">
         <h3 className="font-heading text-h4">پیوست‌ها</h3>
         <p>طرح صفحه ورود در فیگما</p>

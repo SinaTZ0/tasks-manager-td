@@ -17,13 +17,17 @@ const twVariant = {
       appearance: "bg-border",
     }),
   ),
-  // A section break, the dashed rule the board prints between its cards: heavier than a hairline and broken, so a
-  // long panel reads as parts to take one at a time instead of one ruled form.
-  dashed: joinStyles(
+  // An old ticket's tear line: a row of punched holes (`perforation`, styles.css) with a round notch cut into the sheet
+  // at each end, so each section reads as a stub to tear off and take on its own. The notches are whole circles of
+  // sunk tray centred on the rule's ends: laid edge to edge (layout's negative margin) in a parent that clips, they
+  // show as half circles bitten out of its sides. Horizontal only.
+  perforated: joinStyles(
     defineStyles({
-      geometry:
-        "data-horizontal:h-0 data-horizontal:w-full data-horizontal:border-t-2 data-vertical:w-0 data-vertical:border-s-2",
-      appearance: "border-dashed border-muted-foreground/60",
+      layout: "relative",
+      geometry: "h-1.5 self-stretch",
+      appearance: "perforation",
+      appearanceNotches:
+        "before:absolute before:-inset-s-3 before:top-1/2 before:size-6 before:-translate-y-1/2 before:rounded-full before:bg-tray before:shadow-tray after:absolute after:-inset-e-3 after:top-1/2 after:size-6 after:-translate-y-1/2 after:rounded-full after:bg-tray after:shadow-tray",
     }),
   ),
 };
