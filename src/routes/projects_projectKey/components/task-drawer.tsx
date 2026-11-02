@@ -307,11 +307,11 @@ function TaskDetails({
           {columns.includes("work") && (
             // Never narrower than the comment editor's toolbar, which doesn't wrap.
             <ResizablePanel id="work" defaultSize={sizes.work} minSize={440}>
-              <DrawerColumn label={m.task_column_work()} entering={entering.includes("work")} className="gap-6">
+              <DrawerColumn label={m.task_column_work()} entering={entering.includes("work")} className="gap-8">
                 <TaskDescriptionField task={task} update={update} readOnly={readOnly} />
-                <Separator />
+                <Separator variant="dashed" />
                 <TaskChecklist task={task} projectId={project.id} people={people} readOnly={readOnly} />
-                <Separator />
+                <Separator variant="dashed" />
                 <TaskAttachments
                   task={task}
                   projectId={project.id}
@@ -319,7 +319,7 @@ function TaskDetails({
                   uploads={uploads}
                   readOnly={readOnly}
                 />
-                <Separator />
+                <Separator variant="dashed" />
                 {/* Last, so the thread grows down the column with its editor under it. */}
                 <TaskComments task={task} project={project} viewerId={viewerId} readOnly={readOnly} />
               </DrawerColumn>
@@ -331,13 +331,11 @@ function TaskDetails({
           {/* Never narrower than a person's time meter with their name and time beside it. */}
           {columns.includes("tracking") && (
             <ResizablePanel id="tracking" defaultSize={sizes.tracking} minSize={360}>
-              <DrawerColumn
-                label={m.task_column_tracking()}
-                entering={entering.includes("tracking")}
-                className="gap-10"
-              >
+              <DrawerColumn label={m.task_column_tracking()} entering={entering.includes("tracking")} className="gap-8">
                 <TaskTimeSection task={task} project={project} people={people} />
+                <Separator variant="dashed" />
                 <TaskDependencies task={task} project={project} board={board} kinds={kinds} readOnly={readOnly} />
+                <Separator variant="dashed" />
                 <TaskHistory task={task} project={project} people={people} />
               </DrawerColumn>
             </ResizablePanel>
@@ -372,7 +370,7 @@ function TaskDetails({
                   finished={column?.kind === "done" || column?.kind === "cancelled"}
                 />
                 <EstimateField key={task.estimateMinutes} task={task} update={update} readOnly={readOnly} />
-                <Separator />
+                <Separator variant="dashed" />
                 <LabelPicker
                   task={task}
                   update={update}
@@ -382,13 +380,13 @@ function TaskDetails({
                   isAdmin={isAdmin}
                   readOnly={readOnly}
                 />
-                <Separator />
+                <Separator variant="dashed" />
                 <TaskDelegation task={task} project={project} code={code} readOnly={readOnly} />
-                <Separator />
+                <Separator variant="dashed" />
                 <TaskWatchers task={task} projectId={project.id} viewerId={viewerId} />
                 {isAdmin && (
                   <>
-                    <Separator />
+                    <Separator variant="dashed" />
                     {/*------ Other Projects ------*/}
                     <div className="flex flex-col items-start gap-2">
                       <Button variant="secondary" size="sm" onClick={() => setTransfer({ mode: "move", open: true })}>
@@ -411,7 +409,7 @@ function TaskDetails({
                         onMoved={onArchived}
                       />
                     )}
-                    <Separator />
+                    <Separator variant="dashed" />
                     <ArchiveTaskButton projectId={project.id} task={task} code={code} onArchived={onArchived} />
                   </>
                 )}

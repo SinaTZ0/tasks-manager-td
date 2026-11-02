@@ -6,6 +6,9 @@ import { Separator } from "./separator";
 const meta = {
   title: "Primitive/Separator",
   component: Separator,
+  argTypes: {
+    variant: { control: "inline-radio", options: ["default", "dashed"] },
+  },
 } satisfies Meta<typeof Separator>;
 
 export default meta;
@@ -30,6 +33,23 @@ export const Vertical: Story = {
       <span>پژوهش</span>
       <Separator {...args} orientation="vertical" />
       <span>دانشجویی</span>
+    </div>
+  ),
+};
+
+export const Dashed: Story = {
+  args: { variant: "dashed" },
+  render: (args) => (
+    <div className="flex max-w-sm flex-col gap-6 text-sm">
+      <section className="flex flex-col gap-2">
+        <h3 className="font-heading text-h4">چک‌لیست</h3>
+        <p>۲ از ۵ مورد انجام شده</p>
+      </section>
+      <Separator {...args} />
+      <section className="flex flex-col gap-2">
+        <h3 className="font-heading text-h4">پیوست‌ها</h3>
+        <p>طرح صفحه ورود در فیگما</p>
+      </section>
     </div>
   ),
 };
