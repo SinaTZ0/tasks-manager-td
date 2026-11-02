@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+import { ClockIcon } from "lucide-react";
 
 import { Led } from "#/components/primitive/led/led";
 import { Marking } from "#/components/primitive/marking/marking";
@@ -12,6 +13,7 @@ import type { Column, Person, Project } from "#/orpc/project/contract";
 import type { TaskDetail } from "#/orpc/task/contract";
 import type { ColumnStay, TimeLog } from "#/orpc/time/contract";
 import { m } from "#/paraglide/messages";
+import { TaskStatusPanel } from "#/routes/projects_projectKey/components/task-status-panel";
 import { timeQuery } from "#/routes/projects_projectKey/queries";
 
 /*===== Spans =====*/
@@ -70,9 +72,10 @@ function timeByPerson({ logs, now }: { logs: TimeLog[]; now: number | null }): P
 /*===== Task Time Section =====*/
 
 /**
- * The drawer's time: how long each person has worked on the task (a level meter each, like the channels on a mixer,
- * the one who worked most at full scale), how old the task is (created to done, or to now), how long it has sat in each
- * column (from its history), and every stretch of work logged on it. The timer is the only way time is logged.
+ * The drawer's time, first in its tracking column: the clock's face (the task's state and its time spent, ticking while
+ * a clock runs), how long each person has worked on it (a level meter each, like the channels on a mixer, the one who
+ * worked most at full scale), how old the task is (created to done, or to now), how long it has sat in each column
+ * (from its history), and every stretch of work logged on it. The timer is the only way time is logged.
  */
 export function TaskTimeSection({
   task,
@@ -89,9 +92,11 @@ export function TaskTimeSection({
 
   return (
     <section aria-labelledby="task-time-title" className="flex flex-col gap-6">
-      <h3 id="task-time-title" className="font-heading text-h4">
+      <h3 id="task-time-title" className="flex items-center gap-2 font-heading text-h4">
+        <ClockIcon aria-hidden="true" className="size-4" />
         {m.time_title()}
       </h3>
+      <TaskStatusPanel task={task} project={project} />
 
       {/*------ By Person ------*/}
       {time && time.logs.length > 0 && <TimeByPerson people={people} totals={timeByPerson({ logs: time.logs, now })} />}

@@ -380,7 +380,7 @@
   "task_save_failed": "The change wasn't saved. Try again.",
   "task_title_label": "Title",
   "task_description_label": "Description",
-  "task_description_edit": "Edit",
+  "task_description_edit": "Edit description",
   "task_description_placeholder": "What needs doing, and how will you know it's done?",
   "task_description_save": "Save",
   "task_description_cancel": "Cancel",
@@ -549,11 +549,13 @@
   ],
   "task_status": "Status",
   "task_timer": "Timer",
-  "task_action_start": "Start timer",
-  "task_action_pause": "Stop timer",
+  "task_action_start": "Start working",
+  "task_action_pause": "Stop working",
   "task_action_done": "Mark done",
   "task_action_stop": "Cancel task",
   "task_action_reopen": "Reopen",
+  "task_work_running": "Working",
+  "task_work_running_label": "Working. Press to stop.",
   "task_status_failed": "The task's status couldn't be changed.",
   "task_run_running": "Running",
   "task_run_done": "Done",
@@ -1140,12 +1142,26 @@
   "task_column_work": "Work",
   "task_column_tracking": "Tracking",
   "task_column_details": "Details",
-  "task_tab_comments": "Comments",
-  "task_tab_checklist": "Checklist",
-  "task_tab_dependencies": "Dependencies",
-  "task_tab_activity": "Activity",
-  "task_tab_time": "Time",
-  "task_tabs": "Task details",
+  "task_columns": "Columns shown",
+  "task_track_move": [
+    {
+      "declarations": ["input column"],
+      "match": {
+        "": "Move to “{column}”"
+      }
+    }
+  ],
+  "task_track_next": [
+    {
+      "declarations": ["input column"],
+      "match": {
+        "": "Send to “{column}”"
+      }
+    }
+  ],
+  "task_title_edit": "Edit title",
+  "task_estimate_none": "No estimate",
+  "task_history_title": "History",
   "activity_user_profile_updated": "updated their profile",
   "activity_task_restored": "restored the task from the archive",
   "activity_task_deleted": "deleted the task for good",

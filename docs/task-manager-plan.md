@@ -47,7 +47,7 @@ Made with the user on 2026-10-30. They answer the spec's open questions and over
   (no logic of their own) anywhere, and removes one once no card on the board is in it. Every column can be renamed and
   given a WIP limit; the cancelled column is never drawn on the board. (Changed after slice 21: the first build had
   seven fixed kinds, Paused and Review among them.)
-- **The clock is not a column, and it is a chronometer.** Start timer and Stop timer work the person's own clock, at
+- **The clock is not a column, and it is a chronometer.** Start working and Stop working (once Start timer and Stop timer) work the person's own clock, at
   once, and leave the card where it is; the card's border is green while a clock runs. Entering Done or Cancelled
   stops its clocks. A step back along the fixed columns asks to confirm. (Changed 2026-10-31: pausing no longer asks
   why, a done card's clock starts without a confirm, there is no yellow paused state, and time is no longer typed in;

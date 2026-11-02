@@ -17,7 +17,7 @@ const ACTION_ICONS: Record<TaskStatusAction, LucideIcon> = {
   reopen: RotateCcwIcon,
 };
 
-/** An action's name: the clock's two read "Start timer" and "Stop timer", like a chronometer's keys. */
+/** An action's name: the clock's two read "Start working" and "Stop working". */
 export function statusActionLabel(action: TaskStatusAction): string {
   return {
     start: m.task_action_start,

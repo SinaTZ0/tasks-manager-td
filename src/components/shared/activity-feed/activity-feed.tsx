@@ -358,7 +358,7 @@ export function ActivityFeed({
   showTask?: boolean;
   projectKey?: string;
   /** The level of the day headings, one below the heading the feed sits under. */
-  dayHeading?: "h2" | "h3";
+  dayHeading?: "h2" | "h3" | "h4";
 }) {
   const today = teamToday();
   const days = groupByDay(items);

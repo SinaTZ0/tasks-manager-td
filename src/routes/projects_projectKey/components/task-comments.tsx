@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { PencilIcon, SendIcon, Trash2Icon } from "lucide-react";
+import { MessageSquareIcon, PencilIcon, SendIcon, Trash2Icon } from "lucide-react";
 import { useState } from "react";
 
 import { Button } from "#/components/primitive/button/button";
@@ -43,7 +43,7 @@ function failureText({ error, fallback }: { error: unknown; fallback: string }) 
 /*===== Task Comments =====*/
 
 /**
- * The drawer's thread (docs/app.md → Comments): every comment oldest first, each signed and dated, with keys to edit or
+ * The task's thread, at the end of the drawer's work column (docs/app.md → Comments): every comment oldest first, each signed and dated, with keys to edit or
  * delete the viewer's own; a deleted one leaves a line saying so. Under it, the editor to write one: `@` mentions a
  * member, who is told, and Ctrl+Enter sends it. An archived task's thread is read-only.
  */
@@ -63,7 +63,12 @@ export function TaskComments({
   const archived = task.archivedAt !== null;
 
   return (
-    <section aria-label={m.comment_title()} className="flex flex-col gap-6">
+    <section aria-labelledby="task-comments-title" className="flex flex-col gap-6">
+      <h3 id="task-comments-title" className="flex items-center gap-2 font-heading text-h4">
+        <MessageSquareIcon aria-hidden="true" className="size-4" />
+        {m.comment_title()}
+      </h3>
+
       {/*------ Thread ------*/}
       {comments && comments.length > 0 ? (
         <ol className="flex flex-col striped">

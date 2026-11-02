@@ -380,7 +380,7 @@
   "task_save_failed": "تغییر ذخیره نشد. دوباره امتحان کنید.",
   "task_title_label": "عنوان",
   "task_description_label": "توضیح",
-  "task_description_edit": "ویرایش",
+  "task_description_edit": "ویرایش توضیح",
   "task_description_placeholder": "چه باید انجام شود و از کجا بفهمیم تمام شده است؟",
   "task_description_save": "ذخیره",
   "task_description_cancel": "لغو",
@@ -549,11 +549,13 @@
   ],
   "task_status": "وضعیت",
   "task_timer": "زمان‌سنج",
-  "task_action_start": "روشن کردن زمان‌سنج",
-  "task_action_pause": "خاموش کردن زمان‌سنج",
+  "task_action_start": "شروع کار",
+  "task_action_pause": "توقف کار",
   "task_action_done": "تمام شد",
   "task_action_stop": "لغو کار",
   "task_action_reopen": "بازگشایی",
+  "task_work_running": "در حال کار",
+  "task_work_running_label": "در حال کار. برای توقف بزنید.",
   "task_status_failed": "وضعیت کار تغییر نکرد.",
   "task_run_running": "در حال اجرا",
   "task_run_done": "تمام‌شده",
@@ -1140,12 +1142,26 @@
   "task_column_work": "کار",
   "task_column_tracking": "پیگیری",
   "task_column_details": "مشخصات",
-  "task_tab_comments": "نظرها",
-  "task_tab_checklist": "چک‌لیست",
-  "task_tab_dependencies": "وابستگی‌ها",
-  "task_tab_activity": "تاریخچه",
-  "task_tab_time": "زمان",
-  "task_tabs": "جزئیات کار",
+  "task_columns": "ستون‌های نمایش‌داده‌شده",
+  "task_track_move": [
+    {
+      "declarations": ["input column"],
+      "match": {
+        "": "انتقال به «{column}»"
+      }
+    }
+  ],
+  "task_track_next": [
+    {
+      "declarations": ["input column"],
+      "match": {
+        "": "بفرست به «{column}»"
+      }
+    }
+  ],
+  "task_title_edit": "ویرایش عنوان",
+  "task_estimate_none": "تخمین ندارد",
+  "task_history_title": "تاریخچه",
   "activity_user_profile_updated": "نمایه‌اش را به‌روز کرد",
   "activity_task_restored": "کار را از بایگانی برگرداند",
   "activity_task_deleted": "کار را برای همیشه حذف کرد",

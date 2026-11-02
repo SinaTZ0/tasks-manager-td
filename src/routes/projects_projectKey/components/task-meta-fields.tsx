@@ -2,14 +2,7 @@ import { useId, useState, type KeyboardEvent } from "react";
 
 import { Checkbox } from "#/components/primitive/checkbox/checkbox";
 import { DatePicker } from "#/components/primitive/date-picker/date-picker";
-import {
-  Field,
-  FieldDescription,
-  FieldError,
-  FieldLabel,
-  FieldLegend,
-  FieldSet,
-} from "#/components/primitive/field/field";
+import { Field, FieldDescription, FieldError, FieldLabel } from "#/components/primitive/field/field";
 import { Input } from "#/components/primitive/input/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "#/components/primitive/select/select";
 import { DueMark, dueState } from "#/components/shared/due-mark/due-mark";
@@ -30,7 +23,7 @@ export function PriorityField({ task, update, readOnly }: { task: TaskDetail; up
   const items = TASK_PRIORITIES.map((value) => ({ value, label: priorityName(value) }));
 
   return (
-    <Field>
+    <Field orientation="row">
       <FieldLabel htmlFor="task-priority">{m.task_priority_label()}</FieldLabel>
       <Select
         items={items}
@@ -38,7 +31,7 @@ export function PriorityField({ task, update, readOnly }: { task: TaskDetail; up
         disabled={readOnly}
         onValueChange={(value) => value && value !== task.priority && update.save({ priority: value as TaskPriority })}
       >
-        <SelectTrigger id="task-priority" className="w-full">
+        <SelectTrigger id="task-priority" variant="quiet" size="sm" className="w-full">
           <SelectValue />
         </SelectTrigger>
         <SelectContent>
@@ -84,6 +77,7 @@ export function AssigneesField({
   canEdit: boolean;
 }) {
   const baseId = useId();
+  const labelId = `${baseId}-label`;
   const choices = choicesOf({ members, people, keep: task.assigneeIds });
   const toggle = (userId: string, on: boolean) =>
     update.save({
@@ -91,8 +85,11 @@ export function AssigneesField({
     });
 
   return (
-    <FieldSet>
-      <FieldLegend variant="label">{m.task_assignee_label()}</FieldLegend>
+    <Field orientation="row" aria-labelledby={labelId}>
+      {/* Names the group; each person's key has its own label. */}
+      <FieldLabel id={labelId} className="self-start">
+        {m.task_assignee_label()}
+      </FieldLabel>
       <ul className="flex flex-col gap-2.5">
         {choices.map((person) => {
           const id = `${baseId}-${person.id}`;
@@ -114,7 +111,7 @@ export function AssigneesField({
           );
         })}
       </ul>
-    </FieldSet>
+    </Field>
   );
 }
 
@@ -150,10 +147,10 @@ export function OwnerField({
   };
 
   return (
-    <Field>
+    <Field orientation="row">
       <FieldLabel htmlFor={id}>{m.task_owner_label()}</FieldLabel>
       <Select items={items} value={task.ownerId} onValueChange={onChange} disabled={!canEdit}>
-        <SelectTrigger id={id} className="w-full">
+        <SelectTrigger id={id} variant="quiet" size="sm" className="w-full">
           <SelectValue />
         </SelectTrigger>
         <SelectContent>
@@ -185,18 +182,19 @@ export function DueDateField({
   const tone = task.dueDate ? dueState({ dueDate: task.dueDate, finished }).tone : null;
 
   return (
-    <Field>
+    <Field orientation="row">
       <FieldLabel htmlFor="task-due">{m.task_due_label()}</FieldLabel>
       <DatePicker
+        quiet
         id="task-due"
         value={task.dueDate}
         disabled={readOnly}
         onChange={(dueDate) => dueDate !== task.dueDate && update.save({ dueDate })}
       />
-      {/* Only once it comes close: the picker already prints the date. */}
+      {/* Only once it comes close, and only the words: the picker already prints the date. */}
       {task.dueDate && tone && (
         <FieldDescription>
-          <DueMark dueDate={task.dueDate} finished={finished} format={{ dateStyle: "medium" }} />
+          <DueMark dueDate={task.dueDate} finished={finished} format={{ dateStyle: "medium" }} brief />
         </FieldDescription>
       )}
     </Field>
@@ -229,10 +227,12 @@ export function EstimateField({ task, update, readOnly }: { task: TaskDetail; up
   };
 
   return (
-    <Field data-invalid={!!error || undefined}>
+    <Field orientation="row" data-invalid={!!error || undefined}>
       <FieldLabel htmlFor="task-estimate">{m.task_estimate_label()}</FieldLabel>
       <Input
+        quiet
         id="task-estimate"
+        placeholder={m.task_estimate_none()}
         variant="code"
         dir="ltr"
         inputMode="decimal"
@@ -245,7 +245,12 @@ export function EstimateField({ task, update, readOnly }: { task: TaskDetail; up
         aria-invalid={!!error}
         aria-describedby={readOnly ? undefined : "task-estimate-hint"}
       />
-      {!readOnly && <FieldDescription id="task-estimate-hint">{m.task_estimate_hint()}</FieldDescription>}
+      {/* Only while typing: the hint is for writing a duration, not for reading one. */}
+      {!readOnly && (
+        <FieldDescription id="task-estimate-hint" className="hidden group-focus-within/field:block">
+          {m.task_estimate_hint()}
+        </FieldDescription>
+      )}
       <FieldError>{error}</FieldError>
     </Field>
   );

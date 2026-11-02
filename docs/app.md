@@ -66,9 +66,9 @@ What each thing is and how it relates. How to store it = implementer decides.
 **Status / Clock / Cancel**
 
 - The clock (timer) is separate from the column. It shows who is working on what, wherever the card sits.
-- The clock is a chronometer: two keys, **Start timer** and **Stop timer**. No questions, no confirms, no reset.
-- **Start timer** → my clock runs on the card, card stays where it is. Card border goes **green** while any clock runs.
-- **Stop timer** → my clock stops, card stays. The time so far stays; the next start adds to it.
+- The clock is a chronometer: one latching key, **Start working**; while it runs it lights orange and reads **Working**, and pressing it again stops it. In the card menu the two read **Start working** and **Stop working**. No questions, no confirms, no reset.
+- **Start working** → my clock runs on the card, card stays where it is. Card border goes **green** while any clock runs.
+- **Stop working** → my clock stops, card stays. The time so far stays; the next start adds to it.
 - **Cancel task** → task cancelled, reason required, card hidden in Cancelled, its clocks stop. Can reopen.
 - **Done** → record finish time, its clocks stop
 - **Reopen** → back to To Do (from Done it asks first, like any step back)
@@ -169,7 +169,7 @@ What each thing is and how it relates. How to store it = implementer decides.
 - **Login**
 - **Boards list**
 - **Board** (main kanban) — columns, cards, filter bar, search
-- **Card drawer/modal** — three columns the user can resize: the work (timer, title, description, attachments), the tabs (Comments | Checklist | Dependencies | Activity | Time), and the details (status: done / stop / reopen, then priority, people, dates, labels, delegation)
+- **Card drawer/modal** — a header with the code, the title (edited in place) and the status track: the Start working key, then the board's columns in order (the ones passed lit, the current one latched, any other a press away, following the same rules as a drag), the next step as its own key (Send to the next column, or Mark done before Done; Reopen once done or cancelled) and Cancel apart from it. Under it, up to three columns the user can resize, each switched on and off by a folder tab on the header's edge that prints a summary of what it holds: the work (description, checklist, attachments and the comment thread; the only one on at first), the tracking (time with the clock's face, dependencies, history, one under the other), and the details (priority, people, dates, labels, delegation, as label and value rows)
 - **My Tasks** — assigned to me, delegated by me, watching
 - **Notifications** — bell dropdown
 - **Settings** — columns (add, rename, remove when empty), labels, members, WIP limits

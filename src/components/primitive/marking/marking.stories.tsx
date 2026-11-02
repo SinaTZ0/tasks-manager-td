@@ -43,15 +43,11 @@ export const InContext: Story = {
         <Marking>چک‌لیست</Marking>
         <Marking variant="reading">۱/۲</Marking>
       </span>
+      <span className="flex items-center gap-2">
+        <Led signal="positive" state="blink" size="sm" />
+        <Marking>زمان</Marking>
+        <Marking variant="clock">۰:۲۴:۰۳</Marking>
+      </span>
     </div>
-  ),
-};
-
-// On a strip in the secondary colour, the words print in the strip's own ink.
-export const OnSecondary: Story = {
-  render: () => (
-    <span className="flex justify-center bg-secondary px-6 py-0.5">
-      <Marking variant="secondary">پیگیری</Marking>
-    </span>
   ),
 };

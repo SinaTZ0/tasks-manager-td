@@ -14,8 +14,9 @@ import type { useTaskUpdate } from "#/routes/projects_projectKey/use-task-update
 /*===== Description =====*/
 
 /**
- * The task's description: read as rich text, edited in the rich-text editor on demand. A draft is saved only with
- * "Save" (or Ctrl+Enter), so half-written notes don't land in the history one keystroke at a time.
+ * The task's description, first in the work column under the title: read as rich text with no label over it (it is
+ * plainly what the task is), and edited in the rich-text editor from the small pencil key beside it. A draft is saved
+ * only with "Save" (or Ctrl+Enter), so half-written notes don't land in the history one keystroke at a time.
  */
 export function TaskDescriptionField({
   task,
@@ -37,17 +38,10 @@ export function TaskDescriptionField({
 
   return (
     <Field>
-      <div className="flex items-center justify-between gap-3">
-        <FieldLabel id="task-description-label" htmlFor={editing ? "task-description" : undefined}>
-          {m.task_description_label()}
-        </FieldLabel>
-        {!editing && !readOnly && (
-          <Button variant="secondary" size="sm" onClick={() => setDraft(task.description ?? { type: "doc" })}>
-            <PencilIcon data-icon="inline-start" />
-            {m.task_description_edit()}
-          </Button>
-        )}
-      </div>
+      {/* Named for screen readers; on screen the text says what it is. */}
+      <FieldLabel id="task-description-label" htmlFor={editing ? "task-description" : undefined} className="sr-only">
+        {m.task_description_label()}
+      </FieldLabel>
 
       {editing ? (
         <div className="flex flex-col gap-3">
@@ -72,10 +66,26 @@ export function TaskDescriptionField({
             </Button>
           </div>
         </div>
-      ) : task.description ? (
-        <RichText doc={task.description} />
       ) : (
-        <p className="text-muted-foreground">{m.task_description_empty()}</p>
+        <div className="flex items-start gap-3">
+          <div className="min-w-0 flex-1">
+            {task.description ? (
+              <RichText doc={task.description} />
+            ) : (
+              <p className="text-muted-foreground">{m.task_description_empty()}</p>
+            )}
+          </div>
+          {!readOnly && (
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              aria-label={m.task_description_edit()}
+              onClick={() => setDraft(task.description ?? { type: "doc" })}
+            >
+              <PencilIcon />
+            </Button>
+          )}
+        </div>
       )}
     </Field>
   );
