@@ -20,8 +20,7 @@ Requirements: Node 26 (`nvm use`, from `.nvmrc`), pnpm, Docker (for the dev serv
 pnpm install
 cp .env.example .env          # then set the two secrets
 pnpm services                 # Postgres on 5432, SeaweedFS (S3) on 8333, media bucket
-pnpm db:migrate               # create the tables
-pnpm db:seed                  # optional: the admin from SEED_ADMIN_EMAIL / SEED_ADMIN_PASSWORD
+pnpm db:reset                 # create the tables and the admin from SEED_ADMIN_EMAIL / SEED_ADMIN_PASSWORD
 pnpm db:seed:notes            # optional: sample notes for that admin
 pnpm dev                      # http://localhost:3000
 pnpm errors                   # optional, in a second terminal: error viewer on http://localhost:8000
@@ -33,19 +32,19 @@ linted and formatted before each commit, and commit messages must follow
 
 ## Scripts
 
-| Script                            | What it does                                     |
-| --------------------------------- | ------------------------------------------------ |
-| `pnpm dev` / `build` / `start`    | Dev server, production build, production server  |
-| `pnpm lint` / `typecheck`         | oxlint; message compile + tsc                    |
-| `pnpm lint:tw`                    | Lists non-canonical Tailwind classes (advisory)  |
-| `pnpm i18n:compile`               | Compiles `messages/` into `src/paraglide/`       |
-| `pnpm format`                     | Prettier (sorts Tailwind classes)                |
-| `pnpm test`                       | Vitest (integration tests need the database)     |
-| `pnpm test:e2e`                   | Playwright against the production build          |
-| `pnpm storybook`                  | Component previews on port 6006                  |
-| `pnpm db:generate` / `db:migrate` | Record a schema change as a migration; apply it  |
-| `pnpm services`                   | Starts `compose.dev.yaml` and creates the bucket |
-| `pnpm errors`                     | The error viewer on port 8000, with `go run`     |
+| Script                         | What it does                                     |
+| ------------------------------ | ------------------------------------------------ |
+| `pnpm dev` / `build` / `start` | Dev server, production build, production server  |
+| `pnpm lint` / `typecheck`      | oxlint; message compile + tsc                    |
+| `pnpm lint:tw`                 | Lists non-canonical Tailwind classes (advisory)  |
+| `pnpm i18n:compile`            | Compiles `messages/` into `src/paraglide/`       |
+| `pnpm format`                  | Prettier (sorts Tailwind classes)                |
+| `pnpm test`                    | Vitest (integration tests need the database)     |
+| `pnpm test:e2e`                | Playwright against the production build          |
+| `pnpm storybook`               | Component previews on port 6006                  |
+| `pnpm db:reset`                | Rebuilds the local database from the schema      |
+| `pnpm services`                | Starts `compose.dev.yaml` and creates the bucket |
+| `pnpm errors`                  | The error viewer on port 8000, with `go run`     |
 
 ## Layout
 
@@ -63,7 +62,6 @@ src/
   db/                              Drizzle schema, client, seed
   paraglide/                       generated message functions (gitignored, docs/frontend/i18n.md)
 messages/, project.inlang/         the text per locale; Paraglide settings and config
-drizzle/                           SQL migrations (generated, committed)
 deploy/                            deploy.sh (the deploy tool's binary in bin/), Caddyfile, production jobs, steps/
 tools/deploy/, tools/error-viewer/ the deploy tool's Go source (docs/deployment.md), the error viewer
 docs/                              start at backend-flow.md or frontend-flow.md
@@ -77,5 +75,6 @@ docs/                              start at backend-flow.md or frontend-flow.md
 - Next: the header, footer, home and sign-in pages in the new look (`docs/customize-template.md` lists the open
   steps), then the first feature (boards and tasks) by copying the shape of the `note` example, which is deleted
   once tasks exist.
-- Before the first deploy: replace `drizzle/` with one fresh migration (`pnpm db:generate --name init`), and go
+- Before the first deploy: generate one migration (`pnpm db:generate --name init`, with
+  `src/db/activity-append-only.sql` appended), and go
   through "Before Going Live" in `docs/deployment.md`.

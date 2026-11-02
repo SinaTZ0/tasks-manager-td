@@ -11,6 +11,17 @@ The docs have two entry points. Start backend work at `docs/backend-flow.md` and
 - Production: Docker Compose with Caddy in front, migrations applied before each deploy, and a `/healthz` check (`docs/deployment.md`).
 - The `note` feature (`src/orpc/note/`, `src/routes/notes/`) is each person's private notebook, and still the smallest worked example: copy its shape for new features. The task manager's features (`team`, `project`, `activity`, …) are built slice by slice from `docs/task-manager-plan.md`.
 
+## Before Launch
+
+The app is not in production yet, and nobody's data needs keeping, until the user says otherwise:
+
+- Keep nothing legacy. A removed feature goes completely: its code, tables, messages, history entries and the notes
+  that it once existed. No compatibility code for old rows, no "changed on" notes in the docs.
+- No migrations: there is no `drizzle/` folder. After a schema change run `pnpm db:reset` (wipes the local database,
+  `drizzle-kit push --force`, adds `src/db/activity-append-only.sql`, seeds the admin) and reseed whatever else is
+  needed. Wipe and reseed whenever it helps. At launch, generate one initial migration and append that SQL file to it
+  (the production image copies `drizzle/` and runs it).
+
 ## Working Directory
 
 - Run project commands from the repository root.

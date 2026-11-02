@@ -52,7 +52,7 @@ export async function createTestProject<const Name extends string>({
 
 /**
  * Removes what `createTestProject` made and everything written under it. History is append-only: the trigger lets
- * the delete through only in a transaction that set `tofang.test_cleanup` (at the end of drizzle/0000_init.sql).
+ * the delete through only in a transaction that set `tofang.test_cleanup` (`src/db/activity-append-only.sql`).
  */
 export async function deleteTestProject({
   db,

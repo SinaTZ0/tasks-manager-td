@@ -6,7 +6,7 @@ import { activity } from "#/db/schema";
 /*===== Test Cleanup =====*/
 /**
  * Deletes the history entries a test run wrote, so its users and projects can be deleted after them. History is
- * append-only (at the end of drizzle/0000_init.sql); the trigger lets a delete through only in a transaction that
+ * append-only (`src/db/activity-append-only.sql`); the trigger lets a delete through only in a transaction that
  * set `tofang.test_cleanup`, which nothing but the integration tests does.
  */
 export async function deleteTestActivity({ db, actorIds }: { db: Database; actorIds: string[] }): Promise<void> {

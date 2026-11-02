@@ -215,6 +215,10 @@ return { id: result.id };
 
 - Drizzle tables live in `src/db/schema.ts`, Better-Auth's tables included. A change to Better-Auth's user fields
   (`additionalFields` in `auth.server.ts`) needs the matching column there.
+- Until launch (CLAUDE.md → Before Launch) there are no migrations: `pnpm db:reset` rebuilds the local database from
+  the schema (`drizzle-kit push --force`) plus the SQL a push can't express (`src/db/activity-append-only.sql`), and
+  seeds the admin. At launch, `pnpm db:generate --name init` makes the first migration, with that SQL file appended
+  after a `--> statement-breakpoint`. The rest of this list is for after launch.
 - While building, sync the local database with `pnpm db:push`. Before committing, run
   `pnpm db:generate --name <what-changed>`, review the SQL in `drizzle/`, and commit it with the schema change.
   Production only runs those files. The details, including renames and changes that span two deploys, are in

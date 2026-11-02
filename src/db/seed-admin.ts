@@ -7,8 +7,8 @@ import { PASSWORD_MAX_LENGTH, PASSWORD_MIN_LENGTH } from "#/orpc/team/constants"
 
 /*===== Seed =====*/
 // Creates an admin from SEED_ADMIN_EMAIL / SEED_ADMIN_PASSWORD (and SEED_ADMIN_NAME, "Admin" when unset). Idempotent:
-// an existing account with that email is only promoted, never changed otherwise. Run with `pnpm db:seed` after
-// `pnpm db:migrate`; on a server, `deploy/deploy.sh admin <email>` runs the bundled copy (`deploy/seed-admin.mjs`) for
+// an existing account with that email is only promoted, never changed otherwise. `pnpm db:seed` runs it (and so does
+// `pnpm db:reset`); on a server, `deploy/deploy.sh admin <email>` runs the bundled copy (`deploy/seed-admin.mjs`) for
 // an email no account has yet, since there is no public sign-up to make one.
 
 const email = process.env.SEED_ADMIN_EMAIL?.trim().toLowerCase();
