@@ -1,7 +1,6 @@
 import { ORPCError } from "@orpc/client";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router";
-import { useMemo } from "react";
 
 import { AvatarGroup } from "#/components/primitive/avatar/avatar";
 import { Card, CardContent } from "#/components/primitive/card/card";
@@ -96,32 +95,28 @@ function BoardPage() {
 
   /*------ Lookups ------*/
   // Cards name people by id: the project's members, and anyone the board still mentions who has left it.
-  const people = useMemo(
-    () => new Map<string, Person>([...board.people, ...project.members].map((person) => [person.id, person])),
-    [board.people, project.members],
-  );
-  const labels = useMemo(() => new Map(board.labels.map((label) => [label.id, label])), [board.labels]);
+  const people = new Map<string, Person>([...board.people, ...project.members].map((person) => [person.id, person]));
+  const labels = new Map(board.labels.map((label) => [label.id, label]));
 
   /*------ Filters ------*/
   const { assignee, label, priority, due, blocked } = search;
-  const filter = useMemo(() => {
-    const current: BoardFilter = { assignee, label, priority, due, blocked };
-    if (!isFiltering(current)) return null;
-    const tasks = new Map(board.tasks.map((task) => [task.id, task]));
-    const kinds = kindsOf(project);
-    return cardFilter({
-      filter: current,
-      viewerId,
-      today: teamToday(),
-      isBlocked: (task) => blockersOf({ task, tasks, kinds }).length > 0,
-    });
-  }, [assignee, label, priority, due, blocked, board.tasks, project, viewerId]);
+  const current: BoardFilter = { assignee, label, priority, due, blocked };
+  const tasks = new Map(board.tasks.map((task) => [task.id, task]));
+  const kinds = kindsOf(project);
+  const filter = isFiltering(current)
+    ? cardFilter({
+        filter: current,
+        viewerId,
+        today: teamToday(),
+        isBlocked: (task) => blockersOf({ task, tasks, kinds }).length > 0,
+      })
+    : null;
   const setFilter = (patch: Partial<BoardFilter>) =>
     void navigate({ search: (previous) => ({ ...previous, ...patch }), replace: true });
 
   /*------ Columns ------*/
   const columns = project.columns.filter((column) => column.kind !== "cancelled");
-  const hidden = useMemo(() => new Set(search.hide), [search.hide]);
+  const hidden = new Set(search.hide);
   const setHidden = (ids: string[]) =>
     void navigate({ search: (previous) => ({ ...previous, hide: ids.length > 0 ? ids : undefined }), replace: true });
 

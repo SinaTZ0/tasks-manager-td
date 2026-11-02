@@ -96,6 +96,8 @@ Preserve established local conventions unless a rule below explicitly says other
 - The instrument's own atoms with no shadcn original (`led`, `display`, `marking`) are primitives too: generic parts of the design system that other primitives use. Pressable and seated parts are built from `primitive/instrument.styles.ts` (cut on `::before`, keycap face on `::after`, never a background on the root).
 - App-made components with no shadcn original (e.g. `form-alert`, `site-link`, a task card) live in `src/components/shared/<name>/` once more than one route uses them.
 - When `shadcn/*` lint flags a class, fix the code it points at: a variant or base style in the primitive, layout on the parent, or a token in `src/styles.css` (`docs/frontend/components.md#lint-rules`). Don't hide the styling in a wrapper element or a raw element in place of the primitive.
+- The React Compiler memoizes every component and hook (`docs/frontend/architecture.md` → React Compiler): don't write
+  `memo`, `useMemo` or `useCallback`. Something created once per component goes in `useState(() => …)`.
 - The current look (tokens in `src/styles.css`, primitives, existing pages) serves the design, not the other way round. When a design needs something different, change the primitives and `src/styles.css` instead of bending the design to fit them.
 
 ### Imports

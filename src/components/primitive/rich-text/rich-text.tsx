@@ -1,5 +1,5 @@
 import { renderToReactElement } from "@tiptap/static-renderer/pm/react";
-import { useMemo, type ComponentProps } from "react";
+import type { ComponentProps } from "react";
 
 import { richTextExtensions, type RichTextDoc } from "#/lib/rich-text";
 import { cn } from "#/lib/utils";
@@ -25,7 +25,7 @@ export type RichTextProps = Omit<ComponentProps<"div">, "children"> & {
  * Check `isEmptyRichText` first if an empty document should show something else.
  */
 function RichText({ doc, className, ...props }: RichTextProps) {
-  const content = useMemo(() => renderToReactElement({ content: doc, extensions }), [doc]);
+  const content = renderToReactElement({ content: doc, extensions });
 
   return (
     <div data-slot="rich-text" {...props} className={cn(richTextProseClasses, className)}>

@@ -122,6 +122,20 @@ The full rules are in [data-loading.md](./data-loading.md). In short:
 - Handle every state a user can see: loading, empty, error, and success.
 - Creating, changing and linting primitives: see [components.md](./components.md).
 
+## React Compiler
+
+- The React Compiler memoizes every component and hook at build time (`vite.config.ts`: `@rolldown/plugin-babel` with
+  `reactCompilerPreset()`, the setup of Vite's `react-compiler-ts` template). The code has no `memo`, `useMemo` or
+  `useCallback`: write plain components, values and functions, and it skips what didn't change.
+- That covers identity too. A value or function it builds stays the same object until something it reads changes,
+  so an effect's dependency, a callback ref or a handler a library holds (the search box's `onCommit`, dnd-kit's
+  collision check) doesn't change on every render.
+- Something that must be created exactly once per component, whatever happens (an atom, a store), goes in
+  `useState(() => …)`: that is a guarantee, where memoizing is only a cache.
+- It relies on the rules of React: props, state and values from hooks are never mutated, and refs are read in effects
+  and handlers, not while rendering. A function it can't compile (one that breaks those rules, or uses syntax it
+  doesn't handle yet, such as `try … finally`) is left as written and still works, just unmemoized.
+
 ## Language, Direction, and Accessibility
 
 The full rules are in [i18n.md](./i18n.md). In short:

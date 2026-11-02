@@ -2,7 +2,8 @@ import { paraglideVitePlugin } from "@inlang/paraglide-js";
 import tailwindcss from "@tailwindcss/vite";
 import { devtools } from "@tanstack/devtools-vite";
 import { tanstackStart } from "@tanstack/react-start/plugin/vite";
-import viteReact from "@vitejs/plugin-react";
+import babel from "@rolldown/plugin-babel";
+import viteReact, { reactCompilerPreset } from "@vitejs/plugin-react";
 import { nitro } from "nitro/vite";
 import { defineConfig } from "vite";
 
@@ -23,6 +24,10 @@ export default defineConfig({
     // Builds the Node server (`.output/server/index.mjs`) that serves the app and its static assets.
     nitro(),
     viteReact(),
+    // The React Compiler memoizes components and hooks at build time, so the code has no hand-written `memo`,
+    // `useMemo` or `useCallback` for speed (docs/frontend/architecture.md → React Compiler). The setup is Vite's
+    // `react-compiler-ts` template's.
+    babel({ presets: [reactCompilerPreset()] }),
     // `traceLayers` times feature services and repositories (docs/backend/logging.md → Request Timing).
     traceLayers(),
   ],

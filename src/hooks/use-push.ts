@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 
 import { client } from "#/orpc/client";
 import { getLocale } from "#/paraglide/runtime";
@@ -101,17 +101,17 @@ export function usePush(): {
     };
   }, []);
 
-  const enable = useCallback(async () => {
+  const enable = async () => {
     const permission = await Notification.requestPermission();
     if (permission !== "granted") return setState(permission === "denied" ? "blocked" : "off");
     await subscribe();
     setState("on");
-  }, []);
+  };
 
-  const disable = useCallback(async () => {
+  const disable = async () => {
     await forgetPushSubscription();
     setState("off");
-  }, []);
+  };
 
   return { state, enable, disable };
 }

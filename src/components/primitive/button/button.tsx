@@ -1,7 +1,7 @@
 import { Button as ButtonPrimitive } from "@base-ui/react/button";
 import { type VariantProps } from "class-variance-authority";
 import { cn } from "#/lib/utils";
-import { type ComponentProps, type CSSProperties, type ReactNode, useCallback, useState } from "react";
+import { type ComponentProps, type CSSProperties, type ReactNode, useState } from "react";
 import { buttonVariants } from "./button.styles";
 
 /*===== Button =====*/
@@ -36,12 +36,12 @@ function Button({ className, variant, size, glide = false, children, ...props }:
 /** The legend of a `glide` button: measured as it changes, so its box can animate to the new width (`width-glide`). */
 function GlidingLegend({ children }: { children: ReactNode }) {
   const [width, setWidth] = useState<number>();
-  const measure = useCallback((element: HTMLSpanElement | null) => {
+  const measure = (element: HTMLSpanElement | null) => {
     if (!element) return;
     const observer = new ResizeObserver(() => setWidth(element.offsetWidth));
     observer.observe(element);
     return () => observer.disconnect();
-  }, []);
+  };
 
   return (
     <span

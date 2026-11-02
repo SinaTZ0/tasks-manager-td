@@ -82,16 +82,14 @@ it under the draft:
 ```tsx
 const { q } = Route.useSearch();
 const navigate = Route.useNavigate();
-const commit = useCallback(
-  (q: string) => navigate({ search: (prev) => ({ ...prev, q, page: 1 }), replace: true }),
-  [navigate],
-);
+const commit = (q: string) => navigate({ search: (prev) => ({ ...prev, q, page: 1 }), replace: true });
 const [text, setText] = useSearchText({ value: q, onCommit: commit });
 
 <Input value={text} onChange={(event) => setText(event.target.value)} />;
 ```
 
-Keep `onCommit` stable (`useCallback`): a new function each render restarts the pause.
+A new `onCommit` restarts the pause. The React Compiler keeps `commit` the same function until `navigate` changes
+([architecture.md → React Compiler](./architecture.md#react-compiler)), so no `useCallback` is needed.
 
 A list the page already has (links, a directory) is filtered in the component: `listSearchSchema`
 (`src/lib/search-params.ts`) validates `?q=` and `?group=`, and `matchesSearch(searchWords(q), [title, description])`

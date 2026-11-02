@@ -32,7 +32,6 @@ import { GripVerticalIcon } from "lucide-react";
 import {
   useId,
   useLayoutEffect,
-  useMemo,
   useRef,
   useState,
   type CSSProperties,
@@ -303,7 +302,7 @@ export function Board({
 }) {
   const moveTask = useTaskMove(project.id);
   const transition = useTaskTransition(project);
-  const watching = useMemo(() => new Set(board.watching), [board.watching]);
+  const watching = new Set(board.watching);
   // Kept after the dialog closes, so it plays its way out showing what it asked.
   const [transfer, setTransfer] = useState<(TransferRequest & { open: boolean }) | null>(null);
   // Kept after the dialog closes, so it can play its way out showing what it asked. `run` takes the action with the
@@ -326,39 +325,32 @@ export function Board({
   const droppedOrder = drag?.type === "dropped-column" && drag.until === project.columns ? drag.order : null;
   // Every column but cancelled, for the cards' menus; `columns` is the ones on the board, which everything else uses.
   // A dropped column's order names only the columns on the board, so it is applied after the hidden ones are out.
-  const allColumns = useMemo(() => project.columns.filter((column) => column.kind !== "cancelled"), [project.columns]);
-  const columns = useMemo(() => {
-    const shown = allColumns.filter((column) => !hiddenColumns.has(column.id));
-    return droppedOrder ? shown.toSorted((a, b) => droppedOrder.indexOf(a.id) - droppedOrder.indexOf(b.id)) : shown;
-  }, [allColumns, hiddenColumns, droppedOrder]);
+  const allColumns = project.columns.filter((column) => column.kind !== "cancelled");
+  const shownColumns = allColumns.filter((column) => !hiddenColumns.has(column.id));
+  const columns = droppedOrder
+    ? shownColumns.toSorted((a, b) => droppedOrder.indexOf(a.id) - droppedOrder.indexOf(b.id))
+    : shownColumns;
   // dnd-kit numbers its accessibility ids from a counter of its own, which differs between server and browser.
   const contextId = useId();
 
   /*------ Lookups ------*/
-  const tasks = useMemo(() => new Map(board.tasks.map((task) => [task.id, task])), [board.tasks]);
-  const kinds = useMemo(() => kindsOf(project), [project]);
+  const tasks = new Map(board.tasks.map((task) => [task.id, task]));
+  const kinds = kindsOf(project);
   const blockerCodes = (task: TaskCardData) =>
     blockersOf({ task, tasks, kinds }).map((blocker) => taskCode({ key: project.key, number: blocker.number }));
-  const settled = useMemo<Lanes>(
-    () =>
-      Object.fromEntries(
-        columns.map((column) => [
-          column.id,
-          board.tasks.filter((task) => task.columnId === column.id && (!filter || filter(task))).map((task) => task.id),
-        ]),
-      ),
-    [columns, board.tasks, filter],
+  const settled: Lanes = Object.fromEntries(
+    columns.map((column) => [
+      column.id,
+      board.tasks.filter((task) => task.columnId === column.id && (!filter || filter(task))).map((task) => task.id),
+    ]),
   );
-  const totals = useMemo(() => {
-    const counts = new Map<string, number>();
-    for (const task of board.tasks) counts.set(task.columnId, (counts.get(task.columnId) ?? 0) + 1);
-    return counts;
-  }, [board.tasks]);
+  const totals = new Map<string, number>();
+  for (const task of board.tasks) totals.set(task.columnId, (totals.get(task.columnId) ?? 0) + 1);
   const lanes =
     drag?.type === "task" || (drag?.type === "dropped-task" && drag.until === board.tasks) ? drag.lanes : settled;
   const cancelled = project.columns.find((column) => column.kind === "cancelled");
   const cancelledTasks = board.tasks.filter((task) => task.columnId === cancelled?.id && (!filter || filter(task)));
-  const titles = useMemo(() => new Map(columns.map((column) => [column.id, columnTitle(column)])), [columns]);
+  const titles = new Map(columns.map((column) => [column.id, columnTitle(column)]));
   const codeOf = (id: UniqueIdentifier) => {
     const task = tasks.get(String(id));
     return task ? taskCode({ key: project.key, number: task.number }) : "";
@@ -379,48 +371,45 @@ export function Board({
     });
   }, [lanes]);
 
-  const collisionDetection = useMemo<CollisionDetection>(
-    () => (args) => {
-      if (typeOf(args.active) === "column") {
-        return closestCenter({
-          ...args,
-          droppableContainers: args.droppableContainers.filter((target) => typeOf(target) === "column"),
-        });
-      }
+  const collisionDetection: CollisionDetection = (args) => {
+    if (typeOf(args.active) === "column") {
+      return closestCenter({
+        ...args,
+        droppableContainers: args.droppableContainers.filter((target) => typeOf(target) === "column"),
+      });
+    }
 
-      const targets = args.droppableContainers.filter((target) => typeOf(target) !== "column");
-      let hits: Collision[];
-      if (args.pointerCoordinates) {
-        // A pointer picks the column it is over, anywhere on it (its header and padding too), then the closest card
-        // in it. Over no column (a gap, under a short column) it keeps the last target. Falling back to the closest
-        // card there picked one in the other column; crossing over changed the columns' heights, so the closest card
-        // was back in the first one, and the card flew back and forth in one chain of renders until React stopped
-        // the board ("Maximum update depth exceeded").
-        const columnTargets = args.droppableContainers.filter((target) => typeOf(target) === "column");
-        const columnId = pointerWithin({ ...args, droppableContainers: columnTargets })[0]?.id;
-        const lane = columnId === undefined ? undefined : lanesRef.current[String(columnId)];
-        const cards = targets.filter((target) => lane?.includes(String(target.id)));
-        hits =
-          columnId === undefined || lane === undefined
-            ? []
-            : cards.length > 0
-              ? closestCenter({ ...args, droppableContainers: cards })
-              : [{ id: zoneId(String(columnId)) }];
-      } else {
-        // The keyboard has no pointer: it takes the closest target in the direction it moved.
-        hits = closestCorners({ ...args, droppableContainers: targets });
-      }
+    const targets = args.droppableContainers.filter((target) => typeOf(target) !== "column");
+    let hits: Collision[];
+    if (args.pointerCoordinates) {
+      // A pointer picks the column it is over, anywhere on it (its header and padding too), then the closest card
+      // in it. Over no column (a gap, under a short column) it keeps the last target. Falling back to the closest
+      // card there picked one in the other column; crossing over changed the columns' heights, so the closest card
+      // was back in the first one, and the card flew back and forth in one chain of renders until React stopped
+      // the board ("Maximum update depth exceeded").
+      const columnTargets = args.droppableContainers.filter((target) => typeOf(target) === "column");
+      const columnId = pointerWithin({ ...args, droppableContainers: columnTargets })[0]?.id;
+      const lane = columnId === undefined ? undefined : lanesRef.current[String(columnId)];
+      const cards = targets.filter((target) => lane?.includes(String(target.id)));
+      hits =
+        columnId === undefined || lane === undefined
+          ? []
+          : cards.length > 0
+            ? closestCenter({ ...args, droppableContainers: cards })
+            : [{ id: zoneId(String(columnId)) }];
+    } else {
+      // The keyboard has no pointer: it takes the closest target in the direction it moved.
+      hits = closestCorners({ ...args, droppableContainers: targets });
+    }
 
-      const overId = hits[0]?.id ?? null;
-      if (overId !== null) {
-        lastOverId.current = overId;
-        return [{ id: overId }];
-      }
-      if (justCrossed.current) lastOverId.current = args.active.id;
-      return lastOverId.current === null ? [] : [{ id: lastOverId.current }];
-    },
-    [],
-  );
+    const overId = hits[0]?.id ?? null;
+    if (overId !== null) {
+      lastOverId.current = overId;
+      return [{ id: overId }];
+    }
+    if (justCrossed.current) lastOverId.current = args.active.id;
+    return lastOverId.current === null ? [] : [{ id: lastOverId.current }];
+  };
 
   /*------ Drag Handlers ------*/
   const sensors = useSensors(

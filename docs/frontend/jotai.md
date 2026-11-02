@@ -19,7 +19,7 @@ Never copy query data into atoms. Two copies drift apart, and refetches stop rea
 ## Defining Atoms
 
 - **Define atoms at module scope.** An atom created during render is a new atom on every render. Create one inside a
-  component only when each instance needs its own state, and then wrap it in `useMemo`.
+  component only when each instance needs its own state, and then create it once with `useState(() => atom(...))`.
 - **Use the `Atom` suffix:** `sidebarOpenAtom`, `cartItemsAtom`.
 - **Keep atoms small and derive the rest.** Store the minimal source state in primitive atoms, and compute everything
   else with read-only derived atoms instead of keeping a second copy in sync.

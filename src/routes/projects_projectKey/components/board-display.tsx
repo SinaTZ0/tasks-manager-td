@@ -1,4 +1,4 @@
-import { useMemo, type ReactNode } from "react";
+import type { ReactNode } from "react";
 
 import { Display, DisplayButton, DisplayLabel, DisplayValue } from "#/components/primitive/display/display";
 import { Led } from "#/components/primitive/led/led";
@@ -43,24 +43,18 @@ export function BoardDisplay({
   const columns = project.columns.filter((column) => column.kind !== "cancelled");
 
   /*------ Readings ------*/
-  const { counts, total, blocked, late } = useMemo(() => {
-    const kinds = kindsOf(project);
-    const tasks = new Map(board.tasks.map((task) => [task.id, task]));
-    const live = board.tasks.filter((task) => kinds.get(task.columnId) !== "cancelled");
-    const perColumn = new Map<string, number>();
-    for (const task of live) perColumn.set(task.columnId, (perColumn.get(task.columnId) ?? 0) + 1);
-    return {
-      counts: perColumn,
-      total: live.length,
-      blocked: live.filter(
-        (task) => isHolding(kinds.get(task.columnId)) && blockersOf({ task, tasks, kinds }).length > 0,
-      ).length,
-      late: live.filter(
-        (task) =>
-          task.dueDate && dueState({ dueDate: task.dueDate, finished: task.completedAt !== null }).tone === "late",
-      ).length,
-    };
-  }, [board.tasks, project]);
+  const kinds = kindsOf(project);
+  const tasks = new Map(board.tasks.map((task) => [task.id, task]));
+  const live = board.tasks.filter((task) => kinds.get(task.columnId) !== "cancelled");
+  const counts = new Map<string, number>();
+  for (const task of live) counts.set(task.columnId, (counts.get(task.columnId) ?? 0) + 1);
+  const total = live.length;
+  const blocked = live.filter(
+    (task) => isHolding(kinds.get(task.columnId)) && blockersOf({ task, tasks, kinds }).length > 0,
+  ).length;
+  const late = live.filter(
+    (task) => task.dueDate && dueState({ dueDate: task.dueDate, finished: task.completedAt !== null }).tone === "late",
+  ).length;
 
   const shown = columns.filter((column) => !hidden.has(column.id));
   const toggle = (column: Column) => {

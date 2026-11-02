@@ -2,7 +2,6 @@ import { ORPCError } from "@orpc/client";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { ChevronLeftIcon, ChevronRightIcon } from "lucide-react";
-import { useMemo } from "react";
 
 import { Button } from "#/components/primitive/button/button";
 import { Card, CardContent } from "#/components/primitive/card/card";
@@ -79,28 +78,25 @@ function CalendarPage() {
     void navigate({ search: (previous) => ({ ...previous, month: date }), replace: true });
 
   /*------ Lookups ------*/
-  const people = useMemo(
-    () => new Map<string, Person>([...board.people, ...project.members].map((person) => [person.id, person])),
-    [board.people, project.members],
-  );
-  const kindOf = useMemo(() => new Map(project.columns.map((column) => [column.id, column.kind])), [project.columns]);
+  const people = new Map<string, Person>([...board.people, ...project.members].map((person) => [person.id, person]));
+  const kindOf = new Map(project.columns.map((column) => [column.id, column.kind]));
 
   /*------ Filters ------*/
   const { assignee, label, priority, due, blocked } = search;
-  const shown = useMemo(() => {
-    const current: BoardFilter = { assignee, label, priority, due, blocked };
-    const live = board.tasks.filter((task) => kindOf.get(task.columnId) !== "cancelled");
-    if (!isFiltering(current)) return live;
-    const tasks = new Map(board.tasks.map((task) => [task.id, task]));
-    const kinds = kindsOf(project);
-    const keep = cardFilter({
-      filter: current,
-      viewerId,
-      today,
-      isBlocked: (task) => blockersOf({ task, tasks, kinds }).length > 0,
-    });
-    return live.filter(keep);
-  }, [assignee, label, priority, due, blocked, board.tasks, kindOf, project, viewerId, today]);
+  const current: BoardFilter = { assignee, label, priority, due, blocked };
+  const live = board.tasks.filter((task) => kindOf.get(task.columnId) !== "cancelled");
+  const tasks = new Map(board.tasks.map((task) => [task.id, task]));
+  const kinds = kindsOf(project);
+  const shown = isFiltering(current)
+    ? live.filter(
+        cardFilter({
+          filter: current,
+          viewerId,
+          today,
+          isBlocked: (task) => blockersOf({ task, tasks, kinds }).length > 0,
+        }),
+      )
+    : live;
   const undated = shown.filter((task) => task.dueDate === null).length;
   const setFilter = (patch: Partial<BoardFilter>) =>
     void navigate({ search: (previous) => ({ ...previous, ...patch }), replace: true });

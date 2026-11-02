@@ -1,7 +1,6 @@
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, Link, redirect, stripSearchParams } from "@tanstack/react-router";
 import { SearchIcon } from "lucide-react";
-import { useCallback } from "react";
 
 import { Card, CardContent } from "#/components/primitive/card/card";
 import { InputGroup, InputGroupAddon, InputGroupInput } from "#/components/primitive/input-group/input-group";
@@ -51,10 +50,7 @@ function SearchPage() {
   const { q } = Route.useSearch();
   const navigate = Route.useNavigate();
   const { data: results } = useSuspenseQuery(searchQuery(q));
-  const commit = useCallback(
-    (next: string) => navigate({ search: (previous) => ({ ...previous, q: next }), replace: true }),
-    [navigate],
-  );
+  const commit = (next: string) => navigate({ search: (previous) => ({ ...previous, q: next }), replace: true });
   const [text, setText] = useSearchText({ value: q, onCommit: commit });
 
   return (

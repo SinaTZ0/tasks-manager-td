@@ -1,7 +1,7 @@
 import { type VariantProps } from "class-variance-authority";
 import { cn } from "#/lib/utils";
 import { CircleAlertIcon } from "lucide-react";
-import { useMemo, type ComponentProps, type ReactNode } from "react";
+import type { ComponentProps, ReactNode } from "react";
 import { Label } from "../label/label";
 import { Separator } from "../separator/separator";
 import {
@@ -106,25 +106,25 @@ export type FieldErrorProps = ComponentProps<"div"> & {
   errors?: Array<{ message?: string } | undefined>;
 };
 
+/** The messages in `errors` with duplicates removed: one message as text, several as a list, none as null. */
+function errorMessages(errors: FieldErrorProps["errors"]): ReactNode {
+  const uniqueErrors = [...new Map((errors ?? []).map((error) => [error?.message, error])).values()];
+  if (uniqueErrors.length === 0) return null;
+  if (uniqueErrors.length === 1) return uniqueErrors[0]?.message;
+
+  return (
+    <ul className={fieldErrorListClasses}>
+      {uniqueErrors.map((error, index) => error?.message && <li key={index}>{error.message}</li>)}
+    </ul>
+  );
+}
+
 /**
  * Shows `children`, or else the messages in `errors` with duplicates removed: one message as text,
  * several as a list. Renders nothing when there is nothing to show.
  */
 function FieldError({ className, children, errors, ...props }: FieldErrorProps) {
-  const content = useMemo(() => {
-    if (children) return children;
-    if (!errors?.length) return null;
-
-    const uniqueErrors = [...new Map(errors.map((error) => [error?.message, error])).values()];
-
-    if (uniqueErrors.length === 1) return uniqueErrors[0]?.message;
-
-    return (
-      <ul className={fieldErrorListClasses}>
-        {uniqueErrors.map((error, index) => error?.message && <li key={index}>{error.message}</li>)}
-      </ul>
-    );
-  }, [children, errors]);
+  const content = children ? children : errorMessages(errors);
 
   if (!content) return null;
 

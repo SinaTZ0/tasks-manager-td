@@ -1,7 +1,6 @@
 import { useSuspenseInfiniteQuery, useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { HistoryIcon } from "lucide-react";
-import { useMemo } from "react";
 
 import { Button } from "#/components/primitive/button/button";
 import { Card, CardContent } from "#/components/primitive/card/card";
@@ -59,11 +58,8 @@ function ActivityPage() {
   );
 
   // Entries name owners and assignees by id. Someone who has left the project reads as "someone".
-  const people = useMemo(
-    () => new Map<string, Person>(project.members.map((person) => [person.id, person])),
-    [project.members],
-  );
-  const items = useMemo(() => data.pages.flatMap((page) => page.items), [data.pages]);
+  const people = new Map<string, Person>(project.members.map((person) => [person.id, person]));
+  const items = data.pages.flatMap((page) => page.items);
 
   return (
     <div className="mx-auto flex w-full max-w-site flex-col gap-6 px-6 py-8">
