@@ -1,8 +1,7 @@
 import { z } from "zod";
 
-import { toLatinDigits } from "#/lib/digits";
 import { persianText } from "#/lib/persian-text";
-import { COLUMN_NAME_MAX_LENGTH, PROJECT_NAME_MAX_LENGTH, WIP_LIMIT_MAX } from "#/orpc/project/constants";
+import { COLUMN_NAME_MAX_LENGTH, PROJECT_NAME_MAX_LENGTH } from "#/orpc/project/constants";
 import { m } from "#/paraglide/messages";
 
 /*===== Forms =====*/
@@ -16,23 +15,21 @@ export const projectNameFormSchema = z.object({
 
 export type ProjectNameFormValues = z.infer<typeof projectNameFormSchema>;
 
-// Both fields are text inputs: an empty name is the kind's own name, an empty limit is no limit.
-export const columnFormSchema = z.object({
-  name: persianText().max(COLUMN_NAME_MAX_LENGTH, {
-    error: () => m.column_error_name_too_long({ max: COLUMN_NAME_MAX_LENGTH }),
-  }),
-  // Persian keyboards type Persian digits.
-  wipLimit: z
-    .string()
-    .trim()
-    .transform(toLatinDigits)
-    .refine((value) => value === "" || (/^\d+$/.test(value) && +value >= 1 && +value <= WIP_LIMIT_MAX), {
-      error: () => m.column_error_wip_invalid({ max: WIP_LIMIT_MAX }),
+// Every column at once, by id. An empty name is the kind's own name; a null limit is no limit. The limit is stepped by
+// keys that stop at its bounds, so only the name can be typed wrong.
+export const columnsFormSchema = z.object({
+  columns: z.record(
+    z.string(),
+    z.object({
+      name: persianText().max(COLUMN_NAME_MAX_LENGTH, {
+        error: () => m.column_error_name_too_long({ max: COLUMN_NAME_MAX_LENGTH }),
+      }),
+      wipLimit: z.number().nullable(),
     }),
+  ),
 });
 
-export type ColumnFormValues = z.input<typeof columnFormSchema>;
-export type ColumnFormOutput = z.output<typeof columnFormSchema>;
+export type ColumnsFormValues = z.infer<typeof columnsFormSchema>;
 
 export const newColumnFormSchema = z.object({
   name: persianText()

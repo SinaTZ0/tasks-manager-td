@@ -215,6 +215,19 @@
   "settings_columns_description": "«برای انجام»، «در حال انجام» و «انجام‌شده» همیشه به همین ترتیب روی تخته‌اند. ستون‌های خودتان را اضافه کنید و روی تخته هر جا خواستید بکشید؛ ستون خالی را می‌شود حذف کرد.",
   "settings_column_name_label": "نام",
   "settings_column_wip_label": "سقف کار",
+  "settings_column_cards": "کارها",
+  "settings_column_no_limit": "بدون سقف",
+  "settings_column_wip_lower": "کم کردن سقف {column}",
+  "settings_column_wip_raise": "بالا بردن سقف {column}",
+  "save_bar_unsaved": [
+    {
+      "declarations": ["input count", "local countText = count: number"],
+      "match": {
+        "": "{countText} تغییر ذخیره‌نشده"
+      }
+    }
+  ],
+  "save_bar_discard": "دور بریز",
   "settings_save": "ذخیره",
   "settings_saved": "ذخیره شد.",
   "settings_save_failed": "تغییر ذخیره نشد. دوباره امتحان کنید.",
@@ -335,7 +348,6 @@
   "label_dialog_description_member": "برچسبی به این پروژه بیفزایید. تغییر نام یا حذف برچسب فقط با مدیر است.",
   "label_empty": "هنوز برچسبی نیست.",
   "label_name": "نام",
-  "label_save": "ذخیره",
   "label_saved": "برچسب ذخیره شد.",
   "label_delete": [
     {

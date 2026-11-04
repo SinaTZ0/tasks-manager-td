@@ -215,6 +215,19 @@
   "settings_columns_description": "To do, Doing and Done are always on the board, in that order. Add your own columns and drag them anywhere on the board; a column can be removed once it is empty.",
   "settings_column_name_label": "Name",
   "settings_column_wip_label": "WIP limit",
+  "settings_column_cards": "Cards",
+  "settings_column_no_limit": "No limit",
+  "settings_column_wip_lower": "Lower the limit of {column}",
+  "settings_column_wip_raise": "Raise the limit of {column}",
+  "save_bar_unsaved": [
+    {
+      "declarations": ["input count", "local countText = count: number"],
+      "match": {
+        "": "{countText} unsaved"
+      }
+    }
+  ],
+  "save_bar_discard": "Discard",
   "settings_save": "Save",
   "settings_saved": "Saved.",
   "settings_save_failed": "The change wasn't saved. Try again.",
@@ -335,7 +348,6 @@
   "label_dialog_description_member": "Add a label to this project. Only an admin can rename or delete one.",
   "label_empty": "No labels yet.",
   "label_name": "Name",
-  "label_save": "Save",
   "label_saved": "Label saved.",
   "label_delete": [
     {
