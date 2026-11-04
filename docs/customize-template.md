@@ -1,7 +1,7 @@
 # Customizing the Template from a Homepage Design
 
 Use this once, when a new project starts from the template. The person gives you a finished homepage design, and you
-turn it into the project's design system: app-identity, tokens, primitives, header and footer, and the home route. After
+turn it into the project's design system: app-identity, tokens, primitives, header, and the home route. After
 this, new pages follow [frontend-flow.md](./frontend-flow.md).
 
 **The homepage is the source of truth for the look.** Wherever the template's current tokens, type styles, variants or
@@ -21,7 +21,7 @@ steps below were applied to it. The languages stay Persian and English.
 - [x] 3. Tokens in `src/styles.css`, light and dark; fonts self-hosted; the type-style list in `cn` updated.
 - [x] 4. Primitives restyled on the instrument recipe, new ones created (toggle, toggle-group, checkbox, switch,
       slider, progress, avatar, kbd, dialog, popover, plus the atoms led, display, marking), stories updated.
-- [x] 5. Header and footer rebuilt as housing strips: model name, the navigation as keys in one slot, language,
+- [x] 5. Header rebuilt as a housing strip: model name, the navigation as keys in one slot, language,
       theme and account keys.
 - [x] 6. Home route: `/` is the board, behind sign-in (`app_layout`); visitors go to sign-in. Its columns are empty
       until the task feature fills them.
@@ -64,7 +64,7 @@ Before editing anything, make an inventory from the source:
   of each there are.
 - **Motion**: hover and focus effects and their durations.
 - **Imagery**: photos, posters with text in them, overlays and gradients, aspect ratios.
-- **Header and footer**: their structure and what each part does.
+- **Header**: its structure and what each part does.
 
 ## 2. App Identity
 
@@ -100,9 +100,9 @@ Fill in [app-identity.md](./frontend/app-identity.md) and delete its stub note:
   `ui/` ([components.md](./frontend/components.md#creating-a-primitive)).
 - Keep shadcn's API and `data-slot`s. Update each story and check it in light and dark (`pnpm storybook`).
 
-## 5. Header, Footer and Shared Pieces
+## 5. Header and Shared Pieces
 
-- Rebuild `site-header` and `site-footer` in `src/components/shared/` from the homepage, keeping their current behavior
+- Rebuild `site-header` in `src/components/shared/` from the homepage, keeping its current behavior
   (navigation, theme toggle, sign-in and sign-out).
 - Promote a homepage piece to `shared/` only if other pages will clearly use it (a section heading, a link row).
   Sections that only the homepage has stay in the home slice.

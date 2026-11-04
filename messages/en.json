@@ -16,7 +16,6 @@
   "common_rate_limited": "Too many requests. Wait a moment and try again.",
   "site_name": "Tofang",
   "site_description": "Team task manager: board, time, dependencies and delegation.",
-  "site_tagline": "Team task board",
   "nav_main": "Main menu",
   "nav_home": "Projects",
   "nav_notes": "Notes",

@@ -4,7 +4,6 @@ import { useEffect } from "react";
 
 import { HeaderSearch } from "#/components/shared/header-search/header-search";
 import { NotificationBell, notificationsQuery } from "#/components/shared/notification-bell/notification-bell";
-import { SiteFooter } from "#/components/shared/site-footer/site-footer";
 import { ShortcutHelp } from "#/components/shared/shortcut-help/shortcut-help";
 import { SiteHeader } from "#/components/shared/site-header/site-header";
 import { useLiveUpdates } from "#/hooks/use-live-updates";
@@ -26,7 +25,7 @@ export const Route = createFileRoute("/_site-layout")({
 
 /*===== Site Layout =====*/
 
-/** The chrome shared by every page: skip link, header, `main` landmark and footer. */
+/** The chrome shared by every page: skip link, header and `main` landmark. */
 function SiteLayout() {
   const { data: viewer } = useSuspenseQuery(orpc.session.viewer.queryOptions());
   const userId = viewer?.id ?? null;
@@ -49,11 +48,10 @@ function SiteLayout() {
         {m.common_skip_to_content()}
       </a>
       <SiteHeader viewer={viewer} search={viewer && <HeaderSearch />} bell={viewer && <NotificationBell />} />
-      {/* A flex row around a page with a sidebar, so the sidebar runs down to the footer however short the page is. */}
+      {/* A flex row around a page with a sidebar, so the sidebar runs down the window however short the page is. */}
       <main id="main" className="flex-1 has-data-[slot=sidebar]:flex">
         <Outlet />
       </main>
-      <SiteFooter />
       {viewer && <ShortcutHelp role={viewer.role} />}
     </div>
   );
