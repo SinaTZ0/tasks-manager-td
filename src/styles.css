@@ -20,7 +20,7 @@
 /* The board's column layout, as each person chose it (src/lib/board-layout.ts); with neither, the row scrolls. */
 @custom-variant board-fit (&:where([data-board-layout="fit"] *));
 @custom-variant board-wrap (&:where([data-board-layout="wrap"] *));
-/* The board's head panel folded away (src/lib/board-panel.ts). */
+/* The board's side rail folded away (src/lib/board-panel.ts). */
 @custom-variant board-panel-closed (&:where([data-board-panel="closed"] *));
 
 /*===== Type =====*/
@@ -41,6 +41,10 @@
   --text-stat: 2.25rem;
   --text-stat--line-height: 2.75rem;
   --text-stat--font-weight: 500;
+  /* The same readout in a one-line row of a list window */
+  --text-readout: 1.25rem;
+  --text-readout--line-height: 1.75rem;
+  --text-readout--font-weight: 500;
   --text-h1: 1.75rem;
   --text-h1--line-height: 2.75rem;
   --text-h1--font-weight: 700;
@@ -636,20 +640,21 @@
   background-repeat: repeat-x;
 }
 
-/* The board's head panel (src/lib/board-panel.ts), folding away: its one grid row shrinks to nothing around a
-   `min-h-0` box, so it folds up from its bottom edge while the columns below rise into its place. The clip cuts what
-   no longer fits, 4px below the box so the housing's 3px ledge still shows; `overflow: hidden` would cut the ledge.
-   Folded, it turns invisible, so its keys leave the tab order (visibility holds until the transition ends). */
+/* The board's side rail (src/lib/board-panel.ts), folding away: it narrows to nothing while its housing keeps its own
+   width (`w-68` on the card, the same length as here), so the keys don't rewrap on the way and the columns slide into
+   its place. Width animates because both ends are lengths. The clip cuts what no longer fits, 4px past the box so the
+   housing's 3px ledge still shows; `overflow: hidden` would cut the ledge. Folded, it turns invisible, so its keys
+   leave the tab order (visibility holds until the transition ends). */
 @utility board-panel-fold {
-  display: grid;
-  grid-template-rows: 1fr;
+  flex: none;
+  width: --spacing(68);
   clip-path: inset(0 0 -4px 0);
-  transition-property: grid-template-rows, margin, opacity, visibility;
+  transition-property: width, margin, opacity, visibility;
   transition-duration: 240ms;
   transition-timing-function: var(--ease-in-out);
 
   :where([data-board-panel="closed"]) & {
-    grid-template-rows: 0fr;
+    width: 0;
     opacity: 0;
     visibility: hidden;
   }

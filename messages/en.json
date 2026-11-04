@@ -1183,11 +1183,9 @@
   "board_filter_any": "All",
   "board_panel_hide": "Hide the project panel",
   "board_panel_filter": "Filter",
-  "board_panel_view": "View",
   "calendar_panel_month": "Month",
   "board_mark_layout": "Layout",
   "board_mark_cancelled": "Cancelled",
-  "board_display_now": "Now",
   "board_stat_blocked": "Blocked",
   "board_stat_late": "Late",
   "board_channel_label": [

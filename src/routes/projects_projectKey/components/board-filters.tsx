@@ -1,4 +1,5 @@
 import { LockIcon, XIcon } from "lucide-react";
+import type { ReactNode } from "react";
 
 import { Button } from "#/components/primitive/button/button";
 import { Led } from "#/components/primitive/led/led";
@@ -6,6 +7,7 @@ import { Marking } from "#/components/primitive/marking/marking";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "#/components/primitive/select/select";
 import { Toggle } from "#/components/primitive/toggle/toggle";
 import { priorityName } from "#/lib/priority-name";
+import { cn } from "#/lib/utils";
 import type { Person } from "#/orpc/project/contract";
 import { TASK_PRIORITIES } from "#/orpc/task/constants";
 import type { Label } from "#/orpc/task/contract";
@@ -27,22 +29,28 @@ const DUE_LABELS: Record<DueFilter, () => string> = {
 type Item = { value: string; label: string };
 
 /**
- * The board's filter row: assignee (me, nobody, or someone), label, priority, due date and a "blocked only" key, each
+ * The board's filter keys: assignee (me, nobody, or someone), label, priority, due date and a "blocked only" key, each
  * written to the URL (`onChange`) so a filtered board can be linked. Each select is a key with its name printed above
- * it and an LED that lights while it narrows the board, so the row reads at a glance which filters are on. A key
- * clears them all while any is set.
+ * it and an LED that lights while it narrows the board, so they read at a glance which filters are on. A key clears
+ * them all while any is set. `layout` sets how they lie: a row across a page head, or two columns down the board's
+ * side rail, where "blocked only" prints shorter and without its lock to fit a cell, and `children` fills the next.
  */
 export function BoardFilters({
   filter,
   people,
   labels,
   onChange,
+  layout = "row",
+  children,
 }: {
   filter: BoardFilter;
   /** Who can be picked: the people the cards can be assigned to. */
   people: Person[];
   labels: Label[];
   onChange: (patch: Partial<BoardFilter>) => void;
+  layout?: "row" | "grid";
+  /** A key to set after "blocked only", among the filters. */
+  children?: ReactNode;
 }) {
   const assignees: Item[] = [
     { value: ANY, label: m.board_filter_any() },
@@ -65,7 +73,7 @@ export function BoardFilters({
   const pick = (value: unknown) => (value === ANY || typeof value !== "string" ? undefined : value);
 
   return (
-    <fieldset className="flex flex-wrap items-end gap-3">
+    <fieldset className={layout === "grid" ? "grid grid-cols-2 gap-x-3 gap-y-2.5" : "flex flex-wrap items-end gap-3"}>
       <legend className="sr-only">{m.board_filters()}</legend>
       <FilterSelect
         label={m.board_filter_assignee()}
@@ -100,10 +108,13 @@ export function BoardFilters({
         signal="selection"
         pressed={filter.blocked ?? false}
         onPressedChange={(pressed) => onChange({ blocked: pressed || undefined })}
+        aria-label={m.board_filter_blocked()}
+        className={cn(layout === "grid" && "w-full")}
       >
-        <LockIcon data-icon="inline-start" />
-        {m.board_filter_blocked()}
+        {layout === "row" && <LockIcon data-icon="inline-start" />}
+        {layout === "row" ? m.board_filter_blocked() : m.board_stat_blocked()}
       </Toggle>
+      {children}
       {/* An icon key, so turning a filter on doesn't push the rest of the row onto a new line. */}
       {isFiltering(filter) && (
         <Button
@@ -111,6 +122,7 @@ export function BoardFilters({
           size="icon-sm"
           aria-label={m.board_filter_clear()}
           title={m.board_filter_clear()}
+          className={cn(layout === "grid" && "col-span-2 justify-self-end")}
           onClick={() => onChange(Object.fromEntries(BOARD_FILTER_KEYS.map((key) => [key, undefined])))}
         >
           <XIcon />
@@ -139,10 +151,10 @@ function FilterSelect({
   // A link may name a label or person that is gone: show "all" rather than an empty key.
   const current = value && items.some((item) => item.value === value) ? value : ANY;
   return (
-    <span className="flex flex-col gap-1.5">
+    <span className="flex min-w-0 flex-col gap-1.5">
       <Marking aria-hidden="true">{mark}</Marking>
       <Select items={items} value={current} onValueChange={onChange}>
-        <SelectTrigger variant="key" size="sm" aria-label={label} className="min-w-28">
+        <SelectTrigger variant="key" size="sm" aria-label={label} className="w-full min-w-28">
           <Led signal="selection" state={current === ANY ? "off" : "on"} size="sm" />
           <SelectValue />
         </SelectTrigger>

@@ -1,12 +1,12 @@
 /*===== Board Panel =====*/
-// Whether each person keeps a board's head panel (the project's name, display and keys) open or folded away, saved in
-// their browser like the board layout (`src/lib/board-layout.ts`) and the same on every project. A folded panel leaves
-// the columns the whole window below the header.
+// Whether each person keeps a board's side rail (the project's name, display and keys) open or folded away, saved in
+// their browser like the board layout (`src/lib/board-layout.ts`) and the same on every project. A folded rail leaves
+// the columns the whole width of the window.
 // The choice lives on <html> as `data-board-panel="closed"`, and the panel hides through the `board-panel-closed`
 // variant (src/styles.css). `BOARD_PANEL_INIT_SCRIPT`, inlined into the server-rendered <head>, applies it before
 // anything paints, so a folded panel never flashes open.
-// Folding is a CSS transition on the panel itself (the board page, `projects-project-key.tsx` → Head Panel): it folds
-// up while the columns rise into its place.
+// Folding is a CSS transition on the rail itself (the board page, `projects-project-key.tsx` → Side Rail): it narrows
+// while the columns slide into its place.
 
 const STORAGE_KEY = "app-board-panel";
 // Notifies other components in this tab; the `storage` event only fires in other tabs.

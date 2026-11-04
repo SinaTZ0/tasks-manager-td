@@ -20,13 +20,13 @@ const pad = (value: number) => formatNumber(value);
 const SEGMENTS = 8;
 
 /**
- * The project's display: the glass at the top of the board, showing what the board holds right now. Each column is a
- * channel (its name, its card count in large digits, and a level meter of its share of the board's cards) and each
- * channel is also the key that shows or hides its column (`?hide=`), lit while the column is on the board. The last
- * column shown can't be let go: an empty board would look broken. Beside the channels, the counts that need someone:
- * tasks blocked, tasks late.
+ * The project's display: the glass on the board's side rail, showing what the board holds right now. Each column is a
+ * channel, one row of the list (its name, a level meter of its share of the board's cards and its card count), and
+ * each channel is also the key that shows or hides its column (`?hide=`), lit while the column is on the board. The
+ * last column shown can't be let go: an empty board would look broken. Below the channels, the counts that need
+ * someone: tasks blocked, tasks late.
  *
- * The counts are the board's own, whatever the filters hide: the columns below say "3 of 9" while filtered.
+ * The counts are the board's own, whatever the filters hide: the columns beside it say "3 of 9" while filtered.
  */
 export function BoardDisplay({
   project,
@@ -67,44 +67,37 @@ export function BoardDisplay({
   };
 
   return (
-    <Display className="min-w-0 flex-1">
-      <div className="flex flex-wrap gap-x-6 gap-y-3">
-        {/*------ Channels ------*/}
-        <fieldset className="min-w-0 flex-1">
-          <legend className="mb-1">
-            <DisplayLabel>{m.board_columns_shown()}</DisplayLabel>
-          </legend>
-          <div className="flex flex-wrap gap-1">
-            {columns.map((column) => (
-              <Channel
-                key={column.id}
-                column={column}
-                count={counts.get(column.id) ?? 0}
-                total={total}
-                shown={!hidden.has(column.id)}
-                onPress={() => toggle(column)}
-              />
-            ))}
-          </div>
-        </fieldset>
-
-        {/*------ Needs Someone ------*/}
-        <div className="flex flex-col gap-1 border-s border-glass-muted/30 ps-6">
-          <DisplayLabel>{m.board_display_now()}</DisplayLabel>
-          <dl className="flex flex-col gap-1 py-1">
-            <Reading
-              label={m.board_stat_blocked()}
-              value={blocked}
-              led={<Led signal="attention" state={blocked > 0 ? "on" : "off"} size="sm" />}
+    <Display size="list">
+      {/*------ Channels ------*/}
+      <fieldset className="min-w-0">
+        <legend className="sr-only">{m.board_columns_shown()}</legend>
+        <div className="flex flex-col gap-px">
+          {columns.map((column) => (
+            <Channel
+              key={column.id}
+              column={column}
+              count={counts.get(column.id) ?? 0}
+              total={total}
+              shown={!hidden.has(column.id)}
+              onPress={() => toggle(column)}
             />
-            <Reading
-              label={m.board_stat_late()}
-              value={late}
-              led={<Led signal="action" state={late > 0 ? "on" : "off"} size="sm" />}
-            />
-          </dl>
+          ))}
         </div>
-      </div>
+      </fieldset>
+
+      {/*------ Needs Someone ------*/}
+      <dl className="mt-1 flex gap-4 border-t border-glass-muted/30 p-2">
+        <Reading
+          label={m.board_stat_blocked()}
+          value={blocked}
+          led={<Led signal="attention" state={blocked > 0 ? "on" : "off"} size="sm" />}
+        />
+        <Reading
+          label={m.board_stat_late()}
+          value={late}
+          led={<Led signal="action" state={late > 0 ? "on" : "off"} size="sm" />}
+        />
+      </dl>
     </Display>
   );
 }
@@ -136,16 +129,15 @@ function Channel({
     <DisplayButton
       aria-pressed={shown}
       aria-label={m.board_channel_label({ column: title, count })}
+      title={title}
       onClick={onPress}
-      className="min-w-32 flex-1"
     >
-      <span className="flex items-center gap-2">
+      <span className="flex min-w-0 flex-1 items-center gap-2">
         <Led signal="selection" state={shown ? "on" : "off"} size="sm" />
         <DisplayLabel>{title}</DisplayLabel>
         {overLimit && <Led signal="attention" state="on" size="sm" label={m.board_over_wip()} />}
       </span>
-      <DisplayValue>{column.wipLimit === null ? pad(count) : `${pad(count)}/${pad(column.wipLimit)}`}</DisplayValue>
-      <span aria-hidden="true" className="flex gap-0.5">
+      <span aria-hidden="true" className="flex w-13 flex-none gap-0.5">
         {Array.from({ length: SEGMENTS }, (_, index) => (
           <span
             key={index}
@@ -156,16 +148,19 @@ function Channel({
           />
         ))}
       </span>
+      <DisplayValue className="min-w-6.5 text-end">
+        {column.wipLimit === null ? pad(count) : `${pad(count)}/${pad(column.wipLimit)}`}
+      </DisplayValue>
     </DisplayButton>
   );
 }
 
 /*===== Reading =====*/
 
-/** One count beside the channels: an LED lit while the count needs someone, the name, and the count. */
+/** One count below the channels: an LED lit while the count needs someone, the name, and the count. */
 function Reading({ label, value, led }: { label: string; value: number; led: ReactNode }) {
   return (
-    <div className="flex items-center gap-3">
+    <div className="flex flex-1 items-center gap-2.5">
       {led}
       <dt>
         <DisplayLabel>{label}</DisplayLabel>

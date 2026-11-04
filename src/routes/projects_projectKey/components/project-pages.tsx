@@ -15,8 +15,8 @@ const keyClasses = buttonVariants({ variant: "secondary", size: "sm" });
 /**
  * Keys to a project's other pages, the same set on each of them: the board, calendar, activity, archive and (for an
  * admin) settings, leaving out the page they sit on. The board and the calendar show the same cards, so their keys
- * carry the filters across. `layout` sets how the keys lie: a row in a page head, a block of two by two beside the
- * board's display.
+ * carry the filters across. `layout` sets how the keys lie: a row in a page head, a block of two by two on the board's
+ * side rail.
  */
 export function ProjectPages({
   projectKey,

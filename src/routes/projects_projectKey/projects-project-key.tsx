@@ -19,7 +19,6 @@ import { BoardDisplay } from "#/routes/projects_projectKey/components/board-disp
 import { BoardFilters } from "#/routes/projects_projectKey/components/board-filters";
 import { BoardLayoutPicker } from "#/routes/projects_projectKey/components/board-layout-picker";
 import { NewTaskDialog } from "#/routes/projects_projectKey/components/new-task-dialog";
-import { PanelGroup } from "#/routes/projects_projectKey/components/panel-group";
 import { ProjectPages } from "#/routes/projects_projectKey/components/project-pages";
 import { Board, SHOW_CANCELLED_ID } from "#/routes/projects_projectKey/components/board";
 import { useBoardAccess } from "#/routes/projects_projectKey/access";
@@ -124,94 +123,83 @@ function BoardPage() {
   const assignable = project.members.filter((member) => member.role !== "viewer");
 
   return (
-    <div className="flex flex-col gap-6 px-6 py-6">
-      {/*===== Head Panel =====*/}
-      {/* The project's front panel, laid out like a sampler's face: the model name and page keys beside the display
-          glass, and one row of keys below that act on the board, each group under its printed name. A key in the
-          header folds it away (src/lib/board-panel.ts); the filters still apply, and the columns say "3 of 9".
-          It folds up as the columns rise into its place (`board-panel-fold`, src/styles.css); folded, its negative
-          margin takes back the page's `gap-6`. */}
-      <section id={BOARD_PANEL_ID} aria-label={project.name} className="board-panel-fold board-panel-closed:-mb-6">
-        {/* A bare box, so the row can shrink to nothing: the card's own padding can't. */}
-        <div className="min-h-0">
-          <Card>
-            <CardContent>
-              <div className="flex flex-col gap-5">
-                {/*------ Name and Display ------*/}
-                <div className="flex flex-wrap items-stretch gap-6">
-                  {/* The model name, and the keys to the project's other pages stacked beside the glass, like the
-                  mode keys at the edge of a sampler. */}
-                  <div className="flex flex-col justify-between gap-4">
-                    <div className="flex flex-col">
-                      <h1 className="font-heading text-h1">{project.name}</h1>
-                      <span className="flex items-center gap-3">
-                        <Marking variant="code">{project.key}</Marking>
-                        <AvatarGroup>
-                          {project.members.map((member) => (
-                            <PersonAvatar key={member.id} name={member.name} src={member.avatarUrl} />
-                          ))}
-                        </AvatarGroup>
-                      </span>
-                    </div>
-                    <ProjectPages
-                      projectKey={project.key}
-                      current="board"
-                      isAdmin={isAdmin}
-                      filter={{ assignee, label, priority, due, blocked }}
-                      layout="grid"
-                    />
-                  </div>
-                  <BoardDisplay project={project} board={board} hidden={hidden} onHiddenChange={setHidden} />
-                </div>
-
-                {/*------ Keys ------*/}
-                {/* Rows start together so the groups' printed names line up; keys outside a group sit on the baseline. */}
-                <div className="flex flex-wrap items-start gap-x-6 gap-y-4">
-                  {isAdmin && (
-                    <div className="self-end">
-                      <NewTaskDialog
-                        projectId={project.id}
-                        projectKey={project.key}
-                        columns={columns}
-                        defaultColumnId={columns.find((column) => !hidden.has(column.id))?.id}
-                      />
-                    </div>
-                  )}
-                  <PanelGroup label={m.board_panel_filter()}>
-                    <BoardFilters
-                      filter={{ assignee, label, priority, due, blocked }}
-                      people={assignable}
-                      labels={board.labels}
-                      onChange={setFilter}
-                    />
-                  </PanelGroup>
-                  <PanelGroup label={m.board_panel_view()}>
-                    <BoardLayoutPicker />
-                    <Toggle
-                      id={SHOW_CANCELLED_ID}
-                      size="md"
-                      signal="selection"
-                      aria-label={m.board_show_cancelled()}
-                      pressed={showCancelled}
-                      onPressedChange={(pressed) =>
-                        void navigate({
-                          search: (previous) => ({ ...previous, cancelled: pressed || undefined }),
-                          replace: true,
-                        })
-                      }
-                    >
-                      {m.board_mark_cancelled()}
-                    </Toggle>
-                  </PanelGroup>
-                </div>
+    <div className="flex items-start gap-6 px-6 py-6">
+      {/*===== Side Rail =====*/}
+      {/* The project's front panel, turned on its side into a channel strip beside the columns, so they get the window's
+          whole height. A key in the header folds it away (src/lib/board-panel.ts); the filters still apply, and the
+          columns say "3 of 9". It narrows as the columns slide into its place (`board-panel-fold`, src/styles.css);
+          folded, its negative margin takes back the page's `gap-6`. It stays in view down a long board. */}
+      <section
+        id={BOARD_PANEL_ID}
+        aria-label={project.name}
+        className="board-panel-fold sticky top-6 board-panel-closed:-me-6"
+      >
+        <Card size="sm" className="w-68">
+          <CardContent>
+            <div className="flex flex-col gap-3.5">
+              {/*------ Name ------*/}
+              <div className="flex flex-col">
+                <h1 className="font-heading text-h1">{project.name}</h1>
+                <span className="flex items-center gap-3">
+                  <Marking variant="code">{project.key}</Marking>
+                  <AvatarGroup>
+                    {project.members.map((member) => (
+                      <PersonAvatar key={member.id} name={member.name} src={member.avatarUrl} />
+                    ))}
+                  </AvatarGroup>
+                </span>
               </div>
-            </CardContent>
-          </Card>
-        </div>
+
+              {isAdmin && (
+                <div className="flex *:flex-1">
+                  <NewTaskDialog
+                    projectId={project.id}
+                    projectKey={project.key}
+                    columns={columns}
+                    defaultColumnId={columns.find((column) => !hidden.has(column.id))?.id}
+                  />
+                </div>
+              )}
+
+              <BoardDisplay project={project} board={board} hidden={hidden} onHiddenChange={setHidden} />
+
+              {/*------ Keys ------*/}
+              <BoardFilters
+                filter={current}
+                people={assignable}
+                labels={board.labels}
+                onChange={setFilter}
+                layout="grid"
+              >
+                <Toggle
+                  id={SHOW_CANCELLED_ID}
+                  size="md"
+                  signal="selection"
+                  aria-label={m.board_show_cancelled()}
+                  pressed={showCancelled}
+                  onPressedChange={(pressed) =>
+                    void navigate({
+                      search: (previous) => ({ ...previous, cancelled: pressed || undefined }),
+                      replace: true,
+                    })
+                  }
+                  className="w-full"
+                >
+                  {m.board_mark_cancelled()}
+                </Toggle>
+              </BoardFilters>
+              <BoardLayoutPicker />
+
+              {/*------ Pages ------*/}
+              <div className="h-px bg-border" />
+              <ProjectPages projectKey={project.key} current="board" isAdmin={isAdmin} filter={current} layout="grid" />
+            </div>
+          </CardContent>
+        </Card>
       </section>
 
       {/*------ Columns ------*/}
-      <Card>
+      <Card className="min-w-0 flex-1">
         <CardContent>
           <Board
             project={project}

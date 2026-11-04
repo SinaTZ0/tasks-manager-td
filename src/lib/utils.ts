@@ -20,6 +20,7 @@ export const cn = createCn({
           text: [
             "display",
             "stat",
+            "readout",
             "h1",
             "h2",
             "h3",

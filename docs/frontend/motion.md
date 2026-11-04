@@ -29,10 +29,12 @@ Between Pages).
   tab's panel only fades once a tab has been chosen (`data-switched` on the tabs root), so the first panel shown with
   the page doesn't.
 - **Height** animates from a measured variable (`h-(--accordion-panel-height)` with Base UI's collapsible) or from a
-  `grid-template-rows` transition between `1fr` and `0fr` around a `min-h-0` box, as the board's head panel folds
-  (`projects-project-key.tsx` → Head Panel). Clip it with `clip-path` rather than `overflow: hidden` when a housing's
-  ledge hangs below it, turn it `invisible` once folded so its controls leave the tab order, and take back the
-  parent's gap with a negative margin.
+  `grid-template-rows` transition between `1fr` and `0fr` around a `min-h-0` box.
+- **Width** of a part with a known width animates between lengths, as the board's side rail folds
+  (`projects-project-key.tsx` → Side Rail): the box narrows while what's inside keeps its width, so nothing rewraps on
+  the way. Clip a folding part with `clip-path` rather than `overflow: hidden` when a housing's ledge hangs below it,
+  turn it `invisible` once folded so its controls leave the tab order, and take back the parent's gap with a negative
+  margin.
 - Put the classes behind `motion-safe:`; the reduced-motion block in `src/styles.css` also removes every transition.
 
 ## Motion

@@ -13,10 +13,12 @@ const twDisplayStyles = defineStyles({
 });
 
 // `inline` is a one-line window the height of a compact key, for a live value in a row of keys;
-// `row` is one the height of a 40px key, for a value between keys that step it (the calendar's month).
+// `row` is one the height of a 40px key, for a value between keys that step it (the calendar's month);
+// `list` is a tall, narrow window of one-line rows, for a column of channels (the board's side rail).
 const twSize = defineStyles({
   inline: { layout: "flex-row items-center gap-3", geometry: "h-8 px-3" },
   row: { layout: "flex-row items-center justify-center gap-3", geometry: "h-10 px-4" },
+  list: { layout: "flex-col", geometry: "p-1.5" },
   sm: { layout: "flex-col gap-1", geometry: "px-3 py-2" },
   default: { layout: "flex-col gap-2", geometry: "p-4" },
   lg: { layout: "flex-col gap-3", geometry: "p-5" },
@@ -29,10 +31,11 @@ const displayVariants = cva(joinStyles(twDisplayStyles), {
 
 /*===== Parts =====*/
 
-// Labels inside the glass print dimmer so the value stays the brightest thing in the window
+// Labels inside the glass print dimmer so the value stays the brightest thing in the window. A row of a `list` window
+// can't wrap, so a long name there is cut.
 const displayLabelClasses = joinStyles(
   defineStyles({
-    typography: "font-heading text-marking tracking-marking",
+    typography: "font-heading text-marking tracking-marking group-data-[size=list]/display:truncate",
     appearance: "text-glass-muted",
   }),
 );
@@ -42,7 +45,7 @@ const displayLabelClasses = joinStyles(
 const displayValueClasses = joinStyles(
   defineStyles({
     typography:
-      "font-mono text-stat tracking-readout tabular-nums group-data-[size=inline]/display:text-body-sm group-data-[size=lg]/display:text-display group-data-[size=row]/display:text-h4 group-data-[size=sm]/display:text-h3",
+      "font-mono text-stat tracking-readout tabular-nums group-data-[size=inline]/display:text-body-sm group-data-[size=lg]/display:text-display group-data-[size=list]/display:text-readout group-data-[size=row]/display:text-h4 group-data-[size=sm]/display:text-h3",
     appearance: "text-glass-foreground",
   }),
 );
@@ -50,11 +53,13 @@ const displayValueClasses = joinStyles(
 // A touch zone on the glass: a region of the display that answers a press, like the pads a sampler prints in its
 // screen. It latches through `aria-pressed`: a latched zone prints at full brightness, one let go dims to the glass's
 // muted ink (60% still holds 5:1 on the glass). The focus ring is the glass ink, since the housing's ring colour
-// vanishes on the dark glass.
+// vanishes on the dark glass. In a `list` window a zone is one row, read from the window's `data-size` like the value.
 const displayButtonClasses = joinStyles(
   defineStyles({
-    layout: "group/display-button flex flex-col items-stretch gap-1",
-    geometry: "min-h-10 rounded-chassis-compact border-0 px-3 py-2",
+    layout:
+      "group/display-button flex flex-col items-stretch gap-1 group-data-[size=list]/display:flex-row group-data-[size=list]/display:items-center group-data-[size=list]/display:gap-2",
+    geometry:
+      "min-h-10 rounded-chassis-compact border-0 px-3 py-2 group-data-[size=list]/display:min-h-9 group-data-[size=list]/display:px-2 group-data-[size=list]/display:py-0",
     typography: "text-start",
     appearance: "bg-transparent text-glass-foreground",
     interaction: "cursor-pointer transition-[background-color,opacity] duration-75 outline-none select-none",

@@ -73,3 +73,26 @@ export const Buttons: Story = {
     </Display>
   ),
 };
+
+export const ButtonList: Story = {
+  render: () => (
+    <Display size="list" className="w-60">
+      <fieldset className="flex flex-col gap-px">
+        <legend className="sr-only">ستون‌ها</legend>
+        {[
+          { name: "صف", value: "3", on: true },
+          { name: "در حال انجام", value: "2/4", on: true },
+          { name: "مکث", value: "1", on: false },
+        ].map(({ name, value, on }) => (
+          <DisplayButton key={name} aria-pressed={on}>
+            <span className="flex min-w-0 flex-1 items-center gap-2">
+              <Led signal="selection" state={on ? "on" : "off"} size="sm" />
+              <DisplayLabel>{name}</DisplayLabel>
+            </span>
+            <DisplayValue>{value}</DisplayValue>
+          </DisplayButton>
+        ))}
+      </fieldset>
+    </Display>
+  ),
+};

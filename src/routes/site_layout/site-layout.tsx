@@ -42,7 +42,7 @@ function SiteLayout() {
   useLiveUpdates(userId);
 
   /*------ Page Keys ------*/
-  // A board can fold its head panel away; the key sits in the header so it stays in reach with the panel gone.
+  // A board can fold its side rail away; the key sits in the header so it stays in reach with the rail gone.
   const onBoard =
     useMatch({ from: "/_site-layout/_app-layout/projects/$projectKey", shouldThrow: false }) !== undefined;
 

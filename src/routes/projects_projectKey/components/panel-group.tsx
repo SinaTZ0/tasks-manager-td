@@ -5,7 +5,7 @@ import { Marking } from "#/components/primitive/marking/marking";
 /*===== Panel Group =====*/
 
 /**
- * Keys that belong together on the head panel, under one printed name with a rule running from it across the group,
+ * Keys that belong together on a panel, under one printed name with a rule running from it across the group,
  * the way a sampler prints "BPM ——— METRONOME" over the keys it covers. The name is print only (hidden from screen
  * readers): each key inside carries its own name, and a filter row its own `fieldset`.
  */
