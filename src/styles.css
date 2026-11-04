@@ -270,6 +270,9 @@
   --shadow-glass: var(--elevation-glass);
   --shadow-led-on: var(--elevation-led-on);
   --shadow-led-off: var(--elevation-led-off);
+  --shadow-led-bar-on: var(--elevation-led-bar-on);
+  --shadow-led-bar-off: var(--elevation-led-bar-off);
+  --shadow-led-bezel: var(--elevation-led-bezel);
 
   /*------ Motion ------*/
   --ease-instrument: cubic-bezier(0.4, 0, 0.2, 1);
@@ -390,6 +393,12 @@
     0 0 0 2px color-mix(in srgb, currentColor 18%, transparent),
     0 0 8px color-mix(in srgb, currentColor 60%, transparent);
   --elevation-led-off: inset 0 1px 1px rgb(0 0 0 / 35%);
+  /* The highlight along the top is the lens catching the light; without it a lit bar is a flat block of colour */
+  --elevation-led-bar-on:
+    inset 0 1px 0 rgb(255 255 255 / 55%), 0 0 6px 0 color-mix(in srgb, currentColor 55%, transparent);
+  --elevation-led-bar-off: inset 0 1px 1px rgb(0 0 0 / 60%);
+  /* A hard rim and a lit lower edge, so the bezel reads as a part fitted to the housing on both themes */
+  --elevation-led-bezel: 0 0 0 1px rgb(0 0 0 / 60%), 0 1px 0 1px rgb(255 255 255 / 18%);
 
   --chart-1: #f23a0c;
   --chart-2: #3a3a3a;

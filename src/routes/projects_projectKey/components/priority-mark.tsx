@@ -1,3 +1,5 @@
+import { Led } from "#/components/primitive/led/led";
+import { ledBezelClasses } from "#/components/primitive/led/led.styles";
 import { priorityName } from "#/lib/priority-name";
 import { cn } from "#/lib/utils";
 import { TASK_PRIORITIES, type TaskPriority } from "#/orpc/task/constants";
@@ -5,28 +7,24 @@ import { m } from "#/paraglide/messages";
 
 /*===== Priority Mark =====*/
 
-// Rising bar heights make the scale readable without colour.
-const BAR_HEIGHTS = ["h-1.5", "h-2", "h-2.5", "h-3"] as const;
-
 /**
- * A priority as a four-step level meter: one lit bar for low, four for urgent. Urgent lights its bars orange (the
- * action signal), so it stands apart from ordinary high priority without a new colour.
+ * A priority as a four-cell LED meter in a black bezel: one lit cell for low, four for urgent, the way the board's
+ * display prints its counts. It fills in the reading direction, and only the urgent cell is orange. The count of lit
+ * cells carries the level, so the scale reads without colour; the printed name is there for screen readers. Mounted
+ * on a housing's top edge, standing proud of it like indicators set into a chassis: the parent must be `relative`.
  */
 export function PriorityMark({ priority }: { priority: TaskPriority }) {
-  const lit = TASK_PRIORITIES.indexOf(priority) + 1;
+  const level = TASK_PRIORITIES.indexOf(priority);
 
   return (
-    <span dir="ltr" className="inline-flex items-end gap-0.5">
+    <span className={cn("absolute end-3.25 -top-0.5", ledBezelClasses)}>
       <span className="sr-only">{m.priority_readout({ priority: priorityName(priority) })}</span>
-      {BAR_HEIGHTS.map((height, index) => (
-        <span
-          key={height}
-          aria-hidden="true"
-          className={cn(
-            "w-1 rounded-xs",
-            height,
-            index >= lit ? "bg-signal-off" : priority === "urgent" ? "bg-signal-action" : "bg-foreground",
-          )}
+      {TASK_PRIORITIES.map((step, index) => (
+        <Led
+          key={step}
+          signal={step === "urgent" ? "action" : "glass"}
+          size="bar"
+          state={index <= level ? "on" : "off"}
         />
       ))}
     </span>

@@ -18,6 +18,8 @@ const twSignal = defineStyles({
   attention: { appearance: "text-signal-attention" },
   selection: { appearance: "text-signal-selection" },
   positive: { appearance: "text-signal-positive" },
+  // The display's ink, with no meaning of its own: the plain lit cells of a level meter, below `action` at the top
+  glass: { appearance: "text-glass-foreground" },
 });
 
 /*===== State =====*/
@@ -35,6 +37,8 @@ const twState = defineStyles({
 const twSize = defineStyles({
   sm: { geometry: "size-1.5" },
   default: { geometry: "size-2" },
+  // One cell of a level meter: taller than wide, so a row of them reads as a single scale
+  bar: { geometry: "h-3 w-1.5" },
 });
 
 /*===== Class Composition =====*/
@@ -45,7 +49,25 @@ const ledVariants = cva(joinStyles(twSharedStyles), {
     state: composeStyles(twState),
     size: composeStyles(twSize),
   },
+  compoundVariants: [
+    // Bars stand side by side in a bezel, where the wide glow ring would smear across its neighbours, and the grey of
+    // an unlit LED would outshine the lit ones against the black
+    { size: "bar", state: ["on", "blink"], class: "shadow-led-bar-on" },
+    { size: "bar", state: "off", class: "bg-glass-foreground/14 shadow-led-bar-off" },
+  ],
   defaultVariants: { signal: "action", state: "on", size: "default" },
 });
 
-export { ledVariants, twSignal, twState, twSize };
+/*===== Bezel =====*/
+
+// The black block a level meter's bars sit in. It keeps lit meaning lit on both housings: straight on the light one,
+// a pale cell reads as an empty slot and a dark unlit one as the full part.
+const ledBezelClasses = joinStyles(
+  defineStyles({
+    layout: "flex gap-0.75",
+    geometry: "rounded-xs p-0.5",
+    appearance: "bg-glass shadow-led-bezel",
+  }),
+);
+
+export { ledBezelClasses, ledVariants, twSignal, twState, twSize };

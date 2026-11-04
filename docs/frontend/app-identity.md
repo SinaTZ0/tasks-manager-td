@@ -93,6 +93,10 @@ text colour on the housing (yellow and green can't reach 4.5:1 there).
 | Green  | `signal-positive`  | running, done, healthy                  |
 | Grey   | `signal-off`       | the LED exists but is off               |
 
+A level meter (a task's priority) is printed the way the display prints its counts: `bar` LEDs in a black bezel that
+stands proud of the housing's top edge, lit in the glass ink (which means nothing alone), with only the top cell in
+`signal-action`.
+
 Blinking is reserved for live states (work under way, a blocked task) and stops under reduced motion. Text that needs
 a status colour uses the `success` / `warning` / `info` / `destructive` text tokens and their `-surface` pairs.
 

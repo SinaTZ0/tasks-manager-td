@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 
 import { markingClasses } from "../instrument.styles";
 import { Led } from "./led";
-import { twSignal, twSize, twState } from "./led.styles";
+import { ledBezelClasses, twSignal, twSize, twState } from "./led.styles";
 
 const signalOptions = Object.keys(twSignal) as Array<keyof typeof twSignal>;
 const stateOptions = Object.keys(twState) as Array<keyof typeof twState>;
@@ -40,6 +40,21 @@ export const Signals: Story = {
           </span>
         )),
       )}
+    </div>
+  ),
+};
+
+// A level meter: bars in a black bezel, lit in the display's ink, with only the top cell orange.
+export const Meter: Story = {
+  render: () => (
+    <div className="flex w-fit flex-col gap-3">
+      {[1, 2, 3, 4].map((level) => (
+        <span key={level} className={ledBezelClasses}>
+          {(["glass", "glass", "glass", "action"] as const).map((signal, index) => (
+            <Led key={index} signal={signal} size="bar" state={index < level ? "on" : "off"} />
+          ))}
+        </span>
+      ))}
     </div>
   ),
 };

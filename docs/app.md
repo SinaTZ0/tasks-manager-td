@@ -59,7 +59,7 @@ What each thing is and how it relates. How to store it = implementer decides.
   creates the task with its maker as an assignee, and opens it to fill in the rest
 - Admin moves a card to another project (new number there; the old code still opens it; dependencies dropped; refused
   while its owner or an assignee isn't on that project) or copies it there (no comments, time or history)
-- Card shows: title, owner and assignees' avatars (down its edge), priority color, due date, labels, blocked icon
+- Card shows: title, owner and assignees' avatars (down its edge), priority meter, due date, labels, blocked icon
 
 **Status / Cancel**
 

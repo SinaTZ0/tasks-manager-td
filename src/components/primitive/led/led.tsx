@@ -12,8 +12,9 @@ export type LedProps = Omit<ComponentProps<"span">, "children"> &
   };
 
 /**
- * A square indicator LED in one of the four signal colours. An LED never carries meaning alone: pair it with a
- * printed word nearby, or give it a `label` when it stands by itself.
+ * A square indicator LED in one of the four signal colours, or a `bar` cell of a level meter (set in a
+ * `ledBezelClasses` block). An LED never carries meaning alone: pair it with a printed word nearby, or give it a
+ * `label` when it stands by itself.
  */
 function Led({ className, signal, state, size, label, ...props }: LedProps) {
   return (

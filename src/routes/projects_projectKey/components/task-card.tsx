@@ -137,10 +137,10 @@ const PARTS_ON_HOVER =
 
 /**
  * A card on the board, as a small housing module (the approved design, docs/frontend/reference/…/task-card.tsx): its
- * people in a tray down the starting edge (`CardSpine`), the code and priority on a printed strip, the title and labels
- * on the face, readouts and dates on the footer. The title is the link that opens the card's drawer; its hit area
- * covers the whole card. A blocked card gets a yellow strip naming what it waits for, so the dependency shows without
- * opening it.
+ * people in a tray down the starting edge (`CardSpine`), the priority LEDs set into its top edge, the code on a
+ * printed strip, the title and labels on the face, readouts and dates on the footer. The title is the link that opens
+ * the card's drawer; its hit area covers the whole card. A blocked card gets a yellow strip naming what it waits for,
+ * so the dependency shows without opening it.
  *
  * On the board the card is also something to pick up (`SortableTaskCard` passes the drag props): `grip` and `menu` sit
  * on the code line, above the stretched link, and show while the card is pointed at or focused. `state` dims the card left behind while
@@ -195,16 +195,15 @@ export function TaskCard({
         state === "overlay" && "cursor-grabbing bg-accent",
       )}
     >
+      <PriorityMark priority={task.priority} />
       <CardSpine task={task} people={people} tooltips={state === "idle"} />
       <div className="flex min-w-0 flex-1 flex-col">
         {/*------ Code Line ------*/}
         {/* The grip and menu print only while the pointer is over the card or focus is inside it (always on a touch
           screen): on a board of cards they would otherwise be a column of handles. */}
-        <header className="flex min-h-9 items-center justify-between gap-2 ps-3 pe-1.5 pt-1.5">
-          <span className="flex items-center gap-2.5">
-            <Marking variant="code">{code}</Marking>
-            <PriorityMark priority={task.priority} />
-          </span>
+        {/* The end padding keeps the grip and menu clear of the priority LEDs, which hang into this corner. */}
+        <header className="flex min-h-9 items-center justify-between gap-2 ps-3 pe-14 pt-1.5">
+          <Marking variant="code">{code}</Marking>
           <span className={cn("relative z-10 flex items-center gap-0.5", PARTS_ON_HOVER)}>
             {grip}
             {menu}
