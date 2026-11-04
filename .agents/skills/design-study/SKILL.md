@@ -1,6 +1,6 @@
 ---
 name: design-study
-description: How this project compares design directions before building one. Use whenever the user asks for an "EXAMPLE STUDY" ("give me 4 EXAMPLE STUDY", "a study for the footer"), for several designs or options for a part of the site ("give me 4 different designs for X", "like you did with the hero"), for more options in a running study ("give me four more"), or for versions of one option ("give me three other versions of option 2"). Produces a gitignored study route at /design-study/<topic> built from the real components and live data, with the current design as option 0, a study bar with notes per option and checked screenshots, then builds only the option the user picks. Removes a study when asked. Never changes the app for a study and never publishes to claude.ai.
+description: How this project compares design directions before building one. Use whenever the user asks for an "EXAMPLE STUDY" ("give me 4 EXAMPLE STUDY", "a study for the footer"), for several designs or options for a part of the site ("give me 4 different designs for X", "like you did with the hero"), for more options in a running study ("give me four more"), or for versions of one option ("give me three other versions of option 2"). Produces a gitignored study route at /design-study/<topic> built from the real components and live data, with the current design as option 0, a study bar with notes per option and checked screenshots, then builds only the option the user picks and removes the study's files, keeping its screenshots. Never changes the app for a study and never publishes to claude.ai.
 ---
 
 # Design Study
@@ -113,6 +113,7 @@ Once the user picks, build only that option in `src/`, following `docs/frontend-
   design to fit them, and add or update the primitive's story. Study-only words become real messages in both languages.
 - Delete what the old design leaves unused: components, message keys in both `messages/*.json`, tokens.
 - Run `pnpm lint`, and `pnpm typecheck` when props or contracts changed.
+- Remove the study, as below, now that its code has moved out.
 - Screenshot the real page, waiting for hydration.
 - End the reply with the URL of the real page the pick landed on.
 - Commit and push only when the user says so. commitlint caps body lines at 100 characters.
@@ -120,13 +121,20 @@ Once the user picks, build only that option in `src/`, following `docs/frontend-
 
 ## Removing a study
 
-When the user asks: `rm -rf src/routes/design_study/<topic>`, then restart the dev server. Nothing else to clean up: no
-tracked file names it. A study stays until the user asks, so keep it after building the pick unless they say otherwise.
+A study ends when the user picks: once the pick is built, or when they drop the study without one. Don't wait to be
+asked. A finished study still costs something: `tsc` keeps checking it, so a later refactor can fail over code nobody
+uses, and `git status` never shows it.
+
+1. Make sure `.tmp-claude/<topic>-study/shots/` has every option, option 0 included, and shoot any that are missing:
+   the screenshots are what's left of the study, and `.tmp-claude/` is where they stay.
+2. `rm -rf src/routes/design_study/<topic>`, then restart the dev server. Nothing else to clean up: no tracked file names
+   it.
+3. Say in the reply that the route is gone and where the screenshots are.
 
 ## Pitfalls
 
-- A study is gone on a fresh clone and can't be shared by link: it lives only on this machine. Keep the screenshots in
-  `.tmp-claude/<topic>-study/shots/` if they should outlive it.
+- A study is gone on a fresh clone and can't be shared by link: it lives only on this machine. Its screenshots are in
+  `.tmp-claude/<topic>-study/shots/`.
 - `git status` won't show a study, so nothing reminds anyone it exists. `ls src/routes/design_study` does.
 - Keep the study bar's keys off anything the page already uses, and keep page padding below its height.
 - Content that isn't translated (a Persian column name on the English page) needs `dir="auto"` in a new part.
