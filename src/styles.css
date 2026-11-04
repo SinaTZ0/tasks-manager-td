@@ -13,6 +13,9 @@
    housings, controls are keycaps seated in machined cuts. Names follow shadcn; the one call to action per view is
    `highlight` (the orange key), and shadcn's `accent` is the quiet wash for hover and selected states. */
 
+/* Tailwind skips gitignored files, and design studies are gitignored (the `design-study` skill). */
+@source "./routes/design_study";
+
 @custom-variant dark (&:is(.dark *));
 /* The board's column layout, as each person chose it (src/lib/board-layout.ts); with neither, the row scrolls. */
 @custom-variant board-fit (&:where([data-board-layout="fit"] *));
