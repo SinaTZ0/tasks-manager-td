@@ -23,6 +23,11 @@
 /* The board's side rail folded away (src/lib/board-panel.ts). */
 @custom-variant board-panel-closed (&:where([data-board-panel="closed"] *));
 
+/* A part of the sidebar while it is a strip of icons: by its own state, or by the saved choice on <html> before React
+   has run, since the server renders it open and only the first-paint script knows better. A phone's sheet is always
+   whole. */
+@custom-variant sidebar-icon (&:where([data-collapsible="icon"] *, [data-board-panel="closed"] [data-slot="sidebar"]:not([data-mobile]) *));
+
 /*===== Type =====*/
 
 @theme {
@@ -294,6 +299,8 @@
 /* Light grey housings on a warm grey desk, light and graphite keycaps, one orange key. */
 :root {
   --radius: 6px;
+  /* The site header on one line, its ledge included: what the sidebar leaves of the window's height. */
+  --header-height: --spacing(18);
 
   --background: #a2a09f;
   --foreground: #171717;
@@ -417,7 +424,7 @@
   --chart-4: #f2b705;
   --chart-5: #9fc33a;
 
-  --sidebar: #d6d6d4;
+  --sidebar: var(--card);
   --sidebar-foreground: #171717;
   --sidebar-primary: #3a3a3a;
   --sidebar-primary-foreground: #f2f2f2;
@@ -502,7 +509,7 @@
 
   --chart-2: #8a8a8a;
 
-  --sidebar: #242424;
+  --sidebar: var(--card);
   --sidebar-foreground: #e6e6e6;
   --sidebar-primary: #1c1c1c;
   --sidebar-primary-foreground: #ededed;
