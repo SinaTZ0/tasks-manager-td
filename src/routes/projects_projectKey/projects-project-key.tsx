@@ -192,7 +192,7 @@ function BoardPage() {
 
               {/*------ Pages ------*/}
               <div className="h-px bg-border" />
-              <ProjectPages projectKey={project.key} current="board" isAdmin={isAdmin} filter={current} layout="grid" />
+              <ProjectPages projectKey={project.key} isAdmin={isAdmin} filter={current} layout="grid" />
             </div>
           </CardContent>
         </Card>

@@ -113,7 +113,6 @@ function CalendarPage() {
         actions={
           <ProjectPages
             projectKey={project.key}
-            current="calendar"
             isAdmin={isAdmin}
             filter={{ assignee, label, priority, due, blocked }}
           />

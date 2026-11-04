@@ -65,7 +65,7 @@ function ArchivePage() {
         kicker={project.name}
         title={m.archive_link()}
         description={viewer.role === "admin" ? m.archive_description() : m.archive_description_member()}
-        actions={<ProjectPages projectKey={project.key} current="archive" isAdmin={viewer.role === "admin"} />}
+        actions={<ProjectPages projectKey={project.key} isAdmin={viewer.role === "admin"} />}
       />
 
       {/*------ List ------*/}

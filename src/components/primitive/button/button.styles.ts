@@ -1,4 +1,5 @@
 import { cva } from "class-variance-authority";
+import { cn } from "#/lib/utils";
 import { keycapVariants, twKeycapTone } from "../instrument.styles";
 import { composeStyles, defineStyles, joinStyles } from "../styles";
 
@@ -138,4 +139,14 @@ const buttonVariants = cva(joinStyles(twSharedStyles), {
   },
 });
 
-export { buttonVariants, twVariant, twSize };
+/*===== Slot Key =====*/
+
+// A light key sharing one slot with its neighbours (`slotClasses`), for a selector of pages: it drops its own cut, the
+// current page's key stays sunk (`aria-current="page"` latches it) and an LED beside its name lights blue. The focus
+// ring is drawn inside the face, like a tab's: outside it would land on the slot's black gap and vanish.
+const slotKeyClasses = cn(
+  buttonVariants({ variant: "secondary", size: "sm" }),
+  "gap-2 before:hidden focus-visible:-outline-offset-4 focus-visible:outline-foreground",
+);
+
+export { buttonVariants, slotKeyClasses, twVariant, twSize };

@@ -69,7 +69,7 @@ function ActivityPage() {
         kicker={project.name}
         title={m.activity_link()}
         description={m.activity_description()}
-        actions={<ProjectPages projectKey={project.key} current="activity" isAdmin={isAdmin} />}
+        actions={<ProjectPages projectKey={project.key} isAdmin={isAdmin} />}
       />
 
       {/*------ Feed ------*/}

@@ -52,7 +52,7 @@ function SettingsPage() {
         code={project.key}
         kicker={project.name}
         title={m.project_settings()}
-        actions={<ProjectPages projectKey={project.key} current="settings" isAdmin />}
+        actions={<ProjectPages projectKey={project.key} isAdmin />}
       />
 
       <Card>

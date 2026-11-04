@@ -3,7 +3,7 @@ import { LogOutIcon, UserIcon } from "lucide-react";
 import type { ReactNode } from "react";
 
 import { Button } from "#/components/primitive/button/button";
-import { buttonVariants } from "#/components/primitive/button/button.styles";
+import { buttonVariants, slotKeyClasses } from "#/components/primitive/button/button.styles";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -21,7 +21,6 @@ import { ThemeToggle } from "#/components/shared/theme-toggle/theme-toggle";
 import { useLocaleLinks } from "#/hooks/use-locale-links";
 import { useSignOut } from "#/hooks/use-sign-out";
 import { canEdit } from "#/lib/user-constants";
-import { cn } from "#/lib/utils";
 import type { Viewer } from "#/orpc/session/contract";
 import { m } from "#/paraglide/messages";
 
@@ -50,14 +49,6 @@ function isListedFor({
   if (audience === "editors") return canEdit(role);
   return true;
 }
-
-// Each link is a light key; the keys share one slot, so they drop their own cut. The current page's key stays sunk
-// (`aria-current="page"` latches it) and its LED lights blue, the selection signal. The focus ring is drawn inside the
-// face, like a tab's: outside it would land on the slot's black gap and vanish.
-const navKeyClasses = cn(
-  buttonVariants({ variant: "secondary", size: "sm" }),
-  "gap-2 before:hidden focus-visible:-outline-offset-4 focus-visible:outline-foreground",
-);
 
 /*===== Account =====*/
 
@@ -142,7 +133,7 @@ export function SiteHeader({
             {NAV_ITEMS.filter((item) => isListedFor({ audience: item.audience, role: viewer?.role })).map((item) => (
               <li key={item.to} className="flex">
                 {/* `exact` keeps "/" from matching every page */}
-                <Link to={item.to} activeOptions={{ exact: true }} className={navKeyClasses}>
+                <Link to={item.to} activeOptions={{ exact: true }} className={slotKeyClasses}>
                   {({ isActive }) => (
                     <>
                       <Led signal="selection" state={isActive ? "on" : "off"} size="sm" />
