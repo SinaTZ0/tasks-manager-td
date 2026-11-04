@@ -181,7 +181,12 @@ export function TaskStatusTrack({
               <Tooltip>
                 <TooltipTrigger
                   render={
-                    <Button variant="default" size="icon-sm" aria-label={statusActionLabel("stop")}>
+                    <Button
+                      variant="default"
+                      size="icon-sm"
+                      aria-label={statusActionLabel("stop")}
+                      onClick={() => take("stop")}
+                    >
                       <BanIcon />
                     </Button>
                   }

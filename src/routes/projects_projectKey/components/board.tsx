@@ -30,6 +30,7 @@ import {
 import { CSS } from "@dnd-kit/utilities";
 import { GripVerticalIcon } from "lucide-react";
 import {
+  useEffect,
   useId,
   useLayoutEffect,
   useRef,
@@ -350,6 +351,24 @@ export function Board({
     drag?.type === "task" || (drag?.type === "dropped-task" && drag.until === board.tasks) ? drag.lanes : settled;
   const cancelled = project.columns.find((column) => column.kind === "cancelled");
   const cancelledTasks = board.tasks.filter((task) => task.columnId === cancelled?.id && (!filter || filter(task)));
+
+  /*------ Cancelled Column ------*/
+  // It joins after the others, which on a full board is past the edge: without this the key latches and nothing seems
+  // to change. Only when it is turned on: a link that opens with it showing keeps the board at its start.
+  const cancelledRef = useRef<HTMLElement>(null);
+  const cancelledWasShowing = useRef(showCancelled);
+  useEffect(() => {
+    if (showCancelled && !cancelledWasShowing.current) {
+      const still = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      cancelledRef.current?.scrollIntoView({
+        behavior: still ? "auto" : "smooth",
+        block: "nearest",
+        inline: "nearest",
+      });
+    }
+    cancelledWasShowing.current = showCancelled;
+  }, [showCancelled]);
+
   const titles = new Map(columns.map((column) => [column.id, columnTitle(column)]));
   const codeOf = (id: UniqueIdentifier) => {
     const task = tasks.get(String(id));
@@ -761,6 +780,7 @@ export function Board({
         {/*------ Cancelled ------*/}
         {showCancelled && cancelled && (
           <BoardColumn
+            ref={cancelledRef}
             title={columnTitle(cancelled)}
             count={cancelledTasks.length}
             total={filter ? (totals.get(cancelled.id) ?? 0) : undefined}

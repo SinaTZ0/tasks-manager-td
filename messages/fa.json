@@ -191,7 +191,7 @@
   "projects_no_members": "بی‌عضو",
   "projects_new": "پروژه تازه",
   "projects_new_title": "پروژه تازه",
-  "projects_new_description": "تخته با هفت ستونش شروع می‌شود. نام و سقف ستون‌ها را بعداً می‌توانید عوض کنید.",
+  "projects_new_description": "تخته با سه ستون شروع می‌شود: برای انجام، در حال انجام و انجام‌شده. بعداً می‌توانید ستون تازه بسازید و نام و سقف ستون‌ها را عوض کنید.",
   "projects_name_label": "نام",
   "projects_key_label": "کلید",
   "projects_key_hint": "پیشوند کد کارها، مثل TD در TD-42. بعداً عوض نمی‌شود.",

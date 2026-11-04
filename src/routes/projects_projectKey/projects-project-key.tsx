@@ -181,6 +181,8 @@ function BoardPage() {
                     void navigate({
                       search: (previous) => ({ ...previous, cancelled: pressed || undefined }),
                       replace: true,
+                      // The board brings the column into view; the router's jump to the top would undo that.
+                      resetScroll: false,
                     })
                   }
                   className="w-full"

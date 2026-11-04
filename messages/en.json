@@ -191,7 +191,7 @@
   "projects_no_members": "No members",
   "projects_new": "New project",
   "projects_new_title": "New project",
-  "projects_new_description": "The board starts with its seven columns. You can rename them and set limits later.",
+  "projects_new_description": "The board starts with three columns: to do, doing and done. You can add your own, rename them and set limits later.",
   "projects_name_label": "Name",
   "projects_key_label": "Key",
   "projects_key_hint": "The task-code prefix, like TD in TD-42. It can't change later.",
