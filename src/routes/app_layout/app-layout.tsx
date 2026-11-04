@@ -1,5 +1,6 @@
 import { createFileRoute, redirect } from "@tanstack/react-router";
 
+import { NotFoundPage } from "#/components/shared/not-found-page/not-found-page";
 import type { UserRole } from "#/lib/user-constants";
 import { roleHomePath } from "#/lib/viewer";
 import { orpc } from "#/orpc/client";
@@ -24,4 +25,6 @@ export const Route = createFileRoute("/_site-layout/_app-layout")({
     if (!ROLES.includes(viewer.role as UserRole)) throw redirect({ href: roleHomePath(viewer.role) });
     return { viewer };
   },
+  // A page below that finds nothing (a project the viewer can't open) says so here, inside the site layout.
+  notFoundComponent: NotFoundPage,
 });

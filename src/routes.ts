@@ -44,6 +44,7 @@ export const routes = rootRoute("__root.tsx", [
         route("/projects/$projectKey/settings", "projects_projectKey_settings/projects-project-key-settings.tsx"),
       ]),
     ]),
+    route("/$", "not_found/not-found.tsx"),
   ]),
 
   /*===== Server Routes =====*/

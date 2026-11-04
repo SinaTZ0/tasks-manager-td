@@ -43,8 +43,9 @@ function SiteLayout() {
 
   /*------ Page Keys ------*/
   // A board can fold its side rail away; the key sits in the header so it stays in reach with the rail gone.
-  const onBoard =
-    useMatch({ from: "/_site-layout/_app-layout/projects/$projectKey", shouldThrow: false }) !== undefined;
+  const board = useMatch({ from: "/_site-layout/_app-layout/projects/$projectKey", shouldThrow: false });
+  // A project that isn't there matches this route too, and draws the not-found page: no rail to fold.
+  const onBoard = board !== undefined && board.status !== "notFound";
 
   return (
     <div className="flex min-h-svh flex-col">

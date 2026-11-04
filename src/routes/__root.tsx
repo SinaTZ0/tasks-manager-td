@@ -7,6 +7,7 @@ import { Provider as JotaiProvider } from "jotai";
 import { DirectionProvider } from "#/components/primitive/direction/direction";
 import { Toaster } from "#/components/primitive/toast/toast";
 import { TooltipProvider } from "#/components/primitive/tooltip/tooltip";
+import { NotFoundPage } from "#/components/shared/not-found-page/not-found-page";
 import { BOARD_LAYOUT_INIT_SCRIPT } from "#/lib/board-layout";
 import { BOARD_PANEL_INIT_SCRIPT } from "#/lib/board-panel";
 import { THEME_INIT_SCRIPT } from "#/lib/theme";
@@ -34,7 +35,7 @@ export const Route = createRootRouteWithContext<RouterContext>()({
   }),
   shellComponent: RootDocument,
   errorComponent: RootError,
-  notFoundComponent: NotFound,
+  notFoundComponent: NotFoundPage,
 });
 
 /*===== Document =====*/
@@ -103,8 +104,4 @@ function RootError({ error }: ErrorComponentProps) {
     return <ErrorMessage message={m.root_error_title()} details={error.message} stack={error.stack} />;
   }
   return <ErrorMessage message={m.root_error_title()} details={m.root_error_details()} />;
-}
-
-function NotFound() {
-  return <ErrorMessage message={m.root_not_found_title()} details={m.root_not_found_details()} />;
 }
