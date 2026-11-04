@@ -87,10 +87,12 @@ past its column, a dark surface that disappears. Report anything you could not f
 
 Reply in a few short paragraphs:
 
-1. the URL (`http://localhost:3000/design-study/<topic>`), and that keys 0–4 pick and `n` opens the notes;
-2. the problem, in one or two sentences;
-3. one short paragraph per option: what it is, what's good, what to watch;
-4. your honest pick and why, and the safe alternative if it differs; ask which one to build.
+1. the problem, in one or two sentences;
+2. one short paragraph per option: what it is, what's good, what to watch;
+3. your honest pick and why, and the safe alternative if it differs; ask which one to build;
+4. last of all, the URL to visit (`http://localhost:3000/design-study/<topic>`), and that keys 0–4 pick and `n` opens
+   the notes. The URL always ends the reply, one per study, so it is never lost above the notes. Any later reply about
+   the study (new options, a fix, a built pick) ends with the URL to look at too.
 
 Record the study in memory: the topic, the options and that the pick is pending.
 
@@ -112,6 +114,7 @@ Once the user picks, build only that option in `src/`, following `docs/frontend-
 - Delete what the old design leaves unused: components, message keys in both `messages/*.json`, tokens.
 - Run `pnpm lint`, and `pnpm typecheck` when props or contracts changed.
 - Screenshot the real page, waiting for hydration.
+- End the reply with the URL of the real page the pick landed on.
 - Commit and push only when the user says so. commitlint caps body lines at 100 characters.
 - Update the study's memory note with the outcome and the commit.
 
