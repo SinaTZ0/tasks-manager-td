@@ -14,7 +14,7 @@ const twDisplayStyles = defineStyles({
 
 // `inline` is a one-line window the height of a compact key, for a live value in a row of keys;
 // `row` is one the height of a 40px key, for a value between keys that step it (the calendar's month);
-// `list` is a tall, narrow window of one-line rows, for a column of channels (the board's side rail).
+// `list` is a tall, narrow window of one-line rows, for a column of channels (the board's sidebar).
 const twSize = defineStyles({
   inline: { layout: "flex-row items-center gap-3", geometry: "h-8 px-3" },
   row: { layout: "flex-row items-center justify-center gap-3", geometry: "h-10 px-4" },

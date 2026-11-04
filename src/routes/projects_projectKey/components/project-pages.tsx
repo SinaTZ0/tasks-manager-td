@@ -1,9 +1,10 @@
 import { Link } from "@tanstack/react-router";
+import { ArchiveIcon, CalendarDaysIcon, HistoryIcon, SettingsIcon, SquareKanbanIcon } from "lucide-react";
 
 import { slotKeyClasses } from "#/components/primitive/button/button.styles";
 import { slotClasses } from "#/components/primitive/instrument.styles";
 import { Led } from "#/components/primitive/led/led";
-import { cn } from "#/lib/utils";
+import { SidebarMenu, SidebarMenuButton, SidebarMenuItem } from "#/components/primitive/sidebar/sidebar";
 import { m } from "#/paraglide/messages";
 import type { BoardFilter } from "#/routes/projects_projectKey/board-filter";
 
@@ -17,8 +18,8 @@ const ACTIVE = { exact: true, includeSearch: false };
  * The selector of a project's pages, the header's navigation one level down: the board, calendar, activity, archive and
  * (for an admin) settings, every one on every page and always in that order, so a key can be found by where it sits.
  * The current page's key stays sunk with its LED lit. The board and the calendar show the same cards, so their keys
- * carry the filters across. `layout` sets how the keys lie: a row in a page head, or two abreast on the board's side
- * rail, where a last key left alone takes the whole width instead of leaving a hole beside it.
+ * carry the filters across. `layout` sets how the keys lie: a row in a page head, or a menu down the board's sidebar,
+ * where each key has an icon, so it still reads once the sidebar shrinks to a strip (its name then shows on hover).
  */
 export function ProjectPages({
   projectKey,
@@ -29,64 +30,62 @@ export function ProjectPages({
   projectKey: string;
   isAdmin: boolean;
   filter?: BoardFilter;
-  layout?: "row" | "grid";
+  layout?: "row" | "sidebar";
 }) {
   const params = { projectKey };
-  const grid = layout === "grid";
-  const keyClasses = cn(slotKeyClasses, grid && "w-full justify-start");
+  const pages = [
+    { to: "/projects/$projectKey", search: filter, label: m.board_link(), Icon: SquareKanbanIcon },
+    { to: "/projects/$projectKey/calendar", search: filter, label: m.calendar_link(), Icon: CalendarDaysIcon },
+    { to: "/projects/$projectKey/activity", label: m.activity_link(), Icon: HistoryIcon },
+    { to: "/projects/$projectKey/archive", label: m.archive_link(), Icon: ArchiveIcon },
+    ...(isAdmin ? [{ to: "/projects/$projectKey/settings", label: m.project_settings(), Icon: SettingsIcon }] : []),
+  ] as const;
 
   return (
     <nav aria-label={m.board_project_pages()}>
-      <ul className={cn(slotClasses, grid && "grid w-full grid-cols-2")}>
-        <li className="flex">
-          <Link
-            to="/projects/$projectKey"
-            params={params}
-            search={filter}
-            activeOptions={ACTIVE}
-            className={keyClasses}
-          >
-            {({ isActive }) => <PageKey active={isActive} label={m.board_link()} />}
-          </Link>
-        </li>
-        <li className="flex">
-          <Link
-            to="/projects/$projectKey/calendar"
-            params={params}
-            search={filter}
-            activeOptions={ACTIVE}
-            className={keyClasses}
-          >
-            {({ isActive }) => <PageKey active={isActive} label={m.calendar_link()} />}
-          </Link>
-        </li>
-        <li className="flex">
-          <Link to="/projects/$projectKey/activity" params={params} activeOptions={ACTIVE} className={keyClasses}>
-            {({ isActive }) => <PageKey active={isActive} label={m.activity_link()} />}
-          </Link>
-        </li>
-        <li className="flex">
-          <Link to="/projects/$projectKey/archive" params={params} activeOptions={ACTIVE} className={keyClasses}>
-            {({ isActive }) => <PageKey active={isActive} label={m.archive_link()} />}
-          </Link>
-        </li>
-        {isAdmin && (
-          <li className={cn("flex", grid && "col-span-2")}>
-            <Link to="/projects/$projectKey/settings" params={params} activeOptions={ACTIVE} className={keyClasses}>
-              {({ isActive }) => <PageKey active={isActive} label={m.project_settings()} />}
-            </Link>
-          </li>
-        )}
-      </ul>
+      {layout === "sidebar" ? (
+        <SidebarMenu>
+          {pages.map(({ to, label, Icon, ...page }) => (
+            <SidebarMenuItem key={to}>
+              <SidebarMenuButton
+                size="sm"
+                tooltip={label}
+                render={
+                  <Link to={to} params={params} activeOptions={ACTIVE} {...page}>
+                    {({ isActive }) => (
+                      <>
+                        <Led
+                          signal="selection"
+                          state={isActive ? "on" : "off"}
+                          size="sm"
+                          className="absolute inset-e-3 sidebar-icon:inset-e-1 sidebar-icon:top-1"
+                        />
+                        <Icon />
+                        <span>{label}</span>
+                      </>
+                    )}
+                  </Link>
+                }
+              />
+            </SidebarMenuItem>
+          ))}
+        </SidebarMenu>
+      ) : (
+        <ul className={slotClasses}>
+          {pages.map(({ to, label, Icon: _Icon, ...page }) => (
+            <li key={to} className="flex">
+              <Link to={to} params={params} activeOptions={ACTIVE} className={slotKeyClasses} {...page}>
+                {({ isActive }) => (
+                  <>
+                    <Led signal="selection" state={isActive ? "on" : "off"} size="sm" />
+                    {label}
+                  </>
+                )}
+              </Link>
+            </li>
+          ))}
+        </ul>
+      )}
     </nav>
-  );
-}
-
-function PageKey({ active, label }: { active: boolean; label: string }) {
-  return (
-    <>
-      <Led signal="selection" state={active ? "on" : "off"} size="sm" />
-      {label}
-    </>
   );
 }

@@ -20,7 +20,7 @@ const pad = (value: number) => formatNumber(value);
 const SEGMENTS = 8;
 
 /**
- * The project's display: the glass on the board's side rail, showing what the board holds right now. Each column is a
+ * The project's display: the glass on the board's sidebar, showing what the board holds right now. Each column is a
  * channel, one row of the list (its name, a level meter of its share of the board's cards and its card count), and
  * each channel is also the key that shows or hides its column (`?hide=`), lit while the column is on the board. The
  * last column shown can't be let go: an empty board would look broken. Below the channels, the counts that need

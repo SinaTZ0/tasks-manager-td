@@ -16,6 +16,7 @@ import {
 import { Field, FieldError, FieldGroup, FieldLabel } from "#/components/primitive/field/field";
 import { Input } from "#/components/primitive/input/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "#/components/primitive/select/select";
+import { SidebarMenuButton } from "#/components/primitive/sidebar/sidebar";
 import { Spinner } from "#/components/primitive/spinner/spinner";
 import { FormAlert } from "#/components/shared/form-alert/form-alert";
 import { describeApiFailure } from "#/lib/api-error";
@@ -62,9 +63,9 @@ export function NewTaskDialog({
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger render={<Button variant="highlight" size="sm" />}>
-        <PlusIcon data-icon="inline-start" />
-        {m.task_new()}
+      <DialogTrigger render={<SidebarMenuButton variant="highlight" tooltip={m.task_new()} />}>
+        <PlusIcon />
+        <span>{m.task_new()}</span>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>

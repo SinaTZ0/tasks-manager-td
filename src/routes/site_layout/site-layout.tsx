@@ -1,8 +1,7 @@
 import { useSuspenseQuery } from "@tanstack/react-query";
-import { createFileRoute, Outlet, useMatch } from "@tanstack/react-router";
+import { createFileRoute, Outlet } from "@tanstack/react-router";
 import { useEffect } from "react";
 
-import { BoardPanelToggle } from "#/components/shared/board-panel-toggle/board-panel-toggle";
 import { HeaderSearch } from "#/components/shared/header-search/header-search";
 import { NotificationBell, notificationsQuery } from "#/components/shared/notification-bell/notification-bell";
 import { SiteFooter } from "#/components/shared/site-footer/site-footer";
@@ -41,12 +40,6 @@ function SiteLayout() {
   // A signed-in page hears about changes made elsewhere (other people, other tabs) as they happen.
   useLiveUpdates(userId);
 
-  /*------ Page Keys ------*/
-  // A board can fold its side rail away; the key sits in the header so it stays in reach with the rail gone.
-  const board = useMatch({ from: "/_site-layout/_app-layout/projects/$projectKey", shouldThrow: false });
-  // A project that isn't there matches this route too, and draws the not-found page: no rail to fold.
-  const onBoard = board !== undefined && board.status !== "notFound";
-
   return (
     <div className="flex min-h-svh flex-col">
       <a
@@ -55,13 +48,9 @@ function SiteLayout() {
       >
         {m.common_skip_to_content()}
       </a>
-      <SiteHeader
-        viewer={viewer}
-        search={viewer && <HeaderSearch />}
-        bell={viewer && <NotificationBell />}
-        pageKeys={onBoard && <BoardPanelToggle />}
-      />
-      <main id="main" className="flex-1">
+      <SiteHeader viewer={viewer} search={viewer && <HeaderSearch />} bell={viewer && <NotificationBell />} />
+      {/* A flex row around a page with a sidebar, so the sidebar runs down to the footer however short the page is. */}
+      <main id="main" className="flex-1 has-data-[slot=sidebar]:flex">
         <Outlet />
       </main>
       <SiteFooter />

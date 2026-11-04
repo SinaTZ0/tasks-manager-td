@@ -1,12 +1,11 @@
 /*===== Board Panel =====*/
-// Whether each person keeps a board's side rail (the project's name, display and keys) open or folded away, saved in
-// their browser like the board layout (`src/lib/board-layout.ts`) and the same on every project. A folded rail leaves
-// the columns the whole width of the window.
-// The choice lives on <html> as `data-board-panel="closed"`, and the panel hides through the `board-panel-closed`
-// variant (src/styles.css). `BOARD_PANEL_INIT_SCRIPT`, inlined into the server-rendered <head>, applies it before
-// anything paints, so a folded panel never flashes open.
-// Folding is a CSS transition on the rail itself (the board page, `projects-project-key.tsx` → Side Rail): it narrows
-// while the columns slide into its place.
+// Whether each person keeps a board's sidebar (the project's name, display and keys) open or shrunk to a strip of
+// icons, saved in their browser like the board layout (`src/lib/board-layout.ts`) and the same on every project. The
+// strip leaves the columns nearly the whole width of the window.
+// `BoardPanelProvider` hands this store to the `SidebarProvider`, which shrinks the `Sidebar` (primitive/sidebar/). The
+// choice also lives on <html> as `data-board-panel="closed"`: `BOARD_PANEL_INIT_SCRIPT`, inlined into the
+// server-rendered <head>, applies it before anything paints, and the `sidebar-icon` variant (src/styles.css) reads it,
+// so a shrunk sidebar never flashes open while the server's HTML waits for React.
 
 const STORAGE_KEY = "app-board-panel";
 // Notifies other components in this tab; the `storage` event only fires in other tabs.

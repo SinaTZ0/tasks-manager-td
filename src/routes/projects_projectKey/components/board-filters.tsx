@@ -33,7 +33,7 @@ type Item = { value: string; label: string };
  * written to the URL (`onChange`) so a filtered board can be linked. Each select is a key with its name printed above
  * it and an LED that lights while it narrows the board, so they read at a glance which filters are on. A key clears
  * them all while any is set. `layout` sets how they lie: a row across a page head, or two columns down the board's
- * side rail, where "blocked only" prints shorter and without its lock to fit a cell, and `children` fills the next.
+ * sidebar, where "blocked only" prints shorter and without its lock to fit a cell, and `children` fills the next.
  */
 export function BoardFilters({
   filter,
@@ -154,7 +154,13 @@ function FilterSelect({
     <span className="flex min-w-0 flex-col gap-1.5">
       <Marking aria-hidden="true">{mark}</Marking>
       <Select items={items} value={current} onValueChange={onChange}>
-        <SelectTrigger variant="key" size="sm" aria-label={label} className="w-full min-w-28">
+        {/* In the sidebar the grid sets the width, and a scrollbar may take some of it. */}
+        <SelectTrigger
+          variant="key"
+          size="sm"
+          aria-label={label}
+          className="w-full min-w-28 in-data-[slot=sidebar]:min-w-0"
+        >
           <Led signal="selection" state={current === ANY ? "off" : "on"} size="sm" />
           <SelectValue />
         </SelectTrigger>

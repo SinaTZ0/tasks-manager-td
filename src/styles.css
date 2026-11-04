@@ -20,9 +20,8 @@
 /* The board's column layout, as each person chose it (src/lib/board-layout.ts); with neither, the row scrolls. */
 @custom-variant board-fit (&:where([data-board-layout="fit"] *));
 @custom-variant board-wrap (&:where([data-board-layout="wrap"] *));
-/* The board's side rail folded away (src/lib/board-panel.ts). */
+/* The board's sidebar shrunk to its strip of icons (src/lib/board-panel.ts). */
 @custom-variant board-panel-closed (&:where([data-board-panel="closed"] *));
-
 /* A part of the sidebar while it is a strip of icons: by its own state, or by the saved choice on <html> before React
    has run, since the server renders it open and only the first-paint script knows better. A phone's sheet is always
    whole. */
@@ -649,26 +648,6 @@
   background-size: 10px 100%;
   background-position: center;
   background-repeat: repeat-x;
-}
-
-/* The board's side rail (src/lib/board-panel.ts), folding away: it narrows to nothing while its housing keeps its own
-   width (`w-68` on the card, the same length as here), so the keys don't rewrap on the way and the columns slide into
-   its place. Width animates because both ends are lengths. The clip cuts what no longer fits, 4px past the box so the
-   housing's 3px ledge still shows; `overflow: hidden` would cut the ledge. Folded, it turns invisible, so its keys
-   leave the tab order (visibility holds until the transition ends). */
-@utility board-panel-fold {
-  flex: none;
-  width: --spacing(68);
-  clip-path: inset(0 0 -4px 0);
-  transition-property: width, margin, opacity, visibility;
-  transition-duration: 240ms;
-  transition-timing-function: var(--ease-in-out);
-
-  :where([data-board-panel="closed"]) & {
-    width: 0;
-    opacity: 0;
-    visibility: hidden;
-  }
 }
 
 /* A key's legend whose width glides when its text changes (Button's `glide`). CSS can't transition between two `auto`

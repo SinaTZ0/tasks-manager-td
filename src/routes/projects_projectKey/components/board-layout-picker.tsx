@@ -27,7 +27,7 @@ const MODES = [
 /**
  * Latch keys for how the board lays out its columns (`src/lib/board-layout.ts`): one scrolling row, one row fitted to
  * the window, or several rows, with a second set of keys below for how many columns go in each. Its name is printed
- * above it, like the filter keys over it, and the keys share the side rail's width. The choice is this browser's, so
+ * above it, like the filter keys over it, and the keys share the sidebar's width. The choice is this browser's, so
  * it is the same on every project.
  */
 export function BoardLayoutPicker() {

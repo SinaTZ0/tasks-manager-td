@@ -5,8 +5,17 @@ import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router";
 import { AvatarGroup } from "#/components/primitive/avatar/avatar";
 import { Card, CardContent } from "#/components/primitive/card/card";
 import { Marking } from "#/components/primitive/marking/marking";
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarExpanded,
+  SidebarGroup,
+  SidebarHeader,
+  SidebarInset,
+  SidebarMenu,
+  SidebarMenuItem,
+} from "#/components/primitive/sidebar/sidebar";
 import { Toggle } from "#/components/primitive/toggle/toggle";
-import { BOARD_PANEL_ID } from "#/components/shared/board-panel-toggle/board-panel-toggle";
 import { PersonAvatar } from "#/components/shared/person-avatar/person-avatar";
 import { pageMeta } from "#/lib/seo";
 import { orpc } from "#/orpc/client";
@@ -18,6 +27,11 @@ import { cardFilter, isFiltering, type BoardFilter } from "#/routes/projects_pro
 import { BoardDisplay } from "#/routes/projects_projectKey/components/board-display";
 import { BoardFilters } from "#/routes/projects_projectKey/components/board-filters";
 import { BoardLayoutPicker } from "#/routes/projects_projectKey/components/board-layout-picker";
+import {
+  BOARD_PANEL_ID,
+  BoardPanelProvider,
+  BoardPanelToggle,
+} from "#/routes/projects_projectKey/components/board-panel";
 import { NewTaskDialog } from "#/routes/projects_projectKey/components/new-task-dialog";
 import { ProjectPages } from "#/routes/projects_projectKey/components/project-pages";
 import { Board, SHOW_CANCELLED_ID } from "#/routes/projects_projectKey/components/board";
@@ -123,101 +137,107 @@ function BoardPage() {
   const assignable = project.members.filter((member) => member.role !== "viewer");
 
   return (
-    <div className="flex items-start gap-6 px-6 py-6">
-      {/*===== Side Rail =====*/}
-      {/* The project's front panel, turned on its side into a channel strip beside the columns, so they get the window's
-          whole height. A key in the header folds it away (src/lib/board-panel.ts); the filters still apply, and the
-          columns say "3 of 9". It narrows as the columns slide into its place (`board-panel-fold`, src/styles.css);
-          folded, its negative margin takes back the page's `gap-6`. It stays in view down a long board. */}
-      <section
-        id={BOARD_PANEL_ID}
-        aria-label={project.name}
-        className="board-panel-fold sticky top-6 board-panel-closed:-me-6"
-      >
-        <Card size="sm" className="w-68">
-          <CardContent>
-            <div className="flex flex-col gap-3.5">
-              {/*------ Name ------*/}
-              <div className="flex flex-col">
-                <h1 className="font-heading text-h1">{project.name}</h1>
-                <span className="flex items-center gap-3">
-                  <Marking variant="code">{project.key}</Marking>
-                  <AvatarGroup>
-                    {project.members.map((member) => (
-                      <PersonAvatar key={member.id} name={member.name} src={member.avatarUrl} />
-                    ))}
-                  </AvatarGroup>
-                </span>
-              </div>
+    <BoardPanelProvider>
+      {/*===== Sidebar =====*/}
+      {/* The project's front panel, standing beside the columns so they get the window's whole height. Its key shrinks
+          it to a strip of icons (src/lib/board-panel.ts): the key itself, the project's key, the new-task key and its
+          pages. The display and the filter keys fade away; the filters still apply, and the columns say "3 of 9".
+          What stays in the strip sits above the part that scrolls, so a scrolled sidebar can't shrink with it out of
+          view. */}
+      <Sidebar id={BOARD_PANEL_ID} collapsible="icon" aria-label={project.name}>
+        <SidebarHeader>
+          {/*------ Name ------*/}
+          {/* The key stands in the top corner, beside the name, so it rides the sidebar's edge and never jumps. In the
+              strip the name is gone and the project's key moves down below it. */}
+          <div className="relative flex flex-col transition-all duration-240 ease-in-out sidebar-icon:pt-10">
+            <BoardPanelToggle className="absolute inset-e-1 top-0.5" />
+            <SidebarExpanded>
+              <h1 className="truncate pe-10 font-heading text-h1">{project.name}</h1>
+            </SidebarExpanded>
+            <span className="flex items-center gap-3 sidebar-icon:justify-center">
+              <Marking variant="code">{project.key}</Marking>
+              <AvatarGroup className="sidebar-icon:hidden">
+                {project.members.map((member) => (
+                  <PersonAvatar key={member.id} name={member.name} src={member.avatarUrl} />
+                ))}
+              </AvatarGroup>
+            </span>
+          </div>
 
-              {isAdmin && (
-                <div className="flex *:flex-1">
-                  <NewTaskDialog
-                    projectId={project.id}
-                    projectKey={project.key}
-                    columns={columns}
-                    defaultColumnId={columns.find((column) => !hidden.has(column.id))?.id}
-                  />
-                </div>
-              )}
+          {isAdmin && (
+            <SidebarMenu>
+              <SidebarMenuItem>
+                <NewTaskDialog
+                  projectId={project.id}
+                  projectKey={project.key}
+                  columns={columns}
+                  defaultColumnId={columns.find((column) => !hidden.has(column.id))?.id}
+                />
+              </SidebarMenuItem>
+            </SidebarMenu>
+          )}
 
-              <BoardDisplay project={project} board={board} hidden={hidden} onHiddenChange={setHidden} />
+          {/*------ Pages ------*/}
+          <ProjectPages projectKey={project.key} isAdmin={isAdmin} filter={current} layout="sidebar" />
+        </SidebarHeader>
 
-              {/*------ Keys ------*/}
-              <BoardFilters
-                filter={current}
-                people={assignable}
-                labels={board.labels}
-                onChange={setFilter}
-                layout="grid"
+        <SidebarContent folding>
+          <SidebarGroup>
+            <BoardDisplay project={project} board={board} hidden={hidden} onHiddenChange={setHidden} />
+          </SidebarGroup>
+
+          {/*------ Keys ------*/}
+          <SidebarGroup>
+            <BoardFilters filter={current} people={assignable} labels={board.labels} onChange={setFilter} layout="grid">
+              <Toggle
+                id={SHOW_CANCELLED_ID}
+                size="md"
+                signal="selection"
+                aria-label={m.board_show_cancelled()}
+                pressed={showCancelled}
+                onPressedChange={(pressed) =>
+                  void navigate({
+                    search: (previous) => ({ ...previous, cancelled: pressed || undefined }),
+                    replace: true,
+                    // The board brings the column into view; the router's jump to the top would undo that.
+                    resetScroll: false,
+                  })
+                }
+                className="w-full"
               >
-                <Toggle
-                  id={SHOW_CANCELLED_ID}
-                  size="md"
-                  signal="selection"
-                  aria-label={m.board_show_cancelled()}
-                  pressed={showCancelled}
-                  onPressedChange={(pressed) =>
-                    void navigate({
-                      search: (previous) => ({ ...previous, cancelled: pressed || undefined }),
-                      replace: true,
-                      // The board brings the column into view; the router's jump to the top would undo that.
-                      resetScroll: false,
-                    })
-                  }
-                  className="w-full"
-                >
-                  {m.board_mark_cancelled()}
-                </Toggle>
-              </BoardFilters>
-              <BoardLayoutPicker />
-
-              {/*------ Pages ------*/}
-              <div className="h-px bg-border" />
-              <ProjectPages projectKey={project.key} isAdmin={isAdmin} filter={current} layout="grid" />
-            </div>
-          </CardContent>
-        </Card>
-      </section>
+                {m.board_mark_cancelled()}
+              </Toggle>
+            </BoardFilters>
+          </SidebarGroup>
+          <SidebarGroup>
+            <BoardLayoutPicker />
+          </SidebarGroup>
+        </SidebarContent>
+      </Sidebar>
 
       {/*------ Columns ------*/}
-      <Card className="min-w-0 flex-1">
-        <CardContent>
-          <Board
-            project={project}
-            projectKey={projectKey}
-            board={board}
-            labels={labels}
-            people={people}
-            canMoveColumns={isAdmin}
-            canMoveCards={canEdit}
-            canTransfer={isAdmin}
-            filter={filter}
-            showCancelled={showCancelled}
-            hiddenColumns={hidden}
-          />
-        </CardContent>
-      </Card>
+      {/* A `div`: the site layout's `main` already holds the page. */}
+      <SidebarInset render={<div />}>
+        {/* On a phone the sidebar is a closed sheet, and the key inside it can't open it. */}
+        <BoardPanelToggle className="ms-6 mt-6 self-start md:hidden" />
+        <Card className="m-6">
+          <CardContent>
+            <Board
+              project={project}
+              projectKey={projectKey}
+              board={board}
+              labels={labels}
+              people={people}
+              canMoveColumns={isAdmin}
+              canMoveCards={canEdit}
+              canTransfer={isAdmin}
+              filter={filter}
+              showCancelled={showCancelled}
+              hiddenColumns={hidden}
+            />
+          </CardContent>
+        </Card>
+      </SidebarInset>
 
       <TaskDrawer
         code={openTask}
@@ -226,6 +246,6 @@ function BoardPage() {
         people={people}
         onClose={() => void navigate({ search: (previous) => ({ ...previous, task: undefined }) })}
       />
-    </div>
+    </BoardPanelProvider>
   );
 }

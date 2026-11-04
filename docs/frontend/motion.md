@@ -30,11 +30,10 @@ Between Pages).
   the page doesn't.
 - **Height** animates from a measured variable (`h-(--accordion-panel-height)` with Base UI's collapsible) or from a
   `grid-template-rows` transition between `1fr` and `0fr` around a `min-h-0` box.
-- **Width** of a part with a known width animates between lengths, as the board's side rail folds
-  (`projects-project-key.tsx` → Side Rail): the box narrows while what's inside keeps its width, so nothing rewraps on
-  the way. Clip a folding part with `clip-path` rather than `overflow: hidden` when a housing's ledge hangs below it,
-  turn it `invisible` once folded so its controls leave the tab order, and take back the parent's gap with a negative
-  margin.
+- **Width** of a part with a known width animates between lengths, as the board's sidebar shrinks to its strip of
+  icons (`primitive/sidebar/sidebar.styles.ts`): keys narrow with it and cut their labels off, and what has no icon
+  keeps its width while it fades, so nothing rewraps on the way. Turn what fades `invisible` at the end, so its controls
+  leave the tab order.
 - Put the classes behind `motion-safe:`; the reduced-motion block in `src/styles.css` also removes every transition.
 
 ## Motion

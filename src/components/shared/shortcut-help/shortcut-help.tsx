@@ -26,7 +26,10 @@ const GROUPS: Group[] = [
   },
   {
     title: m.shortcut_group_board,
-    rows: [{ keys: ["n"], label: m.shortcut_new_card, who: "admins" }],
+    rows: [
+      { keys: ["n"], label: m.shortcut_new_card, who: "admins" },
+      { keys: ["Ctrl", "b"], label: m.shortcut_toggle_panel, who: "everyone" },
+    ],
   },
   {
     title: m.shortcut_group_card,
