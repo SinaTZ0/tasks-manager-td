@@ -12,6 +12,7 @@ import { notificationContract } from "#/orpc/notification/contract";
 import { profileContract } from "#/orpc/profile/contract";
 import { projectContract } from "#/orpc/project/contract";
 import { pushContract } from "#/orpc/push/contract";
+import { reminderContract } from "#/orpc/reminder/contract";
 import { searchContract } from "#/orpc/search/contract";
 import { sessionContract } from "#/orpc/session/contract";
 import { siteContract } from "#/orpc/site/contract";
@@ -38,6 +39,7 @@ export const contract = {
   profile: profileContract,
   project: projectContract,
   push: pushContract,
+  reminder: reminderContract,
   search: searchContract,
   session: sessionContract,
   site: siteContract,

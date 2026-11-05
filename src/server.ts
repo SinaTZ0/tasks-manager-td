@@ -7,6 +7,7 @@ import { logRequest } from "#/lib/request-log.server";
 import { runWithTrace } from "#/lib/trace.server";
 import { startMediaCleanup } from "#/orpc/media/cleanup.server";
 import { startPushDelivery } from "#/orpc/push/delivery.server";
+import { startReminders } from "#/orpc/reminder/job.server";
 import { deLocalizeHref } from "#/paraglide/runtime";
 import { paraglideMiddleware } from "#/paraglide/server";
 
@@ -18,6 +19,7 @@ const log = createLogger("http");
 // The server entry is loaded once when the server starts, which makes it the place to start in-process jobs.
 startMediaCleanup();
 startPushDelivery();
+startReminders();
 
 /*===== Locale =====*/
 // The strategy `/rpc` requests resolve their locale with (`project.inlang/paraglide.config.ts`).

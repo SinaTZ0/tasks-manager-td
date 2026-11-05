@@ -15,6 +15,13 @@
       "when": 1793836729586,
       "tag": "0001_user-ping-message",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1793915805022,
+      "tag": "0002_reminders",
+      "breakpoints": true
     }
   ]
 }

@@ -31,7 +31,9 @@ export async function insertNotifications({
 
 /**
  * Inserts due-date reminders, skipping any already sent: `notification_due_once_idx` (person, task, kind, due date)
- * turns a repeat into a no-op, so two polls at once still remind once.
+ * turns a repeat into a no-op, so two processes at once still remind once.
+ *
+ * @returns How many were new.
  */
 export async function insertDueReminders({
   db,
@@ -39,9 +41,14 @@ export async function insertDueReminders({
 }: {
   db: Database;
   values: NewNotificationRecord[];
-}): Promise<void> {
-  if (values.length === 0) return;
-  await db.insert(notification).values(values).onConflictDoNothing();
+}): Promise<number> {
+  if (values.length === 0) return 0;
+  const inserted = await db
+    .insert(notification)
+    .values(values)
+    .onConflictDoNothing()
+    .returning({ id: notification.id });
+  return inserted.length;
 }
 
 /** Marks a person's notifications read: the ones named, or all of them. Someone else's ids change nothing. */
@@ -125,6 +132,12 @@ export function findDueTasksFor({
         or(exists(assignees(userId)), and(not(exists(assignees())), eq(task.ownerId, userId))),
       ),
     ) as Promise<DueTaskRow[]>;
+}
+
+/** Everyone who can still be reminded: a deactivated account can't sign in to read it. */
+export async function findActiveUserIds({ db }: { db: Database }): Promise<string[]> {
+  const rows = await db.select({ id: user.id }).from(user).where(eq(user.status, "active"));
+  return rows.map((row) => row.id);
 }
 
 export async function countUnread({ db, userId }: { db: Database; userId: string }): Promise<number> {

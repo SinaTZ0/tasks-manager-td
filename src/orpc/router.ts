@@ -38,6 +38,7 @@ import {
   updateColumnProcedure,
 } from "#/orpc/project/procedure";
 import { pushConfigProcedure, subscribePushProcedure, unsubscribePushProcedure } from "#/orpc/push/procedure";
+import { clearReminderProcedure, myRemindersProcedure, setReminderProcedure } from "#/orpc/reminder/procedure";
 import { searchTasksProcedure } from "#/orpc/search/procedure";
 import { viewerProcedure } from "#/orpc/session/procedure";
 import { siteOriginProcedure } from "#/orpc/site/procedure";
@@ -142,6 +143,11 @@ export const router = implementer.router({
     config: pushConfigProcedure,
     subscribe: subscribePushProcedure,
     unsubscribe: unsubscribePushProcedure,
+  },
+  reminder: {
+    mine: myRemindersProcedure,
+    set: setReminderProcedure,
+    clear: clearReminderProcedure,
   },
   search: {
     tasks: searchTasksProcedure,

@@ -4,7 +4,8 @@
 /**
  * What a person is told about (docs/task-manager-plan.md → slices 6, 12 and 17): a task assigned or delegated to them,
  * a mention in a comment, a task of theirs that nothing holds up any more, one of theirs that is due today or
- * tomorrow, or overdue (these two have no actor), and something that happened to a card they watch.
+ * tomorrow, or overdue, a reminder they set themselves (these three have no actor), and something that happened to a
+ * card they watch.
  */
 export const NOTIFICATION_KINDS = [
   "assigned",
@@ -13,6 +14,7 @@ export const NOTIFICATION_KINDS = [
   "unblocked",
   "due_soon",
   "overdue",
+  "reminder",
   "watched",
 ] as const;
 
@@ -33,6 +35,9 @@ export const WATCHED_EVENTS = [
 ] as const;
 
 export type WatchedEvent = (typeof WATCHED_EVENTS)[number];
+
+/** The hour on the team's clock when due dates are checked: a reminder at midnight would be read as noise. */
+export const DUE_REMINDER_HOUR = 9;
 
 /** How many of the latest the bell lists. */
 export const NOTIFICATION_LIST_LIMIT = 30;

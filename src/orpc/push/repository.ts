@@ -1,4 +1,4 @@
-import { and, eq, gt, inArray, isNull, notInArray, sql } from "drizzle-orm";
+import { and, eq, gt, inArray, isNull, sql } from "drizzle-orm";
 
 import type { Database } from "#/db/client.server";
 import { notification, pushSubscription, user } from "#/db/schema";
@@ -46,7 +46,6 @@ export function findSubscriptions({ db, userId }: { db: Database; userId: string
 /**
  * Claims a person's notifications not pushed yet, made since `since`: marks them pushed and returns them, with who
  * caused each. The update locks each row, so when several app processes hear the same signal only one of them gets it.
- * Due-date reminders are left out: they are made when the bell asks, with a page open.
  */
 export async function claimUnpushed({
   db,
@@ -60,14 +59,7 @@ export async function claimUnpushed({
   const claimed = await db
     .update(notification)
     .set({ pushedAt: sql`now()` })
-    .where(
-      and(
-        eq(notification.userId, userId),
-        isNull(notification.pushedAt),
-        gt(notification.createdAt, since),
-        notInArray(notification.kind, ["due_soon", "overdue"]),
-      ),
-    )
+    .where(and(eq(notification.userId, userId), isNull(notification.pushedAt), gt(notification.createdAt, since)))
     .returning();
   if (claimed.length === 0) return [];
   const actorIds = [...new Set(claimed.flatMap((row) => (row.actorId ? [row.actorId] : [])))];

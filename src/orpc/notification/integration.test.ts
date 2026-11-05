@@ -6,10 +6,11 @@ import { notification } from "#/db/schema";
 import { createTestProject, deleteTestProject } from "#/db/test-fixtures.server";
 import { addDays, teamToday } from "#/lib/team-day";
 import { remindDue } from "#/orpc/notification/service";
+import { deliverPush, subscribePush } from "#/orpc/push/service";
 import { createTask, transitionTask, updateTask } from "#/orpc/task/service";
 
 /*===== Due-Date Reminders =====*/
-// The bell asks every half minute and each ask checks due dates, so a reminder must go out once, not on every ask
+// Due dates are checked by a job, and every app process runs it, so a reminder must go out once, not on every check
 // (docs/task-manager-plan.md → slice 12).
 
 let fixture: Awaited<ReturnType<typeof createTestProject<"admin" | "ali">>>;
@@ -59,6 +60,35 @@ describe("due-date reminders", () => {
     });
     await remindDue({ db, userId: users.ali });
     expect(await remindersOf(created.task.id)).toHaveLength(2);
+  });
+
+  it("pushes a due-date reminder to a browser with no page open", async () => {
+    const { projectId, users } = fixture;
+    const created = await createTask({
+      db,
+      actorId: users.admin,
+      projectId,
+      input: { title: "فردا", assigneeIds: [users.ali], dueDate: addDays({ date: teamToday(), days: 1 }) },
+    });
+    if (created.kind !== "success") throw new Error("setup failed");
+    await subscribePush({
+      db,
+      userId: users.ali,
+      endpoint: `https://push.example.test/due-${fixture.key}`,
+      keys: { p256dh: "key", auth: "auth" },
+      locale: "en",
+    });
+    await remindDue({ db, userId: users.ali });
+
+    const titles: string[] = [];
+    await deliverPush({
+      db,
+      userId: users.ali,
+      send: async (_target, payload) => {
+        titles.push((JSON.parse(payload) as { body: string }).body);
+      },
+    });
+    expect(titles).toContain("فردا");
   });
 
   it("never reminds about a done task", async () => {

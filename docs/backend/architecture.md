@@ -268,6 +268,19 @@ shown by the service worker `public/sw.js` even with no Tofang tab open (`src/or
 - **Gone subscriptions go.** A 404 or 410 from the push service deletes the subscription; signing out deletes the
   browser's own first.
 
+### Reminders
+
+`startReminders` (started in `src/server.ts`, `src/orpc/reminder/job.server.ts`) runs every minute inside the app's
+process, so reminders reach people with no Tofang page open.
+
+- **A card's reminder fires once.** `fireReminders` locks the rows whose time has come, skipping any another process
+  holds, writes each as a `reminder` notification and deletes it in the same transaction. One that came due while the
+  server was down fires at the next run.
+- **Due dates are checked each morning.** From `DUE_REMINDER_HOUR` on the team's clock, once per team day, each active
+  person's due tasks become `due_soon` and `overdue` notifications; `notification_due_once_idx` makes a repeat a no-op.
+- **Both reach the bell and the browser the usual way.** Each publishes the person's `notification` signal, which
+  lights an open bell and starts the push delivery.
+
 ### Testing
 
 - Test consequential behavior against the real database (`DATABASE_URL`): a representative success case and the

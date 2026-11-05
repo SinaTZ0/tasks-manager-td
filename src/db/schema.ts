@@ -452,6 +452,32 @@ export const taskWatcher = pgTable(
   ],
 );
 
+/*===== Reminders =====*/
+// "Remind me about this card" (docs/app.md → Reminders). One per person and card, removed when it fires: the
+// notification is its record. Private to its person, so it writes no history. It names the task, not its project, so
+// it follows a card moved to another project.
+
+export const reminder = pgTable(
+  "reminder",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    taskId: uuid("task_id")
+      .notNull()
+      .references(() => task.id, { onDelete: "cascade" }),
+    remindAt: timestamp("remind_at").notNull(),
+    note: text("note"),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+  },
+  (table) => [
+    uniqueIndex("reminder_user_id_task_id_idx").on(table.userId, table.taskId),
+    // Serves the job's "whose time has come".
+    index("reminder_remind_at_idx").on(table.remindAt),
+  ],
+);
+
 /*===== Delegations =====*/
 // "You do this now" (docs/app.md → Delegation): a task handed from one person to another, with a note. The new person
 // joins the assignees, in place of the one handing it on if they were one; the owner never changes (rule 6). A task's
@@ -496,7 +522,7 @@ export const notification = pgTable(
       .references(() => user.id, { onDelete: "cascade" }),
     /** One of `NOTIFICATION_KINDS` (`src/orpc/notification/constants.ts`). */
     kind: text("kind").notNull(),
-    /** Who caused it; null for a due-date reminder, which nobody did. */
+    /** Who caused it; null for a reminder of either sort, which nobody did. */
     actorId: text("actor_id").references(() => user.id, { onDelete: "restrict" }),
     projectId: uuid("project_id")
       .notNull()
@@ -520,7 +546,7 @@ export const notification = pgTable(
     index("notification_unread_idx")
       .on(table.userId)
       .where(sql`${table.readAt} is null`),
-    // A due-date reminder goes out once per person, task, kind and due date, however often the bell asks.
+    // A due-date reminder goes out once per person, task, kind and due date, however often the job runs.
     uniqueIndex("notification_due_once_idx")
       .on(table.userId, table.taskId, table.kind, table.dueDate)
       .where(sql`${table.dueDate} is not null`),

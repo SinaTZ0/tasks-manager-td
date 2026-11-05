@@ -10,19 +10,22 @@ import { COLUMN_KINDS } from "#/orpc/project/constants";
 export const notificationSchema = z.object({
   id: z.string(),
   kind: z.enum(NOTIFICATION_KINDS),
-  /** Null for a due-date reminder, which nobody caused. */
+  /** Null for a reminder of either sort, which nobody caused. */
   actorName: z.string().nullable(),
+  projectId: z.string(),
   projectKey: z.string(),
+  /** Null once the task is deleted. */
+  taskId: z.string().nullable(),
   /** The task's code and title as they were when it happened. */
   taskCode: z.string(),
   taskTitle: z.string(),
-  /** For a watched card, what happened to it. */
+  /** For a watched card, what happened to it; for a reminder, what became of the card meanwhile, if anything did. */
   event: z.enum(WATCHED_EVENTS).nullable(),
   /** For a watched card moved to another kind of column, that column's kind; `note` has its name, if it has one. */
   columnKind: z.enum(COLUMN_KINDS).nullable(),
   /**
    * A delegation's note, the code of the blocker that was finished, a mention's or comment's excerpt, a pause's or
-   * stop's reason, the column a watched card was moved to, or who it was handed to.
+   * stop's reason, the column a watched card was moved to, who it was handed to, or a reminder's note.
    */
   note: z.string().nullable(),
   /** For a due-date reminder, the due date (ISO) it was about. */

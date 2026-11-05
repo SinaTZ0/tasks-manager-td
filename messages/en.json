@@ -1884,5 +1884,139 @@
         "": "Keep the message to {maxText} characters."
       }
     }
+  ],
+  "notification_reminder": [
+    {
+      "declarations": ["input code"],
+      "match": {
+        "": "Reminder: {code}"
+      }
+    }
+  ],
+  "notification_reminder_done": [
+    {
+      "declarations": ["input code"],
+      "match": {
+        "": "Reminder: {code} (already done)"
+      }
+    }
+  ],
+  "notification_reminder_cancelled": [
+    {
+      "declarations": ["input code"],
+      "match": {
+        "": "Reminder: {code} (already cancelled)"
+      }
+    }
+  ],
+  "notification_reminder_archived": [
+    {
+      "declarations": ["input code"],
+      "match": {
+        "": "Reminder: {code} (archived)"
+      }
+    }
+  ],
+  "reminder_error_past": "Pick a time that hasn't passed.",
+  "reminder_error_note_too_long": [
+    {
+      "declarations": ["input max", "local maxText = max: number"],
+      "match": {
+        "": "Keep the note to {maxText} characters."
+      }
+    }
+  ],
+  "reminder_title": "Reminder",
+  "reminder_list_title": "Reminders",
+  "reminder_open": "Remind me",
+  "reminder_open_card": [
+    {
+      "declarations": ["input code"],
+      "match": {
+        "": "Remind me about {code}"
+      }
+    }
+  ],
+  "reminder_mark": [
+    {
+      "declarations": ["input code", "input when"],
+      "match": {
+        "": "Your reminder on {code}: {when}"
+      }
+    }
+  ],
+  "reminder_step_key": [
+    {
+      "declarations": ["input time"],
+      "match": {
+        "": "Remind me in {time}"
+      }
+    }
+  ],
+  "reminder_date_time": "Date and time",
+  "reminder_hour": "Hour",
+  "reminder_minute": "Minute",
+  "reminder_note_placeholder": "A note to yourself",
+  "reminder_only_you": "Only you see this",
+  "reminder_clear": "Remove reminder",
+  "reminder_clear_card": [
+    {
+      "declarations": ["input code"],
+      "match": {
+        "": "Remove the reminder on {code}"
+      }
+    }
+  ],
+  "reminder_minutes": [
+    {
+      "declarations": ["input minutes", "local minutesText = minutes: number"],
+      "match": {
+        "": "{minutesText} min"
+      }
+    }
+  ],
+  "reminder_hours": [
+    {
+      "declarations": ["input hours", "local hoursText = hours: number"],
+      "match": {
+        "": "{hoursText} hr"
+      }
+    }
+  ],
+  "reminder_when_today": [
+    {
+      "declarations": ["input time"],
+      "match": {
+        "": "at {time}"
+      }
+    }
+  ],
+  "reminder_when_day": [
+    {
+      "declarations": ["input date", "input time"],
+      "match": {
+        "": "{date} at {time}"
+      }
+    }
+  ],
+  "reminder_save_failed": "Couldn't save the reminder. Try again.",
+  "reminder_push_hint": "Turn this on and it reaches you with Tofang closed too.",
+  "reminder_snooze": [
+    {
+      "declarations": ["input code", "input time"],
+      "match": {
+        "": "Remind me again about {code}: {time}"
+      }
+    }
+  ],
+  "reminder_snooze_lead": "Again in",
+  "reminder_tomorrow": "Tomorrow",
+  "reminder_snoozed": [
+    {
+      "declarations": ["input when"],
+      "match": {
+        "": "I'll remind you again {when}."
+      }
+    }
   ]
 }

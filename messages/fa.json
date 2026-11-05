@@ -1884,5 +1884,139 @@
         "": "پیام حداکثر {maxText} حرف است."
       }
     }
+  ],
+  "notification_reminder": [
+    {
+      "declarations": ["input code"],
+      "match": {
+        "": "یادآوری: {code}"
+      }
+    }
+  ],
+  "notification_reminder_done": [
+    {
+      "declarations": ["input code"],
+      "match": {
+        "": "یادآوری: {code} (انجام شده است)"
+      }
+    }
+  ],
+  "notification_reminder_cancelled": [
+    {
+      "declarations": ["input code"],
+      "match": {
+        "": "یادآوری: {code} (لغو شده است)"
+      }
+    }
+  ],
+  "notification_reminder_archived": [
+    {
+      "declarations": ["input code"],
+      "match": {
+        "": "یادآوری: {code} (بایگانی شده است)"
+      }
+    }
+  ],
+  "reminder_error_past": "زمانی را انتخاب کنید که نگذشته باشد.",
+  "reminder_error_note_too_long": [
+    {
+      "declarations": ["input max", "local maxText = max: number"],
+      "match": {
+        "": "یادداشت حداکثر {maxText} حرف است."
+      }
+    }
+  ],
+  "reminder_title": "یادآوری",
+  "reminder_list_title": "یادآوری‌ها",
+  "reminder_open": "یادآوری کن",
+  "reminder_open_card": [
+    {
+      "declarations": ["input code"],
+      "match": {
+        "": "درباره {code} یادآوری کن"
+      }
+    }
+  ],
+  "reminder_mark": [
+    {
+      "declarations": ["input code", "input when"],
+      "match": {
+        "": "یادآوری شما روی {code}: {when}"
+      }
+    }
+  ],
+  "reminder_step_key": [
+    {
+      "declarations": ["input time"],
+      "match": {
+        "": "{time} دیگر یادآوری کن"
+      }
+    }
+  ],
+  "reminder_date_time": "تاریخ و ساعت",
+  "reminder_hour": "ساعت",
+  "reminder_minute": "دقیقه",
+  "reminder_note_placeholder": "یادداشت برای خودتان",
+  "reminder_only_you": "فقط شما می‌بینید",
+  "reminder_clear": "حذف یادآوری",
+  "reminder_clear_card": [
+    {
+      "declarations": ["input code"],
+      "match": {
+        "": "حذف یادآوری {code}"
+      }
+    }
+  ],
+  "reminder_minutes": [
+    {
+      "declarations": ["input minutes", "local minutesText = minutes: number"],
+      "match": {
+        "": "{minutesText} دقیقه"
+      }
+    }
+  ],
+  "reminder_hours": [
+    {
+      "declarations": ["input hours", "local hoursText = hours: number"],
+      "match": {
+        "": "{hoursText} ساعت"
+      }
+    }
+  ],
+  "reminder_when_today": [
+    {
+      "declarations": ["input time"],
+      "match": {
+        "": "ساعت {time}"
+      }
+    }
+  ],
+  "reminder_when_day": [
+    {
+      "declarations": ["input date", "input time"],
+      "match": {
+        "": "{date} ساعت {time}"
+      }
+    }
+  ],
+  "reminder_save_failed": "یادآوری ذخیره نشد. دوباره تلاش کنید.",
+  "reminder_push_hint": "با روشن کردن این، یادآوری وقتی تفنگ بسته است هم به شما می‌رسد.",
+  "reminder_snooze": [
+    {
+      "declarations": ["input code", "input time"],
+      "match": {
+        "": "یادآوری دوباره {code}: {time}"
+      }
+    }
+  ],
+  "reminder_snooze_lead": "دوباره",
+  "reminder_tomorrow": "فردا",
+  "reminder_snoozed": [
+    {
+      "declarations": ["input when"],
+      "match": {
+        "": "دوباره {when} یادآوری می‌کنم."
+      }
+    }
   ]
 }

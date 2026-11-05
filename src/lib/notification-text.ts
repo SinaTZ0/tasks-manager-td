@@ -34,9 +34,27 @@ function watchedSentence(item: Notification): string {
   }
 }
 
-/** The extra line a notification shows under its title: a hand-off's note, a comment's excerpt, a stop's reason. */
+/** A reminder as a sentence, saying what became of the card if it isn't open any more. */
+function reminderSentence(item: Notification): string {
+  const code = item.taskCode;
+  switch (item.event) {
+    case "completed":
+      return m.notification_reminder_done({ code });
+    case "stopped":
+      return m.notification_reminder_cancelled({ code });
+    case "archived":
+      return m.notification_reminder_archived({ code });
+    default:
+      return m.notification_reminder({ code });
+  }
+}
+
+/**
+ * The extra line a notification shows under its title: a hand-off's note, a comment's excerpt, a stop's reason, a
+ * reminder's note.
+ */
 export function notificationDetail(item: Notification): string | null {
-  if (item.kind === "delegated") return item.note;
+  if (item.kind === "delegated" || item.kind === "reminder") return item.note;
   if (item.kind === "watched" && (item.event === "commented" || item.event === "stopped")) {
     return item.note;
   }
@@ -60,6 +78,8 @@ export function notificationSentence(item: Notification): string {
       return m.notification_due_soon({ code, date: item.dueDate ? formatDate(isoToDate(item.dueDate)) : "" });
     case "overdue":
       return m.notification_overdue({ code, date: item.dueDate ? formatDate(isoToDate(item.dueDate)) : "" });
+    case "reminder":
+      return reminderSentence(item);
     case "watched":
       return watchedSentence(item);
   }

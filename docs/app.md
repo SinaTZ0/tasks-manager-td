@@ -33,6 +33,7 @@ What each thing is and how it relates. How to store it = implementer decides.
 - **Checklist item** — Small step inside Task. Too small for own Task.
 - **Attachment** — File or link on Task.
 - **Notification** — Alert for one user about one event. Read or unread.
+- **Reminder** — One user's private note to self about one Task, at a set time. Becomes a Notification.
 - **Watcher** — User following a Task without owning or doing it.
 
 ---
@@ -104,6 +105,21 @@ What each thing is and how it relates. How to store it = implementer decides.
   can comment, with no limit on how often. Each person can set the words in their profile; empty means "How is it
   going?" in the language they ping in
 
+**Reminders**
+
+- "Remind me" on a card, or in its drawer: one key sets 30 minutes from now, and each press moves it on half an hour, up
+  to 3 hours and then round to 30. The other way is picking a date and time, on the team's clock. An optional short
+  note goes with it
+- A card with one wears a clip on its top edge, beside the priority LEDs, printing the time left, or the date when it is
+  a day or more away. Pressing the clip opens it again. My Tasks lists the ones waiting
+- Private: only its person sees it, so it stays out of the history. Anyone on the project can set one, a viewer too
+- One per person per card; a new one replaces the old. Not on an archived card
+- Time comes → a notification in the bell and a push. A card finished, cancelled or archived meanwhile still reminds,
+  and says so. Dropped only for someone who can no longer open the card
+- A reminder that rang can be put off from the bell: an hour, or tomorrow morning (09:00 on the team's clock). Not one
+  on an archived card
+- Follows a card moved to another project
+
 **History**
 
 - Every card has Activity tab: who did what, when
@@ -159,7 +175,8 @@ What each thing is and how it relates. How to store it = implementer decides.
 4. Blocked card can't go Done until blockers are Done (or user forces it + leaves comment).
 5. Cancelling a task requires a reason.
 6. Delegation never changes owner. Owner = responsible. Assignee = does the work.
-7. Every change → Activity entry. No exceptions. Activity never edited, never deleted.
+7. Every change → Activity entry. The one exception is a Reminder: private, and it doesn't change the card. Activity
+   never edited, never deleted.
 8. App logic follows column _kind_, never column _name_.
 9. Delete user? No. Deactivate. Their cards and name stay.
 10. Delete card? Archive. Hard delete only by admin, only from archive.

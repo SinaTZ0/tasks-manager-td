@@ -17,6 +17,44 @@ const dayParts = new Intl.DateTimeFormat("en-CA", {
   day: "2-digit",
 });
 
+const hourParts = new Intl.DateTimeFormat("en-CA", { timeZone: TEAM_TIME_ZONE, hour: "numeric", hourCycle: "h23" });
+
+/** The hour on the team's clock at `now` (default: this moment), from 0 to 23. */
+export function teamHour(now: number | Date = Date.now()): number {
+  return Number(hourParts.formatToParts(now).find((part) => part.type === "hour")?.value);
+}
+
+const clockParts = new Intl.DateTimeFormat("en-CA", {
+  timeZone: TEAM_TIME_ZONE,
+  year: "numeric",
+  month: "2-digit",
+  day: "2-digit",
+  hour: "2-digit",
+  minute: "2-digit",
+  second: "2-digit",
+  hourCycle: "h23",
+});
+
+const readClock = (at: number | Date) =>
+  Object.fromEntries(clockParts.formatToParts(at).map((part) => [part.type, part.value]));
+
+/** What the team's clock reads at `at`, as `09:30`. */
+export function teamTime(at: number | Date): string {
+  const { hour, minute } = readClock(at);
+  return `${hour}:${minute}`;
+}
+
+/**
+ * The moment the team's clock reads `time` (`09:30`) on `date` (ISO), whatever the laptop's clock is set to. The zone's
+ * offset is read rather than written down, so a change to Iran's clocks needs nothing here.
+ */
+export function teamMoment({ date, time }: { date: string; time: string }): Date {
+  const asUtc = Date.parse(`${date}T${time}:00Z`);
+  const { year, month, day, hour, minute, second } = readClock(asUtc);
+  const read = Date.UTC(Number(year), Number(month) - 1, Number(day), Number(hour), Number(minute), Number(second));
+  return new Date(asUtc - (read - asUtc));
+}
+
 /** The team's calendar date at `now` (default: this moment), as ISO (`2026-10-30`). */
 export function teamToday(now: number | Date = Date.now()): string {
   const parts = Object.fromEntries(dayParts.formatToParts(now).map((part) => [part.type, part.value]));

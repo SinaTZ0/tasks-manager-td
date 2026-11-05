@@ -14,6 +14,7 @@ import type { Notification } from "#/orpc/notification/contract";
 import { addDays, teamToday } from "#/lib/team-day";
 import {
   countUnread,
+  findActiveUserIds,
   findDueTasksFor,
   findNotifications,
   insertDueReminders,
@@ -26,13 +27,16 @@ import { taskCode } from "#/orpc/task/constants";
 
 /*===== Types =====*/
 /** What a notification keeps to read well later, since titles change and tasks can be deleted. */
-type NotificationData = {
+export type NotificationData = {
   projectKey: string;
   taskCode: string;
   taskTitle: string;
   note?: string | null;
-  /** For a `watched` notification, what happened, and for a move, the kind of column it went to. */
-  event?: WatchedEvent;
+  /**
+   * For a `watched` notification, what happened, and for a move, the kind of column it went to. For a `reminder`, what
+   * became of the card since it was set.
+   */
+  event?: WatchedEvent | undefined;
   columnKind?: ColumnKind;
 };
 
@@ -68,9 +72,8 @@ export async function notify({
 /*===== Due Dates =====*/
 /**
  * Reminds a person of the tasks they answer for (assigned, or owned with no assignee) that are due today or tomorrow
- * (`due_soon`) or overdue (`overdue`), once each per due date. There is no scheduler: this runs when the person's
- * notifications are read, which the bell does every `NOTIFICATION_POLL_MS`, and the unique index makes a repeat a
- * no-op. Changing a due date allows a new reminder. "Today" is the team's (`src/lib/team-day.ts`).
+ * (`due_soon`) or overdue (`overdue`), once each per due date: the unique index makes a repeat a no-op. Changing a due
+ * date allows a new reminder. "Today" is the team's (`src/lib/team-day.ts`).
  */
 export async function remindDue({
   db,
@@ -83,7 +86,7 @@ export async function remindDue({
 }): Promise<void> {
   const today = teamToday(now);
   const tasks = await findDueTasksFor({ db, userId, until: addDays({ date: today, days: 1 }) });
-  await insertDueReminders({
+  const added = await insertDueReminders({
     db,
     values: tasks.map((row) => ({
       userId,
@@ -99,6 +102,13 @@ export async function remindDue({
       } satisfies NotificationData,
     })),
   });
+  // Only for new ones: this signal is what lights an open bell and pushes to a closed browser.
+  if (added > 0) await publishLive({ db, signals: [{ kind: "notification", id: userId }] });
+}
+
+/** Reminds everyone of their due tasks; the reminder job (`src/orpc/reminder/job.server.ts`) runs this each morning. */
+export async function remindEveryoneDue({ db, now = Date.now() }: { db: Database; now?: number }): Promise<void> {
+  for (const userId of await findActiveUserIds({ db })) await remindDue({ db, userId, now });
 }
 
 /*===== Read =====*/
@@ -109,7 +119,9 @@ export function toNotification(row: NotificationRow): Notification {
     id: row.id,
     kind: oneOf({ allowed: NOTIFICATION_KINDS, value: row.kind, what: "notification kind" }),
     actorName: row.actorName,
+    projectId: row.projectId,
     projectKey: data.projectKey ?? "",
+    taskId: row.taskId,
     taskCode: data.taskCode ?? "",
     taskTitle: data.taskTitle ?? "",
     event: data.event ? oneOf({ allowed: WATCHED_EVENTS, value: data.event, what: "watched event" }) : null,
