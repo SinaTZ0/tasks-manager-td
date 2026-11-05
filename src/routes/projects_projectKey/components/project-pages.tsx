@@ -33,9 +33,11 @@ export function ProjectPages({
   layout?: "row" | "sidebar";
 }) {
   const params = { projectKey };
+  // The header's search filters the board only, so the calendar takes the filter keys without its text.
+  const { q: _q, ...keys } = filter;
   const pages = [
     { to: "/projects/$projectKey", search: filter, label: m.board_link(), Icon: SquareKanbanIcon },
-    { to: "/projects/$projectKey/calendar", search: filter, label: m.calendar_link(), Icon: CalendarDaysIcon },
+    { to: "/projects/$projectKey/calendar", search: keys, label: m.calendar_link(), Icon: CalendarDaysIcon },
     { to: "/projects/$projectKey/activity", label: m.activity_link(), Icon: HistoryIcon },
     { to: "/projects/$projectKey/archive", label: m.archive_link(), Icon: ArchiveIcon },
     ...(isAdmin ? [{ to: "/projects/$projectKey/settings", label: m.project_settings(), Icon: SettingsIcon }] : []),

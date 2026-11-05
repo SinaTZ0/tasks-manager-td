@@ -112,13 +112,14 @@ function BoardPage() {
   const labels = new Map(board.labels.map((label) => [label.id, label]));
 
   /*------ Filters ------*/
-  const { assignee, label, priority, due, blocked } = search;
-  const current: BoardFilter = { assignee, label, priority, due, blocked };
+  const { q, assignee, label, priority, due, blocked } = search;
+  const current: BoardFilter = { q, assignee, label, priority, due, blocked };
   const tasks = new Map(board.tasks.map((task) => [task.id, task]));
   const kinds = kindsOf(project);
   const filter = isFiltering(current)
     ? cardFilter({
         filter: current,
+        projectKey: project.key,
         viewerId,
         today: teamToday(),
         isBlocked: (task) => blockersOf({ task, tasks, kinds }).length > 0,

@@ -1,5 +1,6 @@
 import { z } from "zod";
 
+import { SEARCH_QUERY_MAX_LENGTH } from "#/orpc/search/constants";
 import { TASK_PRIORITIES } from "#/orpc/task/constants";
 
 /*===== Board Search Params =====*/
@@ -25,6 +26,8 @@ export const boardSearchSchema = z.object({
     .catch(undefined),
   cancelled: z.boolean().optional().catch(undefined),
   hide: z.array(z.string().max(64)).max(50).optional().catch(undefined),
+  /** The header's search text, while it filters this board. */
+  q: z.string().trim().min(1).max(SEARCH_QUERY_MAX_LENGTH).optional().catch(undefined),
   /** `me`, `none`, or a person's id. */
   assignee: z.string().max(64).optional().catch(undefined),
   /** A label's id. */

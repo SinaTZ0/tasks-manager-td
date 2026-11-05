@@ -227,7 +227,9 @@ follows the backend flow, then the frontend flow; desktop first (the phone layou
 - **Board filters**: a filter bar on the board: assignee (with "me" and "nobody"), label, priority, due (overdue, this
   week, none) and blocked. Kept in typed search params, so a filtered board can be linked; the board's cards are
   already loaded, so filtering happens in the browser. Columns show "3 of 9" while filtered; a clear key resets it.
-- **Search**: a search field in the header (`/` focuses it) and a `/search?q=` page across my projects: task code
+- **Search**: a search field in the header (`/` focuses it). On a project's board it filters the cards by title and
+  code as you type (`?q=`, after a 700ms pause, or at once on Enter). Anywhere else Enter opens a `/search?q=` page
+  across my projects: task code
   (`TGQ-12` goes straight to the card), title, description and comment text. Persian text is normalized the same way
   as when it's saved (`src/lib/persian-text.ts`), so ی/ي and ک/ك match. `ILIKE` on the plain-text copies is enough at
   this size; archived tasks are included and marked.

@@ -91,6 +91,7 @@ function CalendarPage() {
     ? live.filter(
         cardFilter({
           filter: current,
+          projectKey: project.key,
           viewerId,
           today,
           isBlocked: (task) => blockersOf({ task, tasks, kinds }).length > 0,
