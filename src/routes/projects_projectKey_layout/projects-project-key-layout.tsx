@@ -60,7 +60,7 @@ function ProjectLayout() {
           pages. What stays in the strip sits above the part that scrolls, so a scrolled sidebar can't shrink with it
           out of view. `dark`: the sidebar is display glass in both themes, so what sits on it uses the graphite
           edition's tokens. */}
-      <Sidebar id={BOARD_PANEL_ID} collapsible="icon" aria-label={project.name}>
+      <Sidebar id={BOARD_PANEL_ID} collapsible="icon" aria-label={project.name} className="dark">
         <SidebarHeader>
           {/*------ Name ------*/}
           {/* The key stands in the top corner, beside the name, so it rides the sidebar's edge and never jumps. In the

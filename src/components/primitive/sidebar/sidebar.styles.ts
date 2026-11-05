@@ -66,7 +66,9 @@ const twContainerStyles = defineStyles({
 const twContainerVariant = defineStyles({
   sidebar: {
     geometry: "data-[side=end]:border-s data-[side=start]:border-e sidebar-icon:w-(--sidebar-width-icon)",
-    appearance: "border-sidebar-border bg-sidebar surface-grain",
+    // The ink is set here as well as on the root: a class that rescopes the tokens (`dark`) lands on this element, and
+    // inherited ink from above it would still be the page's.
+    appearance: "border-sidebar-border bg-sidebar surface-grain text-sidebar-foreground",
   },
   floating: { geometry: "p-2 sidebar-icon:w-[calc(var(--sidebar-width-icon)+(--spacing(4))+2px)]" },
   inset: { geometry: "p-2 sidebar-icon:w-[calc(var(--sidebar-width-icon)+(--spacing(4))+2px)]" },

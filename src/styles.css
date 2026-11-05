@@ -492,7 +492,10 @@
   --chart-4: #f2b705;
   --chart-5: #9fc33a;
 
-  --sidebar: var(--card);
+  /* The header's glass, resolved here on <html>: the sidebar scopes `.dark` to itself, and inside it `--glass` would be
+     the dark theme's, a shade off the header in light. */
+  --sidebar-glass: var(--glass);
+  --sidebar: var(--sidebar-glass);
   --sidebar-foreground: #171717;
   --sidebar-primary: #3a3a3a;
   --sidebar-primary-foreground: #f2f2f2;
@@ -583,7 +586,7 @@
 
   --chart-2: #8a8a8a;
 
-  --sidebar: var(--card);
+  --sidebar: var(--sidebar-glass);
   --sidebar-foreground: #e6e6e6;
   --sidebar-primary: #1c1c1c;
   --sidebar-primary-foreground: #ededed;

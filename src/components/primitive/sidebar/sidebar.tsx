@@ -195,7 +195,7 @@ function Sidebar({
           data-sidebar="sidebar"
           data-slot="sidebar"
           data-mobile="true"
-          className={sidebarSheetClasses}
+          className={cn(sidebarSheetClasses, className)}
           style={{ "--sidebar-width": SIDEBAR_WIDTH_MOBILE } as CSSProperties}
           side={side}
           showCloseButton={false}
