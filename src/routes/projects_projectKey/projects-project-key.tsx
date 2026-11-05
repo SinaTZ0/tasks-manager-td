@@ -2,21 +2,7 @@ import { ORPCError } from "@orpc/client";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router";
 
-import { AvatarGroup } from "#/components/primitive/avatar/avatar";
 import { Card, CardContent } from "#/components/primitive/card/card";
-import { Marking } from "#/components/primitive/marking/marking";
-import {
-  Sidebar,
-  SidebarContent,
-  SidebarExpanded,
-  SidebarGroup,
-  SidebarHeader,
-  SidebarInset,
-  SidebarMenu,
-  SidebarMenuItem,
-} from "#/components/primitive/sidebar/sidebar";
-import { Toggle } from "#/components/primitive/toggle/toggle";
-import { PersonAvatar } from "#/components/shared/person-avatar/person-avatar";
 import { pageMeta } from "#/lib/seo";
 import { orpc } from "#/orpc/client";
 import type { Person } from "#/orpc/project/contract";
@@ -24,17 +10,7 @@ import { taskCode } from "#/orpc/task/constants";
 import { m } from "#/paraglide/messages";
 import { teamToday } from "#/lib/team-day";
 import { cardFilter, isFiltering, type BoardFilter } from "#/routes/projects_projectKey/board-filter";
-import { BoardDisplay } from "#/routes/projects_projectKey/components/board-display";
-import { BoardFilters } from "#/routes/projects_projectKey/components/board-filters";
-import { BoardLayoutPicker } from "#/routes/projects_projectKey/components/board-layout-picker";
-import {
-  BOARD_PANEL_ID,
-  BoardPanelProvider,
-  BoardPanelToggle,
-} from "#/routes/projects_projectKey/components/board-panel";
-import { NewTaskDialog } from "#/routes/projects_projectKey/components/new-task-dialog";
-import { ProjectPages } from "#/routes/projects_projectKey/components/project-pages";
-import { Board, SHOW_CANCELLED_ID } from "#/routes/projects_projectKey/components/board";
+import { Board } from "#/routes/projects_projectKey/components/board";
 import { useBoardAccess } from "#/routes/projects_projectKey/access";
 import { TaskDrawer } from "#/routes/projects_projectKey/components/task-drawer";
 import { blockersOf, kindsOf } from "#/routes/projects_projectKey/dependencies";
@@ -48,7 +24,7 @@ const ignoreMissing = (error: unknown) => {
   if (!(error instanceof ORPCError && error.code === "NOT_FOUND")) throw error;
 };
 
-export const Route = createFileRoute("/_site-layout/_app-layout/projects/$projectKey")({
+export const Route = createFileRoute("/_site-layout/_app-layout/projects/$projectKey/")({
   validateSearch: boardSearchSchema,
   loaderDeps: ({ search }) => ({ task: search.task }),
   loader: async ({ context, params, deps }) => {
@@ -94,8 +70,8 @@ export const Route = createFileRoute("/_site-layout/_app-layout/projects/$projec
 
 /**
  * A project's board: its columns in one housing, laid out the way the person chose (`Board` holds them and the
- * dragging). The cancelled column joins them when the switch asks for it (`?cancelled=true`). A card's drawer opens
- * over it from `?task=`.
+ * dragging), beside the project's sidebar, which holds its display and keys (`BoardSidebar`). The cancelled column joins
+ * them when the switch asks for it (`?cancelled=true`). A card's drawer opens over it from `?task=`.
  */
 function BoardPage() {
   const { projectKey } = Route.useParams();
@@ -125,120 +101,30 @@ function BoardPage() {
         isBlocked: (task) => blockersOf({ task, tasks, kinds }).length > 0,
       })
     : null;
-  const setFilter = (patch: Partial<BoardFilter>) =>
-    void navigate({ search: (previous) => ({ ...previous, ...patch }), replace: true });
 
   /*------ Columns ------*/
-  const columns = project.columns.filter((column) => column.kind !== "cancelled");
   const hidden = new Set(search.hide);
-  const setHidden = (ids: string[]) =>
-    void navigate({ search: (previous) => ({ ...previous, hide: ids.length > 0 ? ids : undefined }), replace: true });
-
-  // Anyone a card can be assigned to; viewers never are.
-  const assignable = project.members.filter((member) => member.role !== "viewer");
 
   return (
-    <BoardPanelProvider>
-      {/*===== Sidebar =====*/}
-      {/* The project's front panel, standing beside the columns so they get the window's whole height. Its key shrinks
-          it to a strip of icons (src/lib/board-panel.ts): the key itself, the project's key, the new-task key and its
-          pages. The display and the filter keys fade away; the filters still apply, and the columns say "3 of 9".
-          What stays in the strip sits above the part that scrolls, so a scrolled sidebar can't shrink with it out of
-          view. */}
-      <Sidebar id={BOARD_PANEL_ID} collapsible="icon" aria-label={project.name}>
-        <SidebarHeader>
-          {/*------ Name ------*/}
-          {/* The key stands in the top corner, beside the name, so it rides the sidebar's edge and never jumps. In the
-              strip the name is gone and the project's key moves down below it. */}
-          <div className="relative flex flex-col transition-all duration-240 ease-in-out sidebar-icon:pt-10">
-            <BoardPanelToggle className="absolute inset-e-1 top-0.5" />
-            <SidebarExpanded>
-              <h1 className="truncate pe-10 font-heading text-h1">{project.name}</h1>
-            </SidebarExpanded>
-            <span className="flex items-center gap-3 sidebar-icon:justify-center">
-              <Marking variant="code">{project.key}</Marking>
-              <AvatarGroup className="sidebar-icon:hidden">
-                {project.members.map((member) => (
-                  <PersonAvatar key={member.id} name={member.name} src={member.avatarUrl} />
-                ))}
-              </AvatarGroup>
-            </span>
-          </div>
-
-          {isAdmin && (
-            <SidebarMenu>
-              <SidebarMenuItem>
-                <NewTaskDialog
-                  projectId={project.id}
-                  projectKey={project.key}
-                  columns={columns}
-                  defaultColumnId={columns.find((column) => !hidden.has(column.id))?.id}
-                />
-              </SidebarMenuItem>
-            </SidebarMenu>
-          )}
-
-          {/*------ Pages ------*/}
-          <ProjectPages projectKey={project.key} isAdmin={isAdmin} filter={current} layout="sidebar" />
-        </SidebarHeader>
-
-        <SidebarContent folding>
-          <SidebarGroup>
-            <BoardDisplay project={project} board={board} hidden={hidden} onHiddenChange={setHidden} />
-          </SidebarGroup>
-
-          {/*------ Keys ------*/}
-          <SidebarGroup>
-            <BoardFilters filter={current} people={assignable} labels={board.labels} onChange={setFilter} layout="grid">
-              <Toggle
-                id={SHOW_CANCELLED_ID}
-                size="md"
-                signal="selection"
-                aria-label={m.board_show_cancelled()}
-                pressed={showCancelled}
-                onPressedChange={(pressed) =>
-                  void navigate({
-                    search: (previous) => ({ ...previous, cancelled: pressed || undefined }),
-                    replace: true,
-                    // The board brings the column into view; the router's jump to the top would undo that.
-                    resetScroll: false,
-                  })
-                }
-                className="w-full"
-              >
-                {m.board_mark_cancelled()}
-              </Toggle>
-            </BoardFilters>
-          </SidebarGroup>
-          <SidebarGroup>
-            <BoardLayoutPicker />
-          </SidebarGroup>
-        </SidebarContent>
-      </Sidebar>
-
+    <>
       {/*------ Columns ------*/}
-      {/* A `div`: the site layout's `main` already holds the page. */}
-      <SidebarInset render={<div />}>
-        {/* On a phone the sidebar is a closed sheet, and the key inside it can't open it. */}
-        <BoardPanelToggle className="ms-6 mt-6 self-start md:hidden" />
-        <Card className="m-6">
-          <CardContent>
-            <Board
-              project={project}
-              projectKey={projectKey}
-              board={board}
-              labels={labels}
-              people={people}
-              canMoveColumns={isAdmin}
-              canMoveCards={canEdit}
-              canTransfer={isAdmin}
-              filter={filter}
-              showCancelled={showCancelled}
-              hiddenColumns={hidden}
-            />
-          </CardContent>
-        </Card>
-      </SidebarInset>
+      <Card className="m-6">
+        <CardContent>
+          <Board
+            project={project}
+            projectKey={projectKey}
+            board={board}
+            labels={labels}
+            people={people}
+            canMoveColumns={isAdmin}
+            canMoveCards={canEdit}
+            canTransfer={isAdmin}
+            filter={filter}
+            showCancelled={showCancelled}
+            hiddenColumns={hidden}
+          />
+        </CardContent>
+      </Card>
 
       <TaskDrawer
         code={openTask}
@@ -247,6 +133,6 @@ function BoardPage() {
         people={people}
         onClose={() => void navigate({ search: (previous) => ({ ...previous, task: undefined }) })}
       />
-    </BoardPanelProvider>
+    </>
   );
 }

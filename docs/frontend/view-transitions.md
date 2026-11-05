@@ -56,6 +56,8 @@ snapshot in the new state only:
   one side.
 - Forward points left in RTL (`app-identity.md`), so a forward page arrives from the left and a back page from the
   right. `--page-shift` is negative under `dir="rtl"` and positive otherwise, so an LTR page gets the mirror image.
+- A page with a sidebar names its `sidebar-inset` instead of `#main`, so the sidebar stays still while the page beside it
+  slides.
 
 Naming `#main` in both states would slide the old content out too, but the browser then moves each snapshot from its
 old box to its new one. Forward navigation resets the scroll and Back restores it, so whenever the two pages sit at

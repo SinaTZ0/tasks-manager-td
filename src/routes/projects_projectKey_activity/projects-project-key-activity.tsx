@@ -12,8 +12,6 @@ import { pageMeta } from "#/lib/seo";
 import { orpc } from "#/orpc/client";
 import type { Person } from "#/orpc/project/contract";
 import { m } from "#/paraglide/messages";
-import { useBoardAccess } from "#/routes/projects_projectKey/access";
-import { ProjectPages } from "#/routes/projects_projectKey/components/project-pages";
 import { ensureProject, projectQuery } from "#/routes/projects_projectKey/queries";
 
 /*===== Queries =====*/
@@ -51,7 +49,6 @@ export const Route = createFileRoute("/_site-layout/_app-layout/projects/$projec
  */
 function ActivityPage() {
   const { projectKey } = Route.useParams();
-  const { isAdmin } = useBoardAccess();
   const { data: project } = useSuspenseQuery(projectQuery(projectKey));
   const { data, hasNextPage, fetchNextPage, isFetchingNextPage, isFetchNextPageError } = useSuspenseInfiniteQuery(
     activityQuery(project.id),
@@ -64,13 +61,7 @@ function ActivityPage() {
   return (
     <div className="mx-auto flex w-full max-w-site flex-col gap-6 px-6 py-8">
       {/*------ Header ------*/}
-      <PageHead
-        code={project.key}
-        kicker={project.name}
-        title={m.activity_link()}
-        description={m.activity_description()}
-        actions={<ProjectPages projectKey={project.key} isAdmin={isAdmin} />}
-      />
+      <PageHead title={m.activity_link()} description={m.activity_description()} />
 
       {/*------ Feed ------*/}
       <Card>

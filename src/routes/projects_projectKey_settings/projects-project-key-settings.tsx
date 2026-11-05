@@ -1,12 +1,12 @@
 import { useSuspenseQuery } from "@tanstack/react-query";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "#/components/primitive/card/card";
 import { PageHead } from "#/components/shared/page-head/page-head";
 import { pageMeta } from "#/lib/seo";
+import { roleHomePath } from "#/lib/viewer";
 import { orpc } from "#/orpc/client";
 import { m } from "#/paraglide/messages";
-import { ProjectPages } from "#/routes/projects_projectKey/components/project-pages";
 import { boardQuery, ensureProject, projectQuery } from "#/routes/projects_projectKey/queries";
 import { AddColumnForm } from "#/routes/projects_projectKey_settings/components/add-column-form";
 import { ColumnStrips } from "#/routes/projects_projectKey_settings/components/column-strips";
@@ -15,7 +15,12 @@ import { ProjectNameForm } from "#/routes/projects_projectKey_settings/component
 
 /*===== Route =====*/
 
-export const Route = createFileRoute("/_site-layout/_app-layout/_admin-layout/projects/$projectKey/settings")({
+export const Route = createFileRoute("/_site-layout/_app-layout/projects/$projectKey/settings")({
+  // The one project page for admins alone, so it guards itself: the admin layout can't hold a child of the project's
+  // layout. Only shapes navigation: every procedure this page calls checks the role again.
+  beforeLoad: ({ context }) => {
+    if (context.viewer.role !== "admin") throw redirect({ href: roleHomePath(context.viewer.role) });
+  },
   loader: async ({ context, params }) => {
     const [project] = await Promise.all([
       ensureProject({ queryClient: context.queryClient, projectKey: params.projectKey }),
@@ -42,13 +47,8 @@ function SettingsPage() {
   const cardCount = (columnId: string) => board.tasks.filter((task) => task.columnId === columnId).length;
 
   return (
-    <div className="mx-auto flex max-w-site flex-col gap-6 px-6 py-8">
-      <PageHead
-        code={project.key}
-        kicker={project.name}
-        title={m.project_settings()}
-        actions={<ProjectPages projectKey={project.key} isAdmin />}
-      />
+    <div className="mx-auto flex w-full max-w-site flex-col gap-6 px-6 py-8">
+      <PageHead title={m.project_settings()} />
 
       <Card>
         <CardHeader>

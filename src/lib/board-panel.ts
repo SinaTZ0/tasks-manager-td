@@ -1,7 +1,7 @@
 /*===== Board Panel =====*/
-// Whether each person keeps a board's sidebar (the project's name, display and keys) open or shrunk to a strip of
-// icons, saved in their browser like the board layout (`src/lib/board-layout.ts`) and the same on every project. The
-// strip leaves the columns nearly the whole width of the window.
+// Whether each person keeps a project's sidebar (its name, pages, and on the board the display and keys) open or shrunk
+// to a strip of icons, saved in their browser like the board layout (`src/lib/board-layout.ts`) and the same on every
+// project. The strip leaves the page nearly the whole width of the window.
 // `BoardPanelProvider` hands this store to the `SidebarProvider`, which shrinks the `Sidebar` (primitive/sidebar/). The
 // choice also lives on <html> as `data-board-panel="closed"`: `BOARD_PANEL_INIT_SCRIPT`, inlined into the
 // server-rendered <head>, applies it before anything paints, and the `sidebar-icon` variant (src/styles.css) reads it,

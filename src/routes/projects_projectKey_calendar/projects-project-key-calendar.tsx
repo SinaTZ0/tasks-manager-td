@@ -18,7 +18,6 @@ import { useBoardAccess } from "#/routes/projects_projectKey/access";
 import { cardFilter, isFiltering, type BoardFilter } from "#/routes/projects_projectKey/board-filter";
 import { BoardFilters } from "#/routes/projects_projectKey/components/board-filters";
 import { PanelGroup } from "#/routes/projects_projectKey/components/panel-group";
-import { ProjectPages } from "#/routes/projects_projectKey/components/project-pages";
 import { TaskDrawer } from "#/routes/projects_projectKey/components/task-drawer";
 import { blockersOf, kindsOf } from "#/routes/projects_projectKey/dependencies";
 import { boardQuery, ensureProject, projectQuery, taskQuery } from "#/routes/projects_projectKey/queries";
@@ -65,7 +64,7 @@ function CalendarPage() {
   const { projectKey } = Route.useParams();
   const search = Route.useSearch();
   const navigate = useNavigate({ from: Route.fullPath });
-  const { viewerId, canEdit, isAdmin } = useBoardAccess();
+  const { viewerId, canEdit } = useBoardAccess();
   const { data: project } = useSuspenseQuery(projectQuery(projectKey));
   const { data: board } = useSuspenseQuery(boardQuery(project.id));
 
@@ -107,18 +106,7 @@ function CalendarPage() {
   return (
     <div className="flex flex-col gap-6 px-6 py-8">
       {/*------ Header ------*/}
-      <PageHead
-        code={project.key}
-        kicker={project.name}
-        title={m.calendar_link()}
-        actions={
-          <ProjectPages
-            projectKey={project.key}
-            isAdmin={isAdmin}
-            filter={{ assignee, label, priority, due, blocked }}
-          />
-        }
-      />
+      <PageHead title={m.calendar_link()} />
 
       {/*------ Month and Filters ------*/}
       {/* One panel, like the board's: the month in a display window between the keys that step it, then the same

@@ -8,7 +8,7 @@ import { m } from "#/paraglide/messages";
 
 /*===== Header Search =====*/
 
-const BOARD_ROUTE_ID = "/_site-layout/_app-layout/projects/$projectKey";
+const BOARD_ROUTE_ID = "/_site-layout/_app-layout/projects/$projectKey/";
 
 /** How long typing must pause before the board filters: long enough that a word lands in one go. */
 const BOARD_SEARCH_PAUSE_MS = 700;
@@ -49,7 +49,7 @@ export function HeaderSearch() {
 
 /** Filters the board in view through `?q=` after a pause in typing, or at once on Enter. The page never changes. */
 function BoardSearch({ input, q }: { input: RefObject<HTMLInputElement | null>; q: string }) {
-  const navigate = useNavigate({ from: "/projects/$projectKey" });
+  const navigate = useNavigate({ from: "/projects/$projectKey/" });
   const commit = (text: string) =>
     void navigate({ search: (previous) => ({ ...previous, q: text || undefined }), replace: true });
   const [text, setText] = useSearchText({ value: q, onCommit: commit, delay: BOARD_SEARCH_PAUSE_MS });

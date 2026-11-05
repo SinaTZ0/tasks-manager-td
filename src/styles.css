@@ -653,7 +653,8 @@
 /* Forward and back navigations (types `page-forward` / `page-back`) also slide the new page in. Only the new snapshot
    names `#main` (`data-page-entering`, set by `markEnteringPage` in `src/router.tsx`), so the old page still fades out
    whole while the new content arrives from one side and the header cross-fades in place. Forward points left
-   in RTL (docs/frontend/app-identity.md), so a forward page arrives from the left and a back page from the right. */
+   in RTL (docs/frontend/app-identity.md), so a forward page arrives from the left and a back page from the right. Beside
+   a sidebar only the page slides: the sidebar stays where it is, so it cross-fades with the header. */
 :root {
   --page-shift: 2rem;
 }
@@ -661,7 +662,8 @@
   --page-shift: -2rem;
 }
 
-:root[data-page-entering]:active-view-transition-type(page-forward, page-back) #main {
+:root[data-page-entering]:active-view-transition-type(page-forward, page-back) #main:not(:has([data-slot="sidebar"])),
+:root[data-page-entering]:active-view-transition-type(page-forward, page-back) [data-slot="sidebar-inset"] {
   view-transition-name: page;
 }
 

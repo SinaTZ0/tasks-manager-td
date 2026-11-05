@@ -25,7 +25,6 @@ import type { Project } from "#/orpc/project/contract";
 import { taskCode } from "#/orpc/task/constants";
 import type { ArchivedTask } from "#/orpc/task/contract";
 import { m } from "#/paraglide/messages";
-import { ProjectPages } from "#/routes/projects_projectKey/components/project-pages";
 import { ensureProject, projectQuery } from "#/routes/projects_projectKey/queries";
 
 /*===== Queries =====*/
@@ -61,11 +60,8 @@ function ArchivePage() {
     <div className="mx-auto flex w-full max-w-site flex-col gap-6 px-6 py-8">
       {/*------ Header ------*/}
       <PageHead
-        code={project.key}
-        kicker={project.name}
         title={m.archive_link()}
         description={viewer.role === "admin" ? m.archive_description() : m.archive_description_member()}
-        actions={<ProjectPages projectKey={project.key} isAdmin={viewer.role === "admin"} />}
       />
 
       {/*------ List ------*/}

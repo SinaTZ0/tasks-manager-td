@@ -17,12 +17,10 @@ type Story = StoryObj<typeof meta>;
 /*===== Stories =====*/
 export const Default: Story = {};
 
-// A project's page: its key and name on the kicker line, and its own keys at the end.
-export const WithKickerAndKeys: Story = {
+// A page with its own keys at the end.
+export const WithKeys: Story = {
   args: {
     title: "بایگانی",
-    code: "TGQ",
-    kicker: "تفنگ",
     description: "کارهایی که از تخته برداشته شده‌اند.",
     actions: (
       <Button variant="secondary" size="sm">

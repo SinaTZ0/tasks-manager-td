@@ -36,8 +36,8 @@ decide. The `notes` route (`src/routes/notes/`) is the smallest worked example.
      [Jotai](./frontend/jotai.md).
 3. **UI**: build it from primitives (`components/primitive/`), shared components (`components/shared/`) and the
    slice's own components. The page opens with `PageHead` (`components/shared/page-head/`): its title, a line of
-   description and the page's own keys; a project's pages also print its key and name above the title and carry
-   `ProjectPages`, the selector of the project's pages. Standard controls use the primitive of the matching shadcn component; create the primitive
+   description and the page's own keys. A project's pages stand in its layout (`projects_projectKey_layout/`), whose
+   sidebar holds its name and `ProjectPages`, the selector of its pages. Standard controls use the primitive of the matching shadcn component; create the primitive
    if it doesn't exist yet ([components.md](./frontend/components.md)). Build the loading, empty, error and success
    states. Every text is a message in `messages/fa.json` and `messages/en.json`, called in render, never at module
    scope; layout uses logical classes so it works in both directions ([i18n.md](./frontend/i18n.md)).
