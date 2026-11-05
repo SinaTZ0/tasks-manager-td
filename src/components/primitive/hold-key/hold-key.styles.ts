@@ -3,10 +3,11 @@ import { composeStyles, defineStyles, joinStyles } from "../styles";
 
 /*===== Plate =====*/
 
-// A plate of display glass with no lip of its own: `shadow-glass`'s pale lip prints a crescent in a card's corner.
+// The opposite theme's plastic, with no lip of its own: a pale lip prints a crescent in a card's corner. `surface-grain`
+// reads `--grain`, so the plate swaps in the other theme's tile.
 const twPlate = defineStyles({
   layout: "relative z-10 flex shrink-0 items-center justify-center",
-  appearance: "bg-glass shadow-hold-key-well",
+  appearance: "bg-hold-key-plate surface-grain shadow-hold-key-well [--grain:var(--hold-key-grain)]",
 });
 
 const twShape = defineStyles({

@@ -264,6 +264,7 @@
   --color-housing-ledge: var(--housing-ledge);
   --color-tray: var(--tray);
   --color-leaf: var(--leaf);
+  --color-hold-key-plate: var(--hold-key-plate);
   --color-glass: var(--glass);
   --color-glass-foreground: var(--glass-foreground);
   --color-glass-muted: var(--glass-muted);
@@ -413,6 +414,10 @@
   /* The housing plastic's grain (surface-grain below). Soft-light grain shows about twice as strong on graphite, so the
      dark edition uses a tile at half the contrast. */
   --grain: url("/textures/grain.webp");
+  /* The hold key's plate is the other edition's plastic, the card hover wash and grain of the opposite theme, so the
+     key stands apart from the card it sits on. Keep the colour in step with `.dark`'s `--accent`. */
+  --hold-key-plate: #424242;
+  --hold-key-grain: url("/textures/grain-dark.webp");
   /* Display glass is set into the housing, not another card colour. Named `glass`, not `display`: `text-display` is a type style, and a colour of the same name would print it in the glass colour. */
   --glass: #141513;
   --glass-foreground: #ecebe4;
@@ -452,8 +457,8 @@
     inset 1px 1px 0.5px rgb(255 255 255 / 30%), inset -1px -1px 0.5px rgb(0 0 0 / 30%);
   --elevation-keycap-pressed: inset 0 0 16px 0 rgb(0 0 0 / 60%);
   --elevation-keycap-pressed-compact: inset 0 0 6px 0 rgb(0 0 0 / 55%);
-  /* The hold key: a mushroom cap on a hard ledge, on a plate of glass sunk into the housing with no lip of its own
-     (`--elevation-glass`'s pale lip prints a crescent there). The seat's rim keeps it off the plate's black. */
+  /* The hold key: a mushroom cap on a hard ledge, on a plate sunk into the housing with no lip of its own (a pale lip
+     prints a crescent there). The seat's rim keeps it off a dark plate. */
   --elevation-hold-key-well: inset 0 3px 6px rgb(0 0 0 / 70%);
   --elevation-hold-key-seat: 0 0 0 1px rgb(255 255 255 / 14%);
   --elevation-hold-key-cap:
@@ -546,6 +551,9 @@
   --tray: #222222;
   --leaf: #363636;
   --grain: url("/textures/grain-dark.webp");
+  /* Keep the colour in step with `:root`'s `--accent`. */
+  --hold-key-plate: #d2d2d0;
+  --hold-key-grain: url("/textures/grain.webp");
   --glass: #0b0c0a;
 
   --signal-selection: #6aa8d4;
@@ -554,6 +562,9 @@
   /* On graphite the lower lip catches far less light, so every highlight drops sharply */
   --elevation-sm: 0 2px 0 var(--housing-ledge), inset 0 1px 0 rgb(255 255 255 / 7%);
   --elevation-md: 0 3px 0 var(--housing-ledge), 0 14px 28px -10px rgb(0 0 0 / 70%), inset 0 1px 0 rgb(255 255 255 / 7%);
+  /* The well's inset shadow makes a light plate read as a hole, so here the plate lies flat. Not `none`: Tailwind joins
+     this into a shadow list, where `none` is invalid. */
+  --elevation-hold-key-well: 0 0 #0000;
   /* A black void barely shows on graphite, so the cut's machined rim catches the light: a faint lit edge all round
      and a brighter lower lip, the way an anodised edge reads on a dark device. */
   --elevation-cut:
