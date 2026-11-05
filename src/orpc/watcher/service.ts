@@ -85,8 +85,9 @@ export async function autoWatch({
 
 /*===== Tell =====*/
 /**
- * Tells a card's watchers what happened to it, inside the change's transaction. Never the actor, and never anyone in
- * `except`: those the same change already told as assignee, owner or mentioned get only that notification.
+ * Tells a card's watchers what happened to it, inside the change's transaction, along with anyone in `also`, who hear
+ * of it without watching. Never the actor, and never anyone in `except`: those the same change already told as
+ * assignee, owner or mentioned get only that notification.
  */
 export async function notifyWatchers({
   db,
@@ -96,6 +97,7 @@ export async function notifyWatchers({
   event,
   note = null,
   columnKind,
+  also = [],
   except = [],
 }: {
   db: Database;
@@ -106,10 +108,12 @@ export async function notifyWatchers({
   note?: string | null;
   /** For `moved`: the kind of the column it went to (`note` is that column's name, if it has one). */
   columnKind?: ColumnKind;
+  also?: Iterable<string>;
   except?: Iterable<string>;
 }): Promise<void> {
   const skip = new Set(except);
-  const ids = (await findWatchersToTell({ db, projectId, taskId: task.id })).filter((id) => !skip.has(id));
+  const watchers = await findWatchersToTell({ db, projectId, taskId: task.id });
+  const ids = [...new Set([...watchers, ...also])].filter((id) => !skip.has(id));
   if (ids.length === 0) return;
   const key = await findProjectKey({ db, projectId });
   await notify({

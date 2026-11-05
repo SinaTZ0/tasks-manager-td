@@ -17,7 +17,14 @@ import { commentBodySchema } from "#/orpc/comment/validation";
 import { notify } from "#/orpc/notification/service";
 import { avatarUrlOf } from "#/orpc/project/mapper";
 import { taskCode } from "#/orpc/task/constants";
-import { findActiveMemberIds, findPeople, findProjectKey, lockTask } from "#/orpc/task/repository";
+import {
+  findActiveMemberIds,
+  findAssigneeIdsByTask,
+  findPeople,
+  findProjectKey,
+  lockTask,
+} from "#/orpc/task/repository";
+import { findPossibleWatchers } from "#/orpc/watcher/repository";
 import { autoWatch, notifyWatchers } from "#/orpc/watcher/service";
 import { m } from "#/paraglide/messages";
 
@@ -115,8 +122,8 @@ export async function listComments({
 
 /*===== Add =====*/
 /**
- * Adds a comment to a live task, records it in the history, tells the project members it mentions and the card's
- * watchers (once each: a mention is the one notification), and makes the author watch the card.
+ * Adds a comment to a live task, records it in the history, tells the project members it mentions, the card's owner
+ * and assignees, and its watchers (once each: a mention is the one notification), and makes the author watch the card.
  *
  * @returns `not-found` for a task the project doesn't have or an archived one; `invalid` for a bad document.
  */
@@ -158,6 +165,9 @@ export async function addComment({
       ],
     });
     const mentioned = await notifyMentions({ db: tx, actorId, projectId, task, doc, text });
+    // The people on the card never become watchers (`autoWatch`), so they are told here, unless they left the project.
+    const assignees = (await findAssigneeIdsByTask({ db: tx, taskIds: [taskId] })).get(taskId) ?? [];
+    const crew = await findPossibleWatchers({ db: tx, projectId, ids: [task.ownerId, ...assignees] });
     // Told before the author starts watching; `notifyWatchers` leaves the author out anyway.
     await notifyWatchers({
       db: tx,
@@ -166,6 +176,7 @@ export async function addComment({
       task,
       event: "commented",
       note: excerptOf(text),
+      also: crew,
       except: mentioned,
     });
     await autoWatch({ db: tx, projectId, task, userIds: [actorId] });
