@@ -42,7 +42,9 @@ import {
 
 import { Button } from "#/components/primitive/button/button";
 import { HoldKey, HoldKeyPlate } from "#/components/primitive/hold-key/hold-key";
+import { Popover, PopoverContent } from "#/components/primitive/popover/popover";
 import { toast } from "#/components/primitive/toast/toast";
+import { useReminders } from "#/hooks/use-reminders";
 import { columnTitle } from "#/lib/column-title";
 import { cn } from "#/lib/utils";
 import { positionBetween } from "#/lib/position";
@@ -53,9 +55,15 @@ import type { Board as BoardData, Label, TaskCard as TaskCardData } from "#/orpc
 import { m } from "#/paraglide/messages";
 import { BoardColumn } from "#/routes/projects_projectKey/components/board-column";
 import { ConfirmDialog, type ConfirmRequest } from "#/routes/projects_projectKey/components/confirm-dialog";
-import { CardGrip, cardGripId, SortableTaskCard } from "#/routes/projects_projectKey/components/sortable-task-card";
+import { cardGripId, SortableTaskCard } from "#/routes/projects_projectKey/components/sortable-task-card";
 import { ReasonDialog, type ReasonRequest } from "#/routes/projects_projectKey/components/reason-dialog";
 import { TaskCard } from "#/routes/projects_projectKey/components/task-card";
+import {
+  ReminderClip,
+  ReminderKey,
+  reminderKeyId,
+  ReminderPanel,
+} from "#/routes/projects_projectKey/components/task-reminder";
 import { usePing } from "#/routes/projects_projectKey/components/task-comments";
 import { restoreTaskMenuFocus, TaskMenu, taskMenuKey } from "#/routes/projects_projectKey/components/task-menu";
 import { TransferDialog, type TransferRequest } from "#/routes/projects_projectKey/components/transfer-dialog";
@@ -81,6 +89,9 @@ type Drag =
   | { type: "column"; id: string }
   | { type: "dropped-task"; lanes: Lanes; until: TaskCardData[] }
   | { type: "dropped-column"; order: string[]; until: Column[] };
+
+/** The card whose reminder panel is showing, kept through the panel's closing. */
+type Reminding = { taskId: string; code: string; card: Element | null; open: boolean };
 
 const zoneId = (columnId: string) => `zone:${columnId}`;
 
@@ -340,6 +351,9 @@ export function Board({
   // dnd-kit numbers its accessibility ids from a counter of its own, which differs between server and browser.
   const contextId = useId();
   const ping = usePing(project.id);
+  const reminders = new Map(useReminders().map((reminder) => [reminder.taskId, reminder]));
+  // One panel for the board, not one per card. It stays open while the first reminder turns the card's key into a clip.
+  const [reminding, setReminding] = useState<Reminding | null>(null);
 
   /*------ Lookups ------*/
   const tasks = new Map(board.tasks.map((task) => [task.id, task]));
@@ -360,6 +374,17 @@ export function Board({
   const cancelledTasks = board.tasks.filter((task) => task.columnId === cancelled?.id);
   // A filter folds the cards it leaves out instead of dropping them from the lanes, so they can go and come back.
   const isShown = (task: TaskCardData | undefined) => !!task && (!filter || filter(task));
+
+  /*------ Reminders ------*/
+  /** A card's reminder keys: the clip while it has one, the key while it hasn't. */
+  const reminderParts = (task: TaskCardData) => {
+    const reminder = reminders.get(task.id);
+    const code = codeOf(task.id);
+    const open = (card: Element | null) => setReminding({ taskId: task.id, code, card, open: true });
+    return reminder
+      ? { clip: <ReminderClip reminder={reminder} onPress={open} /> }
+      : { remind: <ReminderKey taskId={task.id} code={code} onPress={open} /> };
+  };
 
   /*------ Cancelled Column ------*/
   // It joins after the others, which on a full board is past the edge: without this the key latches and nothing seems
@@ -696,6 +721,7 @@ export function Board({
 
   /*------ Render ------*/
   const dragged = drag?.type === "task" ? tasks.get(drag.id) : undefined;
+  const draggedReminder = dragged && reminders.get(dragged.id);
 
   return (
     <DndContext
@@ -755,6 +781,7 @@ export function Board({
                           movable={canMoveCards && !filter}
                           folded={!isShown(task)}
                           watching={watching.has(task.id)}
+                          {...reminderParts(task)}
                           plate={
                             pingable && (
                               <HoldKey
@@ -821,6 +848,7 @@ export function Board({
                     <TaskCard
                       stopped
                       watching={watching.has(task.id)}
+                      {...reminderParts(task)}
                       task={task}
                       projectKey={project.key}
                       labels={labels}
@@ -897,6 +925,28 @@ export function Board({
         />
       )}
 
+      {/*------ Reminder ------*/}
+      {reminding && (
+        <Popover open={reminding.open} onOpenChange={(open) => setReminding({ ...reminding, open })}>
+          <PopoverContent
+            anchor={reminding.card}
+            side="inline-end"
+            align="start"
+            className="w-80"
+            finalFocus={() => document.getElementById(reminderKeyId(reminding.taskId)) ?? true}
+          >
+            <ReminderPanel
+              // The panel holds what was pressed, which belongs to one card.
+              key={reminding.taskId}
+              projectId={project.id}
+              taskId={reminding.taskId}
+              code={reminding.code}
+              onCleared={() => setReminding({ ...reminding, open: false })}
+            />
+          </PopoverContent>
+        </Popover>
+      )}
+
       {/*------ Moving Copy ------*/}
       <DragOverlay>
         {dragged && (
@@ -908,7 +958,7 @@ export function Board({
             blockedBy={blockerCodes(dragged)}
             state="overlay"
             watching={watching.has(dragged.id)}
-            grip={<CardGrip code={codeOf(dragged.id)} />}
+            clip={draggedReminder && <ReminderClip reminder={draggedReminder} />}
             // By the column it left: the copy keeps its shape all the way across the board.
             plate={isPingable(kinds.get(dragged.columnId) ?? "todo") && <HoldKeyPlate />}
           />

@@ -18,10 +18,13 @@ import { toast } from "#/components/primitive/toast/toast";
 import { describeApiFailure } from "#/lib/api-error";
 import { formatDate, formatNumber } from "#/lib/locale";
 import { notificationDetail, notificationSentence } from "#/lib/notification-text";
+import { stepLabel, tomorrowMorning, whenLabel } from "#/lib/reminder-time";
 import { orpc } from "#/orpc/client";
 import { useLiveConnected } from "#/hooks/use-live-updates";
 import { usePush } from "#/hooks/use-push";
+import { useReminderChanges } from "#/hooks/use-reminders";
 import { NOTIFICATION_POLL_MS } from "#/orpc/notification/constants";
+import type { Notification } from "#/orpc/notification/contract";
 import { m } from "#/paraglide/messages";
 
 /**
@@ -75,12 +78,59 @@ function PushSwitch() {
   );
 }
 
+/*===== Snooze =====*/
+
+const SNOOZE_MINUTES = 60;
+
+/**
+ * The keys under a reminder that rang: remind me again in an hour, or tomorrow morning. Each one sets a fresh reminder
+ * on the card with the same note, and settles the notification.
+ */
+function Snooze({ item, taskId, onSnoozed }: { item: Notification; taskId: string; onSnoozed: () => void }) {
+  const { set } = useReminderChanges();
+
+  const again = (remindAt: Date) =>
+    set.mutate(
+      { projectId: item.projectId, taskId, remindAt, note: item.note ?? undefined },
+      {
+        onSuccess: () => {
+          onSnoozed();
+          toast.add({ title: m.reminder_snoozed({ when: whenLabel(remindAt) }), type: "success" });
+        },
+      },
+    );
+
+  return (
+    <div className="flex items-center gap-2 ps-7 pb-2">
+      <Marking>{m.reminder_snooze_lead()}</Marking>
+      <Button
+        variant="secondary"
+        size="xs"
+        aria-label={m.reminder_snooze({ code: item.taskCode, time: stepLabel(SNOOZE_MINUTES) })}
+        disabled={set.isPending}
+        onClick={() => again(new Date(Date.now() + SNOOZE_MINUTES * 60_000))}
+      >
+        {stepLabel(SNOOZE_MINUTES)}
+      </Button>
+      <Button
+        variant="secondary"
+        size="xs"
+        aria-label={m.reminder_snooze({ code: item.taskCode, time: m.reminder_tomorrow() })}
+        disabled={set.isPending}
+        onClick={() => again(tomorrowMorning())}
+      >
+        {m.reminder_tomorrow()}
+      </Button>
+    </div>
+  );
+}
+
 /*===== Notification Bell =====*/
 
 /**
  * The viewer's notifications, in the header on every page (docs/app.md → Notification): a bell on the glass that lights
  * a yellow LED and prints the count while some are unread, opening the latest as a list. Each one opens its task and
- * is marked read; "mark all read" clears the rest. While the page holds the live stream open, a new one shows at once;
+ * is marked read; "mark all read" clears the rest. A reminder can be put off from here. While the page holds the live stream open, a new one shows at once;
  * otherwise the list is asked for again every half minute (`NOTIFICATION_POLL_MS`).
  */
 export function NotificationBell() {
@@ -165,6 +215,16 @@ export function NotificationBell() {
                     <Marking>{formatDate(item.createdAt, { dateStyle: "medium", timeStyle: "short" })}</Marking>
                   </span>
                 </Link>
+                {/* An archived card takes no reminder. Beside the link, since a key can't sit inside one. */}
+                {item.kind === "reminder" && item.taskId && item.event !== "archived" && (
+                  <Snooze
+                    item={item}
+                    taskId={item.taskId}
+                    onSnoozed={() => {
+                      if (!item.read) markRead.mutate({ ids: [item.id] });
+                    }}
+                  />
+                )}
               </li>
             ))}
           </ul>

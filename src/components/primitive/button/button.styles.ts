@@ -13,7 +13,7 @@ const twSharedStyles = defineStyles({
 
 /*===== Appearance =====*/
 
-// Each variant is a keycap material (instrument.styles.ts), except `ghost` and `link`, which are printed on the housing
+// Each variant is a keycap material (instrument.styles.ts), except `ghost`, `ghost-keyboard` and `link`, which are printed on the housing
 // with no cut, and `glass` and `glass-cap`, the parts of the header's strip of display glass. One `highlight` (the orange key) per view: the page's main call to action. `default` is the graphite
 // function key for in-app actions; `secondary` the light key for everything else.
 const twVariant = defineStyles({
@@ -43,6 +43,17 @@ const twVariant = defineStyles({
     state: "aria-expanded:bg-accent",
     focus: "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring",
     disabled: "data-disabled:pointer-events-none data-disabled:opacity-45",
+  },
+  // A ghost key only the keyboard meets: nothing prints and no pointer lands on it until Tab reaches it. For a key whose
+  // job a pointer does another way, such as a card's grip.
+  "ghost-keyboard": {
+    layout: "relative inline-flex shrink-0 items-center justify-center",
+    geometry: "rounded-keycap-compact",
+    typography: "font-heading text-button whitespace-nowrap",
+    appearance: "text-foreground",
+    interaction: "pointer-events-none opacity-0 outline-none select-none",
+    focus:
+      "focus-visible:opacity-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring",
   },
   // Printed on the display glass: a muted legend that comes up to full ink when pointed at, open, or the page in view.
   // The ring stays inside the key and in the glass's ink: `ring` is near-black in light, so it would vanish here.

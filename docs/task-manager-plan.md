@@ -241,8 +241,8 @@ follows the backend flow, then the frontend flow; desktop first (the phone layou
   with words beside the colour ("due today", "2 days late"). Done, cancelled and archived tasks never warn.
 - **"Today" is the team's**: one team time zone constant (`Asia/Tehran`), so the server and every browser agree.
 - **Notifications**: the assignee (or the owner, with no assignee) is told once when a task is due tomorrow and once
-  when it becomes overdue. No scheduler: the check runs when notifications are read (the bell polls), and a unique key
-  (task, kind, due date) keeps it to once; changing the due date allows a new one.
+  when it becomes overdue. The reminder job checks each morning (docs/backend/architecture.md → Reminders), and a
+  unique key (task, kind, due date) keeps it to once; changing the due date allows a new one.
 - **Tests**: an overdue task notifies once, not on every poll; a done task never does.
 
 ### 13. Checklists ✓
@@ -345,6 +345,22 @@ ask the user before building that slice.
 - Editors drag a card to another day to change its due date (an ordinary update, so an Activity entry and a live
   update), or use the arrow keys on a focused card. Clicking a card opens its drawer over the calendar.
 - **Tests**: none new: the date change is `task.update`, already tested; browser check of both calendars.
+
+### 22. Reminders ✓
+
+- What a reminder is and who sees it: docs/app.md → Reminders. A once-a-minute job fires them, and now also sends the
+  due-date reminders, at about 09:00 team time and with a push (docs/backend/architecture.md → Reminders).
+- `reminder.mine`, `.set` and `.clear`. `mine` is loaded by the project layout, since the drawer reads it on the calendar
+  too, and by My Tasks. A `notification` event refetches it, which takes a fired reminder's clip off the card.
+- The board holds one panel, opened beside the card from the bell key or the clip, and the drawer's Details tab holds the
+  same panel behind a key. Each choice saves at once; saves run one at a time, so a quick run of presses lands in order.
+  The first reminder offers turning on push if this browser can still be asked.
+- A card's grip no longer prints for a pointer, which grabs the card anywhere. It is still the keyboard's way to pick a
+  card up, and prints when Tab reaches it (`ghost-keyboard`).
+- Decided: 24-hour hour and minute lists instead of a time input, whose AM/PM and digits follow the browser, not the
+  page. A reminder holds no history (docs/app.md rule 7).
+- **Tests**: firing once and saying what became of the card, the job's due-date push, and reading a picked time on the
+  team's clock.
 
 ## Housekeeping
 

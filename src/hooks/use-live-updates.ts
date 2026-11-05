@@ -102,6 +102,8 @@ export function useLiveUpdates(userId: string | null): void {
               opened = true;
             } else if (event.type === "notification") {
               void queryClient.invalidateQueries({ queryKey: orpc.notification.key() });
+              // A reminder that fires arrives as a notification, and leaves the viewer's waiting ones.
+              void queryClient.invalidateQueries({ queryKey: orpc.reminder.key() });
             } else {
               queueProject(event.projectId);
             }

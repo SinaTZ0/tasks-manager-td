@@ -162,6 +162,18 @@ export const GlidingLegend: Story = {
   },
 };
 
+/** `ghost-keyboard` prints nothing until Tab reaches it: press Tab from the first key. */
+export const KeyboardOnly: Story = {
+  render: (args) => (
+    <div className="flex items-center gap-2">
+      <Button {...args}>پیش از آن</Button>
+      <Button {...args} variant="ghost-keyboard" size="icon-xs" aria-label="جابه‌جایی">
+        <PlusIcon />
+      </Button>
+    </div>
+  ),
+};
+
 export const Disabled: Story = {
   args: { disabled: true },
 };

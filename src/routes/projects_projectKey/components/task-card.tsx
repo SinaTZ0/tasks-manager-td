@@ -159,8 +159,9 @@ const PARTS_ON_HOVER =
  * so the dependency shows without opening it. A card where work is under way carries the ping key on a `plate` in the
  * corner under its tray.
  *
- * On the board the card is also something to pick up (`SortableTaskCard` passes the drag props): `grip` and `menu` sit
- * on the code line, above the stretched link, and show while the card is pointed at or focused. `state` dims the card left behind while
+ * On the board the card is also something to pick up (`SortableTaskCard` passes the drag props): `remind`, `grip` and
+ * `menu` sit on the code line, above the stretched link, and show while the card is pointed at or focused, the grip only
+ * to the keyboard. `clip` is the viewer's own reminder, standing on the top edge beside the priority LEDs. `state` dims the card left behind while
  * its copy is dragged (`placeholder`) and makes that copy inert (`overlay`). Neither has tooltips: nobody can point at
  * them, and the placeholder re-mounts each time it crosses into another column, where each popup would set up its
  * store and re-render again on the way out.
@@ -173,8 +174,10 @@ export function TaskCard({
   people,
   blockedBy = [],
   onPointerDown,
+  remind,
   grip,
   menu,
+  clip,
   state = "idle",
   stopped = false,
   watching = false,
@@ -188,8 +191,12 @@ export function TaskCard({
   blockedBy?: string[];
   /** Starts a pointer drag anywhere on the card; the keyboard drag lives on `grip`. */
   onPointerDown?: PointerEventHandler<HTMLElement>;
+  /** The key that sets a reminder, on a card without one. */
+  remind?: ReactNode;
   grip?: ReactNode;
   menu?: ReactNode;
+  /** The mark of the viewer's reminder; the code line's keys drop under it. */
+  clip?: ReactNode;
   state?: "idle" | "placeholder" | "overlay";
   /** In the cancelled column: like a done card, its due date no longer warns. */
   stopped?: boolean;
@@ -227,6 +234,7 @@ export function TaskCard({
       )}
     >
       <PriorityMark priority={task.priority} />
+      {clip}
       <CardSpine task={task} people={people} tooltips={state === "idle"} plated={!!plate} />
       {/* The footer's line is the footer's own top border, or the strip's lower border one pixel above the footer. It
           runs a pixel over the card's border, so the black meets the outline and no line of tray shows round it. */}
@@ -235,12 +243,14 @@ export function TaskCard({
       <div className={plate ? "contents" : "flex min-w-0 flex-1 flex-col"}>
         <div className={cn("flex min-w-0 flex-col", plate && "col-start-2 row-start-1")}>
           {/*------ Code Line ------*/}
-          {/* The grip and menu print only while the pointer is over the card or focus is inside it (always on a touch
-            screen): on a board of cards they would otherwise be a column of handles. */}
-          {/* The end padding keeps the grip and menu clear of the priority LEDs, which hang into this corner. */}
+          {/* The keys print only while the pointer is over the card or focus is inside it (always on a touch screen): on
+            a board of cards they would otherwise be a column of handles. */}
+          {/* The end padding keeps the keys clear of the priority LEDs, which hang into this corner. */}
           <header className="flex min-h-9 items-center justify-between gap-2 ps-3 pe-14 pt-1.5">
             <Marking variant="code">{code}</Marking>
-            <span className={cn("relative z-10 flex items-center gap-0.5", PARTS_ON_HOVER)}>
+            {/* A clip hangs over the keys' corner. A narrow card has no room for them beside it, so they drop under it. */}
+            <span className={cn("relative z-10 flex items-center gap-0.5", clip && "translate-y-2", PARTS_ON_HOVER)}>
+              {remind}
               {grip}
               {menu}
             </span>

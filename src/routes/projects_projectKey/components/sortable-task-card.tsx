@@ -17,12 +17,18 @@ import { TaskCard } from "#/routes/projects_projectKey/components/task-card";
 export const cardGripId = (taskId: string) => `task-grip-${taskId}`;
 
 /**
- * The grip on a card's header strip. It is the keyboard's way to pick the card up (Space or Enter, then the arrows);
- * a pointer can grab the card anywhere.
+ * The keyboard's way to pick the card up (Space or Enter, then the arrows). A pointer grabs the card anywhere, so the
+ * grip prints only when Tab reaches it, past the end of the keys, and takes no room or presses until then.
  */
-export function CardGrip({ code, ...props }: { code: string } & Omit<ComponentProps<typeof Button>, "children">) {
+function CardGrip({ code, ...props }: { code: string } & Omit<ComponentProps<typeof Button>, "children">) {
   return (
-    <Button variant="ghost" size="icon-xs" aria-label={m.board_card_grip({ code })} {...props}>
+    <Button
+      variant="ghost-keyboard"
+      size="icon-xs"
+      aria-label={m.board_card_grip({ code })}
+      className="absolute end-full me-0.5"
+      {...props}
+    >
       <GripVerticalIcon />
     </Button>
   );
@@ -46,7 +52,9 @@ export function SortableTaskCard({
   blockedBy,
   movable,
   folded,
+  remind,
   menu,
+  clip,
   watching,
   plate,
 }: {
@@ -62,7 +70,11 @@ export function SortableTaskCard({
   movable: boolean;
   /** A filter leaves it out: it folds away instead of unmounting, so it can go and come back smoothly. */
   folded: boolean;
+  /** The key that sets a reminder, on a card without one. */
+  remind?: ReactNode;
   menu: ReactNode;
+  /** The mark of the viewer's reminder. */
+  clip?: ReactNode;
   /** The viewer watches it. */
   watching: boolean;
   /** What fills the corner under the tray (`TaskCard`). */
@@ -101,10 +113,13 @@ export function SortableTaskCard({
           onPointerDown={listeners?.onPointerDown as PointerEventHandler<HTMLElement> | undefined}
           state={isDragging ? "placeholder" : "idle"}
           watching={watching}
+          remind={isDragging ? undefined : remind}
+          clip={clip}
           grip={
             movable && (
               <CardGrip
                 ref={setActivatorNodeRef}
+                id={cardGripId(task.id)}
                 code={code}
                 {...attributes}
                 onKeyDown={listeners?.onKeyDown as KeyboardEventHandler<HTMLButtonElement> | undefined}

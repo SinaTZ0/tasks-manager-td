@@ -51,6 +51,7 @@ import { TaskDelegation } from "#/routes/projects_projectKey/components/task-del
 import { TaskDependencies } from "#/routes/projects_projectKey/components/task-dependencies";
 import { TaskStatusTrack } from "#/routes/projects_projectKey/components/task-status-track";
 import { formatSpan, secondsBetween, TaskTimeSection } from "#/routes/projects_projectKey/components/task-time-section";
+import { ReminderField } from "#/routes/projects_projectKey/components/task-reminder";
 import { TaskWatchers } from "#/routes/projects_projectKey/components/task-watchers";
 import { TaskTitle } from "#/routes/projects_projectKey/components/task-title-field";
 import { TransferDialog, type TransferMode } from "#/routes/projects_projectKey/components/transfer-dialog";
@@ -375,6 +376,7 @@ function TaskDetails({
                   finished={column?.kind === "done" || column?.kind === "cancelled"}
                 />
                 <EstimateField key={task.estimateMinutes} task={task} update={update} readOnly={readOnly} />
+                <ReminderField projectId={project.id} taskId={task.id} code={code} />
                 <Separator variant="perforated" className="-mx-6" />
                 <LabelPicker
                   task={task}

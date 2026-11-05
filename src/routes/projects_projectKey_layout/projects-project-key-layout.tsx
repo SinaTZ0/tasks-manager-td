@@ -12,6 +12,7 @@ import {
   SidebarMenuItem,
 } from "#/components/primitive/sidebar/sidebar";
 import { PersonAvatar } from "#/components/shared/person-avatar/person-avatar";
+import { remindersQuery } from "#/hooks/use-reminders";
 import { useBoardAccess } from "#/routes/projects_projectKey/access";
 import {
   BOARD_PANEL_ID,
@@ -28,7 +29,15 @@ import { ensureProject, projectQuery } from "#/routes/projects_projectKey/querie
 const BOARD_ROUTE_ID = "/_site-layout/_app-layout/projects/$projectKey/";
 
 export const Route = createFileRoute("/_site-layout/_app-layout/projects/$projectKey")({
-  loader: ({ context, params }) => ensureProject({ queryClient: context.queryClient, projectKey: params.projectKey }),
+  loader: async ({ context, params }) => {
+    const { queryClient } = context;
+    // Here and not on the board: the drawer reads them too, and it opens on the calendar as well.
+    const [project] = await Promise.all([
+      ensureProject({ queryClient, projectKey: params.projectKey }),
+      queryClient.ensureQueryData(remindersQuery()),
+    ]);
+    return project;
+  },
   component: ProjectLayout,
 });
 
