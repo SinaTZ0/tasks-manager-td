@@ -93,7 +93,8 @@ What each thing is and how it relates. How to store it = implementer decides.
 
 - Add / edit / delete own comment
 - `@mention` user → notification
-- A card's owner and assignees hear about every comment on it, without watching it
+- A card's owner and assignees hear about every comment on it, and about someone else moving it to another kind of
+  column, finishing, cancelling, reopening or archiving it, without watching it
 - Commenting on a card, or being mentioned there, makes you watch it; anyone on the project can watch a card, and
   watchers hear about its comments, status changes, hand-offs and archiving
 - Markdown in comments

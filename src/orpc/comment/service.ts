@@ -20,15 +20,13 @@ import { avatarUrlOf } from "#/orpc/project/mapper";
 import { isPingable, taskCode } from "#/orpc/task/constants";
 import {
   findActiveMemberIds,
-  findAssigneeIdsByTask,
   findColumn,
   findPeople,
   findProjectKey,
   lockTask,
   type TaskRecord,
 } from "#/orpc/task/repository";
-import { findPossibleWatchers } from "#/orpc/watcher/repository";
-import { autoWatch, notifyWatchers } from "#/orpc/watcher/service";
+import { autoWatch, notifyCard } from "#/orpc/watcher/service";
 import { m } from "#/paraglide/messages";
 
 /*===== Types =====*/
@@ -160,20 +158,8 @@ async function postComment({
     ],
   });
   const mentioned = await notifyMentions({ db, actorId, projectId, task, doc, text });
-  // The people on the card never become watchers (`autoWatch`), so they are told here, unless they left the project.
-  const assignees = (await findAssigneeIdsByTask({ db, taskIds: [task.id] })).get(task.id) ?? [];
-  const crew = await findPossibleWatchers({ db, projectId, ids: [task.ownerId, ...assignees] });
-  // Told before the author starts watching; `notifyWatchers` leaves the author out anyway.
-  await notifyWatchers({
-    db,
-    actorId,
-    projectId,
-    task,
-    event: "commented",
-    note: excerptOf(text),
-    also: crew,
-    except: mentioned,
-  });
+  // Told before the author starts watching; `notifyCard` leaves the author out anyway.
+  await notifyCard({ db, actorId, projectId, task, event: "commented", note: excerptOf(text), except: mentioned });
   await autoWatch({ db, projectId, task, userIds: [actorId] });
   return { kind: "success", comment: await withAuthorName({ db, record }) };
 }

@@ -5,7 +5,8 @@ import { createTestProject, deleteTestProject } from "#/db/test-fixtures.server"
 import { plainTextToRichText } from "#/lib/rich-text";
 import { addComment } from "#/orpc/comment/service";
 import { listNotifications } from "#/orpc/notification/service";
-import { createTask, updateTask } from "#/orpc/task/service";
+import { findColumnByKind } from "#/orpc/task/repository";
+import { archiveTask, createTask, moveTask, transitionTask, updateTask } from "#/orpc/task/service";
 import { setWatching } from "#/orpc/watcher/service";
 
 /*===== Watchers =====*/
@@ -24,6 +25,13 @@ afterAll(async () => {
 
 const watchedKinds = async (userId: string) =>
   (await listNotifications({ db, userId })).items.filter((item) => item.kind === "watched").map((item) => item.event);
+
+/** What a person heard about one card, oldest first. */
+const heardAbout = async ({ userId, title }: { userId: string; title: string }) =>
+  (await listNotifications({ db, userId })).items
+    .filter((item) => item.kind === "watched" && item.taskTitle === title)
+    .map((item) => item.event)
+    .toReversed();
 
 describe("watchers", () => {
   it("tells a watcher about others' comments until they unwatch", async () => {
@@ -73,5 +81,32 @@ describe("watchers", () => {
 
     await comment(users.sara, "خوب است");
     expect(await watchedKinds(users.sara)).toEqual(["commented"]);
+  });
+
+  it("tells a card's owner and assignees what someone else does to it, once each", async () => {
+    const { projectId, users } = fixture;
+    const title = "جابه‌جایی";
+    const created = await createTask({
+      db,
+      actorId: users.admin,
+      projectId,
+      input: { title, assigneeIds: [users.ali] },
+    });
+    if (created.kind !== "success") throw new Error("setup failed");
+    const taskId = created.task.id;
+
+    const doing = await findColumnByKind({ db, projectId, kind: "doing" });
+    await moveTask({ db, actorId: users.reza, projectId, taskId, columnId: doing.id, position: "a0" });
+    // Reordering in the same column is no news.
+    await moveTask({ db, actorId: users.reza, projectId, taskId, columnId: doing.id, position: "a1" });
+    await transitionTask({ db, actorId: users.reza, projectId, taskId, action: "done" });
+    await archiveTask({ db, actorId: users.reza, projectId, taskId });
+
+    const events = ["moved", "completed", "archived"];
+    expect(await heardAbout({ userId: users.ali, title })).toEqual(events);
+    expect(await heardAbout({ userId: users.admin, title })).toEqual(events);
+    // The one who did it hears nothing, and neither does someone with no part in the card.
+    expect(await heardAbout({ userId: users.reza, title })).toEqual([]);
+    expect(await heardAbout({ userId: users.sara, title })).toEqual([]);
   });
 });

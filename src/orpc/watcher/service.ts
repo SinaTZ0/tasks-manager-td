@@ -87,7 +87,7 @@ export async function autoWatch({
 /**
  * Tells a card's watchers what happened to it, inside the change's transaction, along with anyone in `also`, who hear
  * of it without watching. Never the actor, and never anyone in `except`: those the same change already told as
- * assignee, owner or mentioned get only that notification.
+ * assignee, owner or mentioned get only that notification. `notifyCard` adds the card's own people.
  */
 export async function notifyWatchers({
   db,
@@ -134,4 +134,21 @@ export async function notifyWatchers({
       },
     })),
   });
+}
+
+/**
+ * Tells everyone a card concerns: `notifyWatchers`, plus its owner and assignees, who never become watchers
+ * (`autoWatch`). Someone who left the project hears nothing. Each person is told once, and never about their own doing.
+ */
+export async function notifyCard({
+  db,
+  projectId,
+  task,
+  ...change
+}: Omit<Parameters<typeof notifyWatchers>[0], "task" | "also"> & {
+  task: Pick<WatchedTask, "id" | "number" | "title" | "ownerId">;
+}): Promise<void> {
+  const assignees = (await findAssigneeIdsByTask({ db, taskIds: [task.id] })).get(task.id) ?? [];
+  const also = await findPossibleWatchers({ db, projectId, ids: [task.ownerId, ...assignees] });
+  await notifyWatchers({ db, projectId, task, also, ...change });
 }

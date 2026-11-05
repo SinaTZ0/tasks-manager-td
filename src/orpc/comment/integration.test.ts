@@ -122,7 +122,9 @@ describe("pings", () => {
     ]);
 
     const told = await listNotifications({ db, userId: users.reza });
-    expect(told.items.filter((item) => item.kind === "watched" && item.taskTitle === "پینگ پیش‌فرض")).toHaveLength(2);
+    expect(told.items.filter((item) => item.event === "commented" && item.taskTitle === "پینگ پیش‌فرض")).toHaveLength(
+      2,
+    );
   });
 
   it("is refused where no work is under way", async () => {

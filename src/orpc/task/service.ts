@@ -70,7 +70,7 @@ import {
   type TaskChange,
 } from "#/orpc/task/validation";
 import { findWatchedTaskIds } from "#/orpc/watcher/repository";
-import { getWatchers, notifyWatchers } from "#/orpc/watcher/service";
+import { getWatchers, notifyCard } from "#/orpc/watcher/service";
 import { m } from "#/paraglide/messages";
 
 /*===== Types =====*/
@@ -676,9 +676,9 @@ export async function moveTask({
         },
       ],
     });
-    // A drag within one kind of column (reordering, or between two of a kind) is no news to watchers.
+    // A drag within one kind of column (reordering, or between two of a kind) is no news to anyone.
     if (from?.kind !== column.kind) {
-      await notifyWatchers({
+      await notifyCard({
         db: tx,
         actorId,
         projectId,
@@ -779,7 +779,7 @@ export async function transitionTask({
         },
       ],
     });
-    await notifyWatchers({ db: tx, actorId, projectId, task: record, event: STATUS_EVENT[action], note: reason });
+    await notifyCard({ db: tx, actorId, projectId, task: record, event: STATUS_EVENT[action], note: reason });
     return { kind: "success", task: await toCard({ db: tx, record }) };
   });
 }
@@ -845,7 +845,7 @@ export async function archiveTask({
       actorId,
       entries: [{ action: "task.archived", projectId, taskId, snapshot: { code, title: current.title } }],
     });
-    await notifyWatchers({ db: tx, actorId, projectId, task: current, event: "archived" });
+    await notifyCard({ db: tx, actorId, projectId, task: current, event: "archived" });
     return { kind: "ok" };
   });
 }
