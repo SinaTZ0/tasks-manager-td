@@ -12,6 +12,8 @@ export const profileSchema = z.object({
   name: z.string(),
   email: z.string(),
   avatar: mediaSchema.nullable(),
+  /** What their pings say; null for the default. */
+  pingMessage: z.string().nullable(),
 });
 
 export type Profile = z.infer<typeof profileSchema>;
@@ -22,11 +24,12 @@ const errors = { ...commonErrors, ...authErrors };
 export const profileContract = {
   get: oc.errors(errors).output(profileSchema),
   /**
-   * Renames the viewer and sets or clears their picture (an `avatar` they uploaded with `media.upload`). Refused
-   * (`INVALID_INPUT`) for an empty or too long name, or a picture that isn't theirs to use.
+   * Renames the viewer, sets or clears their picture (an `avatar` they uploaded with `media.upload`) and sets their
+   * ping message, empty for the default. Refused (`INVALID_INPUT`) for an empty or too long name, a too long message,
+   * or a picture that isn't theirs to use.
    */
   update: oc
     .errors(errors)
-    .input(z.strictObject({ name: z.string(), avatarMediaId: z.string().nullable() }))
+    .input(z.strictObject({ name: z.string(), avatarMediaId: z.string().nullable(), pingMessage: z.string() }))
     .output(profileSchema),
 };

@@ -66,7 +66,18 @@ const SPINE_SLOTS = 3;
  * behind a rule. Nobody assigned leaves an empty seat. Without `tooltips` (a card being dragged) the caps name no one
  * on pointing.
  */
-function CardSpine({ task, people, tooltips }: { task: TaskCardData; people: Map<string, Person>; tooltips: boolean }) {
+function CardSpine({
+  task,
+  people,
+  tooltips,
+  plated,
+}: {
+  task: TaskCardData;
+  people: Map<string, Person>;
+  tooltips: boolean;
+  /** A plate takes the corner under the tray, so the tray stops at the footer's line. */
+  plated: boolean;
+}) {
   const crew = task.assigneeIds.filter((id) => id !== task.ownerId).flatMap((id) => people.get(id) ?? []);
   const owner = people.get(task.ownerId);
   const ownerAssigned = task.assigneeIds.includes(task.ownerId);
@@ -85,7 +96,12 @@ function CardSpine({ task, people, tooltips }: { task: TaskCardData; people: Map
   );
 
   return (
-    <div className="flex w-9.5 shrink-0 flex-col items-center rounded-s-card border-e border-border/60 bg-tray py-3">
+    <div
+      className={cn(
+        "flex w-9.5 shrink-0 flex-col items-center border-e border-border/60 bg-tray py-3",
+        plated ? "col-start-1 row-start-1 rounded-ss-card" : "rounded-s-card",
+      )}
+    >
       {!ownerShown && crew.length === 0 ? (
         // An empty cut where a cap would sit.
         <span className="size-6 rounded-chassis-compact bg-cut opacity-55 shadow-cut">
@@ -140,7 +156,8 @@ const PARTS_ON_HOVER =
  * people in a tray down the starting edge (`CardSpine`), the priority LEDs set into its top edge, the code on a
  * printed strip, the title and labels on the face, readouts and dates on the footer. The title is the link that opens
  * the card's drawer; its hit area covers the whole card. A blocked card gets a yellow strip naming what it waits for,
- * so the dependency shows without opening it.
+ * so the dependency shows without opening it. A card where work is under way carries the ping key on a `plate` in the
+ * corner under its tray.
  *
  * On the board the card is also something to pick up (`SortableTaskCard` passes the drag props): `grip` and `menu` sit
  * on the code line, above the stretched link, and show while the card is pointed at or focused. `state` dims the card left behind while
@@ -161,6 +178,7 @@ export function TaskCard({
   state = "idle",
   stopped = false,
   watching = false,
+  plate,
 }: {
   task: TaskCardData;
   projectKey: string;
@@ -177,76 +195,95 @@ export function TaskCard({
   stopped?: boolean;
   /** The viewer watches it: an eye on the footer. */
   watching?: boolean;
+  /**
+   * What fills the corner under the tray. It takes the footer's row, so it is as tall as the footer and its top is the
+   * footer's line, whatever the footer holds; a card with one always has a footer.
+   */
+  plate?: ReactNode;
 }) {
   const code = taskCode({ key: projectKey, number: task.number });
   const taskLabels = task.labelIds.map((id) => labels.get(id)).filter((label) => label !== undefined);
   const { comments, attachments, checklistDone, checklistTotal } = task.counts;
   const hasReadouts =
-    comments > 0 || attachments > 0 || checklistTotal > 0 || task.hasDescription || watching || task.dueDate !== null;
+    !!plate ||
+    comments > 0 ||
+    attachments > 0 ||
+    checklistTotal > 0 ||
+    task.hasDescription ||
+    watching ||
+    task.dueDate !== null;
+  const blocked = blockedBy.length > 0;
 
   return (
     <article
       onPointerDown={onPointerDown}
       inert={state === "overlay" || undefined}
       className={cn(
-        "group/task-card relative flex rounded-card border border-border bg-card surface-grain shadow-housing transition-colors duration-150 select-none",
+        "group/task-card relative rounded-card border border-border bg-card surface-grain shadow-housing transition-colors duration-150 select-none",
         "focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-ring hover:bg-accent",
+        plate ? "grid grid-cols-card-plated grid-rows-card-plated" : "flex",
         state === "placeholder" && "opacity-40",
         state === "overlay" && "cursor-grabbing bg-accent",
       )}
     >
       <PriorityMark priority={task.priority} />
-      <CardSpine task={task} people={people} tooltips={state === "idle"} />
-      <div className="flex min-w-0 flex-1 flex-col">
-        {/*------ Code Line ------*/}
-        {/* The grip and menu print only while the pointer is over the card or focus is inside it (always on a touch
-          screen): on a board of cards they would otherwise be a column of handles. */}
-        {/* The end padding keeps the grip and menu clear of the priority LEDs, which hang into this corner. */}
-        <header className="flex min-h-9 items-center justify-between gap-2 ps-3 pe-14 pt-1.5">
-          <Marking variant="code">{code}</Marking>
-          <span className={cn("relative z-10 flex items-center gap-0.5", PARTS_ON_HOVER)}>
-            {grip}
-            {menu}
-          </span>
-        </header>
+      <CardSpine task={task} people={people} tooltips={state === "idle"} plated={!!plate} />
+      {/* The footer's line is the footer's own top border, or the strip's lower border one pixel above the footer. It
+          runs a pixel over the card's border, so the black meets the outline and no line of tray shows round it. */}
+      {plate && <div className={cn("col-start-1 row-start-2 -ms-px -mb-px flex", blocked && "-mt-px")}>{plate}</div>}
+      {/* With a plate the card is a grid, and the face and footer take its cells directly. */}
+      <div className={plate ? "contents" : "flex min-w-0 flex-1 flex-col"}>
+        <div className={cn("flex min-w-0 flex-col", plate && "col-start-2 row-start-1")}>
+          {/*------ Code Line ------*/}
+          {/* The grip and menu print only while the pointer is over the card or focus is inside it (always on a touch
+            screen): on a board of cards they would otherwise be a column of handles. */}
+          {/* The end padding keeps the grip and menu clear of the priority LEDs, which hang into this corner. */}
+          <header className="flex min-h-9 items-center justify-between gap-2 ps-3 pe-14 pt-1.5">
+            <Marking variant="code">{code}</Marking>
+            <span className={cn("relative z-10 flex items-center gap-0.5", PARTS_ON_HOVER)}>
+              {grip}
+              {menu}
+            </span>
+          </header>
 
-        {/*------ Face ------*/}
-        <div className="flex flex-col gap-2.5 px-3 pt-1 pb-3">
-          <h3 className="text-body leading-6 font-semibold">
-            {/* The link's ::after stretches over the card, so the whole card opens the drawer. */}
-            <Link
-              from="/projects/$projectKey"
-              search={(previous) => ({ ...previous, task: code })}
-              // A link is natively draggable, which would steal the pointer from the card's own drag.
-              draggable={false}
-              className="outline-none after:absolute after:inset-0"
-            >
-              {task.title}
-            </Link>
-          </h3>
-          {taskLabels.length > 0 && (
-            <ul className="flex flex-wrap gap-1.5" aria-label={m.task_labels()}>
-              {taskLabels.map((label) => (
-                <li key={label.id}>
-                  <LabelTag label={label} />
-                </li>
-              ))}
-            </ul>
+          {/*------ Face ------*/}
+          <div className="flex flex-col gap-2.5 px-3 pt-1 pb-3">
+            <h3 className="text-body leading-6 font-semibold">
+              {/* The link's ::after stretches over the card, so the whole card opens the drawer. */}
+              <Link
+                from="/projects/$projectKey"
+                search={(previous) => ({ ...previous, task: code })}
+                // A link is natively draggable, which would steal the pointer from the card's own drag.
+                draggable={false}
+                className="outline-none after:absolute after:inset-0"
+              >
+                {task.title}
+              </Link>
+            </h3>
+            {taskLabels.length > 0 && (
+              <ul className="flex flex-wrap gap-1.5" aria-label={m.task_labels()}>
+                {taskLabels.map((label) => (
+                  <li key={label.id}>
+                    <LabelTag label={label} />
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+
+          {/*------ Blocked Strip ------*/}
+          {/* The signal yellow washes out on the light housing, so light mode prints the strip in the attention ink. */}
+          {blocked && (
+            <p className="mt-auto flex items-center gap-2 border-y border-warning bg-warning-surface px-3 py-1.5 text-caption text-warning dark:border-signal-attention dark:bg-signal-attention/15 dark:text-foreground">
+              <LockIcon aria-hidden="true" className="size-3.5 shrink-0" />
+              <span className="sr-only">{m.dependency_blocked_label({ blockers: formatList(blockedBy) })}</span>
+              <span aria-hidden="true">{m.dependency_waits_for()}</span>
+              <Marking variant="code" aria-hidden="true">
+                {blockedBy.join(" ")}
+              </Marking>
+            </p>
           )}
         </div>
-
-        {/*------ Blocked Strip ------*/}
-        {/* The signal yellow washes out on the light housing, so light mode prints the strip in the attention ink. */}
-        {blockedBy.length > 0 && (
-          <p className="flex items-center gap-2 border-y border-warning bg-warning-surface px-3 py-1.5 text-caption text-warning dark:border-signal-attention dark:bg-signal-attention/15 dark:text-foreground">
-            <LockIcon aria-hidden="true" className="size-3.5 shrink-0" />
-            <span className="sr-only">{m.dependency_blocked_label({ blockers: formatList(blockedBy) })}</span>
-            <span aria-hidden="true">{m.dependency_waits_for()}</span>
-            <Marking variant="code" aria-hidden="true">
-              {blockedBy.join(" ")}
-            </Marking>
-          </p>
-        )}
 
         {/*------ Footer ------*/}
         {/* The blocked strip brings its own rule. A card with nothing to read out has no footer. */}
@@ -254,7 +291,8 @@ export function TaskCard({
           <footer
             className={cn(
               "flex min-h-11 items-stretch justify-end border-border/60 px-3",
-              blockedBy.length === 0 && "border-t",
+              !blocked && "border-t",
+              plate && "col-start-2 row-start-2",
             )}
           >
             {/* Values sit in cells with a printed rule between them, top to bottom like the readouts on a panel, so "۶"

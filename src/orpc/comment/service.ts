@@ -15,14 +15,17 @@ import {
 } from "#/orpc/comment/repository";
 import { commentBodySchema } from "#/orpc/comment/validation";
 import { notify } from "#/orpc/notification/service";
+import { findProfile } from "#/orpc/profile/repository";
 import { avatarUrlOf } from "#/orpc/project/mapper";
-import { taskCode } from "#/orpc/task/constants";
+import { isPingable, taskCode } from "#/orpc/task/constants";
 import {
   findActiveMemberIds,
   findAssigneeIdsByTask,
+  findColumn,
   findPeople,
   findProjectKey,
   lockTask,
+  type TaskRecord,
 } from "#/orpc/task/repository";
 import { findPossibleWatchers } from "#/orpc/watcher/repository";
 import { autoWatch, notifyWatchers } from "#/orpc/watcher/service";
@@ -122,8 +125,61 @@ export async function listComments({
 
 /*===== Add =====*/
 /**
- * Adds a comment to a live task, records it in the history, tells the project members it mentions, the card's owner
- * and assignees, and its watchers (once each: a mention is the one notification), and makes the author watch the card.
+ * Writes a comment on a locked task inside the caller's transaction, records it in the history, tells the project
+ * members it mentions, the card's owner and assignees, and its watchers (once each: a mention is the one notification),
+ * and makes the author watch the card.
+ */
+async function postComment({
+  db,
+  actorId,
+  projectId,
+  task,
+  doc,
+  text,
+}: {
+  db: Database;
+  actorId: string;
+  projectId: string;
+  task: TaskRecord;
+  doc: RichTextDoc;
+  text: string;
+}): Promise<Saved> {
+  const record = await insertComment({ db, values: { taskId: task.id, authorId: actorId, body: doc, bodyText: text } });
+  const code = taskCode({ key: await findProjectKey({ db, projectId }), number: task.number });
+  await recordActivity({
+    db,
+    actorId,
+    entries: [
+      {
+        action: "comment.added",
+        projectId,
+        taskId: task.id,
+        after: { commentId: record.id, text },
+        snapshot: { code, title: task.title },
+      },
+    ],
+  });
+  const mentioned = await notifyMentions({ db, actorId, projectId, task, doc, text });
+  // The people on the card never become watchers (`autoWatch`), so they are told here, unless they left the project.
+  const assignees = (await findAssigneeIdsByTask({ db, taskIds: [task.id] })).get(task.id) ?? [];
+  const crew = await findPossibleWatchers({ db, projectId, ids: [task.ownerId, ...assignees] });
+  // Told before the author starts watching; `notifyWatchers` leaves the author out anyway.
+  await notifyWatchers({
+    db,
+    actorId,
+    projectId,
+    task,
+    event: "commented",
+    note: excerptOf(text),
+    also: crew,
+    except: mentioned,
+  });
+  await autoWatch({ db, projectId, task, userIds: [actorId] });
+  return { kind: "success", comment: await withAuthorName({ db, record }) };
+}
+
+/**
+ * Adds a comment to a live task (`postComment`).
  *
  * @returns `not-found` for a task the project doesn't have or an archived one; `invalid` for a bad document.
  */
@@ -149,38 +205,42 @@ export async function addComment({
   return db.transaction(async (tx): Promise<Saved | NotFound> => {
     const task = await lockTask({ db: tx, projectId, id: taskId });
     if (!task || task.archivedAt) return { kind: "not-found" };
-    const record = await insertComment({ db: tx, values: { taskId, authorId: actorId, body: doc, bodyText: text } });
-    const code = taskCode({ key: await findProjectKey({ db: tx, projectId }), number: task.number });
-    await recordActivity({
-      db: tx,
-      actorId,
-      entries: [
-        {
-          action: "comment.added",
-          projectId,
-          taskId,
-          after: { commentId: record.id, text },
-          snapshot: { code, title: task.title },
-        },
-      ],
-    });
-    const mentioned = await notifyMentions({ db: tx, actorId, projectId, task, doc, text });
-    // The people on the card never become watchers (`autoWatch`), so they are told here, unless they left the project.
-    const assignees = (await findAssigneeIdsByTask({ db: tx, taskIds: [taskId] })).get(taskId) ?? [];
-    const crew = await findPossibleWatchers({ db: tx, projectId, ids: [task.ownerId, ...assignees] });
-    // Told before the author starts watching; `notifyWatchers` leaves the author out anyway.
-    await notifyWatchers({
-      db: tx,
-      actorId,
-      projectId,
-      task,
-      event: "commented",
-      note: excerptOf(text),
-      also: crew,
-      except: mentioned,
-    });
-    await autoWatch({ db: tx, projectId, task, userIds: [actorId] });
-    return { kind: "success", comment: await withAuthorName({ db: tx, record }) };
+    return postComment({ db: tx, actorId, projectId, task, doc, text });
+  });
+}
+
+/*===== Ping =====*/
+/**
+ * Asks how a task is going: a plain comment (`postComment`), so it reads, counts and tells people like any other. The
+ * words are the actor's own from their profile, or the default in the language they ping in. The column is checked
+ * here too, because the card on their screen may have moved since it was drawn.
+ *
+ * @returns `not-found` for a task the project doesn't have or an archived one; `invalid` outside a column where work
+ * is under way.
+ */
+export async function pingTask({
+  db,
+  actorId,
+  projectId,
+  taskId,
+}: {
+  db: Database;
+  actorId: string;
+  projectId: string;
+  taskId: string;
+}): Promise<Saved | NotFound | Invalid> {
+  if (!isUuid(taskId)) return { kind: "not-found" };
+
+  return db.transaction(async (tx): Promise<Saved | NotFound | Invalid> => {
+    const task = await lockTask({ db: tx, projectId, id: taskId });
+    if (!task || task.archivedAt) return { kind: "not-found" };
+    const column = await findColumn({ db: tx, projectId, columnId: task.columnId });
+    if (!column || !isPingable(column.kind)) {
+      return { kind: "invalid", fields: {}, errors: [m.comment_error_ping_column()] };
+    }
+    const profile = await findProfile({ db: tx, userId: actorId });
+    const text = profile?.pingMessage ?? m.comment_ping_default();
+    return postComment({ db: tx, actorId, projectId, task, doc: plainTextToRichText(text), text });
   });
 }
 

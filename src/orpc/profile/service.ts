@@ -12,7 +12,13 @@ import { m } from "#/paraglide/messages";
 /*===== Shape =====*/
 async function toProfile({ db, row }: { db: Database; row: ProfileRow }): Promise<Profile> {
   const media = row.avatarMediaId ? await findMediaById({ db, id: row.avatarMediaId }) : undefined;
-  return { id: row.id, name: row.name, email: row.email, avatar: media ? toPublicMedia(media) : null };
+  return {
+    id: row.id,
+    name: row.name,
+    email: row.email,
+    avatar: media ? toPublicMedia(media) : null,
+    pingMessage: row.pingMessage,
+  };
 }
 
 /*===== Get =====*/
@@ -26,10 +32,11 @@ export async function getProfile({ db, userId }: { db: Database; userId: string 
 type UpdateResult = { kind: "success"; profile: Profile } | { kind: "invalid"; fields: Record<string, string> };
 
 /**
- * Changes the person's own name and picture. A new picture must be an `avatar` they uploaded in the last day
+ * Changes the person's own name, picture and ping message. A new picture must be an `avatar` they uploaded in the last day
  * (`attachMedia`); the one it replaces is released in the same transaction and deleted once it commits
  * (docs/backend/media.md). A new name shows everywhere at once, since pages read names from the user row; old history
- * entries keep the name they were written with.
+ * entries keep the name they were written with. The ping message is a preference, so the history leaves it out; an
+ * empty one goes back to the default.
  *
  * @returns `invalid` with field messages for a bad name or a picture that can't be used.
  */
@@ -45,6 +52,7 @@ export async function updateProfile({
   const parsed = profileChangeSchema.safeParse(input);
   if (!parsed.success) return { kind: "invalid", fields: issuesToErrorData(parsed.error.issues).fields };
   const { name, avatarMediaId } = parsed.data;
+  const pingMessage = parsed.data.pingMessage || null;
 
   const result = await db.transaction(async (tx) => {
     const current = await findProfile({ db: tx, userId, lock: true });
@@ -61,7 +69,7 @@ export async function updateProfile({
     if (replaced) await releaseMedia({ db: tx, mediaId: replaced });
 
     /*------ Row ------*/
-    const row = await updateProfileRow({ db: tx, userId, values: { name, avatarMediaId } });
+    const row = await updateProfileRow({ db: tx, userId, values: { name, avatarMediaId, pingMessage } });
     if (current.name !== name || replaced || avatarMediaId !== current.avatarMediaId) {
       await recordActivity({
         db: tx,

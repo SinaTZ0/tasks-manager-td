@@ -62,6 +62,7 @@ a delegate on a task. The only thing a viewer can upload is their own profile pi
 | Action                                        | Admin | User |
 | --------------------------------------------- | :---: | :--: |
 | Write a comment                               |  ✅   |  ✅  |
+| Ping a card in Doing or a custom column       |  ✅   |  ✅  |
 | Edit or delete a comment                      |  🟡⁴  | 🟡⁴  |
 | Add, tick, reorder or remove a checklist item |  ✅   |  ✅  |
 | Add an attachment (file or link)              |  ✅   |  ✅  |

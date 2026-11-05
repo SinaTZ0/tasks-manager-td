@@ -1860,5 +1860,29 @@
   "profile_password_wrong": "این رمز عبور فعلی شما نیست.",
   "profile_password_mismatch": "دو رمز عبور یکی نیستند.",
   "profile_password_submit": "تغییر رمز عبور",
-  "profile_password_changed": "رمز عبور تغییر کرد."
+  "profile_password_changed": "رمز عبور تغییر کرد.",
+  "comment_ping_default": "کار چطور پیش می‌رود؟",
+  "comment_ping_hold": "نگه دارید تا بپرسید کار چطور پیش می‌رود",
+  "comment_ping_key": [
+    {
+      "declarations": ["input code"],
+      "match": {
+        "": "نگه دارید تا بپرسید {code} چطور پیش می‌رود"
+      }
+    }
+  ],
+  "comment_ping_sent": "پینگ فرستاده شد",
+  "comment_ping_failed": "پینگ فرستاده نشد.",
+  "comment_error_ping_column": "فقط کارتی را می‌شود پینگ کرد که کارش در جریان است.",
+  "task_ping": "پینگ",
+  "profile_ping_label": "پیام پینگ",
+  "profile_ping_hint": "متنی که کلید قرمز کارت از طرف شما می‌فرستد. برای متن پیش‌فرض خالی بگذارید.",
+  "profile_error_ping_too_long": [
+    {
+      "declarations": ["input max", "local maxText = max: number"],
+      "match": {
+        "": "پیام حداکثر {maxText} حرف است."
+      }
+    }
+  ]
 }

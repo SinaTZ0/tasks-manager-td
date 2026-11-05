@@ -15,6 +15,7 @@ import {
   addCommentProcedure,
   editCommentProcedure,
   listCommentsProcedure,
+  pingTaskProcedure,
   removeCommentProcedure,
 } from "#/orpc/comment/procedure";
 import { delegatedByMeProcedure, delegateTaskProcedure } from "#/orpc/delegation/procedure";
@@ -95,6 +96,7 @@ export const router = implementer.router({
   comment: {
     list: listCommentsProcedure,
     add: addCommentProcedure,
+    ping: pingTaskProcedure,
     edit: editCommentProcedure,
     remove: removeCommentProcedure,
   },

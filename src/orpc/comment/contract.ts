@@ -39,6 +39,14 @@ export const commentContract = {
     .errors(errors)
     .input(z.strictObject({ projectId: z.string(), taskId: z.string(), body: bodySchema }))
     .output(commentSchema),
+  /**
+   * Asks how the work is going: a comment in the viewer's words, or the default ones, told like any other. Refused
+   * (`INVALID_INPUT`) outside a column where work is under way (`PINGABLE_KINDS`).
+   */
+  ping: oc
+    .errors(errors)
+    .input(z.strictObject({ projectId: z.string(), taskId: z.string() }))
+    .output(commentSchema),
   /** Only the author can edit; anyone else gets `INVALID_INPUT`. People newly mentioned are told. */
   edit: oc
     .errors(errors)

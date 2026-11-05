@@ -26,7 +26,7 @@ import { formatDate, formatNumber } from "#/lib/locale";
 import { cn } from "#/lib/utils";
 import { orpc } from "#/orpc/client";
 import type { Person, Project } from "#/orpc/project/contract";
-import { taskCode } from "#/orpc/task/constants";
+import { isPingable, taskCode } from "#/orpc/task/constants";
 import type { Board, TaskDetail } from "#/orpc/task/contract";
 import { m } from "#/paraglide/messages";
 import { useBoardAccess } from "#/routes/projects_projectKey/access";
@@ -319,7 +319,14 @@ function TaskDetails({
                 />
                 <Separator variant="perforated" className="-mx-6" />
                 {/* Last, so the thread grows down the column with its editor under it. */}
-                <TaskComments task={task} project={project} viewerId={viewerId} readOnly={readOnly} />
+                <TaskComments
+                  task={task}
+                  project={project}
+                  viewerId={viewerId}
+                  readOnly={readOnly}
+                  code={code}
+                  pingable={column !== undefined && isPingable(column.kind)}
+                />
               </DrawerColumn>
             </ResizablePanel>
           )}

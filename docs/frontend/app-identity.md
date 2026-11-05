@@ -16,6 +16,8 @@ looks and talks.
 - **Tactile**: keys sink when pressed and stay sunk when latched, LEDs light and blink. State is shown the way hardware
   shows it, before any text explains it.
 - **Calm**: no gradients, glows only on lit LEDs, no soft floating shadows. Housings sit on the desk with a hard ledge.
+  The one exception is the hold key: it fires like a lamp, so for under a second its cap and ring glow and two pulses
+  run out over the card. It is the only thing here that moves on its own, and only because a press fired it.
 
 ## Tone (copy)
 
@@ -47,7 +49,7 @@ translation ([i18n.md](./i18n.md)).
 - Use the theme's Tailwind classes (`bg-card`, `text-muted-foreground`, `text-h2`…), never raw hex or the Tailwind
   palette. A new colour or type style is declared in `src/styles.css` first.
 - Token names follow shadcn so the primitives keep working. **Naming trap**: the call to action is `highlight` (the
-  orange key, one per view); `primary` is the graphite function key for ordinary in-app actions; shadcn's `accent`
+  orange key, one per view, apart from the small hold key each working card carries); `primary` is the graphite function key for ordinary in-app actions; shadcn's `accent`
   is the quiet hover wash.
 - **Dark mode** is the `.dark` class on `<html>` (the theme toggle): the graphite edition of the same instrument. Only
   materials and lighting change; sizes, radii and motion don't. Recolour through the tokens, never by theme in

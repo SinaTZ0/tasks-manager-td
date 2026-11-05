@@ -4,7 +4,7 @@ import { useId, useState, type FormEvent } from "react";
 
 import { Button } from "#/components/primitive/button/button";
 import { Card, CardContent, CardHeader, CardTitle } from "#/components/primitive/card/card";
-import { Field, FieldError, FieldLabel } from "#/components/primitive/field/field";
+import { Field, FieldDescription, FieldError, FieldLabel } from "#/components/primitive/field/field";
 import { Input } from "#/components/primitive/input/input";
 import { toast } from "#/components/primitive/toast/toast";
 import { FormAlert } from "#/components/shared/form-alert/form-alert";
@@ -15,6 +15,7 @@ import { pageMeta } from "#/lib/seo";
 import { orpc } from "#/orpc/client";
 import type { Media } from "#/orpc/media/contract";
 import type { Profile } from "#/orpc/profile/contract";
+import { PING_MESSAGE_MAX_LENGTH } from "#/orpc/task/constants";
 import { m } from "#/paraglide/messages";
 import { AvatarPicker } from "#/routes/profile/components/avatar-picker";
 import { PasswordForm } from "#/routes/profile/components/password-form";
@@ -31,7 +32,7 @@ export const Route = createFileRoute("/_site-layout/_app-layout/profile")({
 
 /**
  * The viewer's own profile (docs/task-manager-plan.md → slice 8): their name and picture, which show on every card,
- * list and comment of theirs, and their password. The email and role are an admin's to change, on the team page.
+ * list and comment of theirs, what their pings say, and their password. The email and role are an admin's to change, on the team page.
  */
 function ProfilePage() {
   const { data: profile } = useSuspenseQuery(orpc.profile.get.queryOptions());
@@ -42,7 +43,10 @@ function ProfilePage() {
       <Card>
         <CardContent>
           {/* Keyed by what was saved, so a save that comes back changed starts the form from it. */}
-          <ProfileForm key={`${profile.name}|${profile.avatar?.id ?? ""}`} profile={profile} />
+          <ProfileForm
+            key={`${profile.name}|${profile.avatar?.id ?? ""}|${profile.pingMessage ?? ""}`}
+            profile={profile}
+          />
         </CardContent>
       </Card>
       <Card>
@@ -66,6 +70,7 @@ function ProfileForm({ profile }: { profile: Profile }) {
   const queryClient = useQueryClient();
   const [name, setName] = useState(profile.name);
   const [avatar, setAvatar] = useState<Media | null>(profile.avatar);
+  const [pingMessage, setPingMessage] = useState(profile.pingMessage ?? "");
   const [nameError, setNameError] = useState<string>();
 
   const save = useMutation(
@@ -85,7 +90,7 @@ function ProfileForm({ profile }: { profile: Profile }) {
     const trimmed = name.trim();
     if (!trimmed) return setNameError(m.team_error_name_required());
     setNameError(undefined);
-    save.mutate({ name: trimmed, avatarMediaId: avatar?.id ?? null });
+    save.mutate({ name: trimmed, avatarMediaId: avatar?.id ?? null, pingMessage: pingMessage.trim() });
   };
 
   return (
@@ -108,6 +113,21 @@ function ProfileForm({ profile }: { profile: Profile }) {
         <Input id={`${id}-email`} value={profile.email} dir="ltr" readOnly />
       </Field>
       <AvatarPicker value={avatar} onChange={setAvatar} serverError={failure?.fields.avatarMediaId} />
+      <Field data-invalid={!!failure?.fields.pingMessage || undefined}>
+        <FieldLabel htmlFor={`${id}-ping`}>{m.profile_ping_label()}</FieldLabel>
+        <Input
+          id={`${id}-ping`}
+          value={pingMessage}
+          maxLength={PING_MESSAGE_MAX_LENGTH}
+          placeholder={m.comment_ping_default()}
+          autoComplete="off"
+          onChange={(event) => setPingMessage(event.target.value)}
+          aria-describedby={`${id}-ping-hint`}
+          aria-invalid={!!failure?.fields.pingMessage}
+        />
+        <FieldDescription id={`${id}-ping-hint`}>{m.profile_ping_hint()}</FieldDescription>
+        <FieldError>{failure?.fields.pingMessage}</FieldError>
+      </Field>
       <Button type="submit" className="self-start" disabled={save.isPending}>
         {m.profile_save()}
       </Button>

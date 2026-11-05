@@ -4,9 +4,21 @@ import type { Database } from "#/db/client.server";
 import { user } from "#/db/schema";
 
 /*===== Types =====*/
-export type ProfileRow = { id: string; name: string; email: string; avatarMediaId: string | null };
+export type ProfileRow = {
+  id: string;
+  name: string;
+  email: string;
+  avatarMediaId: string | null;
+  pingMessage: string | null;
+};
 
-const columns = { id: user.id, name: user.name, email: user.email, avatarMediaId: user.avatarMediaId };
+const columns = {
+  id: user.id,
+  name: user.name,
+  email: user.email,
+  avatarMediaId: user.avatarMediaId,
+  pingMessage: user.pingMessage,
+};
 
 /*===== Reads =====*/
 /** A person's profile, locked until the transaction ends when `lock` is set, so two saves take turns. */
@@ -32,7 +44,7 @@ export async function updateProfileRow({
 }: {
   db: Database;
   userId: string;
-  values: { name: string; avatarMediaId: string | null };
+  values: { name: string; avatarMediaId: string | null; pingMessage: string | null };
 }): Promise<ProfileRow> {
   const [row] = await db.update(user).set(values).where(eq(user.id, userId)).returning(columns);
   if (!row) throw new Error("updateProfileRow: no row");

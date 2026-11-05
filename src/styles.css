@@ -95,6 +95,9 @@
 
   /* Layout: `max-w-site` is the 1200px content width */
   --container-site: 75rem;
+  /* A task card with a plate: the people's tray (`w-9.5`) beside the face, and the footer's row under them */
+  --grid-template-columns-card-plated: 2.375rem minmax(0, 1fr);
+  --grid-template-rows-card-plated: 1fr auto;
 
   /*------ Animation ------*/
   /* Hard on/off steps like a real LED; a smooth fade would read as a web spinner. */
@@ -102,6 +105,11 @@
   /* An indeterminate meter: a lit block runs along the segments toward the reading direction's end, then starts over */
   --animate-meter-sweep: meter-sweep 1.4s linear infinite;
   --animate-meter-sweep-rtl: meter-sweep-rtl 1.4s linear infinite;
+  /* A hold key firing: the cap flashes and cools like a lamp, the ring with it, and two pulses run out over what it stands on */
+  --animate-hold-key-cap: hold-key-cap 900ms ease-out both;
+  --animate-hold-key-ring: hold-key-ring 900ms ease-out both;
+  --animate-hold-key-sonar: hold-key-sonar 750ms cubic-bezier(0.15, 0.6, 0.3, 1) both;
+  --animate-hold-key-sonar-echo: hold-key-sonar 750ms cubic-bezier(0.15, 0.6, 0.3, 1) 150ms both;
 
   /* The block is a quarter of the track, so 400% of its own width carries it to the far end */
   @keyframes meter-sweep {
@@ -119,6 +127,46 @@
     }
     to {
       translate: -400% 0;
+    }
+  }
+
+  @keyframes hold-key-cap {
+    0% {
+      filter: brightness(1.85) saturate(1.1);
+      box-shadow: 0 0 18px 5px color-mix(in srgb, var(--highlight) 80%, transparent);
+    }
+    18% {
+      filter: brightness(1.6) saturate(1.1);
+      box-shadow: 0 0 14px 4px color-mix(in srgb, var(--highlight) 65%, transparent);
+    }
+    100% {
+      filter: brightness(1);
+    }
+  }
+
+  @keyframes hold-key-ring {
+    0% {
+      opacity: 1;
+      filter: brightness(1.7) drop-shadow(0 0 4px var(--highlight));
+    }
+    25% {
+      opacity: 1;
+      filter: brightness(1.2) drop-shadow(0 0 2px var(--highlight));
+    }
+    100% {
+      opacity: 0;
+      filter: brightness(0.6);
+    }
+  }
+
+  @keyframes hold-key-sonar {
+    0% {
+      transform: scale(1);
+      opacity: 1;
+    }
+    100% {
+      transform: scale(4.6);
+      opacity: 0;
     }
   }
 
@@ -279,6 +327,11 @@
   --shadow-keycap-highlight-compact: var(--elevation-keycap-highlight-compact);
   --shadow-keycap-pressed: var(--elevation-keycap-pressed);
   --shadow-keycap-pressed-compact: var(--elevation-keycap-pressed-compact);
+  --shadow-hold-key-well: var(--elevation-hold-key-well);
+  --shadow-hold-key-seat: var(--elevation-hold-key-seat);
+  --shadow-hold-key-cap: var(--elevation-hold-key-cap);
+  --shadow-hold-key-cap-sunk: var(--elevation-hold-key-cap-sunk);
+  --shadow-hold-key-dish: var(--elevation-hold-key-dish);
   --shadow-field: var(--elevation-field);
   --shadow-housing: var(--elevation-housing);
   --shadow-tray: var(--elevation-tray);
@@ -399,6 +452,15 @@
     inset 1px 1px 0.5px rgb(255 255 255 / 30%), inset -1px -1px 0.5px rgb(0 0 0 / 30%);
   --elevation-keycap-pressed: inset 0 0 16px 0 rgb(0 0 0 / 60%);
   --elevation-keycap-pressed-compact: inset 0 0 6px 0 rgb(0 0 0 / 55%);
+  /* The hold key: a mushroom cap on a hard ledge, on a plate of glass sunk into the housing with no lip of its own
+     (`--elevation-glass`'s pale lip prints a crescent there). The seat's rim keeps it off the plate's black. */
+  --elevation-hold-key-well: inset 0 3px 6px rgb(0 0 0 / 70%);
+  --elevation-hold-key-seat: 0 0 0 1px rgb(255 255 255 / 14%);
+  --elevation-hold-key-cap:
+    0 2px 0 color-mix(in srgb, var(--highlight) 50%, black), inset 1px 1px 1px rgb(255 255 255 / 30%),
+    inset -1px -1px 1px rgb(0 0 0 / 30%);
+  --elevation-hold-key-cap-sunk: 0 0 0 color-mix(in srgb, var(--highlight) 50%, black), inset 0 0 5px rgb(0 0 0 / 55%);
+  --elevation-hold-key-dish: inset 0 1px 1.5px rgb(0 0 0 / 35%), 0 1px 0 rgb(255 255 255 / 25%);
   --elevation-field: inset 0 2px 4px rgb(0 0 0 / 25%), inset 0 -1px 0 rgb(255 255 255 / 60%);
   /* Housings sit on the desk with a hard molded ledge only; a soft blur on top made cards float */
   --elevation-housing: 0 3px 0 var(--housing-ledge), inset 0 1px 0 rgb(255 255 255 / 80%);
@@ -673,6 +735,32 @@
 @utility drag-motion {
   transform: var(--drag-transform, none);
   transition: var(--drag-transition, none);
+}
+
+/* The ring round the hold key. Its dash runs past the path's end so a ring at rest prints nothing, not a hairline. It
+   fills over the hold (`HOLD_MS`, hold-key.tsx) and drains faster than that when a press is given up. */
+@utility hold-key-ring {
+  stroke-dasharray: 1 1.2;
+  stroke-dashoffset: 1.1;
+  transition: stroke-dashoffset 150ms linear;
+
+  [data-holding] & {
+    stroke-dashoffset: 0;
+    transition-duration: 500ms;
+  }
+  [data-fired] & {
+    stroke-dashoffset: 0;
+  }
+  [data-spent] & {
+    transition: none;
+  }
+}
+
+/* A pulse leaving the hold key, grown from its own centre. */
+@utility hold-key-pulse {
+  opacity: 0;
+  transform-box: fill-box;
+  transform-origin: center;
 }
 
 @media (prefers-reduced-motion: reduce) {

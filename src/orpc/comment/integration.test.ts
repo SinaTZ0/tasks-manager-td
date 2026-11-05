@@ -2,9 +2,12 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 import { db } from "#/db/client.server";
 import { createTestProject, deleteTestProject } from "#/db/test-fixtures.server";
-import { addComment, editComment, listComments, removeComment } from "#/orpc/comment/service";
+import { addComment, editComment, listComments, pingTask, removeComment } from "#/orpc/comment/service";
 import { listNotifications } from "#/orpc/notification/service";
-import { createTask } from "#/orpc/task/service";
+import { updateProfile } from "#/orpc/profile/service";
+import { findColumnByKind } from "#/orpc/task/repository";
+import { createTask, moveTask } from "#/orpc/task/service";
+import { m } from "#/paraglide/messages";
 
 /*===== Comments =====*/
 // A comment is its author's: nobody else can change or delete it (docs/app.md → Comments). A mention tells the person.
@@ -70,5 +73,65 @@ describe("comments", () => {
 
     const mentioned = await listNotifications({ db, userId: users.reza });
     expect(mentioned.items).toEqual([expect.objectContaining({ kind: "mentioned", taskTitle: "طراحی فرم" })]);
+  });
+});
+
+/*===== Pings =====*/
+const startTask = async (title: string) => {
+  const { projectId, users } = fixture;
+  const created = await createTask({
+    db,
+    actorId: users.admin,
+    projectId,
+    input: { title, assigneeIds: [users.reza] },
+  });
+  if (created.kind !== "success") throw new Error("setup failed");
+  return created.task.id;
+};
+const moveTo = async ({ taskId, kind }: { taskId: string; kind: string }) => {
+  const { projectId, users } = fixture;
+  const column = await findColumnByKind({ db, projectId, kind });
+  const moved = await moveTask({ db, actorId: users.admin, projectId, taskId, columnId: column.id, position: "a0" });
+  if (moved.kind !== "success") throw new Error("setup failed");
+};
+
+const paragraph = (text: string) => ({
+  type: "doc",
+  content: [{ type: "paragraph", content: [{ type: "text", text }] }],
+});
+
+describe("pings", () => {
+  it("posts the pinger's own words, or the default, and tells the people on the card", async () => {
+    const { projectId, users } = fixture;
+    const taskId = await startTask("پینگ پیش‌فرض");
+    await moveTo({ taskId, kind: "doing" });
+
+    expect(await pingTask({ db, actorId: users.ali, projectId, taskId })).toMatchObject({ kind: "success" });
+    const saved = await updateProfile({
+      db,
+      userId: users.ali,
+      input: { name: "علی", avatarMediaId: null, pingMessage: "  به کجا رسید؟ " },
+    });
+    expect(saved).toMatchObject({ kind: "success", profile: { pingMessage: "به کجا رسید؟" } });
+    expect(await pingTask({ db, actorId: users.ali, projectId, taskId })).toMatchObject({ kind: "success" });
+
+    const thread = await listComments({ db, projectId, taskId });
+    expect(thread.map((comment) => comment.body)).toEqual([
+      paragraph(m.comment_ping_default()),
+      paragraph("به کجا رسید؟"),
+    ]);
+
+    const told = await listNotifications({ db, userId: users.reza });
+    expect(told.items.filter((item) => item.kind === "watched" && item.taskTitle === "پینگ پیش‌فرض")).toHaveLength(2);
+  });
+
+  it("is refused where no work is under way", async () => {
+    const { projectId, users } = fixture;
+    const taskId = await startTask("هنوز شروع نشده");
+
+    expect(await pingTask({ db, actorId: users.ali, projectId, taskId })).toMatchObject({ kind: "invalid" });
+    await moveTo({ taskId, kind: "done" });
+    expect(await pingTask({ db, actorId: users.ali, projectId, taskId })).toMatchObject({ kind: "invalid" });
+    expect(await listComments({ db, projectId, taskId })).toEqual([]);
   });
 });

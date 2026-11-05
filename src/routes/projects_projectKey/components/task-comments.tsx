@@ -4,6 +4,7 @@ import { useState } from "react";
 
 import { Button } from "#/components/primitive/button/button";
 import { FieldError } from "#/components/primitive/field/field";
+import { HoldKey } from "#/components/primitive/hold-key/hold-key";
 import { Marking } from "#/components/primitive/marking/marking";
 import { RichText } from "#/components/primitive/rich-text/rich-text";
 import { RichTextEditor } from "#/components/primitive/rich-text-editor/rich-text-editor";
@@ -40,24 +41,49 @@ function failureText({ error, fallback }: { error: unknown; fallback: string }) 
   return Object.values(failure.fields)[0] ?? failure.message ?? fallback;
 }
 
+/*===== Ping =====*/
+
+/**
+ * Asks how a task is going: the server posts the viewer's words as a comment. Nothing holds a second ping back, so each
+ * one answers for itself through the mutation's own callbacks, not `mutate`'s, which only the last call would get.
+ */
+export function usePing(projectId: string) {
+  const changed = useThreadChanged();
+  const ping = useMutation(
+    orpc.comment.ping.mutationOptions({
+      onSuccess: () => toast.add({ title: m.comment_ping_sent(), type: "success" }),
+      onError: (error) =>
+        toast.add({ title: failureText({ error, fallback: m.comment_ping_failed() }), type: "error" }),
+      onSettled: changed,
+    }),
+  );
+  return (taskId: string) => ping.mutate({ projectId, taskId });
+}
+
 /*===== Task Comments =====*/
 
 /**
  * The task's thread, at the end of the drawer's work column (docs/app.md → Comments): every comment oldest first, each signed and dated, with keys to edit or
  * delete the viewer's own; a deleted one leaves a line saying so. Under it, the editor to write one: `@` mentions a
- * member, who is told, and Ctrl+Enter sends it. An archived task's thread is read-only.
+ * member, who is told, and Ctrl+Enter sends it. Beside its send key, on a card where work is under way, the ping key.
+ * An archived task's thread is read-only.
  */
 export function TaskComments({
   task,
   project,
   viewerId,
   readOnly,
+  code,
+  pingable,
 }: {
   task: TaskDetail;
   project: Project;
   viewerId: string;
   /** A viewer reads the thread: no editor, and nothing of their own to change. */
   readOnly: boolean;
+  code: string;
+  /** The card is in a column where it can be pinged. */
+  pingable: boolean;
 }) {
   const { data: comments, isPending } = useQuery(commentsQuery({ projectId: project.id, taskId: task.id }));
   const archived = task.archivedAt !== null;
@@ -86,7 +112,7 @@ export function TaskComments({
       )}
 
       {/*------ New Comment ------*/}
-      {!archived && !readOnly && <CommentComposer task={task} project={project} />}
+      {!archived && !readOnly && <CommentComposer task={task} project={project} code={code} pingable={pingable} />}
     </section>
   );
 }
@@ -214,11 +240,22 @@ function CommentEditForm({
 /** The new comment's writing surface, which the `c` shortcut focuses. One drawer is open at a time. */
 export const COMMENT_COMPOSER_ID = "task-new-comment";
 
-function CommentComposer({ task, project }: { task: TaskDetail; project: Project }) {
+function CommentComposer({
+  task,
+  project,
+  code,
+  pingable,
+}: {
+  task: TaskDetail;
+  project: Project;
+  code: string;
+  pingable: boolean;
+}) {
   const id = COMMENT_COMPOSER_ID;
   const [doc, setDoc] = useState<RichTextDoc | null>(null);
   const [error, setError] = useState<string>();
   const changed = useThreadChanged();
+  const ping = usePing(project.id);
   const { mention, picker } = useMentionPicker(project.members);
   const add = useMutation(
     orpc.comment.add.mutationOptions({
@@ -259,10 +296,20 @@ function CommentComposer({ task, project }: { task: TaskDetail; project: Project
         <p id={`${id}-hint`} className="text-caption text-muted-foreground">
           {m.comment_hint()}
         </p>
-        <Button size="sm" disabled={add.isPending} onClick={send}>
-          <SendIcon data-icon="inline-start" className="rtl:-scale-x-100" />
-          {m.comment_send()}
-        </Button>
+        <span className="flex items-center gap-3">
+          {pingable && (
+            <HoldKey
+              shape="inline"
+              label={m.comment_ping_key({ code })}
+              hint={m.comment_ping_hold()}
+              onFire={() => ping(task.id)}
+            />
+          )}
+          <Button size="sm" disabled={add.isPending} onClick={send}>
+            <SendIcon data-icon="inline-start" className="rtl:-scale-x-100" />
+            {m.comment_send()}
+          </Button>
+        </span>
       </div>
     </div>
   );

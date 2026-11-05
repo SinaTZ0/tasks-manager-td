@@ -41,13 +41,14 @@ import {
 } from "react";
 
 import { Button } from "#/components/primitive/button/button";
+import { HoldKey, HoldKeyPlate } from "#/components/primitive/hold-key/hold-key";
 import { toast } from "#/components/primitive/toast/toast";
 import { columnTitle } from "#/lib/column-title";
 import { cn } from "#/lib/utils";
 import { positionBetween } from "#/lib/position";
 import { isBackwardMove } from "#/orpc/project/constants";
 import type { Column, Person, Project } from "#/orpc/project/contract";
-import { COLUMN_ACTION_RULES, taskCode, type TaskStatusAction } from "#/orpc/task/constants";
+import { COLUMN_ACTION_RULES, isPingable, taskCode, type TaskStatusAction } from "#/orpc/task/constants";
 import type { Board as BoardData, Label, TaskCard as TaskCardData } from "#/orpc/task/contract";
 import { m } from "#/paraglide/messages";
 import { BoardColumn } from "#/routes/projects_projectKey/components/board-column";
@@ -55,6 +56,7 @@ import { ConfirmDialog, type ConfirmRequest } from "#/routes/projects_projectKey
 import { CardGrip, cardGripId, SortableTaskCard } from "#/routes/projects_projectKey/components/sortable-task-card";
 import { ReasonDialog, type ReasonRequest } from "#/routes/projects_projectKey/components/reason-dialog";
 import { TaskCard } from "#/routes/projects_projectKey/components/task-card";
+import { usePing } from "#/routes/projects_projectKey/components/task-comments";
 import { restoreTaskMenuFocus, TaskMenu, taskMenuKey } from "#/routes/projects_projectKey/components/task-menu";
 import { TransferDialog, type TransferRequest } from "#/routes/projects_projectKey/components/transfer-dialog";
 import { blockersOf, entersGuardedColumn, kindsOf } from "#/routes/projects_projectKey/dependencies";
@@ -333,6 +335,7 @@ export function Board({
     : shownColumns;
   // dnd-kit numbers its accessibility ids from a counter of its own, which differs between server and browser.
   const contextId = useId();
+  const ping = usePing(project.id);
 
   /*------ Lookups ------*/
   const tasks = new Map(board.tasks.map((task) => [task.id, task]));
@@ -731,6 +734,8 @@ export function Board({
                     {ids.map((id) => {
                       const task = tasks.get(id);
                       if (!task) return null;
+                      // Anyone who can comment can ping; a filter doesn't stop it, as it stops a drag.
+                      const pingable = canMoveCards && isPingable(column.kind);
                       return (
                         <SortableTaskCard
                           key={id}
@@ -742,6 +747,15 @@ export function Board({
                           blockedBy={blockerCodes(task)}
                           movable={canMoveCards && !filter}
                           watching={watching.has(task.id)}
+                          plate={
+                            pingable && (
+                              <HoldKey
+                                label={m.comment_ping_key({ code: codeOf(task.id) })}
+                                hint={m.comment_ping_hold()}
+                                onFire={() => ping(task.id)}
+                              />
+                            )
+                          }
                           menu={
                             canMoveCards && (
                               <TaskMenu
@@ -752,6 +766,7 @@ export function Board({
                                 currentColumnId={column.id}
                                 onMove={(target) => moveToEnd({ task, columnId: target })}
                                 onAction={(action) => takeAction({ task, action })}
+                                onPing={pingable ? () => ping(task.id) : undefined}
                                 onTransfer={
                                   canTransfer
                                     ? (mode) =>
@@ -879,6 +894,8 @@ export function Board({
             state="overlay"
             watching={watching.has(dragged.id)}
             grip={<CardGrip code={codeOf(dragged.id)} />}
+            // By the column it left: the copy keeps its shape all the way across the board.
+            plate={isPingable(kinds.get(dragged.columnId) ?? "todo") && <HoldKeyPlate />}
           />
         )}
       </DragOverlay>

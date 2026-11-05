@@ -1,4 +1,4 @@
-import { CopyIcon, EllipsisIcon, FolderInputIcon } from "lucide-react";
+import { CopyIcon, EllipsisIcon, FolderInputIcon, RadioIcon } from "lucide-react";
 
 import { Button } from "#/components/primitive/button/button";
 import {
@@ -44,6 +44,7 @@ export function restoreTaskMenuFocus(taskId: string) {
  * "move to…" every other column, so changing a card never depends on dragging it (docs/app.md → Board & Drag). The board takes the
  * action, asking for a reason first where one is due. A moved card goes to the bottom of its new column. A cancelled
  * card only reopens: `columns` is empty there. For an admin, `onTransfer` adds moving or copying it to another project.
+ * `onPing` is the ping key's way in for a keyboard or a screen reader, with nothing to hold: choosing it is deliberate.
  */
 export function TaskMenu({
   taskId,
@@ -54,6 +55,7 @@ export function TaskMenu({
   onMove,
   onAction,
   onTransfer,
+  onPing,
 }: {
   taskId: string;
   code: string;
@@ -65,6 +67,7 @@ export function TaskMenu({
   onMove: (columnId: string) => void;
   onAction: (action: TaskStatusAction) => void;
   onTransfer?: ((mode: TransferMode) => void) | undefined;
+  onPing?: (() => void) | undefined;
 }) {
   const actions = availableActions(kind);
   const targets = columns.filter((column) => column.id !== currentColumnId);
@@ -86,6 +89,19 @@ export function TaskMenu({
         <EllipsisIcon />
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="min-w-44" finalFocus={taskMenuKey(taskId)}>
+        {/*------ Ping ------*/}
+        {onPing && (
+          <>
+            <DropdownMenuGroup>
+              <DropdownMenuItem onClick={onPing}>
+                <RadioIcon />
+                {m.task_ping()}
+              </DropdownMenuItem>
+            </DropdownMenuGroup>
+            <DropdownMenuSeparator />
+          </>
+        )}
+
         {/*------ Status ------*/}
         <DropdownMenuGroup>
           <DropdownMenuLabel>{m.task_status()}</DropdownMenuLabel>

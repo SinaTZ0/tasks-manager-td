@@ -4,6 +4,7 @@ import { GripVerticalIcon } from "lucide-react";
 import type { ComponentProps, CSSProperties, KeyboardEventHandler, PointerEventHandler, ReactNode } from "react";
 
 import { Button } from "#/components/primitive/button/button";
+import { HoldKeyPlate } from "#/components/primitive/hold-key/hold-key";
 import type { Person } from "#/orpc/project/contract";
 import { taskCode } from "#/orpc/task/constants";
 import type { Label, TaskCard as TaskCardData } from "#/orpc/task/contract";
@@ -46,6 +47,7 @@ export function SortableTaskCard({
   movable,
   menu,
   watching,
+  plate,
 }: {
   task: TaskCardData;
   /** The column the card is shown in, which during a drag may not be the one stored yet. */
@@ -60,6 +62,8 @@ export function SortableTaskCard({
   menu: ReactNode;
   /** The viewer watches it. */
   watching: boolean;
+  /** What fills the corner under the tray (`TaskCard`). */
+  plate?: ReactNode;
 }) {
   const code = taskCode({ key: projectKey, number: task.number });
   const { setNodeRef, setActivatorNodeRef, attributes, listeners, transform, transition, isDragging } = useSortable({
@@ -100,6 +104,7 @@ export function SortableTaskCard({
           )
         }
         menu={isDragging ? undefined : menu}
+        plate={isDragging && plate ? <HoldKeyPlate /> : plate}
       />
     </li>
   );

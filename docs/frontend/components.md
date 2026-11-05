@@ -13,7 +13,7 @@
   ```
 
 - `src/components/primitive/` also holds the instrument's own atoms, parts with no shadcn original that the design
-  system is built from and that other primitives use: `led`, `display` and `marking`. They follow the same folder
+  system is built from and that other primitives use: `led`, `display`, `marking` and `hold-key`. They follow the same folder
   layout. A component belongs here only if it is a generic part of the instrument; anything that knows about tasks,
   boards or users (a task card, a priority mark) is app-made and lives in a route slice or `shared/`.
 - `src/components/ui/` holds the untouched shadcn source, with every component installed. Never edit it and never

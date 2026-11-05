@@ -62,6 +62,16 @@ export const RELEASED_KINDS = ["done", "cancelled"] as const satisfies readonly 
 /** Of a comment's plain text. */
 export const COMMENT_MAX_LENGTH = 10_000;
 
+/*===== Ping =====*/
+/** The column kinds where work is under way, so asking how it is going means something (docs/app.md → Comments). */
+export const PINGABLE_KINDS = ["doing", "custom"] as const satisfies readonly ColumnKind[];
+
+/** Whether a task in a column of `kind` can be pinged. */
+export const isPingable = (kind: string) => (PINGABLE_KINDS as readonly string[]).includes(kind);
+
+/** Of the message a person sets for their pings: one line, not a letter. */
+export const PING_MESSAGE_MAX_LENGTH = 120;
+
 /** The code people use in chat: the project's key and the task's number (`TD-42`). */
 export function taskCode({ key, number }: { key: string; number: number }): string {
   return `${key}-${number}`;

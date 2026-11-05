@@ -1,4 +1,4 @@
-import { addComment, editComment, listComments, removeComment } from "#/orpc/comment/service";
+import { addComment, editComment, listComments, pingTask, removeComment } from "#/orpc/comment/service";
 import { base } from "#/orpc/implementer.server";
 import { requireEditorMiddleware, requireUserMiddleware } from "#/orpc/middleware/auth/auth.middleware";
 import { provideDbMiddleware } from "#/orpc/middleware/db/db.middleware";
@@ -20,6 +20,20 @@ export const addCommentProcedure = base.comment.add
   .use(requireProjectMemberMiddleware)
   .handler(async ({ context, input, errors }) => {
     const result = await addComment({ db: context.db, actorId: context.user.id, ...input });
+    if (result.kind === "not-found") throw errors.NOT_FOUND({ data: noData });
+    if (result.kind === "invalid") {
+      throw errors.INVALID_INPUT({ data: { errors: result.errors ?? [], fields: result.fields } });
+    }
+    return result.comment;
+  });
+
+/*===== Ping =====*/
+export const pingTaskProcedure = base.comment.ping
+  .use(requireEditorMiddleware)
+  .use(provideDbMiddleware)
+  .use(requireProjectMemberMiddleware)
+  .handler(async ({ context, input, errors }) => {
+    const result = await pingTask({ db: context.db, actorId: context.user.id, ...input });
     if (result.kind === "not-found") throw errors.NOT_FOUND({ data: noData });
     if (result.kind === "invalid") {
       throw errors.INVALID_INPUT({ data: { errors: result.errors ?? [], fields: result.fields } });

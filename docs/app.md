@@ -97,6 +97,11 @@ What each thing is and how it relates. How to store it = implementer decides.
 - Commenting on a card, or being mentioned there, makes you watch it; anyone on the project can watch a card, and
   watchers hear about its comments, status changes, hand-offs and archiving
 - Markdown in comments
+- Ping: the red key at the foot of a card's tray, and beside Send in its thread, asks how the work is going. It posts
+  a plain comment, so it reads, counts and notifies like any other. Press and hold half a second: a short press does
+  nothing, and the card's menu offers it without the hold. Only on cards in Doing or a custom column, for anyone who
+  can comment, with no limit on how often. Each person can set the words in their profile; empty means "How is it
+  going?" in the language they ping in
 
 **History**
 
@@ -107,7 +112,7 @@ What each thing is and how it relates. How to store it = implementer decides.
 **Users**
 
 - Login (email + password, or magic link, or Google — 5 users, keep simple)
-- Profile: name, avatar, password (asks for the current one, signs out other devices)
+- Profile: name, avatar, ping message, password (asks for the current one, signs out other devices)
 - Lost password: an admin sets a new one on the team page and passes it on, which signs the person out everywhere. No
   email, so an admin can't reset their own from there
 

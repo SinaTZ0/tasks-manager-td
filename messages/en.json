@@ -1860,5 +1860,29 @@
   "profile_password_wrong": "That isn't your current password.",
   "profile_password_mismatch": "The two passwords don't match.",
   "profile_password_submit": "Change password",
-  "profile_password_changed": "Password changed."
+  "profile_password_changed": "Password changed.",
+  "comment_ping_default": "How is it going?",
+  "comment_ping_hold": "Hold to ask how it is going",
+  "comment_ping_key": [
+    {
+      "declarations": ["input code"],
+      "match": {
+        "": "Hold to ask how {code} is going"
+      }
+    }
+  ],
+  "comment_ping_sent": "Ping sent",
+  "comment_ping_failed": "The ping wasn't sent.",
+  "comment_error_ping_column": "Only cards with work under way can be pinged.",
+  "task_ping": "Ping",
+  "profile_ping_label": "Ping message",
+  "profile_ping_hint": "What the red key on a card posts as you. Leave it empty for the default.",
+  "profile_error_ping_too_long": [
+    {
+      "declarations": ["input max", "local maxText = max: number"],
+      "match": {
+        "": "Keep the message to {maxText} characters."
+      }
+    }
+  ]
 }

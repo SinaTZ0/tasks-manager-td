@@ -49,6 +49,8 @@ export const user = pgTable("user", {
    * Cleared if the media row is ever deleted.
    */
   avatarMediaId: uuid("avatar_media_id").references((): AnyPgColumn => media.id, { onDelete: "set null" }),
+  /** What their ping says (docs/app.md → Comments). Null means the default, in the language they ping in. */
+  pingMessage: text("ping_message"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at")
     .notNull()
