@@ -510,6 +510,9 @@
 /* The graphite edition of the same instrument. Only materials and the light-dependent parts of the depth recipes
    change; sizes, radii and motion are shared, so both themes are the same physical object. */
 .dark {
+  /* For a part that is dark in both themes (the sidebar): the browser draws its scrollbars and native controls dark too.
+     The whole page's scheme is set on <html> by src/lib/theme.ts. */
+  color-scheme: dark;
   --background: #121212;
   --foreground: #e6e6e6;
   --card: #2b2b2b;
@@ -604,12 +607,21 @@
   }
   body {
     @apply bg-background text-foreground;
+    /* The rail's colours are the window's own: scrollbars inside the page keep the browser's. */
+    scrollbar-color: auto;
   }
   html {
     @apply font-sans antialiased;
     /* Kerning and ligatures on, and the browser's own text smoothing on dark grounds */
     font-kerning: normal;
     -webkit-tap-highlight-color: transparent;
+    /* Keeps the scrollbar's width whether or not the page scrolls. Without it everything jumps sideways between a page
+       that scrolls and one that doesn't, and the page fade shows the sidebar twice, side by side, which reads as a
+       sudden change of width. The kept strip takes this element's background, so the glass and the scrollbar's track
+       make one rail at the window's edge, meeting the header on every page. */
+    scrollbar-gutter: stable;
+    background-color: var(--glass);
+    scrollbar-color: var(--glass-muted) var(--glass);
   }
   h1,
   h2,
