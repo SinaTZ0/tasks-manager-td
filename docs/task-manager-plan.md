@@ -10,7 +10,8 @@ keep; the columns are decided when each slice is built.
 Made with the user on 2026-10-30. They answer the spec's open questions and override it where they differ.
 
 - **Accounts**: there is no public sign-up. An admin creates every account, and the person signs in with the password
-  the admin set.
+  the admin set, then changes it on their profile. Someone who loses theirs gets a new one from an admin on the team
+  page (`team.resetPassword`); the app sends no email.
 - **Roles** (three levels since 2026-10-30, slice 9): `admin`, `user` and `viewer`. An admin can give anyone any role.
   The last active admin can't be demoted or deactivated, so the team is never locked out. Every action by role is in
   [permissions.md](./permissions.md).

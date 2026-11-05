@@ -1,7 +1,7 @@
 import { base } from "#/orpc/implementer.server";
 import { requireAdminMiddleware } from "#/orpc/middleware/auth/auth.middleware";
 import { provideDbMiddleware } from "#/orpc/middleware/db/db.middleware";
-import { addMember, changeMember, listTeam } from "#/orpc/team/service";
+import { addMember, changeMember, listTeam, resetMemberPassword } from "#/orpc/team/service";
 
 /*===== List =====*/
 export const listTeamProcedure = base.team.list
@@ -49,4 +49,15 @@ export const setTeamMemberStatusProcedure = base.team.setStatus
     if (result.kind === "not-found") throw errors.NOT_FOUND({ data: { errors: [], fields: {} } });
     if (result.kind === "conflict") throw errors.CONFLICT({ data: { errors: [result.message], fields: {} } });
     return result.member;
+  });
+
+/*===== Password =====*/
+export const resetTeamMemberPasswordProcedure = base.team.resetPassword
+  .use(requireAdminMiddleware)
+  .use(provideDbMiddleware)
+  .handler(async ({ context, input, errors }) => {
+    const result = await resetMemberPassword({ db: context.db, actorId: context.user.id, input });
+    if (result.kind === "invalid") throw errors.INVALID_INPUT({ data: { errors: [], fields: result.fields } });
+    if (result.kind === "not-found") throw errors.NOT_FOUND({ data: { errors: [], fields: {} } });
+    if (result.kind === "conflict") throw errors.CONFLICT({ data: { errors: [result.message], fields: {} } });
   });

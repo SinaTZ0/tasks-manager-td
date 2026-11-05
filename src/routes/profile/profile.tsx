@@ -3,7 +3,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useId, useState, type FormEvent } from "react";
 
 import { Button } from "#/components/primitive/button/button";
-import { Card, CardContent } from "#/components/primitive/card/card";
+import { Card, CardContent, CardHeader, CardTitle } from "#/components/primitive/card/card";
 import { Field, FieldError, FieldLabel } from "#/components/primitive/field/field";
 import { Input } from "#/components/primitive/input/input";
 import { toast } from "#/components/primitive/toast/toast";
@@ -17,6 +17,7 @@ import type { Media } from "#/orpc/media/contract";
 import type { Profile } from "#/orpc/profile/contract";
 import { m } from "#/paraglide/messages";
 import { AvatarPicker } from "#/routes/profile/components/avatar-picker";
+import { PasswordForm } from "#/routes/profile/components/password-form";
 
 /*===== Route =====*/
 export const Route = createFileRoute("/_site-layout/_app-layout/profile")({
@@ -30,7 +31,7 @@ export const Route = createFileRoute("/_site-layout/_app-layout/profile")({
 
 /**
  * The viewer's own profile (docs/task-manager-plan.md → slice 8): their name and picture, which show on every card,
- * list and comment of theirs. The email and role are an admin's to change, on the team page.
+ * list and comment of theirs, and their password. The email and role are an admin's to change, on the team page.
  */
 function ProfilePage() {
   const { data: profile } = useSuspenseQuery(orpc.profile.get.queryOptions());
@@ -42,6 +43,16 @@ function ProfilePage() {
         <CardContent>
           {/* Keyed by what was saved, so a save that comes back changed starts the form from it. */}
           <ProfileForm key={`${profile.name}|${profile.avatar?.id ?? ""}`} profile={profile} />
+        </CardContent>
+      </Card>
+      <Card>
+        <CardHeader>
+          <CardTitle>
+            <h2 className="text-h3">{m.profile_password_heading()}</h2>
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <PasswordForm />
         </CardContent>
       </Card>
     </div>

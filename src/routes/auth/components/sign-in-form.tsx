@@ -9,7 +9,7 @@ import { Spinner } from "#/components/primitive/spinner/spinner";
 import { FormAlert } from "#/components/shared/form-alert/form-alert";
 import { authClient } from "#/lib/auth-client";
 import { m } from "#/paraglide/messages";
-import { describeAuthError } from "#/routes/auth/auth-errors";
+import { describeAuthError } from "#/lib/auth-errors";
 import { signInSchema, type SignInValues } from "#/routes/auth/schema";
 
 /*===== Sign In Form =====*/

@@ -11,6 +11,7 @@ import { createLogger } from "#/lib/logger.server";
 import { normalizePersianText } from "#/lib/persian-text";
 import { CLIENT_ADDRESS_HEADER } from "#/lib/rate-limit.server";
 import { setTraceUser } from "#/lib/trace.server";
+import { recordActivity } from "#/orpc/activity/service";
 
 const log = createLogger("auth");
 
@@ -106,6 +107,25 @@ export const auth = betterAuth({
           .limit(1);
         if (blocked) throw new APIError("FORBIDDEN", { code: ACCOUNT_BLOCKED_CODE, message: "Account is blocked." });
       }
+    }),
+
+    after: createAuthMiddleware(async (ctx) => {
+      /*------ Password History ------*/
+      // Better-Auth writes the new password in its own transaction, so this entry can't share it (docs/app.md rule 7).
+      // A refused change reaches this hook too, with the error as what the endpoint returned.
+      if (ctx.path !== "/change-password" || ctx.context.returned instanceof Error) return;
+      const person = ctx.context.session?.user;
+      if (!person) return;
+      await recordActivity({
+        db,
+        actorId: person.id,
+        entries: [
+          {
+            action: "user.password_changed",
+            snapshot: { userId: person.id, name: person.name, email: person.email },
+          },
+        ],
+      });
     }),
   },
 });

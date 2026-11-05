@@ -12,9 +12,10 @@ import {
   findUserById,
   insertUserWithPassword,
   lockOtherActiveAdmins,
+  updateCredentialPassword,
   updateUser,
 } from "#/orpc/team/repository";
-import { newMemberSchema } from "#/orpc/team/validation";
+import { newMemberSchema, passwordResetSchema } from "#/orpc/team/validation";
 import { m } from "#/paraglide/messages";
 
 /*===== List =====*/
@@ -130,5 +131,54 @@ export async function changeMember({
   if (result.kind === "success" && "status" in change && change.status === "blocked") {
     await revokeUserSessions(userId);
   }
+  return result;
+}
+
+/*===== Password Reset =====*/
+type ResetResult =
+  | { kind: "success" }
+  | { kind: "invalid"; fields: Record<string, string> }
+  | { kind: "not-found" }
+  | { kind: "conflict"; message: string };
+
+/**
+ * Gives a teammate a new password, for when they lost theirs: the app sends no email, so an admin is the way back in.
+ * Another admin can be reset too, or a locked-out admin would have no way back. The admin's own password changes on the
+ * profile page, which asks for the current one. Whoever holds the old password is signed out everywhere.
+ *
+ * @returns `conflict` for the admin's own account, `invalid` with field messages for a bad password.
+ */
+export async function resetMemberPassword({
+  db,
+  actorId,
+  input,
+}: {
+  db: Database;
+  actorId: string;
+  input: unknown;
+}): Promise<ResetResult> {
+  const parsed = passwordResetSchema.safeParse(input);
+  if (!parsed.success) return { kind: "invalid", fields: issuesToErrorData(parsed.error.issues).fields };
+  const { userId, password } = parsed.data;
+  if (userId === actorId) return { kind: "conflict", message: m.team_error_self_password() };
+
+  const current = await findUserById({ db, id: userId });
+  if (!current) return { kind: "not-found" };
+
+  // Hashed with Better-Auth's own settings, so sign-in verifies it.
+  const passwordHash = await (await auth.$context).password.hash(password);
+
+  const result = await db.transaction(async (tx): Promise<ResetResult> => {
+    if (!(await updateCredentialPassword({ db: tx, userId, passwordHash }))) return { kind: "not-found" };
+    await recordActivity({
+      db: tx,
+      actorId,
+      entries: [{ action: "user.password_reset", snapshot: { userId, name: current.name, email: current.email } }],
+    });
+    return { kind: "success" };
+  });
+
+  // After the commit, like a block: a session opened with the old password must not outlive it.
+  if (result.kind === "success") await revokeUserSessions(userId);
   return result;
 }

@@ -8,6 +8,8 @@ export const ACTIVITY_ACTIONS = [
   "user.role_changed",
   "user.status_changed",
   "user.profile_updated",
+  "user.password_changed",
+  "user.password_reset",
   /*------ Project ------*/
   "project.created",
   "project.renamed",

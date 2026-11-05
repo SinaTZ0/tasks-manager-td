@@ -89,6 +89,28 @@ export async function insertUserWithPassword({
   return row;
 }
 
+/**
+ * Replaces the password hash on the person's `credential` account.
+ *
+ * @returns whether they have one to replace.
+ */
+export async function updateCredentialPassword({
+  db,
+  userId,
+  passwordHash,
+}: {
+  db: Database;
+  userId: string;
+  passwordHash: string;
+}): Promise<boolean> {
+  const rows = await db
+    .update(account)
+    .set({ password: passwordHash })
+    .where(and(eq(account.userId, userId), eq(account.providerId, "credential")))
+    .returning({ id: account.id });
+  return rows.length > 0;
+}
+
 export async function updateUser({
   db,
   id,

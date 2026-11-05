@@ -106,7 +106,9 @@ What each thing is and how it relates. How to store it = implementer decides.
 **Users**
 
 - Login (email + password, or magic link, or Google — 5 users, keep simple)
-- Profile: name, avatar
+- Profile: name, avatar, password (asks for the current one, signs out other devices)
+- Lost password: an admin sets a new one on the team page and passes it on, which signs the person out everywhere. No
+  email, so an admin can't reset their own from there
 
 ### 🟡 Should Have (soon after)
 

@@ -243,7 +243,7 @@
     {
       "declarations": ["input min", "local minText = min: number"],
       "match": {
-        "": "At least {minText} characters. Pass it on to them; they sign in with it."
+        "": "At least {minText} characters. Pass it on to them; they can change it on their profile."
       }
     }
   ],
@@ -1808,5 +1808,57 @@
       }
     }
   ],
-  "task_back_confirm": "Move back"
+  "task_back_confirm": "Move back",
+  "activity_user_password_changed": "changed their password",
+  "activity_user_password_reset": [
+    {
+      "declarations": ["input name"],
+      "match": {
+        "": "reset the password of {name}"
+      }
+    }
+  ],
+  "team_error_self_password": "Change your own password on your profile page.",
+  "team_reset_password_open": [
+    {
+      "declarations": ["input name"],
+      "match": {
+        "": "Reset the password of {name}"
+      }
+    }
+  ],
+  "team_reset_password_title": [
+    {
+      "declarations": ["input name"],
+      "match": {
+        "": "New password for {name}"
+      }
+    }
+  ],
+  "team_reset_password_description": "They are signed out everywhere and sign in with this one. Pass it on to them.",
+  "team_reset_password_submit": "Set password",
+  "team_reset_password_done": [
+    {
+      "declarations": ["input name"],
+      "match": {
+        "": "Password changed for {name}."
+      }
+    }
+  ],
+  "profile_password_heading": "Password",
+  "profile_password_current_label": "Current password",
+  "profile_password_new_label": "New password",
+  "profile_password_repeat_label": "New password again",
+  "profile_password_hint": [
+    {
+      "declarations": ["input min", "local minText = min: number"],
+      "match": {
+        "": "At least {minText} characters. Your other devices are signed out."
+      }
+    }
+  ],
+  "profile_password_wrong": "That isn't your current password.",
+  "profile_password_mismatch": "The two passwords don't match.",
+  "profile_password_submit": "Change password",
+  "profile_password_changed": "Password changed."
 }

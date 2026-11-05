@@ -59,6 +59,7 @@ import {
 import {
   createTeamMemberProcedure,
   listTeamProcedure,
+  resetTeamMemberPasswordProcedure,
   setTeamMemberRoleProcedure,
   setTeamMemberStatusProcedure,
 } from "#/orpc/team/procedure";
@@ -170,6 +171,7 @@ export const router = implementer.router({
     create: createTeamMemberProcedure,
     setRole: setTeamMemberRoleProcedure,
     setStatus: setTeamMemberStatusProcedure,
+    resetPassword: resetTeamMemberPasswordProcedure,
   },
   time: {
     forTask: taskTimeProcedure,

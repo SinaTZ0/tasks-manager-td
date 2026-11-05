@@ -22,3 +22,8 @@ export const newMemberFormSchema = z.object({
 });
 
 export type NewMemberFormValues = z.infer<typeof newMemberFormSchema>;
+
+/*===== Reset Password Form =====*/
+export const resetPasswordFormSchema = z.object({ password: newMemberFormSchema.shape.password });
+
+export type ResetPasswordFormValues = z.infer<typeof resetPasswordFormSchema>;

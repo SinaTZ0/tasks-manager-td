@@ -162,6 +162,10 @@ function describe({ item, people }: { item: ActivityItem; people: Map<string, Pe
 
     case "user.profile_updated":
       return { clauses: [m.activity_user_profile_updated()] };
+    case "user.password_changed":
+      return { clauses: [m.activity_user_password_changed()] };
+    case "user.password_reset":
+      return { clauses: [m.activity_user_password_reset({ name: snapshotName() })] };
 
     /*------ Project ------*/
     case "project.created":

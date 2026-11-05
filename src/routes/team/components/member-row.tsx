@@ -11,14 +11,15 @@ import { describeApiFailure } from "#/lib/api-error";
 import { orpc } from "#/orpc/client";
 import type { TeamMember } from "#/orpc/team/contract";
 import { m } from "#/paraglide/messages";
+import { ResetPasswordDialog } from "#/routes/team/components/reset-password-dialog";
 import { roleItems } from "#/routes/team/role-labels";
 
 /*===== Member Row =====*/
 
 /**
- * One teammate: who they are, their role, and whether their account is active. An admin's own row is read-only: the
- * server refuses changes to one's own account, so the team can't lose its last admin by accident. A viewer who still
- * has open tasks says how many, so the admin can hand them on.
+ * One teammate: who they are, their role, whether their account is active, and a key that gives them a new password.
+ * An admin's own row is read-only: the server refuses changes to one's own account, so the team can't lose its last
+ * admin by accident. A viewer who still has open tasks says how many, so the admin can hand them on.
  */
 export function MemberRow({ member, isSelf }: { member: TeamMember; isSelf: boolean }) {
   const queryClient = useQueryClient();
@@ -96,6 +97,9 @@ export function MemberRow({ member, isSelf }: { member: TeamMember; isSelf: bool
           {checked ? m.team_status_active() : m.team_status_blocked()}
         </span>
       </label>
+
+      {/*------ Password ------*/}
+      <ResetPasswordDialog member={member} disabled={isSelf} />
     </li>
   );
 }

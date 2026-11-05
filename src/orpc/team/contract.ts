@@ -32,6 +32,8 @@ const setRoleInputSchema = z.strictObject({ userId: z.string(), role: z.enum(USE
 
 const setStatusInputSchema = z.strictObject({ userId: z.string(), status: z.enum(USER_STATUSES) });
 
+const resetPasswordInputSchema = z.strictObject({ userId: z.string(), password: z.string() });
+
 /*===== Errors =====*/
 const notFoundErrors = {
   NOT_FOUND: { message: "User not found.", data: errorDataSchema },
@@ -57,4 +59,9 @@ export const teamContract = {
     .errors({ ...adminErrors, ...notFoundErrors, ...conflictErrors })
     .input(setStatusInputSchema)
     .output(teamMemberSchema),
+  /**
+   * Gives a teammate a new password and signs them out everywhere. Refused (`CONFLICT`) for the admin's own account,
+   * which changes on the profile page with the current password.
+   */
+  resetPassword: oc.errors({ ...adminErrors, ...notFoundErrors, ...conflictErrors }).input(resetPasswordInputSchema),
 };

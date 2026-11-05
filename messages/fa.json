@@ -243,7 +243,7 @@
     {
       "declarations": ["input min", "local minText = min: number"],
       "match": {
-        "": "حداقل {minText} نویسه. آن را به هم‌تیمی بدهید تا با آن وارد شود."
+        "": "حداقل {minText} نویسه. آن را به ایشان بدهید؛ می‌توانند در نمایه‌شان تغییرش دهند."
       }
     }
   ],
@@ -1808,5 +1808,57 @@
       }
     }
   ],
-  "task_back_confirm": "برگرداندن"
+  "task_back_confirm": "برگرداندن",
+  "activity_user_password_changed": "رمز عبورش را تغییر داد",
+  "activity_user_password_reset": [
+    {
+      "declarations": ["input name"],
+      "match": {
+        "": "رمز عبور {name} را بازنشانی کرد"
+      }
+    }
+  ],
+  "team_error_self_password": "رمز عبور خودتان را در صفحهٔ نمایه تغییر دهید.",
+  "team_reset_password_open": [
+    {
+      "declarations": ["input name"],
+      "match": {
+        "": "بازنشانی رمز عبور {name}"
+      }
+    }
+  ],
+  "team_reset_password_title": [
+    {
+      "declarations": ["input name"],
+      "match": {
+        "": "رمز عبور تازه برای {name}"
+      }
+    }
+  ],
+  "team_reset_password_description": "از همهٔ دستگاه‌ها خارج می‌شوند و با همین رمز وارد می‌شوند. آن را به ایشان بدهید.",
+  "team_reset_password_submit": "ثبت رمز",
+  "team_reset_password_done": [
+    {
+      "declarations": ["input name"],
+      "match": {
+        "": "رمز عبور {name} تغییر کرد."
+      }
+    }
+  ],
+  "profile_password_heading": "رمز عبور",
+  "profile_password_current_label": "رمز عبور فعلی",
+  "profile_password_new_label": "رمز عبور تازه",
+  "profile_password_repeat_label": "تکرار رمز عبور تازه",
+  "profile_password_hint": [
+    {
+      "declarations": ["input min", "local minText = min: number"],
+      "match": {
+        "": "حداقل {minText} نویسه. دستگاه‌های دیگرتان از حساب خارج می‌شوند."
+      }
+    }
+  ],
+  "profile_password_wrong": "این رمز عبور فعلی شما نیست.",
+  "profile_password_mismatch": "دو رمز عبور یکی نیستند.",
+  "profile_password_submit": "تغییر رمز عبور",
+  "profile_password_changed": "رمز عبور تغییر کرد."
 }

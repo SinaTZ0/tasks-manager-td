@@ -158,7 +158,9 @@ return { id: result.id };
 
 - Better-Auth (`src/lib/auth.server.ts`) owns sign-in and sessions at `/api/auth/*`. Public sign-up is off
   (`disableSignUp`): an admin creates every account through `team.create`, which writes the user and its password
-  hash in the same transaction as the history entry.
+  hash in the same transaction as the history entry. Better-Auth's `/change-password` serves the profile page; an
+  `after` hook there writes its history entry. An admin's reset is `team.resetPassword`, in one transaction like
+  `team.create`.
 - A public procedure that writes (a contact form, a comment, a signup for news) takes a solved challenge too, so
   scripts can't fill its tables. Its input has `captcha: z.string()`, its contract declares `captchaErrors`, and the
   procedure applies `captchaMiddleware` right after its own rate limit, so a flood is turned away before any

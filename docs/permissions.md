@@ -15,7 +15,8 @@ a delegate on a task. The only thing a viewer can upload is their own profile pi
 | See the team page                                     |  ✅   |  ❌  |
 | Create an account                                     |  ✅   |  ❌  |
 | Change someone's role, deactivate or reactivate them¹ |  ✅   |  ❌  |
-| Edit their own profile (name, picture)                |  ✅   |  ✅  |
+| Reset someone else's password                         |  ✅   |  ❌  |
+| Edit their own profile (name, picture, password)      |  ✅   |  ✅  |
 | See every project                                     |  ✅   |  ❌  |
 | See the projects they are a member of                 |  ✅   |  ✅  |
 | Create a project                                      |  ✅   |  ❌  |
