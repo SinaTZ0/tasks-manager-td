@@ -6,14 +6,15 @@ import { Button, type ButtonProps } from "#/components/primitive/button/button";
 import {
   inputGroupAddonVariants,
   inputGroupButtonVariants,
-  inputGroupClasses,
   inputGroupInputClasses,
   inputGroupTextareaClasses,
   inputGroupTextClasses,
+  inputGroupVariants,
 } from "./input-group.styles";
 
 /*===== Input Group =====*/
 
+export type InputGroupProps = ComponentProps<"div"> & VariantProps<typeof inputGroupVariants>;
 export type InputGroupAddonProps = ComponentProps<"div"> & VariantProps<typeof inputGroupAddonVariants>;
 export type InputGroupButtonProps = Omit<ButtonProps, "size" | "type"> &
   VariantProps<typeof inputGroupButtonVariants> & {
@@ -22,12 +23,20 @@ export type InputGroupButtonProps = Omit<ButtonProps, "size" | "type"> &
 
 /**
  * A field plate that holds one control plus addons. The group draws the cut and plate, and shows focus, invalid and
- * disabled states for the control inside it.
+ * disabled states for the control inside it. `variant="glass"` is the field set in the header's display glass.
  */
-function InputGroup({ className, ...props }: ComponentProps<"div">) {
+function InputGroup({ className, variant = "plate", ...props }: InputGroupProps) {
   // A fieldset would add form-grouping semantics and UA styles; this only groups one control with its addons.
-  // oxlint-disable-next-line jsx-a11y/prefer-tag-over-role
-  return <div data-slot="input-group" role="group" {...props} className={cn(inputGroupClasses, className)} />;
+  return (
+    <div
+      data-slot="input-group"
+      data-variant={variant}
+      // oxlint-disable-next-line jsx-a11y/prefer-tag-over-role
+      role="group"
+      {...props}
+      className={cn(inputGroupVariants({ variant }), className)}
+    />
+  );
 }
 
 /*===== Addons =====*/

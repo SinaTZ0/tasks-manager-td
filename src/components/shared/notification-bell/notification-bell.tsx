@@ -78,8 +78,8 @@ function PushSwitch() {
 /*===== Notification Bell =====*/
 
 /**
- * The viewer's notifications, in the header on every page (docs/app.md → Notification): a key with a bell that lights
- * an orange LED and prints the count while some are unread, opening the latest as a list. Each one opens its task and
+ * The viewer's notifications, in the header on every page (docs/app.md → Notification): a bell on the glass that lights
+ * a yellow LED and prints the count while some are unread, opening the latest as a list. Each one opens its task and
  * is marked read; "mark all read" clears the rest. While the page holds the live stream open, a new one shows at once;
  * otherwise the list is asked for again every half minute (`NOTIFICATION_POLL_MS`).
  */
@@ -104,7 +104,7 @@ export function NotificationBell() {
       <PopoverTrigger
         render={
           <Button
-            variant="secondary"
+            variant="glass"
             size={data.unread > 0 ? "sm" : "icon-sm"}
             aria-label={data.unread > 0 ? m.notification_open_unread({ count: data.unread }) : m.notification_open()}
           />
@@ -114,7 +114,9 @@ export function NotificationBell() {
         {data.unread > 0 && (
           <>
             <Led signal="attention" state="on" size="sm" />
-            <span aria-hidden="true">{formatNumber(data.unread)}</span>
+            <span aria-hidden="true" className="font-mono text-body-sm text-glass-foreground">
+              {formatNumber(data.unread)}
+            </span>
           </>
         )}
       </PopoverTrigger>

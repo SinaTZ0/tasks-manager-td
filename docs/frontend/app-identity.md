@@ -38,7 +38,8 @@ translation ([i18n.md](./i18n.md)).
 
 ## Brand
 
-- **Name**: Tofang (تفنگ). The name prints in the header in `font-heading`, like a model name on a device.
+- **Name**: Tofang (تفنگ). It is the browser tab's title and the link preview's name; the app itself prints no name
+  or logo, the header included.
 - **No imagery.** (The housing's grain is a material, not an image.) The instrument is the brand: the grey housing, the one orange key, the square LEDs and the dark
   display glass. Icons are Lucide at a light stroke; avatars are keycaps with an initial.
 - **References**: the approved design study is in `docs/frontend/reference/` (the rr8 showcase source, its tokens
@@ -94,6 +95,10 @@ text colour on the housing (yellow and green can't reach 4.5:1 there).
 | Blue   | `signal-selection` | selected, the active tab or option      |
 | Green  | `signal-positive`  | running, done, healthy                  |
 | Grey   | `signal-off`       | the LED exists but is off               |
+
+The header is a strip of display glass across the top of the window, edge to edge: the pages and readouts are printed
+on it in the glass ink, and the page in view lights its cell in `signal-action`, the same one colour on the glass as a
+level meter's top cell. Its parts are the `glass` variants of `Button` and `InputGroup`.
 
 A level meter (a task's priority) is printed the way the display prints its counts: `bar` LEDs in a black bezel that
 stands proud of the housing's top edge, lit in the glass ink (which means nothing alone), with only the top cell in

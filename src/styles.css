@@ -354,8 +354,8 @@
 /* Light grey housings on a warm grey desk, light and graphite keycaps, one orange key. */
 :root {
   --radius: 6px;
-  /* The site header on one line, its ledge included: what the sidebar leaves of the window's height. */
-  --header-height: --spacing(18);
+  /* The site header on one line: what the sidebar leaves of the window's height. */
+  --header-height: --spacing(14);
 
   --background: #a2a09f;
   --foreground: #171717;

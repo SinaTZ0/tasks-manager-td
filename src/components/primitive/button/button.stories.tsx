@@ -59,6 +59,23 @@ export const Variants: Story = {
   ),
 };
 
+// The header's strip of display glass: legends printed on it, and the one ivory cap.
+export const OnGlass: Story = {
+  render: (args) => (
+    <div className="flex items-center gap-2 bg-glass p-3">
+      <Button {...args} variant="glass" size="sm" aria-current="page">
+        پروژه‌ها
+      </Button>
+      <Button {...args} variant="glass" size="sm">
+        یادداشت‌ها
+      </Button>
+      <Button {...args} variant="glass-cap" size="icon-xs" aria-label="حساب کاربری">
+        س
+      </Button>
+    </div>
+  ),
+};
+
 export const Sizes: Story = {
   render: (args) => (
     <div className="flex flex-wrap items-center gap-3">

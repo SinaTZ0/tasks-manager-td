@@ -54,6 +54,8 @@ const ledVariants = cva(joinStyles(twSharedStyles), {
     // an unlit LED would outshine the lit ones against the black
     { size: "bar", state: ["on", "blink"], class: "shadow-led-bar-on" },
     { size: "bar", state: "off", class: "bg-glass-foreground/14 shadow-led-bar-off" },
+    // A small unlit cell on the glass, for the same reason: grey plastic would outshine the lit one beside it
+    { signal: "glass", size: ["sm", "default"], state: "off", class: "bg-glass-foreground/20 shadow-led-bar-off" },
   ],
   defaultVariants: { signal: "action", state: "on", size: "default" },
 });

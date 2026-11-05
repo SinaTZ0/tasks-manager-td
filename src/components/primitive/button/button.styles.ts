@@ -14,7 +14,7 @@ const twSharedStyles = defineStyles({
 /*===== Appearance =====*/
 
 // Each variant is a keycap material (instrument.styles.ts), except `ghost` and `link`, which are printed on the housing
-// with no cut. One `highlight` (the orange key) per view: the page's main call to action. `default` is the graphite
+// with no cut, and `glass` and `glass-cap`, the parts of the header's strip of display glass. One `highlight` (the orange key) per view: the page's main call to action. `default` is the graphite
 // function key for in-app actions; `secondary` the light key for everything else.
 const twVariant = defineStyles({
   default: {
@@ -42,6 +42,32 @@ const twVariant = defineStyles({
     hover: "hover:bg-accent",
     state: "aria-expanded:bg-accent",
     focus: "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring",
+    disabled: "data-disabled:pointer-events-none data-disabled:opacity-45",
+  },
+  // Printed on the display glass: a muted legend that comes up to full ink when pointed at, open, or the page in view.
+  // The ring stays inside the key and in the glass's ink: `ring` is near-black in light, so it would vanish here.
+  glass: {
+    layout: "relative inline-flex shrink-0 items-center justify-center",
+    geometry: "rounded-chassis",
+    typography: "font-heading text-nav whitespace-nowrap",
+    appearance: "text-glass-muted",
+    interaction: "cursor-pointer transition-colors duration-75 outline-none select-none",
+    hover: "hover:text-glass-foreground",
+    state:
+      "aria-expanded:text-glass-foreground aria-[current=page]:font-semibold aria-[current=page]:text-glass-foreground",
+    focus: "focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-glass-foreground",
+    disabled: "data-disabled:pointer-events-none data-disabled:opacity-45",
+  },
+  // The one solid part on the glass: an ivory cap, for the account or signing in.
+  "glass-cap": {
+    layout: "relative inline-flex shrink-0 items-center justify-center overflow-hidden",
+    geometry: "rounded-keycap-compact",
+    typography: "font-heading text-body-sm font-semibold whitespace-nowrap",
+    appearance: "bg-glass-foreground text-glass",
+    interaction: "cursor-pointer outline-none select-none",
+    hover: "hover:brightness-90",
+    state: "aria-expanded:brightness-90",
+    focus: "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-glass-foreground",
     disabled: "data-disabled:pointer-events-none data-disabled:opacity-45",
   },
   link: {
@@ -113,7 +139,7 @@ const buttonVariants = cva(joinStyles(twSharedStyles), {
     size: composeStyles(twSize),
   },
   // The keycap scale (radius, bevel, cut width, press depth) follows the size, so a 32px key isn't drawn with
-  // full-size proportions. Ghost and link have no keycap, so they skip it.
+  // full-size proportions. Ghost, link and the glass parts have no keycap, so they skip it.
   compoundVariants: [
     {
       variant: [...keycapTones],

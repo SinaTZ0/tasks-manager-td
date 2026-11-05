@@ -40,6 +40,20 @@ export const WithIcon: Story = {
 };
 
 // The default addon button is printed on the plate (ghost).
+// The field in the header, on the display glass.
+export const OnGlass: Story = {
+  render: () => (
+    <div className="bg-glass p-3">
+      <InputGroup variant="glass" className="w-60">
+        <InputGroupAddon>
+          <SearchIcon className="size-4" />
+        </InputGroupAddon>
+        <InputGroupInput type="search" placeholder="جست‌وجوی کارها…" aria-label="جست‌وجوی کارها" />
+      </InputGroup>
+    </div>
+  ),
+};
+
 export const WithButton: Story = {
   render: () => (
     <InputGroup>

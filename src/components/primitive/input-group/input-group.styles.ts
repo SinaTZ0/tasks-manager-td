@@ -24,6 +24,18 @@ const twGroupStyles = defineStyles({
   focusCombobox: "in-data-[slot=combobox-content]:before:bg-cut",
 });
 
+// `glass` is the field on the header's strip of display glass: a paler pane of the glass, with no cut or plate. With no
+// cut to light, focus draws the same orange as an outline.
+const twGroupVariant = defineStyles({
+  plate: {},
+  glass: {
+    geometry: "h-8 rounded-chassis",
+    appearance: "bg-glass-foreground/10 before:hidden after:hidden",
+    focus:
+      "has-[[data-slot=input-group-control]:focus-visible]:bg-glass-foreground/16 has-[[data-slot=input-group-control]:focus-visible]:outline-2 has-[[data-slot=input-group-control]:focus-visible]:outline-cut-focus has-[[data-slot=input-group-control]:focus-visible]:outline-solid",
+  },
+});
+
 /*===== Addon Styles =====*/
 
 // Addons are printed on the plate: icons and units in the muted ink, never their own cut.
@@ -32,6 +44,7 @@ const twAddonStyles = defineStyles({
   geometry: "h-auto py-1.5",
   typography: "font-heading text-body-sm font-medium",
   appearance: "text-muted-foreground",
+  appearanceGlass: "group-data-[variant=glass]/input-group:text-glass-muted",
   interaction: "cursor-text select-none",
   disabled: "group-has-disabled/input-group:opacity-45",
   icon: "[&>svg:not([class*='size-'])]:size-4.5",
@@ -42,10 +55,12 @@ const twAddonAlign = defineStyles({
   "inline-start": {
     layout: "order-first",
     geometry: "ps-4 has-[>button]:ps-2",
+    geometryGlass: "group-data-[variant=glass]/input-group:ps-2.5",
   },
   "inline-end": {
     layout: "order-last",
     geometry: "pe-4 has-[>button]:pe-2",
+    geometryGlass: "group-data-[variant=glass]/input-group:pe-2.5",
   },
   "block-start": {
     layout: "order-first w-full justify-start",
@@ -93,6 +108,9 @@ const twInputStyles = defineStyles({
   ...twNativeControl,
   layout: "h-full min-w-0 flex-1",
   geometry: "rounded-[inherit] border-0 px-4",
+  // The browser's own clear button is drawn for a light plate, so the glass drops it; Escape still clears.
+  appearanceGlass:
+    "group-data-[variant=glass]/input-group:text-body-sm group-data-[variant=glass]/input-group:text-glass-foreground group-data-[variant=glass]/input-group:placeholder:text-glass-muted group-data-[variant=glass]/input-group:[&::-webkit-search-cancel-button]:appearance-none",
 });
 
 const twTextareaStyles = defineStyles({
@@ -104,6 +122,11 @@ const twTextareaStyles = defineStyles({
 
 /*===== Class Composition =====*/
 
+const inputGroupVariants = cva(joinStyles(twGroupStyles), {
+  variants: { variant: composeStyles(twGroupVariant) },
+  defaultVariants: { variant: "plate" },
+});
+
 const inputGroupAddonVariants = cva(joinStyles(twAddonStyles), {
   variants: { align: composeStyles(twAddonAlign) },
   defaultVariants: { align: "inline-start" },
@@ -114,7 +137,6 @@ const inputGroupButtonVariants = cva(joinStyles(twButtonStyles), {
   defaultVariants: { size: "xs" },
 });
 
-const inputGroupClasses = joinStyles(twGroupStyles);
 const inputGroupTextClasses = joinStyles(twTextStyles);
 const inputGroupInputClasses = joinStyles(twInputStyles);
 const inputGroupTextareaClasses = joinStyles(twTextareaStyles);
@@ -122,7 +144,7 @@ const inputGroupTextareaClasses = joinStyles(twTextareaStyles);
 export {
   inputGroupAddonVariants,
   inputGroupButtonVariants,
-  inputGroupClasses,
+  inputGroupVariants,
   inputGroupTextClasses,
   inputGroupInputClasses,
   inputGroupTextareaClasses,

@@ -1,9 +1,9 @@
-import { Link } from "@tanstack/react-router";
+import { Link, useLocation } from "@tanstack/react-router";
 import { LogOutIcon, UserIcon } from "lucide-react";
-import type { ReactNode } from "react";
+import { useSyncExternalStore, type ReactNode } from "react";
 
 import { Button } from "#/components/primitive/button/button";
-import { buttonVariants, slotKeyClasses } from "#/components/primitive/button/button.styles";
+import { buttonVariants } from "#/components/primitive/button/button.styles";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -13,14 +13,14 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "#/components/primitive/dropdown-menu/dropdown-menu";
-import { slotClasses } from "#/components/primitive/instrument.styles";
 import { Led } from "#/components/primitive/led/led";
-import { Marking } from "#/components/primitive/marking/marking";
 import { LocaleSwitcher } from "#/components/shared/locale-switcher/locale-switcher";
 import { ThemeToggle } from "#/components/shared/theme-toggle/theme-toggle";
 import { useLocaleLinks } from "#/hooks/use-locale-links";
 import { useSignOut } from "#/hooks/use-sign-out";
+import { formatDate } from "#/lib/locale";
 import { canEdit } from "#/lib/user-constants";
+import { cn } from "#/lib/utils";
 import type { Viewer } from "#/orpc/session/contract";
 import { m } from "#/paraglide/messages";
 
@@ -50,18 +50,51 @@ function isListedFor({
   return true;
 }
 
+/** Whether a nav link is for the page in view. A project's pages count as "projects": they open from that list. */
+function isCurrent({ to, pathname }: { to: string; pathname: string }) {
+  return to === "/" ? pathname === "/" || pathname.startsWith("/projects/") : pathname === to;
+}
+
+/*===== Today =====*/
+
+/** Calls `notify` at each local midnight, so a tab left open overnight moves on to the new day. */
+function subscribeToMidnight(notify: () => void) {
+  let timer: ReturnType<typeof setTimeout>;
+  const arm = () => {
+    const midnight = new Date();
+    midnight.setHours(24, 0, 0, 0);
+    timer = setTimeout(() => {
+      notify();
+      arm();
+    }, midnight.getTime() - Date.now());
+  };
+  arm();
+  return () => clearTimeout(timer);
+}
+
+const readToday = () => formatDate(new Date(), { day: "numeric", month: "long" });
+
+/**
+ * Today's date, as a reading on the glass. Empty until hydration: the server doesn't know the browser's time zone, so
+ * around midnight its day would be the wrong one.
+ */
+function Today() {
+  const today = useSyncExternalStore(subscribeToMidnight, readToday, () => "");
+  return <span className="font-mono text-caption whitespace-nowrap text-glass-muted">{today}</span>;
+}
+
 /*===== Account =====*/
 
-/** The viewer's keycap: their picture, or their initial, on a light key, opening the account menu. */
+/** The viewer's cap on the glass: their picture, or their initial, opening the account menu. */
 function AccountMenu({ viewer }: { viewer: Viewer }) {
   const signOut = useSignOut();
   const initial = Array.from(viewer.name.trim())[0] ?? "";
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger render={<Button variant="secondary" size="icon-sm" aria-label={m.nav_account()} />}>
+      <DropdownMenuTrigger render={<Button variant="glass-cap" size="icon-xs" aria-label={m.nav_account()} />}>
         {viewer.avatarUrl ? (
-          <img src={viewer.avatarUrl} alt="" className="size-7 rounded-sm object-cover" />
+          <img src={viewer.avatarUrl} alt="" className="size-full object-cover" />
         ) : initial ? (
           <span aria-hidden="true">{initial}</span>
         ) : (
@@ -94,62 +127,62 @@ function AccountMenu({ viewer }: { viewer: Viewer }) {
 /*===== Site Header =====*/
 
 /**
- * The instrument's top panel: a housing strip across the desk with the model name, the main navigation as a row of keys,
- * and the language, theme and account keys. On a phone the navigation drops to its own row. It spans the whole window,
- * not the content width, so its edges line up with the board, which needs every column it can get. `search` and
- * `bell` are the signed-in viewer's search field and notifications, before the device keys.
+ * The instrument's top strip: display glass from edge to edge, with the main navigation printed on it, then the tools
+ * and readings. Below `lg` the navigation drops to its own row. It spans the whole window, not the content width, so
+ * its edges line up with the board, which needs every column it can get. `search` and `bell` are the signed-in
+ * viewer's search field and notifications.
  */
 export function SiteHeader({ viewer, search, bell }: { viewer: Viewer | null; search?: ReactNode; bell?: ReactNode }) {
   const localeLinks = useLocaleLinks();
+  const pathname = useLocation({ select: (location) => location.pathname });
 
   return (
-    <header className="relative z-10 bg-card shadow-housing">
-      <div className="flex flex-wrap items-center gap-x-6 gap-y-3 px-4 py-3 sm:px-6">
-        {/*------ Model Name ------*/}
-        <Link
-          to="/"
-          className="flex items-baseline gap-2 rounded-chassis outline-none focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ring focus-visible:outline-solid"
-        >
-          <span className="font-heading text-h4 text-foreground">{m.site_name()}</span>
-          <Marking variant="code" aria-hidden="true">
-            TD
-          </Marking>
-        </Link>
-
-        {/*------ Navigation ------*/}
-        <nav aria-label={m.nav_main()} className="order-last w-full sm:order-none sm:w-auto">
-          <ul className={slotClasses}>
-            {NAV_ITEMS.filter((item) => isListedFor({ audience: item.audience, role: viewer?.role })).map((item) => (
-              <li key={item.to} className="flex">
-                {/* `exact` keeps "/" from matching every page */}
-                <Link to={item.to} activeOptions={{ exact: true }} className={slotKeyClasses}>
-                  {({ isActive }) => (
-                    <>
-                      <Led signal="selection" state={isActive ? "on" : "off"} size="sm" />
-                      {item.label()}
-                    </>
-                  )}
+    <header className="relative z-10 flex min-h-14 flex-wrap items-center gap-x-5 gap-y-1 border-b border-glass-foreground/14 bg-glass px-3 py-2 text-glass-foreground lg:flex-nowrap lg:py-0">
+      {/*------ Navigation ------*/}
+      <nav aria-label={m.nav_main()} className="order-last w-full overflow-x-auto lg:order-none lg:w-auto">
+        <ul className="flex items-center gap-0.5">
+          {NAV_ITEMS.filter((item) => isListedFor({ audience: item.audience, role: viewer?.role })).map((item) => {
+            const current = isCurrent({ to: item.to, pathname });
+            return (
+              <li key={item.to}>
+                {/* `exact` keeps the router from calling "/" current on every page; `isCurrent` decides here */}
+                <Link
+                  to={item.to}
+                  activeOptions={{ exact: true }}
+                  aria-current={current ? "page" : undefined}
+                  className={cn(buttonVariants({ variant: "glass", size: "sm" }), "gap-2.5 px-3")}
+                >
+                  <Led signal={current ? "action" : "glass"} state={current ? "on" : "off"} size="sm" />
+                  {item.label()}
                 </Link>
               </li>
-            ))}
-          </ul>
-        </nav>
+            );
+          })}
+        </ul>
+      </nav>
 
-        {/*------ Device Keys ------*/}
-        <div className="ms-auto flex shrink-0 items-center gap-3">
-          {search}
+      {/*------ Tools And Readings ------*/}
+      <div className="ms-auto flex min-w-0 items-center gap-3">
+        {search}
+        {viewer && (
+          <>
+            <Today />
+            <span aria-hidden="true" className="h-5 w-px bg-glass-foreground/20" />
+          </>
+        )}
+        <div className="flex shrink-0 items-center gap-0.5">
           {bell}
-          <LocaleSwitcher links={localeLinks} variant="secondary" />
-          <ThemeToggle />
-          {viewer ? (
-            <AccountMenu viewer={viewer} />
-          ) : (
-            // A link styled as a button: `<Button render={<Link />}>` would announce it as a button (`role="button"`).
-            <Link to="/auth" className={buttonVariants({ size: "sm" })}>
-              {m.nav_sign_in()}
-            </Link>
-          )}
+          <LocaleSwitcher links={localeLinks} variant="glass" />
+          <ThemeToggle variant="glass" />
         </div>
+        {viewer ? (
+          <AccountMenu viewer={viewer} />
+        ) : (
+          // A link styled as a button: `<Button render={<Link />}>` would announce it as a button (`role="button"`).
+          <Link to="/auth" className={buttonVariants({ variant: "glass-cap", size: "xs" })}>
+            {m.nav_sign_in()}
+          </Link>
+        )}
       </div>
     </header>
   );

@@ -21,8 +21,8 @@ steps below were applied to it. The languages stay Persian and English.
 - [x] 3. Tokens in `src/styles.css`, light and dark; fonts self-hosted; the type-style list in `cn` updated.
 - [x] 4. Primitives restyled on the instrument recipe, new ones created (toggle, toggle-group, checkbox, switch,
       slider, progress, avatar, kbd, dialog, popover, plus the atoms led, display, marking), stories updated.
-- [x] 5. Header rebuilt as a housing strip: model name, the navigation as keys in one slot, language,
-      theme and account keys.
+- [x] 5. Header rebuilt as a strip of display glass: the navigation printed on it, search, the date, the bell,
+      language, theme and the account's cap.
 - [x] 6. Home route: `/` is the board, behind sign-in (`app_layout`); visitors go to sign-in. Its columns are empty
       until the task feature fills them.
 - [x] 7. Sign-in and notes pages restyled; favicon (`public/favicon.svg`, `.ico` and the touch icon); `site_name` is

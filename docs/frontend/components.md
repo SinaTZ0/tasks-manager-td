@@ -72,7 +72,7 @@ Every part is drawn as hardware ([app-identity.md](./app-identity.md#materials))
 - **Scale**: `regular` for parts 40px and up, `compact` below. Compact scales the radius, bevel, cut width and press
   depth together; a full-size bevel floods a 32px face.
 - **Tone**: `light` (pale key), `graphite` (function key, `primary`), `highlight` (the orange key), `danger`, `flat`
-  (a plate flush with the housing). Button maps its shadcn variants onto these; `ghost` and `link` have no cut.
+  (a plate flush with the housing). Button maps its shadcn variants onto these; `ghost` and `link` have no cut, and neither do `glass` and `glass-cap`, the parts of the header's display glass.
 - **Slot**: one long cut holding several parts (toggle group, tab list). The slot's background is the void and its
   padding is the gap; parts inside hide their own cut (`before:hidden`).
 - **Field**: inputs and textareas can't have pseudo-elements, so they render a wrapper that carries the cut and the

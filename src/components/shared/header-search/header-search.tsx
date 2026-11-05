@@ -3,7 +3,6 @@ import { SearchIcon } from "lucide-react";
 import { useEffect, useRef, useState, type RefObject } from "react";
 
 import { InputGroup, InputGroupAddon, InputGroupInput } from "#/components/primitive/input-group/input-group";
-import { Kbd } from "#/components/primitive/kbd/kbd";
 import { useSearchText } from "#/hooks/use-search-text";
 import { m } from "#/paraglide/messages";
 
@@ -88,16 +87,16 @@ function SearchField({
   onEnter: () => void;
 }) {
   return (
-    <search className="w-64">
+    <search className="w-60 min-w-32 shrink">
       <form
         onSubmit={(event) => {
           event.preventDefault();
           onEnter();
         }}
       >
-        <InputGroup>
+        <InputGroup variant="glass">
           <InputGroupAddon>
-            <SearchIcon />
+            <SearchIcon className="size-4" />
           </InputGroupAddon>
           <InputGroupInput
             ref={input}
@@ -110,7 +109,9 @@ function SearchField({
             autoComplete="off"
           />
           <InputGroupAddon align="inline-end">
-            <Kbd>/</Kbd>
+            <span aria-hidden="true" className="font-mono text-caption">
+              /
+            </span>
           </InputGroupAddon>
         </InputGroup>
       </form>
