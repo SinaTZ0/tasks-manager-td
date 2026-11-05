@@ -193,6 +193,7 @@ function SortableColumn({
   count,
   total,
   movable,
+  still,
   children,
 }: {
   column: Column;
@@ -200,6 +201,8 @@ function SortableColumn({
   /** While filtering, how many cards the column holds in all. */
   total: number | undefined;
   movable: boolean;
+  /** Something is being dragged. */
+  still: boolean;
   children: ReactNode;
 }) {
   const title = columnTitle(column);
@@ -222,6 +225,7 @@ function SortableColumn({
         } as CSSProperties
       }
       dragging={isDragging}
+      still={still}
       title={title}
       count={count}
       total={total}
@@ -249,11 +253,11 @@ function SortableColumn({
 /*===== Board =====*/
 
 /**
- * A column's cards, with a dashed rule printed in the gap between each pair. The rule is the lower card's ::before,
- * so it travels with that card while the list reorders under a drag.
+ * A column's cards, with a dashed rule printed in the gap between each pair shown. The rule is the lower card's
+ * ::before, so it travels with that card while the list reorders under a drag. `fold-gap-5` undoes `gap-5`.
  */
 const CARD_LIST =
-  "flex flex-col gap-5 [&>li+li]:relative [&>li+li]:before:absolute [&>li+li]:before:inset-x-2 [&>li+li]:before:-top-2.75 [&>li+li]:before:border-t-2 [&>li+li]:before:border-dashed [&>li+li]:before:border-muted-foreground/60";
+  "flex flex-col gap-5 fold-gap-5 after-shown:relative after-shown:before:absolute after-shown:before:inset-x-2 after-shown:before:-top-2.75 after-shown:before:border-t-2 after-shown:before:border-dashed after-shown:before:border-muted-foreground/60";
 
 /** The id of the page's "show cancelled" switch: where focus goes when a stopped card leaves the board. */
 export const SHOW_CANCELLED_ID = "show-cancelled";
@@ -345,7 +349,7 @@ export function Board({
   const settled: Lanes = Object.fromEntries(
     columns.map((column) => [
       column.id,
-      board.tasks.filter((task) => task.columnId === column.id && (!filter || filter(task))).map((task) => task.id),
+      board.tasks.filter((task) => task.columnId === column.id).map((task) => task.id),
     ]),
   );
   const totals = new Map<string, number>();
@@ -353,7 +357,9 @@ export function Board({
   const lanes =
     drag?.type === "task" || (drag?.type === "dropped-task" && drag.until === board.tasks) ? drag.lanes : settled;
   const cancelled = project.columns.find((column) => column.kind === "cancelled");
-  const cancelledTasks = board.tasks.filter((task) => task.columnId === cancelled?.id && (!filter || filter(task)));
+  const cancelledTasks = board.tasks.filter((task) => task.columnId === cancelled?.id);
+  // A filter folds the cards it leaves out instead of dropping them from the lanes, so they can go and come back.
+  const isShown = (task: TaskCardData | undefined) => !!task && (!filter || filter(task));
 
   /*------ Cancelled Column ------*/
   // It joins after the others, which on a full board is past the edge: without this the key latches and nothing seems
@@ -725,9 +731,10 @@ export function Board({
               <SortableColumn
                 key={column.id}
                 column={column}
-                count={ids.length}
+                count={ids.filter((id) => isShown(tasks.get(id))).length}
                 total={filter ? (totals.get(column.id) ?? 0) : undefined}
                 movable={canMoveColumns && column.kind === "custom"}
+                still={drag !== null}
               >
                 <SortableContext id={column.id} items={ids} strategy={verticalListSortingStrategy}>
                   <ol className={CARD_LIST}>
@@ -746,6 +753,7 @@ export function Board({
                           people={people}
                           blockedBy={blockerCodes(task)}
                           movable={canMoveCards && !filter}
+                          folded={!isShown(task)}
                           watching={watching.has(task.id)}
                           plate={
                             pingable && (
@@ -797,46 +805,53 @@ export function Board({
           <BoardColumn
             ref={cancelledRef}
             title={columnTitle(cancelled)}
-            count={cancelledTasks.length}
+            count={cancelledTasks.filter(isShown).length}
             total={filter ? (totals.get(cancelled.id) ?? 0) : undefined}
             wipLimit={null}
           >
             <ol className={CARD_LIST}>
               {cancelledTasks.map((task) => (
-                <li key={task.id}>
-                  <TaskCard
-                    stopped
-                    watching={watching.has(task.id)}
-                    task={task}
-                    projectKey={project.key}
-                    labels={labels}
-                    people={people}
-                    menu={
-                      canMoveCards && (
-                        <TaskMenu
-                          taskId={task.id}
-                          code={codeOf(task.id)}
-                          kind="cancelled"
-                          columns={[]}
-                          currentColumnId={cancelled.id}
-                          onMove={() => {}}
-                          onAction={(action) => takeAction({ task, action })}
-                          onTransfer={
-                            canTransfer
-                              ? (mode) =>
-                                  setTransfer({
-                                    taskId: task.id,
-                                    code: codeOf(task.id),
-                                    kind: "cancelled",
-                                    mode,
-                                    open: true,
-                                  })
-                              : undefined
-                          }
-                        />
-                      )
-                    }
-                  />
+                <li
+                  key={task.id}
+                  className="fold-away fold-motion"
+                  data-folded={!isShown(task) || undefined}
+                  inert={!isShown(task)}
+                >
+                  <div>
+                    <TaskCard
+                      stopped
+                      watching={watching.has(task.id)}
+                      task={task}
+                      projectKey={project.key}
+                      labels={labels}
+                      people={people}
+                      menu={
+                        canMoveCards && (
+                          <TaskMenu
+                            taskId={task.id}
+                            code={codeOf(task.id)}
+                            kind="cancelled"
+                            columns={[]}
+                            currentColumnId={cancelled.id}
+                            onMove={() => {}}
+                            onAction={(action) => takeAction({ task, action })}
+                            onTransfer={
+                              canTransfer
+                                ? (mode) =>
+                                    setTransfer({
+                                      taskId: task.id,
+                                      code: codeOf(task.id),
+                                      kind: "cancelled",
+                                      mode,
+                                      open: true,
+                                    })
+                                : undefined
+                            }
+                          />
+                        )
+                      }
+                    />
+                  </div>
                 </li>
               ))}
             </ol>

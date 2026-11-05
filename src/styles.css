@@ -20,6 +20,8 @@
 /* The board's column layout, as each person chose it (src/lib/board-layout.ts); with neither, the row scrolls. */
 @custom-variant board-fit (&:where([data-board-layout="fit"] *));
 @custom-variant board-wrap (&:where([data-board-layout="wrap"] *));
+/* A list item with a shown item somewhere before it, skipping what a filter folded away. */
+@custom-variant after-shown (& > li:not([data-folded]) ~ li:not([data-folded]));
 /* The board's sidebar shrunk to its strip of icons (src/lib/board-panel.ts). */
 @custom-variant board-panel-closed (&:where([data-board-panel="closed"] *));
 /* A part of the sidebar while it is a strip of icons: by its own state, or by the saved choice on <html> before React
@@ -746,6 +748,44 @@
 @utility drag-motion {
   transform: var(--drag-transform, none);
   transition: var(--drag-transition, none);
+}
+
+/* A part a filter can take out of view, kept mounted so it can go and come back smoothly: it fades as its row closes,
+   then turns `visibility: hidden`. Coming back, the row opens first and the fade follows, so nothing shows over its
+   neighbours. No clipping: a card's shadow and the ping's pulses run past its edges. In a list with a gap, `--fold-gap`
+   is that gap made negative (`fold-gap-5`), so a folded item leaves no gap behind. `--fold-transition` is what
+   `fold-motion` runs; a board card runs it through `drag-motion` instead. Its one child must have no minimum height of
+   its own, or the row can't close: wrap anything that does. */
+@utility fold-away {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: 1fr;
+  --fold-transition:
+    grid-template-rows 220ms var(--ease-instrument), margin-block-end 220ms var(--ease-instrument),
+    opacity 160ms var(--ease-instrument) 80ms;
+
+  & > * {
+    min-height: 0;
+  }
+
+  &[data-folded] {
+    grid-template-rows: 0fr;
+    margin-block-end: var(--fold-gap, 0);
+    opacity: 0;
+    visibility: hidden;
+    --fold-transition:
+      grid-template-rows 220ms var(--ease-instrument), margin-block-end 220ms var(--ease-instrument),
+      opacity 120ms var(--ease-instrument), visibility 0s linear 220ms;
+  }
+}
+
+@utility fold-motion {
+  transition: var(--fold-transition);
+}
+
+/* A list with `gap-5` whose items can fold away. */
+@utility fold-gap-5 {
+  --fold-gap: calc(var(--spacing) * -5);
 }
 
 /* The ring round the hold key. Its dash runs past the path's end so a ring at rest prints nothing, not a hairline. It

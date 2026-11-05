@@ -1,4 +1,4 @@
-import { useId, type CSSProperties, type ReactNode, type Ref } from "react";
+import { useId, useState, type CSSProperties, type ReactNode, type Ref } from "react";
 
 import { Led } from "#/components/primitive/led/led";
 import { Marking } from "#/components/primitive/marking/marking";
@@ -16,12 +16,14 @@ const pad = (value: number) => formatNumber(value);
  * top, the card count in the instrument mono (`count/limit`
  * when it has a WIP limit, with a yellow LED once the count passes it), and the cards below. With no cards it shows an
  * empty bay, so the column keeps its shape and still reads as a place to drop work. While the board is filtered
- * (`total` set) the count reads "3 of 9", and the limit is checked against all.
+ * (`total` set) the count reads "3 of 9", and the limit is checked against all. A filter folds cards away rather than
+ * removing them, so a column whose cards are all folded keeps them and opens its bay beside them.
  *
  * On the board a column is also a drop target and, for an admin, something to pick up: `bodyRef` marks the area that
  * takes cards (the empty bay too), `grip` sits before the name, and `ref`, `style` and `dragging` belong to the drag.
  * The grip prints only while the pointer is over the column or focus is inside it (always on a touch screen), so a
- * row of columns doesn't read as a row of handles.
+ * row of columns doesn't read as a row of handles. `still` stops the bay's fold while something is dragged: a card
+ * leaving a column changes it at once, as drag and drop has no motion of its own added.
  */
 export function BoardColumn({
   title,
@@ -34,6 +36,7 @@ export function BoardColumn({
   style,
   grip,
   dragging = false,
+  still = false,
 }: {
   title: string;
   /** The cards shown. */
@@ -47,9 +50,15 @@ export function BoardColumn({
   style?: CSSProperties;
   grip?: ReactNode;
   dragging?: boolean;
+  still?: boolean;
 }) {
   const headingId = useId();
   const overLimit = wipLimit !== null && (total ?? count) > wipLimit;
+
+  // The bay's words stay as they were while it folds away: clearing a filter would otherwise swap them mid-fade.
+  const filteredEmpty = !!total;
+  const [bayFiltered, setBayFiltered] = useState(filteredEmpty);
+  if (count === 0 && bayFiltered !== filteredEmpty) setBayFiltered(filteredEmpty);
 
   return (
     <section
@@ -101,13 +110,15 @@ export function BoardColumn({
 
       {/*------ Cards ------*/}
       <div ref={bodyRef}>
-        {count > 0 ? (
-          children
-        ) : (
-          <p className="flex min-h-32 items-center justify-center rounded-chassis border border-dashed border-border/70">
-            <Marking>{total ? m.board_column_none_match() : m.board_column_empty()}</Marking>
-          </p>
-        )}
+        {(count > 0 || filteredEmpty) && children}
+        <div className={cn("fold-away", !still && "fold-motion")} data-folded={count > 0 || undefined}>
+          {/* The fold closes this box: a `min-h-32` directly in the row would hold the row open. */}
+          <div>
+            <p className="flex min-h-32 items-center justify-center rounded-chassis border border-dashed border-border/70">
+              <Marking>{bayFiltered ? m.board_column_none_match() : m.board_column_empty()}</Marking>
+            </p>
+          </div>
+        </div>
       </div>
     </section>
   );

@@ -11,6 +11,7 @@ Everything that changes inside a page animates with CSS when CSS can follow the 
 | A popup opening or closing (dialog, drawer, menu, popover, tooltip, toast) | CSS, through Base UI's starting/ending style |
 | A tab's panel, a hover, a pressed key, a panel that opens or folds         | CSS                                          |
 | Dragging and dropping a board card or column                               | dnd-kit's own animation, nothing added       |
+| A filter hiding or showing a board card                                    | CSS, `fold-away`                             |
 | An item added to or removed from a list, a list filtered or reordered      | Motion                                       |
 | Content swapped for content of another height                              | Motion                                       |
 
@@ -34,6 +35,10 @@ Between Pages).
   icons (`primitive/sidebar/sidebar.styles.ts`): keys narrow with it and cut their labels off, and what has no icon
   keeps its width while it fades, so nothing rewraps on the way. Turn what fades `invisible` at the end, so its controls
   leave the tab order.
+- **A board filter** folds cards instead of removing them (`fold-away` in `src/styles.css`, `data-folded` on the list
+  item): they stay mounted, fade as their row closes, and open again when the filter lets them back. Only a filter
+  changes `data-folded`, and a filter stops drags, so this never runs during one. The column's empty bay folds the same
+  way, and holds still while something is dragged.
 - Put the classes behind `motion-safe:`; the reduced-motion block in `src/styles.css` also removes every transition.
 
 ## Motion

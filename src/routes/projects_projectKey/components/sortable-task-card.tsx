@@ -45,6 +45,7 @@ export function SortableTaskCard({
   people,
   blockedBy,
   movable,
+  folded,
   menu,
   watching,
   plate,
@@ -59,6 +60,8 @@ export function SortableTaskCard({
   blockedBy: string[];
   /** False for a viewer: the card stays put, with no grip to pick it up. */
   movable: boolean;
+  /** A filter leaves it out: it folds away instead of unmounting, so it can go and come back smoothly. */
+  folded: boolean;
   menu: ReactNode;
   /** The viewer watches it. */
   watching: boolean;
@@ -79,33 +82,39 @@ export function SortableTaskCard({
       style={
         {
           "--drag-transform": CSS.Translate.toString(transform) ?? "none",
-          "--drag-transition": transition ?? "none",
+          // Side by side: turning a filter on stops the card's drag, and dnd-kit sets a transition in that same render.
+          // The fold moves nothing a drag moves, so a drag still only runs dnd-kit's `transform`.
+          "--drag-transition": transition ? `${transition}, var(--fold-transition)` : "var(--fold-transition)",
         } as CSSProperties
       }
-      className="drag-motion"
+      className="fold-away drag-motion"
+      data-folded={folded || undefined}
+      inert={folded}
     >
-      <TaskCard
-        task={task}
-        projectKey={projectKey}
-        labels={labels}
-        people={people}
-        blockedBy={blockedBy}
-        onPointerDown={listeners?.onPointerDown as PointerEventHandler<HTMLElement> | undefined}
-        state={isDragging ? "placeholder" : "idle"}
-        watching={watching}
-        grip={
-          movable && (
-            <CardGrip
-              ref={setActivatorNodeRef}
-              code={code}
-              {...attributes}
-              onKeyDown={listeners?.onKeyDown as KeyboardEventHandler<HTMLButtonElement> | undefined}
-            />
-          )
-        }
-        menu={isDragging ? undefined : menu}
-        plate={isDragging && plate ? <HoldKeyPlate /> : plate}
-      />
+      <div>
+        <TaskCard
+          task={task}
+          projectKey={projectKey}
+          labels={labels}
+          people={people}
+          blockedBy={blockedBy}
+          onPointerDown={listeners?.onPointerDown as PointerEventHandler<HTMLElement> | undefined}
+          state={isDragging ? "placeholder" : "idle"}
+          watching={watching}
+          grip={
+            movable && (
+              <CardGrip
+                ref={setActivatorNodeRef}
+                code={code}
+                {...attributes}
+                onKeyDown={listeners?.onKeyDown as KeyboardEventHandler<HTMLButtonElement> | undefined}
+              />
+            )
+          }
+          menu={isDragging ? undefined : menu}
+          plate={isDragging && plate ? <HoldKeyPlate /> : plate}
+        />
+      </div>
     </li>
   );
 }
