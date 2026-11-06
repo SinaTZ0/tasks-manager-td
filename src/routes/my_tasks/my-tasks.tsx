@@ -45,7 +45,7 @@ function MyTasksPage() {
   for (const task of tasks) groups.set(task.projectKey, [...(groups.get(task.projectKey) ?? []), task]);
 
   return (
-    <div className="flex flex-col gap-6 px-6 py-8">
+    <div className="flex flex-col gap-6 px-4 py-6 md:px-6 md:py-8">
       <PageHead title={m.my_tasks_title()} description={m.my_tasks_description()} />
 
       {reminders.length > 0 && (
@@ -108,8 +108,8 @@ function ReminderRow({ reminder }: { reminder: Reminder }) {
   const { clear } = useReminderChanges();
 
   return (
-    <li className="grid grid-cols-12 items-center gap-4 py-3">
-      <span className="col-span-8 flex min-w-0 flex-col gap-0.5">
+    <li className="flex flex-wrap items-center gap-x-4 gap-y-1 py-3 md:grid md:grid-cols-12 md:gap-4">
+      <span className="flex min-w-0 flex-1 flex-col gap-0.5 md:col-span-8">
         <Link
           to="/projects/$projectKey"
           params={{ projectKey: reminder.projectKey }}
@@ -121,11 +121,11 @@ function ReminderRow({ reminder }: { reminder: Reminder }) {
         </Link>
         {reminder.note && <span className="truncate text-body-sm text-muted-foreground">{reminder.note}</span>}
       </span>
-      <span className="col-span-3 flex items-center gap-2 text-body-sm">
+      <span className="order-last flex basis-full items-center gap-2 text-body-sm md:order-none md:col-span-3 md:basis-auto">
         <Led signal="action" state="on" size="sm" />
         {whenLabel(reminder.remindAt)}
       </span>
-      <span className="col-span-1 flex justify-end">
+      <span className="flex justify-end md:col-span-1">
         <Button
           variant="ghost"
           size="icon-xs"
@@ -147,21 +147,21 @@ function MyTaskRow({ task }: { task: MyTask }) {
   const code = taskCode({ key: task.projectKey, number: task.number });
 
   return (
-    <li className="grid grid-cols-12 items-center gap-4 py-3">
+    <li className="flex flex-wrap items-center gap-x-4 gap-y-1 py-3 md:grid md:grid-cols-12 md:gap-4">
       <Link
         to="/projects/$projectKey"
         params={{ projectKey: task.projectKey }}
         search={{ task: code }}
-        className="col-span-8 flex min-w-0 items-baseline gap-2 rounded-chassis outline-none hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+        className="flex min-w-0 basis-full items-baseline gap-2 rounded-chassis outline-none hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring md:col-span-8 md:basis-auto"
       >
         <Marking variant="code">{code}</Marking>
         <span className="truncate font-semibold">{task.title}</span>
       </Link>
-      <span className="col-span-2 flex items-center gap-2 text-body-sm">
+      <span className="flex items-center gap-2 text-body-sm md:col-span-2">
         <Led signal="positive" state={task.columnKind === "doing" ? "on" : "off"} size="sm" />
         {columnTitle({ kind: task.columnKind, name: task.columnName })}
       </span>
-      <span className="col-span-2 text-body-sm">
+      <span className="ms-auto text-body-sm md:col-span-2 md:ms-0">
         {task.dueDate ? (
           <DueMark dueDate={task.dueDate} format={{ dateStyle: "medium" }} />
         ) : (

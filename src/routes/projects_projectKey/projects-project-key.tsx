@@ -108,7 +108,7 @@ function BoardPage() {
   return (
     <>
       {/*------ Columns ------*/}
-      <Card className="m-6">
+      <Card className="m-4 md:m-6">
         <CardContent>
           <Board
             project={project}

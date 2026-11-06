@@ -49,7 +49,7 @@ function SiteLayout() {
       </a>
       <SiteHeader viewer={viewer} search={viewer && <HeaderSearch />} bell={viewer && <NotificationBell />} />
       {/* A flex row around a page with a sidebar, so the sidebar runs down the window however short the page is. */}
-      <main id="main" className="flex-1 has-data-[slot=sidebar]:flex">
+      <main id="main" className="flex-1 safe-page has-data-[slot=sidebar]:flex">
         <Outlet />
       </main>
       {viewer && <ShortcutHelp role={viewer.role} />}

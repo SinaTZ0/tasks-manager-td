@@ -92,7 +92,8 @@ export function ColumnStrips({
 
   return (
     <form onSubmit={onSubmit} noValidate className="flex flex-col gap-5">
-      <div className="flex gap-3 overflow-x-auto rounded-chassis bg-tray p-3 shadow-tray">
+      {/* `relative`: a strip's `sr-only` parts are absolute, and past the scroller's edge they would widen the page. */}
+      <div className="relative flex gap-3 overflow-x-auto rounded-chassis bg-tray p-3 shadow-tray">
         {project.columns.map((column) => (
           <ColumnStrip
             key={column.id}

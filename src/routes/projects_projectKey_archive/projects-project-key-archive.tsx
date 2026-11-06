@@ -57,7 +57,7 @@ function ArchivePage() {
   const people = new Map(data.people.map((person) => [person.id, person]));
 
   return (
-    <div className="mx-auto flex w-full max-w-site flex-col gap-6 px-6 py-8">
+    <div className="mx-auto flex w-full max-w-site flex-col gap-6 px-4 py-6 md:px-6 md:py-8">
       {/*------ Header ------*/}
       <PageHead
         title={m.archive_link()}
@@ -134,8 +134,8 @@ function ArchivedRow({
   );
 
   return (
-    <li className="flex items-center gap-6 py-3">
-      <div className="flex min-w-0 flex-1 flex-col gap-1">
+    <li className="flex items-center gap-x-6 gap-y-2 py-3 max-md:flex-wrap">
+      <div className="flex min-w-0 flex-1 flex-col gap-1 max-md:basis-full">
         <Link
           to="/projects/$projectKey"
           params={{ projectKey: project.key }}
@@ -155,7 +155,7 @@ function ArchivedRow({
         {m.archive_archived_on({ date: formatDate(task.archivedAt, { dateStyle: "medium" }) })}
       </span>
       {viewer.role === "admin" && (
-        <div className="flex gap-3">
+        <div className="flex flex-wrap gap-3">
           <Button
             variant="secondary"
             size="sm"

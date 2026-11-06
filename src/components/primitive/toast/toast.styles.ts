@@ -4,7 +4,8 @@ import { defineStyles, joinStyles } from "../styles";
 
 // Full width with side gutters on phones; pinned to the inline end from `sm` up.
 const twViewportStyles = defineStyles({
-  layout: "pointer-events-none fixed inset-x-4 bottom-4 z-50 mx-auto sm:inset-s-auto sm:inset-e-4 sm:mx-0",
+  layout:
+    "pointer-events-none fixed inset-x-4 bottom-[max(--spacing(4),env(safe-area-inset-bottom))] z-50 mx-auto sm:inset-s-auto sm:inset-e-4 sm:mx-0",
   geometry: "w-auto max-w-sm sm:w-full",
   focus: "outline-none",
 });

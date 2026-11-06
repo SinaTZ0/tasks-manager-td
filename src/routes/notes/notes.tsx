@@ -28,7 +28,7 @@ function NotesPage() {
   const refresh = () => void queryClient.invalidateQueries({ queryKey: orpc.note.list.key() });
 
   return (
-    <div className="mx-auto flex max-w-site flex-col gap-6 px-6 py-8">
+    <div className="mx-auto flex max-w-site flex-col gap-6 px-4 py-6 md:px-6 md:py-8">
       <PageHead title={m.notes_title()} />
 
       <div className="grid gap-8 lg:flex">

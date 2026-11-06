@@ -184,6 +184,20 @@
   }
 }
 
+/* The header and the page keep clear of a phone's notch and home bar. `env()` is 0 everywhere else. The page's sideways
+   padding only matters on its side, with the phone turned. */
+@utility safe-header {
+  padding-inline: max(--spacing(3), env(safe-area-inset-left), env(safe-area-inset-right));
+  padding-top: max(--spacing(2), env(safe-area-inset-top));
+  @variant lg {
+    padding-top: env(safe-area-inset-top);
+  }
+}
+@utility safe-page {
+  padding-inline: max(env(safe-area-inset-left), env(safe-area-inset-right));
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
 /* Under 600px the three largest styles drop one step. Overriding the variables here, instead of pairing breakpoint
    classes in every route, keeps `text-display` / `text-h1` / `text-h2` correct wherever they're used. */
 @media (width < 600px) {
@@ -609,6 +623,8 @@
     @apply bg-background text-foreground;
     /* The rail's colours are the window's own: scrollbars inside the page keep the browser's. */
     scrollbar-color: auto;
+    /* A sideways swipe that reaches the end of the board stays there, and doesn't turn into the browser's back. */
+    overscroll-behavior-x: none;
   }
   html {
     @apply font-sans antialiased;
@@ -682,7 +698,8 @@
   --page-shift: -2rem;
 }
 
-:root[data-page-entering]:active-view-transition-type(page-forward, page-back) #main:not(:has([data-slot="sidebar"])),
+:root[data-page-entering]:active-view-transition-type(page-forward, page-back)
+  #main:not(:has([data-slot="sidebar-inset"])),
 :root[data-page-entering]:active-view-transition-type(page-forward, page-back) [data-slot="sidebar-inset"] {
   view-transition-name: page;
 }

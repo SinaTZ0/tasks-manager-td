@@ -80,7 +80,7 @@ const readToday = () => formatDate(new Date(), { day: "numeric", month: "long" }
  */
 function Today() {
   const today = useSyncExternalStore(subscribeToMidnight, readToday, () => "");
-  return <span className="font-mono text-caption whitespace-nowrap text-glass-muted">{today}</span>;
+  return <span className="font-mono text-caption whitespace-nowrap text-glass-muted max-md:hidden">{today}</span>;
 }
 
 /*===== Account =====*/
@@ -137,7 +137,7 @@ export function SiteHeader({ viewer, search, bell }: { viewer: Viewer | null; se
   const pathname = useLocation({ select: (location) => location.pathname });
 
   return (
-    <header className="relative z-10 flex min-h-14 flex-wrap items-center gap-x-5 gap-y-1 border-b border-glass-foreground/14 bg-glass px-3 py-2 text-glass-foreground lg:flex-nowrap lg:py-0">
+    <header className="relative z-10 flex min-h-14 flex-wrap items-center gap-x-5 gap-y-1 border-b border-glass-foreground/14 bg-glass safe-header pb-2 text-glass-foreground lg:flex-nowrap lg:pb-0">
       {/*------ Navigation ------*/}
       <nav aria-label={m.nav_main()} className="order-last w-full overflow-x-auto lg:order-none lg:w-auto">
         <ul className="flex items-center gap-0.5">
@@ -162,12 +162,12 @@ export function SiteHeader({ viewer, search, bell }: { viewer: Viewer | null; se
       </nav>
 
       {/*------ Tools And Readings ------*/}
-      <div className="ms-auto flex min-w-0 items-center gap-3">
+      <div className="ms-auto flex min-w-0 items-center gap-3 max-md:w-full">
         {search}
         {viewer && (
           <>
             <Today />
-            <span aria-hidden="true" className="h-5 w-px bg-glass-foreground/20" />
+            <span aria-hidden="true" className="h-5 w-px bg-glass-foreground/20 max-md:hidden" />
           </>
         )}
         <div className="flex shrink-0 items-center gap-0.5">

@@ -38,7 +38,7 @@ export function AvatarPicker({
   return (
     <Field data-invalid={!!error || undefined}>
       <FieldLabel htmlFor={inputId}>{m.profile_avatar_label()}</FieldLabel>
-      <div className="flex items-center gap-4">
+      <div className="flex flex-wrap items-center gap-4">
         {value && (
           <MediaImage media={value} variant="md" alt={m.profile_avatar_preview()} className="size-24 rounded-keycap" />
         )}

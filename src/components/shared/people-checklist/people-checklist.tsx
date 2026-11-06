@@ -27,7 +27,7 @@ export function PeopleChecklist({
   const baseId = useId();
 
   return (
-    <ul className="grid grid-cols-3 gap-x-6 gap-y-3">
+    <ul className="grid gap-x-6 gap-y-3 sm:grid-cols-2 md:grid-cols-3">
       {people.map((person) => {
         const id = `${baseId}-${person.id}`;
         return (

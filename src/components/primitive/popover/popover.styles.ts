@@ -11,7 +11,7 @@ const twPositionerStyles = defineStyles({
 // A small module lifted off the panel: housing material, molded ledge and a soft shadow, like the dialog. It grows
 // from the trigger (`--transform-origin`) so it reads as coming out of the part that opened it.
 const twContentStyles = defineStyles({
-  layout: "z-50 flex w-72 origin-(--transform-origin) flex-col gap-4",
+  layout: "z-50 flex w-72 max-w-[calc(100vw-1rem)] origin-(--transform-origin) flex-col gap-4",
   geometry: "rounded-housing border p-4",
   appearance: "border-border bg-popover text-popover-foreground shadow-md",
   typography: "text-body-sm",

@@ -92,14 +92,14 @@ function NewProjectForm({ viewerId }: { viewerId: string }) {
       <FieldGroup>
         <FormAlert message={failure?.message ?? undefined} />
 
-        <div className="flex items-start gap-6">
+        <div className="flex flex-col gap-6 sm:flex-row sm:items-start">
           <Field data-invalid={!!(errors.name ?? failure?.fields.name) || undefined} className="flex-1">
             <FieldLabel htmlFor="project-name">{m.projects_name_label()}</FieldLabel>
             <Input id="project-name" aria-invalid={!!errors.name} {...form.register("name")} />
             <FieldError>{errors.name?.message ?? failure?.fields.name}</FieldError>
           </Field>
 
-          <Field data-invalid={!!(errors.key ?? failure?.fields.key) || undefined} className="w-56 shrink-0">
+          <Field data-invalid={!!(errors.key ?? failure?.fields.key) || undefined} className="sm:w-56 sm:shrink-0">
             <FieldLabel htmlFor="project-key">{m.projects_key_label()}</FieldLabel>
             <Input
               id="project-key"

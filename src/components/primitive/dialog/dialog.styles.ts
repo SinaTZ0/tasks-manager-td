@@ -17,7 +17,7 @@ const twOverlayStyles = defineStyles({
 // `-translate-x-1/2` centres from the start edge, so RTL flips it.
 const twContentStyles = defineStyles({
   layout: "fixed start-1/2 top-1/2 z-50 grid w-full -translate-x-1/2 -translate-y-1/2 gap-6 rtl:translate-x-1/2",
-  geometry: "max-w-[calc(100%-2rem)] rounded-housing border p-6 sm:max-w-md",
+  geometry: "max-h-[calc(100dvh-2rem)] max-w-[calc(100%-2rem)] overflow-y-auto rounded-housing border p-6 sm:max-w-md",
   appearance: "border-border bg-popover text-popover-foreground shadow-md",
   typography: "text-body-sm",
   interaction: "transition-[opacity,scale] duration-150 ease-instrument outline-none",

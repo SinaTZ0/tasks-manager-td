@@ -40,9 +40,9 @@ export function MemberRow({ member, isSelf }: { member: TeamMember; isSelf: bool
   const checked = setStatus.isPending ? setStatus.variables.status === "active" : active;
 
   return (
-    <li className="flex items-center gap-6 py-3">
+    <li className="flex items-center gap-x-6 gap-y-3 py-3 max-md:flex-wrap">
       {/*------ Who ------*/}
-      <div className="flex min-w-0 flex-1 items-center gap-3">
+      <div className="flex min-w-0 flex-1 items-center gap-3 max-md:basis-full">
         <PersonAvatar name={member.name} size="default" decorative />
         <div className="min-w-0">
           <p className="flex items-center gap-2 truncate font-medium">
@@ -68,7 +68,7 @@ export function MemberRow({ member, isSelf }: { member: TeamMember; isSelf: bool
         disabled={isSelf || setRole.isPending}
         onValueChange={(value) => value && setRole.mutate({ userId: member.id, role: value })}
       >
-        <SelectTrigger id={ids.role} aria-label={m.team_role_of({ name: member.name })} className="w-44">
+        <SelectTrigger id={ids.role} aria-label={m.team_role_of({ name: member.name })} className="w-44 max-md:w-full">
           <SelectValue />
         </SelectTrigger>
         {/* Wider than the key, so each role's line about what it may do fits; it opens below rather than over it. */}
@@ -85,7 +85,7 @@ export function MemberRow({ member, isSelf }: { member: TeamMember; isSelf: bool
       </Select>
 
       {/*------ Status ------*/}
-      <label htmlFor={ids.status} className="flex w-40 items-center gap-3">
+      <label htmlFor={ids.status} className="flex w-40 items-center gap-3 max-md:flex-1">
         <Switch
           id={ids.status}
           checked={checked}

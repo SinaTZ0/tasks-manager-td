@@ -54,7 +54,7 @@ function ProjectsPage() {
   const isAdmin = viewer.role === "admin";
 
   return (
-    <div className="flex flex-col gap-6 px-6 py-8">
+    <div className="flex flex-col gap-6 px-4 py-6 md:px-6 md:py-8">
       <PageHead title={m.projects_title()} actions={isAdmin && <NewProjectDialog viewerId={viewer.id} />} />
 
       {projects.length === 0 ? (
@@ -67,7 +67,7 @@ function ProjectsPage() {
           </CardContent>
         </Card>
       ) : (
-        <ul className="grid grid-cols-2 gap-5 lg:grid-cols-3 2xl:grid-cols-4">
+        <ul className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
           {projects.map((project) => (
             <li key={project.id} className="flex">
               <ProjectCard project={project} />

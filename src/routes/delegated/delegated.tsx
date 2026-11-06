@@ -32,7 +32,7 @@ function DelegatedPage() {
   const { data: tasks } = useSuspenseQuery(orpc.delegation.mine.queryOptions());
 
   return (
-    <div className="flex flex-col gap-6 px-6 py-8">
+    <div className="flex flex-col gap-6 px-4 py-6 md:px-6 md:py-8">
       <PageHead title={m.delegated_title()} description={m.delegated_description()} />
 
       <Card>
@@ -62,8 +62,8 @@ function DelegatedRow({ task }: { task: DelegatedTask }) {
   const code = taskCode({ key: task.projectKey, number: task.number });
 
   return (
-    <li className="grid grid-cols-12 items-center gap-4 py-3">
-      <div className="col-span-5 flex min-w-0 flex-col gap-1">
+    <li className="grid items-center gap-x-4 gap-y-2 py-3 md:grid-cols-12 md:gap-4">
+      <div className="flex min-w-0 flex-col gap-1 md:col-span-5">
         <Link
           to="/projects/$projectKey"
           params={{ projectKey: task.projectKey }}
@@ -77,13 +77,13 @@ function DelegatedRow({ task }: { task: DelegatedTask }) {
           {task.projectName} · {columnTitle({ kind: task.columnKind, name: task.columnName })}
         </span>
       </div>
-      <div className="col-span-2 flex flex-col gap-0.5">
+      <div className="flex flex-col gap-0.5 md:col-span-2">
         <span className="text-caption text-muted-foreground">{m.task_assignee_label()}</span>
         <span className="text-body-sm font-semibold">
           {task.assigneeNames.length > 0 ? formatList(task.assigneeNames) : m.task_unassigned()}
         </span>
       </div>
-      <div className="col-span-5 flex min-w-0 flex-col gap-0.5">
+      <div className="flex min-w-0 flex-col gap-0.5 md:col-span-5">
         <span className="text-caption text-muted-foreground">
           {m.delegation_entry({
             from: task.last.fromName,

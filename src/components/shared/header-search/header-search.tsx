@@ -87,7 +87,7 @@ function SearchField({
   onEnter: () => void;
 }) {
   return (
-    <search className="w-60 min-w-32 shrink">
+    <search className="w-60 min-w-32 shrink max-md:w-auto max-md:min-w-0 max-md:flex-1">
       <form
         onSubmit={(event) => {
           event.preventDefault();
@@ -108,7 +108,7 @@ function SearchField({
             aria-keyshortcuts="/"
             autoComplete="off"
           />
-          <InputGroupAddon align="inline-end">
+          <InputGroupAddon align="inline-end" className="pointer-coarse:hidden">
             <span aria-hidden="true" className="font-mono text-caption">
               /
             </span>

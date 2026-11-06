@@ -90,7 +90,7 @@ const twPopupStyles = defineStyles({
   layout: "relative isolate z-50 overflow-x-hidden overflow-y-auto",
   // Base UI provides the available height, trigger width, and transform origin as CSS variables.
   geometry:
-    "max-h-(--available-height) w-(--anchor-width) min-w-36 origin-(--transform-origin) rounded-housing border p-1",
+    "max-h-(--available-height) w-(--anchor-width) max-w-[calc(100vw-1rem)] min-w-36 origin-(--transform-origin) rounded-housing border p-1",
   // A small module lifted off the housing: its own hard ledge and soft shadow (`shadow-md`), and a printed seam
   appearance: "border-border bg-popover text-popover-foreground shadow-md",
   state:

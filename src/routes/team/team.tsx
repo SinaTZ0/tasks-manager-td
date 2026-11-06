@@ -24,12 +24,12 @@ function TeamPage() {
   const { data: team } = useSuspenseQuery(orpc.team.list.queryOptions());
 
   return (
-    <div className="mx-auto flex max-w-site flex-col gap-6 px-6 py-8">
+    <div className="mx-auto flex max-w-site flex-col gap-6 px-4 py-6 md:px-6 md:py-8">
       <PageHead title={m.team_title()} description={m.team_description()} />
 
-      <div className="flex items-start gap-6">
+      <div className="flex flex-col gap-6 lg:flex-row lg:items-start">
         {/*===== Teammates =====*/}
-        <Card className="min-w-0 flex-1">
+        <Card className="min-w-0 lg:flex-1">
           <CardContent>
             <ul className="striped">
               {team.map((member) => (
@@ -40,7 +40,7 @@ function TeamPage() {
         </Card>
 
         {/*===== New Teammate =====*/}
-        <Card className="w-88 shrink-0">
+        <Card className="lg:w-88 lg:shrink-0">
           <CardHeader>
             <CardTitle>
               <h2 className="text-h3">{m.team_new_heading()}</h2>

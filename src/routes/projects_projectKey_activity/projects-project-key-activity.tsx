@@ -59,7 +59,7 @@ function ActivityPage() {
   const items = data.pages.flatMap((page) => page.items);
 
   return (
-    <div className="mx-auto flex w-full max-w-site flex-col gap-6 px-6 py-8">
+    <div className="mx-auto flex w-full max-w-site flex-col gap-6 px-4 py-6 md:px-6 md:py-8">
       {/*------ Header ------*/}
       <PageHead title={m.activity_link()} description={m.activity_description()} />
 

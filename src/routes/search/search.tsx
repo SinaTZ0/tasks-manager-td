@@ -54,7 +54,7 @@ function SearchPage() {
   const [text, setText] = useSearchText({ value: q, onCommit: commit });
 
   return (
-    <div className="flex flex-col gap-6 px-6 py-8">
+    <div className="flex flex-col gap-6 px-4 py-6 md:px-6 md:py-8">
       <PageHead title={m.search_title()} description={m.search_description()} />
 
       <search className="max-w-xl">
@@ -115,7 +115,7 @@ function ResultRow({ result }: { result: SearchResult }) {
 
   return (
     <li className="flex flex-col gap-1 py-3">
-      <div className="flex min-w-0 items-baseline gap-3">
+      <div className="flex min-w-0 items-baseline gap-x-3 gap-y-1 max-md:flex-wrap">
         <Link
           to={result.archived ? "/projects/$projectKey/archive" : "/projects/$projectKey"}
           params={{ projectKey: result.projectKey }}
@@ -126,7 +126,7 @@ function ResultRow({ result }: { result: SearchResult }) {
           <span className="truncate font-semibold">{result.title}</span>
         </Link>
         {result.archived && <Marking>{m.search_archived()}</Marking>}
-        <span className="ms-auto shrink-0 text-body-sm text-muted-foreground">
+        <span className="ms-auto shrink-0 text-body-sm text-muted-foreground max-md:ms-0 max-md:shrink max-md:basis-full">
           {result.projectName} · {columnTitle({ kind: result.columnKind, name: result.columnName })}
         </span>
       </div>

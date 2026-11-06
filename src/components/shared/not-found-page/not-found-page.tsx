@@ -56,7 +56,7 @@ export function NotFoundPage() {
                 <h1 className="font-heading text-h3">{m.root_not_found_title()}</h1>
                 <p className="text-body-sm text-muted-foreground">{m.root_not_found_details()}</p>
               </div>
-              <div className="flex shrink-0 gap-3">
+              <div className="flex flex-wrap gap-3">
                 <Button variant="secondary" onClick={() => router.history.back()}>
                   <ArrowLeftIcon data-icon="inline-start" className="rtl:-scale-x-100" />
                   {m.root_not_found_back()}
