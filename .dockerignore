@@ -22,3 +22,4 @@ backups
 *.pfx
 # The error viewer builds from its own folder (tools/error-viewer/Dockerfile).
 tools
+desktop-releases

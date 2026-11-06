@@ -191,6 +191,7 @@ What each thing is and how it relates. How to store it = implementer decides.
 - **Card drawer/modal** — a header with the code, the title (edited in place) and the status track: the board's columns in order (the ones passed lit, the current one latched, its LED blinking while in Doing, any other a press away, following the same rules as a drag), the next step as its own key (Send to the next column, or Mark done before Done; Reopen once done or cancelled) and Cancel apart from it. Under it, up to three columns the user can resize, each switched on and off by a folder tab on the header's edge that prints a summary of what it holds: the work (description, checklist, attachments and the comment thread; the only one on at first), the tracking (the card's age and time in each column, dependencies, history, one under the other), and the details (priority, people, dates, labels, delegation, as label and value rows)
 - **My Tasks** — assigned to me, delegated by me, watching
 - **Notifications** — bell dropdown
+- **Desktop widget** — a small Windows window for today's tasks, notifications and reminders ([desktop.md](./desktop.md))
 - **Settings** — columns (add, rename, remove when empty), labels, members, WIP limits
 
 ---

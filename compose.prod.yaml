@@ -42,6 +42,8 @@ services:
       - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
       # Your own certificate, put there by `deploy/deploy.sh`. Unused with `TLS_MODE=auto`.
       - ./certs:/certs:ro
+      # The desktop widget's releases, uploaded by `tools/desktop/release.sh`; the binaries stay out of git.
+      - ./desktop-releases:/srv/desktop:ro
       # Certificates and their keys: keep this volume, or every restart requests new ones (and hits rate limits).
       - caddy_data:/data
       - caddy_config:/config

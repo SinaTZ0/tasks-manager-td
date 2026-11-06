@@ -338,6 +338,36 @@ the steps that already ran on the server and update the ones that haven't.
 
 **Roll back** doesn't undo steps: the data they loaded stays.
 
+## Desktop Widget
+
+The widget ([desktop.md](./desktop.md)) has two parts that ship differently. The `/widget` page deploys with the app, so
+nearly every change reaches everyone with an ordinary update. Only a change to the shell in `tools/desktop/` needs a new
+release.
+
+**Releasing.** Run this from WSL, with a version higher than the last one or the apps ignore it:
+
+```bash
+tools/desktop/release.sh https://<domain> 1.2.0 <user>@<server>:<path to the checkout>
+```
+
+It builds `Tofang.exe`, signs a manifest, checks the signature and uploads both to `desktop-releases/` in the checkout,
+which Caddy serves at `/desktop/`. The folder stays out of git and is replaced by each release. Apps look every six hours
+and at start, stage the update beside their binary, and show a key in the widget that applies it. There are no git tags:
+the version is the script's argument.
+
+**Installing.** Give people `https://<domain>/desktop/Tofang.exe`. It needs no installer, but the update is staged beside
+it, so it goes in a folder the person can write to: `%LOCALAPPDATA%\Programs\Tofang`, never Program Files. Windows warns
+once, because the file isn't signed with a certificate.
+
+**The signing key.** The private key is at `~/.config/tofang/updater.key` (or `TOFANG_UPDATER_KEY`) and never enters the
+repo; `tools/desktop/updater.key.pub` is built into the app. Keep a copy somewhere safe. Without it no update can reach
+the installed apps, and with a new key everyone has to install a new `.exe` by hand. Anyone holding it can run code on the
+team's machines through an update.
+
+**Building for testing.** `tools/desktop/build.sh http://localhost:3000` makes `tools/desktop/dist/Tofang.exe` against the
+dev server. With no version it doesn't look for updates. Copy it to a Windows folder to run it. Its log is
+`%LOCALAPPDATA%\Tofang\tofang.log`.
+
 ## Rolling Back
 
 Every build tags the app's image with the commit it was built from (`tofang-app:381286c`), and the newest three are

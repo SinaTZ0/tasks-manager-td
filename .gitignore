@@ -40,3 +40,6 @@
 
 # A design export as it arrived, unpacked locally while customizing the template (docs/customize-template.md)
 /target/
+
+# The desktop widget's releases, uploaded to the server by tools/desktop/release.sh.
+/desktop-releases/

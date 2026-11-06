@@ -66,6 +66,13 @@
 		}
 	}
 
+	# The desktop widget's releases, public files that aren't in the image (`tools/desktop/release.sh`). They are signed:
+	# the app checks every update against the key built into it, not against this server.
+	handle /desktop/* {
+		root * /srv
+		file_server
+	}
+
 	handle {
 		reverse_proxy app:3000 {
 			# The app rate-limits by the visitor's address, which it reads from X-Real-IP (`src/lib/rate-limit.server.ts`).
