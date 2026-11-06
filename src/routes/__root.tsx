@@ -24,13 +24,27 @@ export const Route = createRootRouteWithContext<RouterContext>()({
   loader: ({ context }) => context.queryClient.ensureQueryData(orpc.site.origin.queryOptions({ staleTime: Infinity })),
   staleTime: Infinity,
   head: () => ({
-    meta: [{ charSet: "utf-8" }, { name: "viewport", content: "width=device-width, initial-scale=1" }],
+    meta: [
+      { charSet: "utf-8" },
+      // `cover` runs the page under a phone's notch (the header pads itself with `env(safe-area-inset-*)`), and
+      // `resizes-content` shrinks the page for the on-screen keyboard, so what's at the bottom stays above it.
+      {
+        name: "viewport",
+        content: "width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content",
+      },
+      // The header's glass, so a phone's status bar reads as part of it.
+      { name: "theme-color", content: "#141513" },
+      { name: "mobile-web-app-capable", content: "yes" },
+      { name: "apple-mobile-web-app-title", content: m.site_name() },
+      { name: "apple-mobile-web-app-status-bar-style", content: "black-translucent" },
+    ],
     links: [
       { rel: "stylesheet", href: appCss },
       // The SVG is the mark itself; browsers that can't use it take the ICO, and iOS the 180px touch icon
       { rel: "icon", href: "/favicon.ico", sizes: "32x32" },
       { rel: "icon", href: "/favicon.svg", type: "image/svg+xml" },
       { rel: "apple-touch-icon", href: "/apple-touch-icon.png" },
+      { rel: "manifest", href: "/manifest.webmanifest" },
     ],
   }),
   shellComponent: RootDocument,
