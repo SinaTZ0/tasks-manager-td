@@ -17,6 +17,7 @@ import { useBoardAccess } from "#/routes/projects_projectKey/access";
 import {
   BOARD_PANEL_ID,
   BoardPanelProvider,
+  BoardPanelOpener,
   BoardPanelToggle,
 } from "#/routes/projects_projectKey/components/board-panel";
 import { BoardSidebar } from "#/routes/projects_projectKey/components/board-sidebar";
@@ -116,8 +117,7 @@ function ProjectLayout() {
       {/*------ Page ------*/}
       {/* A `div`: the site layout's `main` already holds the page. */}
       <SidebarInset render={<div />}>
-        {/* On a phone the sidebar is a closed sheet, and the key inside it can't open it. */}
-        <BoardPanelToggle className="ms-6 mt-6 self-start md:hidden" />
+        <BoardPanelOpener className="ms-4 mt-4 self-start md:hidden" />
         <Outlet />
       </SidebarInset>
     </BoardPanelProvider>

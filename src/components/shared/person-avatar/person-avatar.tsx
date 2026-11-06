@@ -1,11 +1,11 @@
 import { Avatar, AvatarFallback, AvatarImage } from "#/components/primitive/avatar/avatar";
-import { Tooltip, TooltipContent, TooltipTrigger } from "#/components/primitive/tooltip/tooltip";
+import { TapTooltip } from "#/components/primitive/tooltip/tooltip";
 
 /*===== Person Avatar =====*/
 
 /**
- * A teammate as a keycap with their initial. The initial alone names no one, so pointing at the cap shows the full name
- * in a tooltip, and screen readers get it as `sr-only` text. `owner` uses the graphite cap, so an owner reads apart
+ * A teammate as a keycap with their initial. The initial alone names no one, so pointing at the cap or tapping it shows the
+ * full name in a tooltip, and screen readers get it as `sr-only` text. `owner` uses the graphite cap, so an owner reads apart
  * from an assignee without colour alone. Where the name is printed right beside the cap, pass `decorative`: no tooltip,
  * and nothing read twice. With `src` (their profile picture) the picture fills the cap; the initial shows while it
  * loads or if it fails. `tooltip={false}` keeps the name for screen readers but drops the tooltip, for a cap nobody
@@ -39,12 +39,7 @@ export function PersonAvatar({
   );
   if (decorative || !tooltip) return avatar;
 
-  return (
-    <Tooltip>
-      {/* The cap stays a picture, not a key: the trigger only listens for the pointer. Screen readers have the name in
-          the cap already, so the tooltip is for the eye. */}
-      <TooltipTrigger render={avatar} />
-      <TooltipContent aria-hidden="true">{name}</TooltipContent>
-    </Tooltip>
-  );
+  // The cap stays a picture, not a key: the trigger only listens for the pointer and a tap. Screen readers have the name
+  // in the cap already, so the tooltip is for the eye.
+  return <TapTooltip trigger={avatar}>{name}</TapTooltip>;
 }

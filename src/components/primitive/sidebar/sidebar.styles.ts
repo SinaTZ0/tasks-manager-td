@@ -24,7 +24,7 @@ const twStaticStyles = defineStyles({
 });
 
 const twSheetStyles = defineStyles({
-  geometry: "w-(--sidebar-width) p-0",
+  geometry: "p-0 pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)]",
   appearance: "bg-sidebar surface-grain text-sidebar-foreground",
 });
 
@@ -216,7 +216,7 @@ const twMenuButtonVariant = defineStyles({
 
 const twMenuButtonSize = defineStyles({
   default: {},
-  sm: { geometry: "h-8 px-3", typography: "text-caption font-semibold" },
+  sm: { geometry: "h-8 px-3 pointer-coarse:h-10", typography: "text-caption font-semibold" },
   lg: { geometry: "h-12" },
 });
 

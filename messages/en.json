@@ -1200,6 +1200,7 @@
   "board_mark_due": "Due",
   "board_filter_any": "All",
   "board_panel_hide": "Shrink the project panel",
+  "board_panel_open": "Open the project panel",
   "board_panel_filter": "Filter",
   "calendar_panel_month": "Month",
   "board_mark_layout": "Layout",

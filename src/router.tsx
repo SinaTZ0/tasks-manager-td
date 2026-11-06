@@ -81,8 +81,10 @@ export function getRouter() {
       input: ({ url }) => deLocalizeUrl(url),
       output: ({ url }) => localizeUrl(url),
     },
-    // Hovering or focusing a link runs the target's loaders, which fill the Query cache the page then reads.
-    defaultPreload: "intent",
+    // Hovering or focusing a link runs the target's loaders, which fill the Query cache the page then reads. Not on a
+    // touch screen: there "intent" is any touch that starts on a link, so a scroll across the board would load every
+    // card under the finger, against a rate limit that many phones on one carrier share.
+    defaultPreload: typeof window !== "undefined" && window.matchMedia("(hover: none)").matches ? false : "intent",
     // The router always calls the loader on preload; Query's `staleTime` decides whether anything is fetched.
     defaultPreloadStaleTime: 0,
     scrollRestoration: true,

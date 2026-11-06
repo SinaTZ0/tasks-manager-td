@@ -54,7 +54,6 @@ import {
 
 // Two filter keys abreast, each with its LED, its value and its arrow.
 const SIDEBAR_WIDTH = "17rem";
-const SIDEBAR_WIDTH_MOBILE = "18rem";
 const SIDEBAR_WIDTH_ICON = "3rem";
 // Matched by the key's place on the keyboard, so it is the same key on a Persian layout (where it types «ذ»).
 const SIDEBAR_KEYBOARD_SHORTCUT = "KeyB";
@@ -196,7 +195,6 @@ function Sidebar({
           data-slot="sidebar"
           data-mobile="true"
           className={cn(sidebarSheetClasses, className)}
-          style={{ "--sidebar-width": SIDEBAR_WIDTH_MOBILE } as CSSProperties}
           side={side}
           showCloseButton={false}
           {...props}

@@ -212,7 +212,7 @@ export function TaskAttachments({
               }}
             />
           </div>
-          <p className="text-caption text-muted-foreground">{m.attachment_drop_hint()}</p>
+          <p className="text-caption text-muted-foreground pointer-coarse:hidden">{m.attachment_drop_hint()}</p>
           {linking && <LinkForm task={task} projectId={projectId} onDone={() => setLinking(false)} onAdded={changed} />}
         </div>
       )}

@@ -293,10 +293,10 @@ function CommentComposer({
       {picker}
       <FieldError>{error}</FieldError>
       <div className="flex items-center justify-between gap-4">
-        <p id={`${id}-hint`} className="text-caption text-muted-foreground">
+        <p id={`${id}-hint`} className="text-caption text-muted-foreground pointer-coarse:hidden">
           {m.comment_hint()}
         </p>
-        <span className="flex items-center gap-3">
+        <span className="ms-auto flex items-center gap-3">
           {pingable && (
             <HoldKey
               shape="inline"

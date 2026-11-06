@@ -35,7 +35,7 @@ export function BoardPanelProvider({ children }: { children: ReactNode }) {
 
 /**
  * The key that shrinks the project's sidebar to its strip of icons and brings it back: a latch, sunk while the sidebar is
- * shrunk. The icon is chosen with CSS (`board-panel-closed:`), so it is right on the server-rendered page too, and
+ * shrunk. The icon is chosen with CSS (`sidebar-icon:`), so it is right on the server-rendered page too, and
  * mirrors in Persian, where the sidebar is on the right.
  */
 export function BoardPanelToggle({ className }: { className?: string }) {
@@ -51,8 +51,26 @@ export function BoardPanelToggle({ className }: { className?: string }) {
       aria-controls={BOARD_PANEL_ID}
       className={className}
     >
-      <PanelLeftCloseIcon className="rtl:-scale-x-100 board-panel-closed:hidden" />
-      <PanelLeftOpenIcon className="hidden rtl:-scale-x-100 board-panel-closed:block" />
+      <PanelLeftCloseIcon className="rtl:-scale-x-100 sidebar-icon:hidden" />
+      <PanelLeftOpenIcon className="hidden rtl:-scale-x-100 sidebar-icon:block" />
+    </SidebarTrigger>
+  );
+}
+
+/** The phone's way in: there the sidebar is a closed sheet, so its own key is out of reach until something opens it. */
+export function BoardPanelOpener({ className }: { className?: string }) {
+  const { openMobile } = useSidebar();
+
+  return (
+    <SidebarTrigger
+      variant="secondary"
+      size="icon-xs"
+      aria-label={m.board_panel_open()}
+      aria-expanded={openMobile}
+      aria-controls={BOARD_PANEL_ID}
+      className={className}
+    >
+      <PanelLeftOpenIcon className="rtl:-scale-x-100" />
     </SidebarTrigger>
   );
 }

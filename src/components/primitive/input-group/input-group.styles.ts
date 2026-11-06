@@ -110,7 +110,7 @@ const twInputStyles = defineStyles({
   geometry: "rounded-[inherit] border-0 px-4",
   // The browser's own clear button is drawn for a light plate, so the glass drops it; Escape still clears.
   appearanceGlass:
-    "group-data-[variant=glass]/input-group:text-body-sm group-data-[variant=glass]/input-group:text-glass-foreground group-data-[variant=glass]/input-group:placeholder:text-glass-muted group-data-[variant=glass]/input-group:[&::-webkit-search-cancel-button]:appearance-none",
+    "group-data-[variant=glass]/input-group:text-glass-foreground group-data-[variant=glass]/input-group:placeholder:text-glass-muted md:group-data-[variant=glass]/input-group:text-body-sm group-data-[variant=glass]/input-group:[&::-webkit-search-cancel-button]:appearance-none",
 });
 
 const twTextareaStyles = defineStyles({

@@ -95,12 +95,13 @@ const twVariant = defineStyles({
 /*===== Geometry =====*/
 
 // Heights line up with the 44px fields. Every part's cut sits 2–3px outside its box, so neighbours need a gap of at
-// least `gap-2` to keep their cuts apart. Compact sizes (xs, sm, icon-xs, icon-sm) take the compact keycap scale.
+// least `gap-2` to keep their cuts apart. Compact sizes (xs, sm, icon-xs, icon-sm) take the compact keycap scale. On a
+// touch screen the 32px sizes grow to the 40px minimum: a dense row is for a mouse, a finger needs the room.
 // `geometryIcon` tightens the padding on the side holding a `data-icon` child so the icon looks optically centered.
 const twSize = defineStyles({
   xs: {
     layout: "gap-1",
-    geometry: "h-8 px-3",
+    geometry: "h-8 px-3 pointer-coarse:h-10",
     geometryIcon: "has-data-[icon=inline-end]:pe-2 has-data-[icon=inline-start]:ps-2",
     typography: "text-caption font-semibold",
     icon: "[&_svg:not([class*='size-'])]:size-4",
@@ -122,7 +123,7 @@ const twSize = defineStyles({
     geometryIcon: "has-data-[icon=inline-end]:pe-5 has-data-[icon=inline-start]:ps-5",
   },
   "icon-xs": {
-    geometry: "size-8",
+    geometry: "size-8 pointer-coarse:size-10",
     icon: "[&_svg:not([class*='size-'])]:size-4",
   },
   "icon-sm": {

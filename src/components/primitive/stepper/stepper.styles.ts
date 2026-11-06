@@ -30,7 +30,7 @@ const twSeparatorStyles = defineStyles({
 // A step is printed on the tray with its LED before its name; one that can be chosen is a ghost key, a press away.
 const twStepStyles = defineStyles({
   layout: "inline-flex shrink-0 items-center gap-2",
-  geometry: "h-8 rounded-keycap-compact px-3",
+  geometry: "h-8 rounded-keycap-compact px-3 pointer-coarse:h-10",
   typography: "font-heading text-button whitespace-nowrap",
   interaction: "outline-none select-none",
   focus: "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring",

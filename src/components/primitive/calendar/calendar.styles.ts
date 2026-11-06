@@ -7,7 +7,7 @@ import { defineStyles, joinStyles } from "../styles";
 // compact key, the size every day, weekday heading and nav key share, so the grid lines up column by column.
 const twRootStyles = defineStyles({
   layout: "group/calendar relative w-fit",
-  geometry: "p-1 [--cell-size:--spacing(8)]",
+  geometry: "p-1 [--cell-size:--spacing(8)] pointer-coarse:[--cell-size:--spacing(10)]",
 });
 
 /*===== Header =====*/

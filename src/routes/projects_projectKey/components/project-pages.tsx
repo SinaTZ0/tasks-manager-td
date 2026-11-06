@@ -2,7 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { ArchiveIcon, CalendarDaysIcon, HistoryIcon, SettingsIcon, SquareKanbanIcon } from "lucide-react";
 
 import { Led } from "#/components/primitive/led/led";
-import { SidebarMenu, SidebarMenuButton, SidebarMenuItem } from "#/components/primitive/sidebar/sidebar";
+import { SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar } from "#/components/primitive/sidebar/sidebar";
 import { m } from "#/paraglide/messages";
 import type { BoardFilter } from "#/routes/projects_projectKey/board-filter";
 
@@ -28,6 +28,7 @@ export function ProjectPages({
   isAdmin: boolean;
   filter?: BoardFilter;
 }) {
+  const { setOpenMobile } = useSidebar();
   const params = { projectKey };
   // The header's search filters the board only, so the calendar takes the filter keys without its text.
   const { q: _q, ...keys } = filter;
@@ -48,7 +49,8 @@ export function ProjectPages({
               size="sm"
               tooltip={label}
               render={
-                <Link to={to} params={params} activeOptions={ACTIVE} {...page}>
+                // A phone's sheet covers the page, so going to one has to close it. Filters leave it open: they're picked in a row.
+                <Link to={to} params={params} activeOptions={ACTIVE} onClick={() => setOpenMobile(false)} {...page}>
                   {({ isActive }) => (
                     <>
                       <Led

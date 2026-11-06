@@ -1,7 +1,7 @@
 import { type VariantProps } from "class-variance-authority";
 import { useEffect, useRef, useState } from "react";
 
-import { Tooltip, TooltipContent, TooltipTrigger } from "#/components/primitive/tooltip/tooltip";
+import { Tooltip, TooltipContent, TooltipTrigger, useTapTooltip } from "#/components/primitive/tooltip/tooltip";
 import { cn } from "#/lib/utils";
 import {
   holdKeyAfterglowClasses,
@@ -170,14 +170,17 @@ export type HoldKeyProps = VariantProps<typeof holdKeyPlateVariants> & {
 /**
  * The red mushroom key on a plate of display glass, for an action that goes out to other people the moment it fires,
  * with no confirmation: a press must last half a second, and a short one does nothing. It stands in the `corner` of a
- * card or `inline` beside other keys. The whole plate is the press target, raised over a card's stretched link.
+ * card or `inline` beside other keys. The whole plate is the press target, raised over a card's stretched link. On a
+ * touch screen a short press shows the hint, or the key would seem not to work.
  */
 function HoldKey({ label, hint, onFire, shape }: HoldKeyProps) {
   const { phase, flare, handlers } = useHold(onFire);
+  const { root, tapped } = useTapTooltip();
 
   return (
-    <Tooltip>
+    <Tooltip {...root}>
       <TooltipTrigger
+        closeOnClick={false}
         render={
           <button
             type="button"
@@ -190,6 +193,8 @@ function HoldKey({ label, hint, onFire, shape }: HoldKeyProps) {
             aria-label={label}
             className={cn(holdKeyPlateVariants({ shape }), holdKeyPressClasses)}
             {...handlers}
+            // A held press ends in a click too, while the key is still down: only a short one is left idle by then.
+            onClick={() => phase === "idle" && tapped()}
           >
             <HoldKeyFace />
           </button>

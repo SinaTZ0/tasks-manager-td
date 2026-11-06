@@ -42,6 +42,8 @@ const twToolbarDividerStyles = defineStyles({
 const twSurfaceStyles = defineStyles({
   layout: "flex-1",
   geometry: "px-4 py-3",
+  // 16px on a phone, like every field: iOS Safari zooms in on anything smaller when it takes the focus.
+  typography: "max-md:text-body-lg",
   appearance: "caret-highlight",
   interaction: "outline-none",
   disabled: "aria-disabled:cursor-not-allowed",

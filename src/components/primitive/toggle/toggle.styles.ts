@@ -44,7 +44,7 @@ const twVariant = defineStyles({
 const twSize = defineStyles({
   sm: {
     layout: "gap-1.5",
-    geometry: "h-8 min-w-8 px-3",
+    geometry: "h-8 min-w-8 px-3 pointer-coarse:h-10 pointer-coarse:min-w-10",
     geometryIcon: "has-data-[icon=inline-end]:pe-2 has-data-[icon=inline-start]:ps-2",
     typography: "text-caption font-semibold",
   },

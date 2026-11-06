@@ -13,7 +13,7 @@ import type { PointerEventHandler, ReactNode } from "react";
 import { AvatarGroup, AvatarGroupCount } from "#/components/primitive/avatar/avatar";
 import { Led } from "#/components/primitive/led/led";
 import { Marking } from "#/components/primitive/marking/marking";
-import { Tooltip, TooltipContent, TooltipTrigger } from "#/components/primitive/tooltip/tooltip";
+import { TapTooltip } from "#/components/primitive/tooltip/tooltip";
 import { PersonAvatar } from "#/components/shared/person-avatar/person-avatar";
 import { DueMark } from "#/components/shared/due-mark/due-mark";
 import { formatList, formatNumber } from "#/lib/locale";
@@ -120,15 +120,7 @@ function CardSpine({
           {shown.map((person) => (
             <PersonAvatar key={person.id} name={person.name} src={person.avatarUrl} tooltip={tooltips} />
           ))}
-          {hidden.length > 0 &&
-            (tooltips ? (
-              <Tooltip>
-                <TooltipTrigger render={count} />
-                <TooltipContent aria-hidden="true">{names}</TooltipContent>
-              </Tooltip>
-            ) : (
-              count
-            ))}
+          {hidden.length > 0 && (tooltips ? <TapTooltip trigger={count}>{names}</TapTooltip> : count)}
         </AvatarGroup>
       )}
     </div>
