@@ -7,7 +7,7 @@ import { redirectToParam } from "#/lib/search-params";
 import { pageMeta } from "#/lib/seo";
 import { orpc } from "#/orpc/client";
 import { m } from "#/paraglide/messages";
-import { SignInForm } from "#/routes/auth/components/sign-in-form";
+import { SignInForm } from "#/components/shared/sign-in-form/sign-in-form";
 
 /** Where people land after signing in when nothing asked for a page. */
 const DEFAULT_REDIRECT = "/";

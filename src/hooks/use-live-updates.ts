@@ -108,8 +108,12 @@ export function useLiveUpdates(userId: string | null): void {
               queueProject(event.projectId);
             }
           }
-        } catch {
-          // Closed by the server, the network or a deploy: open it again below.
+        } catch (error) {
+          // Closed by the server, the network or a deploy: open it again below. A session that ended won't come back
+          // that way, so ask who the viewer is: a page that stays open (the desktop widget) then offers the sign-in.
+          if ((error as { code?: unknown } | null)?.code === "UNAUTHORIZED") {
+            void queryClient.invalidateQueries({ queryKey: orpc.session.viewer.key() });
+          }
         }
         setConnected(false);
         await sleep(Math.min(RETRY_MAX_MS, 1000 * 2 ** failures), controller.signal);

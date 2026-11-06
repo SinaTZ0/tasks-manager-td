@@ -2018,5 +2018,22 @@
         "": "I'll remind you again {when}."
       }
     }
+  ],
+  "widget_title": "Today",
+  "widget_today": "Today",
+  "widget_today_empty": "Nothing is waiting for you today.",
+  "widget_reminders_empty": "You have no reminders waiting.",
+  "widget_collapse": "Collapse",
+  "widget_update_ready": "A new version is ready",
+  "widget_update_restart": "Update",
+  "widget_open_card": "Open {code} in the browser",
+  "widget_mark_read": "Mark {code} read",
+  "widget_toast_many": [
+    {
+      "declarations": ["input count", "local countText = count: number"],
+      "match": {
+        "": "{countText} new notifications"
+      }
+    }
   ]
 }

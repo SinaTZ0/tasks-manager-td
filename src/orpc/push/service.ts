@@ -1,6 +1,7 @@
 import { AsyncLocalStorage } from "node:async_hooks";
 
 import type { Database } from "#/db/client.server";
+import { cardPath } from "#/lib/card-path";
 import { notificationDetail, notificationSentence } from "#/lib/notification-text";
 import { toNotification } from "#/orpc/notification/service";
 import {
@@ -74,13 +75,10 @@ export function pushPayload({
     title: notificationSentence(item),
     detail: notificationDetail(item),
   }));
-  // The base locale's paths have no prefix (`/projects/…`), the others theirs (`/en/projects/…`).
-  const prefix = locale === baseLocale ? "" : `/${locale}`;
-  const search = new URLSearchParams({ task: item.taskCode });
   return {
     title,
     body: detail ? `${item.taskTitle}\n${detail}` : item.taskTitle,
-    url: `${prefix}/projects/${encodeURIComponent(item.projectKey)}?${search}`,
+    url: cardPath({ locale, projectKey: item.projectKey, taskCode: item.taskCode }),
     tag: item.id,
     lang: locale,
     dir: locale === "fa" ? "rtl" : "ltr",

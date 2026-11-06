@@ -9,8 +9,8 @@ import { orpc } from "#/orpc/client";
 import { m } from "#/paraglide/messages";
 
 /*===== Sign Out =====*/
-/** Signs out and goes home, then forgets this account's cached data. */
-export function useSignOut() {
+/** Signs out and goes to `to` (home unless given), then forgets this account's cached data. */
+export function useSignOut({ to = "/" }: { to?: "/" | "/widget" } = {}) {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
@@ -22,7 +22,7 @@ export function useSignOut() {
     },
     onSuccess: async () => {
       setReportedUser(null);
-      await navigate({ to: "/" });
+      await navigate({ to });
       // The header reads the viewer from the cache: set it rather than remove it, so the layout doesn't suspend.
       const viewerKey = orpc.session.viewer.queryKey();
       queryClient.setQueryData(viewerKey, null);

@@ -623,6 +623,11 @@
     background-color: var(--glass);
     scrollbar-color: var(--glass-muted) var(--glass);
   }
+
+  /* The desktop widget's window never scrolls as a page, and 15px of a 320px strip is too much to keep in reserve. */
+  html:has([data-widget]) {
+    scrollbar-gutter: auto;
+  }
   h1,
   h2,
   h3,

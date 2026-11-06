@@ -1,4 +1,4 @@
-import { useMutation, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
+import { useSuspenseQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 import { BellIcon, CheckCheckIcon } from "lucide-react";
 import { useState } from "react";
@@ -15,16 +15,14 @@ import {
 } from "#/components/primitive/popover/popover";
 import { Switch } from "#/components/primitive/switch/switch";
 import { toast } from "#/components/primitive/toast/toast";
-import { describeApiFailure } from "#/lib/api-error";
+import { canSnooze, ReminderSnooze } from "#/components/shared/reminder-snooze/reminder-snooze";
 import { formatDate, formatNumber } from "#/lib/locale";
 import { notificationDetail, notificationSentence } from "#/lib/notification-text";
-import { stepLabel, tomorrowMorning, whenLabel } from "#/lib/reminder-time";
 import { orpc } from "#/orpc/client";
 import { useLiveConnected } from "#/hooks/use-live-updates";
 import { usePush } from "#/hooks/use-push";
-import { useReminderChanges } from "#/hooks/use-reminders";
+import { useMarkRead } from "#/hooks/use-mark-read";
 import { NOTIFICATION_POLL_MS } from "#/orpc/notification/constants";
-import type { Notification } from "#/orpc/notification/contract";
 import { m } from "#/paraglide/messages";
 
 /**
@@ -78,53 +76,6 @@ function PushSwitch() {
   );
 }
 
-/*===== Snooze =====*/
-
-const SNOOZE_MINUTES = 60;
-
-/**
- * The keys under a reminder that rang: remind me again in an hour, or tomorrow morning. Each one sets a fresh reminder
- * on the card with the same note, and settles the notification.
- */
-function Snooze({ item, taskId, onSnoozed }: { item: Notification; taskId: string; onSnoozed: () => void }) {
-  const { set } = useReminderChanges();
-
-  const again = (remindAt: Date) =>
-    set.mutate(
-      { projectId: item.projectId, taskId, remindAt, note: item.note ?? undefined },
-      {
-        onSuccess: () => {
-          onSnoozed();
-          toast.add({ title: m.reminder_snoozed({ when: whenLabel(remindAt) }), type: "success" });
-        },
-      },
-    );
-
-  return (
-    <div className="flex items-center gap-2 ps-7 pb-2">
-      <Marking>{m.reminder_snooze_lead()}</Marking>
-      <Button
-        variant="secondary"
-        size="xs"
-        aria-label={m.reminder_snooze({ code: item.taskCode, time: stepLabel(SNOOZE_MINUTES) })}
-        disabled={set.isPending}
-        onClick={() => again(new Date(Date.now() + SNOOZE_MINUTES * 60_000))}
-      >
-        {stepLabel(SNOOZE_MINUTES)}
-      </Button>
-      <Button
-        variant="secondary"
-        size="xs"
-        aria-label={m.reminder_snooze({ code: item.taskCode, time: m.reminder_tomorrow() })}
-        disabled={set.isPending}
-        onClick={() => again(tomorrowMorning())}
-      >
-        {m.reminder_tomorrow()}
-      </Button>
-    </div>
-  );
-}
-
 /*===== Notification Bell =====*/
 
 /**
@@ -134,20 +85,11 @@ function Snooze({ item, taskId, onSnoozed }: { item: Notification; taskId: strin
  * otherwise the list is asked for again every half minute (`NOTIFICATION_POLL_MS`).
  */
 export function NotificationBell() {
-  const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
   const live = useLiveConnected();
   const { data } = useSuspenseQuery({ ...notificationsQuery(), refetchInterval: live ? false : NOTIFICATION_POLL_MS });
 
-  const markRead = useMutation(
-    orpc.notification.markRead.mutationOptions({
-      onSettled: () => queryClient.invalidateQueries({ queryKey: orpc.notification.key() }),
-      onError: (error) => {
-        const failure = describeApiFailure({ error, fallback: m.notification_mark_failed() });
-        toast.add({ title: failure.message ?? m.notification_mark_failed(), type: "error" });
-      },
-    }),
-  );
+  const markRead = useMarkRead();
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -216,10 +158,11 @@ export function NotificationBell() {
                   </span>
                 </Link>
                 {/* An archived card takes no reminder. Beside the link, since a key can't sit inside one. */}
-                {item.kind === "reminder" && item.taskId && item.event !== "archived" && (
-                  <Snooze
+                {canSnooze(item) && item.taskId && (
+                  <ReminderSnooze
                     item={item}
                     taskId={item.taskId}
+                    className="ps-7 pb-2"
                     onSnoozed={() => {
                       if (!item.read) markRead.mutate({ ids: [item.id] });
                     }}

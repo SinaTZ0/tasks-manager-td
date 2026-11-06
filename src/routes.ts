@@ -48,6 +48,9 @@ export const routes = rootRoute("__root.tsx", [
     route("/$", "not_found/not-found.tsx"),
   ]),
 
+  // The desktop widget's page (docs/desktop.md): beside the site layout, so it has no header. It keeps its own guard.
+  route("/widget", "widget/widget.tsx"),
+
   /*===== Server Routes =====*/
   // No component: each answers HTTP requests itself (`server.handlers`).
   route("/api/auth/$", "api_auth/api-auth.ts"),

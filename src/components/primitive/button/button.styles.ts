@@ -136,12 +136,17 @@ const twSize = defineStyles({
     geometry: "size-12",
     icon: "[&_svg:not([class*='size-'])]:size-5",
   },
+  // A sampler's pad: it fills its share of a column, with its reading over its legend (the desktop widget's channels).
+  pad: {
+    layout: "min-h-0 flex-1 flex-col gap-1",
+    geometry: "px-1",
+  },
 });
 
 /*===== Class Composition =====*/
 
 const compactSizes = ["xs", "sm", "icon-xs", "icon-sm"] as const;
-const regularSizes = ["default", "lg", "icon", "icon-lg"] as const;
+const regularSizes = ["default", "lg", "icon", "icon-lg", "pad"] as const;
 const keycapTones = ["default", "highlight", "secondary", "outline", "destructive"] as const;
 
 const buttonVariants = cva(joinStyles(twSharedStyles), {

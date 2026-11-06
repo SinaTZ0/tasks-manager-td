@@ -2018,5 +2018,22 @@
         "": "دوباره {when} یادآوری می‌کنم."
       }
     }
+  ],
+  "widget_title": "امروز",
+  "widget_today": "امروز",
+  "widget_today_empty": "امروز چیزی منتظر شما نیست.",
+  "widget_reminders_empty": "یادآوری منتظری ندارید.",
+  "widget_collapse": "جمع کردن",
+  "widget_update_ready": "نسخه تازه آماده است",
+  "widget_update_restart": "به‌روزرسانی",
+  "widget_open_card": "باز کردن {code} در مرورگر",
+  "widget_mark_read": "خوانده شد: {code}",
+  "widget_toast_many": [
+    {
+      "declarations": ["input count", "local countText = count: number"],
+      "match": {
+        "": "{countText} اعلان تازه"
+      }
+    }
   ]
 }
